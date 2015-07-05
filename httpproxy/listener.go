@@ -56,7 +56,9 @@ type conn struct {
 
 func (c *conn) Close() error {
 	err := c.Conn.Close()
-	c.wg.Done()
+	if err == nil {
+		c.wg.Done()
+	}
 	return err
 }
 
