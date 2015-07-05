@@ -77,13 +77,16 @@ func main() {
 		}
 	}
 
-	peers := groupcache.NewHTTPPool("http://" + config.GroupCache.Addr)
-	peers.Set(config.GroupCache.Peers...)
-	ln0, err := net.Listen("tcp", config.GroupCache.Addr)
-	if err != nil {
-		glog.Fatalf("ListenTCP(%s) error: %s", config.GroupCache.Addr, err)
+	var ln0 net.Listener
+	if config.GroupCache.Addr != "" {
+		peers := groupcache.NewHTTPPool("http://" + config.GroupCache.Addr)
+		peers.Set(config.GroupCache.Peers...)
+		ln0, err = net.Listen("tcp", config.GroupCache.Addr)
+		if err != nil {
+			glog.Fatalf("ListenTCP(%s) error: %s", config.GroupCache.Addr, err)
+		}
+		go http.Serve(ln0, peers)
 	}
-	go http.Serve(ln0, peers)
 
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
 GoAgent Version    : %s (go/%s tls/%s)
@@ -188,11 +191,13 @@ Pac Server         : http://%s/proxy.pac
 
 			p, err := httpproxy.StartProcess()
 			if err != nil {
-				glog.Warningf("StartChildProcessWithListeners(%#v, %#v) error: %#v, abort", ln0, h.Listener)
+				glog.Warningf("StartProcess() with Listeners(%#v, %#v) error: %#v, abort", ln0, h.Listener)
 				os.Exit(-1)
 			} else {
 				glog.Infof("Spawn child(pid=%d) OK, exit in %d seconds", p.Pid, config.Http.WriteTimeout)
-				ln0.Close()
+				if ln0 != nil {
+					ln0.Close()
+				}
 				h.Listener.Close()
 			}
 

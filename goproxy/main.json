@@ -10,7 +10,7 @@
 		"PrivateKey": "goproxy.key"
 	},
 	"groupcache": {
-		"addr": "127.0.0.1:10080",
+		// "addr": "127.0.0.1:10080",
 		"peers": [
 			"http://127.0.0.1:10080"
 		]
