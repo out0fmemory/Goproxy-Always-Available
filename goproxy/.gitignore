@@ -1,0 +1,7 @@
+goproxy
+build
+*.exe
+*.crt
+*.key
+*.db
+.rnd

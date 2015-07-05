@@ -1,0 +1,22 @@
+{
+	"dialer": {
+		"Timeout": 10,
+		"KeepAlive": 180,
+		"DualStack": false
+	},
+	"transport": {
+		"DisableKeepAlives": false,
+		"DisableCompression": false,
+		"TLSHandshakeTimeout": 8,
+		"MaxIdleConnsPerHost": 16
+	},
+	"ratelimit": {
+		"threshold": 10240000,
+		"rate": -1,
+		"capacity": -1
+	},
+	"dnscache": {
+		"size": 8192,
+		"expires": 900
+	}
+}

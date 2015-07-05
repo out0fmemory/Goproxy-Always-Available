@@ -1,0 +1,14 @@
+{
+	"appids": [
+		"goagenta"
+	],
+	"scheme": "https",
+	"domain": "appspot.com",
+	"path": "/_gh/",
+	"password": "",
+	"sslverify": false,
+	"transport": "iplist",
+	"sites": [
+		"*"
+	]
+}

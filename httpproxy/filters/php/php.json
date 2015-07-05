@@ -1,0 +1,13 @@
+{
+	"fetchservers": [
+		{
+			"url": "http://hkphustk.herokuapp.com/",
+			"password": "123456",
+			"sslverify": false
+		}
+	],
+	"sites": [
+		"*.org"
+	],
+	"transport": "direct"
+}

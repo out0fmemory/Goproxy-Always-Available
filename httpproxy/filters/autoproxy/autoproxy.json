@@ -1,0 +1,10 @@
+{
+	"sites": [
+		"google.com"
+	],
+	"gfwlist": {
+		"url": "https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt",
+		"file": "gfwlist.txt",
+		"encoding": "base64"
+	}
+}

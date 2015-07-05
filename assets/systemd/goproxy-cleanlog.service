@@ -1,0 +1,11 @@
+[Unit]
+Description=goproxy cleanlog
+
+[Service]
+Type=simple
+ExecStart=/bin/find /var/log/ -name "goproxy.*" -mtime +1 -delete
+IOSchedulingClass=idle
+User=root
+
+[Install]
+WantedBy=timers.target
