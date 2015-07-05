@@ -1,6 +1,20 @@
 {
 	"sites": [
-		"google.com"
+		"android.com",
+		"appspot.com",
+		"blogspot.com",
+		"ggpht.com",
+		"google-analytics.com",
+		"google.com",
+		"google.com.hk",
+		"googleapis.com",
+		"googlecode.com",
+		"googlegroups.com",
+		"googletagmanager.com",
+		"googletagservices.com",
+		"googleusercontent.com",
+		"gstatic.com",
+		"youtube.com"
 	],
 	"gfwlist": {
 		"url": "https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt",
