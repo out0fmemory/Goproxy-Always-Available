@@ -85,6 +85,17 @@ func main() {
 	}
 	go http.Serve(ln0, peers)
 
+	fmt.Fprintf(os.Stderr, `------------------------------------------------------
+GoAgent Version    : %s (go/%s tls/%s)
+Listen Address     : %s
+Filters            : %v
+Pac Server         : http://%s/proxy.pac
+------------------------------------------------------
+`, Version, runtime.Version(), "1.2",
+		config.Addr,
+		config.Filters,
+		config.Addr)
+
 	requestFilters, roundtripFilters, responseFilters := getFilters(config)
 
 	var tlsConfig *tls.Config
