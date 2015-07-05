@@ -32,6 +32,10 @@ import (
 	"github.com/phuslu/http2"
 )
 
+const (
+	Version = "@VERSION@"
+)
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 	if os.Getenv("GOMAXPROCS") == "" {

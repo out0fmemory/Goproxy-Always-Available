@@ -67,4 +67,9 @@ $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH).7z: $(OBJECTS)
 
 $(OBJECTDIR)/$(GOPROXY):
 	mkdir -p $(OBJECTDIR)
-	$(GOBUILD) $(GOFLAGS) -o $@ .
+	( cd $(SOURCEDIR) ; \
+	  cp main.go main.go.orig ; \
+	  sed -i "s/@VERSION@/$(VERSION)-$(RELEASE)/g" main.go ; \
+	  $(GOBUILD) $(GOFLAGS) -o $@ . ; \
+	  mv main.go.orig main.go ; \
+	)
