@@ -16,8 +16,12 @@ DISTDIR = $(BUILDDIR)/dist
 
 ifeq ($(GOOS), windows)
 	GOPROXY_STAGEDIR = $(STAGEDIR)
+	GOPROXY_DISTCMD = 7za a -y -t7z
+	GOPROXY_DISTEXT = .7z
 else
 	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
+	GOPROXY_DISTCMD = tar cvpf
+	GOPROXY_DISTEXT = .tar.bz2
 endif
 
 VERSION = $(PRODUCT_VERSION)
@@ -50,19 +54,19 @@ endif
 
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH).7z
+build: $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH)$(GOPROXY_DISTEXT)
 
 .PHONY: clean
 clean:
 	$(RM) -rf $(BUILDDIR)
 
-$(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH).7z: $(OBJECTS)
+$(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH)$(GOPROXY_DISTEXT): $(OBJECTS)
 	( mkdir -p $(DISTDIR) ; \
 	  mkdir -p $(GOPROXY_STAGEDIR)/ ; \
 	  cp $(OBJECTDIR)/$(GOPROXY) $(GOPROXY_STAGEDIR)/$(GOPROXY) ; \
 	  cd $(STAGEDIR) ; \
 	  for f in $(SOURCES) ; do cp $$f $(GOPROXY_STAGEDIR)/ ; done ; \
-	  7za a -y -t7z $@ * \
+	  $(GOPROXY_DISTCMD) $@ * \
 	)
 
 $(OBJECTDIR)/$(GOPROXY):
