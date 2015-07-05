@@ -112,7 +112,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	data := f.AutoProxy2Pac.GeneratePac(req)
 
 	resp := &http.Response{
-		Status:        "200 Proxy authentication required",
+		Status:        "200 OK",
 		StatusCode:    200,
 		Proto:         "HTTP/1.1",
 		ProtoMajor:    1,
@@ -123,6 +123,8 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		ContentLength: int64(len(data)),
 		Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
 	}
+
+	glog.Infof("%s \"AUTOPROXY %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.RequestURI, req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 
 	return ctx, resp, nil
 }

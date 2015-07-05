@@ -113,5 +113,5 @@ func (a *AutoProxy2Pac) GeneratePac(req *http.Request) string {
 		panic(fmt.Errorf("%T(%#v) has a empty template", a, a))
 	}
 
-	return fmt.Sprintf(a.template, "HTTP "+req.URL.Host)
+	return fmt.Sprintf(a.template, "PROXY "+req.URL.Host)
 }
