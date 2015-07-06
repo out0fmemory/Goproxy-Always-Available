@@ -36,6 +36,7 @@ SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(PACKAGE_GOOS), windows)
 	SOURCES += $(REPO)/assets/gui/goagent.exe
+	SOURCES += $(REPO)/assets/startup/addto-startup.js
 	SOURCES += $(REPO)/assets/openssl/openssl.exe
 	SOURCES += $(REPO)/assets/openssl/openssl.cnf
 	SOURCES += $(REPO)/assets/openssl/libcrypto.dll
@@ -49,7 +50,7 @@ else ifeq ($(PACKAGE_GOOS), linux)
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.timer
 else
 	SOURCES += $(REPO)/assets/gui/goagent-gtk.py
-	SOURCES += $(REPO)/assets/init.d/goproxy.sh
+	SOURCES += $(REPO)/assets/startup/goproxy.sh
 endif
 
 GODEPS :=

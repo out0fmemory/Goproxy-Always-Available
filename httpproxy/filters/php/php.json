@@ -1,7 +1,7 @@
 {
 	"fetchservers": [
 		{
-			"url": "http://hkphustk.herokuapp.com/",
+			"url": "http://yourapp.com/",
 			"password": "123456",
 			"sslverify": false
 		}
