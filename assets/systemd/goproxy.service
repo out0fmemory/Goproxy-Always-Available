@@ -5,7 +5,7 @@ Description=goproxy
 Type=simple
 PIDFile=/var/run/goproxy.pid
 ExecStartPre=/bin/rm -rf /var/log/goproxy.*
-ExecStart=/opt/goproxy/goproxy -addr=0.0.0.0:443 -pidfile /var/run/goproxy.pid -v=1 -logtostderr=0 -log_dir=/var/log/
+ExecStart=/opt/goproxy/goproxy -addr=0.0.0.0:8000 -pidfile /var/run/goproxy.pid -v=1 -logtostderr=0 -log_dir=/var/log/
 ExecReload=/bin/kill -HUP $MAINPID
 WorkingDirectory=/opt/goproxy/
 User=root

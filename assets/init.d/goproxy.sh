@@ -24,33 +24,19 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    if [ ! -d /etc/logrotate.d ]; then
-        nohup /usr/bin/env python2.7 proxy.py 2>&1 | grep --line-buffered -v "INFO -" | /usr/bin/logger -t ${PACKAGE_NAME} &
-    else
-        if [ ! -f /etc/logrotate.d/goagent ]; then
-            cat > /etc/logrotate.d/goagent <<EOF
-/var/log/goagent.log {
-    daily
-    rotate 7
-    size=100k
-    compress
-    missingok
-    notifempty
-    nocreate
-    postrotate
-    service goagent restart
-    endscript
-}
-EOF
-        fi
-        nohup /usr/bin/env python2.7 proxy.py 2>&1 | grep --line-buffered -v "INFO -" >> /var/log/goagent.log &
-    fi
+    nohup ./goproxy -v=2 /opt/goproxy/goproxy -addr=0.0.0.0:8000 -pidfile /var/run/goproxy.pid -v=1 -logtostderr=0 -log_dir=/var/log/ &
     echo "${PACKAGE_NAME}."
 }
 
 stop() {
     echo -n "Stopping ${PACKAGE_DESC}: "
-    kill -9 `ps aux | grep 'python2.7 proxy.py' | grep -v grep | awk '{print $2}'` >/dev/null 2>&1 || true
+    kill `cat /var/run/goproxy.pid` >/dev/null 2>&1 || true
+    echo "${PACKAGE_NAME}."
+}
+
+reload() {
+    echo -n "Reloading ${PACKAGE_DESC}: "
+    kill -HUP `cat /var/run/goproxy.pid` >/dev/null 2>&1 || true
     echo "${PACKAGE_NAME}."
 }
 
@@ -62,7 +48,7 @@ restart() {
 
 usage() {
     N=$(basename "$0")
-    echo "Usage: [sudo] $N {start|stop|restart}" >&2
+    echo "Usage: [sudo] $N {start|stop|reload|restart}" >&2
     exit 1
 }
 
@@ -81,8 +67,10 @@ case "$1" in
     stop)
         stop
         ;;
-    #reload)
-    restart | force-reload)
+    reload)
+        reload
+        ;;
+    restart)
         restart
         ;;
     *)

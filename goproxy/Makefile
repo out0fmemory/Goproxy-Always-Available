@@ -46,14 +46,16 @@ ifeq ($(GOOS), windows)
 	SOURCES += $(REPO)/assets/openssl/openssl.cnf
 	SOURCES += $(REPO)/assets/openssl/libcrypto.dll
 	SOURCES += $(REPO)/assets/openssl/libssl.dll
+else ifeq ($(GOOS), darwin)
+	SOURCES += $(REPO)/assets/gui/goagent-osx.command
 else ifeq ($(GOOS), linux)
 	SOURCES += $(REPO)/assets/gui/goagent-gtk.py
 	SOURCES += $(REPO)/assets/systemd/goproxy.service
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.service
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.timer
-	SOURCES += $(REPO)/assets/systemd/goproxy.sh
 else
-	SOURCES +=
+	SOURCES += $(REPO)/assets/gui/goagent-gtk.py
+	SOURCES += $(REPO)/assets/init.d/goproxy.sh
 endif
 
 
