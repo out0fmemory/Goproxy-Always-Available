@@ -20,13 +20,13 @@ ifeq ($(GOOS), windows)
 	GOPROXY_DISTEXT = .7z
 else
 	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
-	GOPROXY_DISTCMD = tar cvpf
+	GOPROXY_DISTCMD = tar cvjpf
 	GOPROXY_DISTEXT = .tar.bz2
 endif
 
 VERSION = $(PRODUCT_VERSION)
 RELEASE = $(shell git rev-list HEAD | wc -l | xargs)
-ARCH := $(shell go version|awk '{print $$NF}'|tr / _)
+ARCH := $(shell go env GOARCH)
 GOPROXY = $(PACKAGE)$(GOEXE)
 
 OBJECTS :=
