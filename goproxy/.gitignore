@@ -1,5 +1,9 @@
 goproxy
 build
+goagent-gtk.desktop
+goagent-gtk.py
+goagent-osx.command
+goagent-logo.png
 *.exe
 *.crt
 *.key
