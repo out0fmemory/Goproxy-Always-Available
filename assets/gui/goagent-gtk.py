@@ -76,13 +76,16 @@ import thread
 import base64
 import platform
 
+if platform.mac_ver()[0] > '10.':
+    sys.exit(os.system('osascript -e \'display dialog "Please run goagent-osx.command instead." buttons {"OK"} default button 1 with icon caution with title "GoAgent GTK"\''))
+
 try:
     import pygtk
     pygtk.require('2.0')
     import gtk
     # gtk.gdk.threads_init()
 except Exception:
-    sys.exit(os.system(u'gdialog --title "GoAgent GTK" --msgbox "Please install python-gtk2" 15 60'.encode(sys.getfilesystemencoding() or sys.getdefaultencoding(), 'replace')))
+    sys.exit(os.system('gdialog --title "GoAgent GTK" --msgbox "Please install python-gtk2" 15 60'))
 try:
     import pynotify
     pynotify.init('GoAgent Notify')
