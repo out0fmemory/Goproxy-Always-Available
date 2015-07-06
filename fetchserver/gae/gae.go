@@ -4,7 +4,8 @@ package gae
 
 import (
 	"bufio"
-	"compress/gzip"
+	"compress/flate"
+	"encoding/binary"
 	"fmt"
 	"io"
 	"net/http"
@@ -46,31 +47,30 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	context := appengine.NewContext(r)
 	context.Infof("Hanlde Request %#v\n", r)
 
-	var rc io.ReadCloser
-	if strings.HasSuffix(r.RequestURI, "/gzip") {
-		rc, err = gzip.NewReader(r.Body)
-		if err != nil {
-			context.Criticalf("gzip.NewReader(%#v) return %#v", r.Body, err)
-		}
-	} else {
-		rc = r.Body
+	var hdrLen uint16
+	if err := binary.Read(r.Body, binary.BigEndian, &hdrLen); err != nil {
+		context.Criticalf("binary.Read(&hdrLen) return %v", err)
 	}
 
-	req, err := http.ReadRequest(bufio.NewReader(rc))
+	req, err := http.ReadRequest(flate.NewReader(io.LimitedReader{r.Body, int64(hdrLen)}))
 	if err != nil {
 		context.Criticalf("http.ReadRequest(%#v) return %#v", rc, err)
 	}
 
-	params := make(map[string]string, 2)
+	req.Body = r.Body
+
+	params := make(map[string]string)
 	paramPrefix := "X-Fetch-"
 	for key, values := range r.Header {
 		if strings.HasPrefix(key, paramPrefix) {
 			params[strings.ToLower(key[len(paramPrefix):])] = values[0]
 		}
 	}
-	for _, key := range params {
-		req.Header.Del(key)
+
+	for key, _ := range params {
+		req.Header.Del(paramPrefix + key)
 	}
+
 	if Password != "" {
 		if password, ok := params["password"]; !ok || password != Password {
 			handlerError(w, "Wrong Password.", 403)
