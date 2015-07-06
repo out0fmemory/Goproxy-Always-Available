@@ -107,7 +107,8 @@ quit
 func GetCommonName(domain string) (host string, err error) {
 	eTLD_1, err := publicsuffix.EffectiveTLDPlusOne(domain)
 	if err != nil {
-		return
+		glog.V(1).Infof("GetCommonName(%s) error: %v", domain, err)
+		return domain, nil
 	}
 
 	prefix := strings.TrimRight(strings.TrimSuffix(domain, eTLD_1), ".")
