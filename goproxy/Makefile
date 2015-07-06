@@ -69,20 +69,16 @@ clean:
 	$(RM) -rf $(BUILDDIR)
 
 $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(GOARCH)$(GOPROXY_DISTEXT): $(OBJECTS)
-	( mkdir -p $(DISTDIR) ; \
-	  mkdir -p $(GOPROXY_STAGEDIR)/ ; \
-	  cp $(OBJECTDIR)/$(PACKAGE)$(GOEXE) $(GOPROXY_STAGEDIR)/$(PACKAGE)$(GOEXE) ; \
-	  cd $(STAGEDIR) ; \
-	  for f in $(SOURCES) ; do cp $$f $(GOPROXY_STAGEDIR)/ ; done ; \
-	  $(GOPROXY_DISTCMD) $@ * \
-	)
+	mkdir -p $(DISTDIR)
+	mkdir -p $(GOPROXY_STAGEDIR)/ && \
+	cp $(OBJECTDIR)/$(PACKAGE)$(GOEXE) $(GOPROXY_STAGEDIR)/$(PACKAGE)$(GOEXE)
+	for f in $(SOURCES) ; do cp $$f $(GOPROXY_STAGEDIR)/ ; done
+	cd $(STAGEDIR) && $(GOPROXY_DISTCMD) $@ *
 
 $(OBJECTDIR)/$(PACKAGE)$(GOEXE):
 	for p in $(GODEPS) ; do go get -v $$p ; done
 	mkdir -p $(OBJECTDIR)
-	( cd $(SOURCEDIR) ; \
-	  cp main.go main.go.orig ; \
-	  sed -i "s/@VERSION@/$(VERSION)-$(RELEASE)/g" main.go ; \
-	  go build -v -o $@ . ; \
-	  mv main.go.orig main.go ; \
-	)
+	cp main.go main.go.orig
+	sed -i "s/@VERSION@/$(VERSION)-$(RELEASE)/g" main.go
+	go build -v -o $@ .
+	mv main.go.orig main.go
