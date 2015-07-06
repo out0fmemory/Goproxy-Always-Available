@@ -1,1 +1,0 @@
-http://git.io/goproxy
