@@ -60,7 +60,7 @@ def message_html(title, banner, detail=''):
     </head>
     <body text=#000000 bgcolor=#ffffff>
     <table border=0 cellpadding=2 cellspacing=0 width=100%>
-    <tr><td bgcolor=#3366cc><font face=arial,sans-serif color=#ffffff><b>Message</b></td></tr>
+    <tr><td bgcolor=#3366cc><font face=arial,sans-serif color=#ffffff /><b>Message</b></td></tr>
     <tr><td> </td></tr></table>
     <blockquote>
     <H1>$banner</H1>
