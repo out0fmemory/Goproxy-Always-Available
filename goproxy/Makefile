@@ -1,4 +1,3 @@
-VERSION = 1.0
 RELEASE = $(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
@@ -63,13 +62,13 @@ GODEPS += github.com/phuslu/http2
 GODEPS += golang.org/x/net/publicsuffix
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(VERSION)-$(RELEASE)$(GOPROXY_DISTEXT)
+build: $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
 
 .PHONY: clean
 clean:
 	$(RM) -rf $(BUILDDIR)
 
-$(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(VERSION)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
+$(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)
 	mkdir -p $(GOPROXY_STAGEDIR)/ && \
 	cp $(OBJECTDIR)/$(GOPROXY_EXE) $(GOPROXY_STAGEDIR)/$(GOPROXY_EXE)
@@ -80,7 +79,7 @@ $(OBJECTDIR)/$(GOPROXY_EXE):
 	for p in $(GODEPS) ; do go get -v $$p ; done
 	mkdir -p $(OBJECTDIR)
 	cp main.go main.go.orig
-	sed -i "s/@VERSION@/$(VERSION)-$(RELEASE)/g" main.go
+	sed -i "s/@VERSION@/$(RELEASE)/g" main.go
 	if type -p gox; then \
 		gox -verbose -os=$(PACKAGE_GOOS) -arch=$(PACKAGE_GOARCH) -output="$(OBJECTDIR)/$(PACKAGE)" ; \
 	else \
