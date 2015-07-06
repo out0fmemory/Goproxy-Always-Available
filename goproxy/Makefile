@@ -58,6 +58,14 @@ else
 	SOURCES += $(REPO)/assets/init.d/goproxy.sh
 endif
 
+GODEPS :=
+GODEPS += github.com/cloudflare/golibs/lrucache
+GODEPS += github.com/golang/glog
+GODEPS += github.com/golang/groupcache
+GODEPS += github.com/juju/ratelimit
+GODEPS += github.com/miekg/dns
+GODEPS += github.com/phuslu/http2
+GODEPS += golang.org/x/net/publicsuffix
 
 .PHONY: build
 build: $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH)$(GOPROXY_DISTEXT)
@@ -76,6 +84,7 @@ $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH)$(GOPROXY_DISTEXT): $(OBJECTS
 	)
 
 $(OBJECTDIR)/$(GOPROXY):
+	for p in $(GODEPS) ; do go get -v $$p ; done
 	mkdir -p $(OBJECTDIR)
 	( cd $(SOURCEDIR) ; \
 	  cp main.go main.go.orig ; \
