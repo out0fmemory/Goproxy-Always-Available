@@ -1,9 +1,5 @@
-PRODUCT_VERSION = 1.0
-
-GOBUILD = go build
-GOFLAGS = -v
-GOEXE = $(shell go env GOEXE)
-GOOS = $(shell go env GOOS)
+VERSION = 1.0
+RELEASE = $(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
@@ -13,6 +9,9 @@ STAGEDIR = $(BUILDDIR)/stage
 OBJECTDIR = $(BUILDDIR)/obj
 DISTDIR = $(BUILDDIR)/dist
 
+GOEXE ?= $(shell go env GOEXE)
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
 
 ifeq ($(GOOS), windows)
 	GOPROXY_STAGEDIR = $(STAGEDIR)
@@ -24,13 +23,8 @@ else
 	GOPROXY_DISTEXT = .tar.bz2
 endif
 
-VERSION = $(PRODUCT_VERSION)
-RELEASE = $(shell git rev-list HEAD | wc -l | xargs)
-ARCH := $(shell go env GOARCH)
-GOPROXY = $(PACKAGE)$(GOEXE)
-
 OBJECTS :=
-OBJECTS += $(OBJECTDIR)/$(GOPROXY)
+OBJECTS += $(OBJECTDIR)/$(PACKAGE)$(GOEXE)
 
 SOURCES :=
 #SOURCES += $(SOURCEDIR)/goproxy.key
@@ -68,27 +62,27 @@ GODEPS += github.com/phuslu/http2
 GODEPS += golang.org/x/net/publicsuffix
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH)$(GOPROXY_DISTEXT)
+build: $(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(GOARCH)$(GOPROXY_DISTEXT)
 
 .PHONY: clean
 clean:
 	$(RM) -rf $(BUILDDIR)
 
-$(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(ARCH)$(GOPROXY_DISTEXT): $(OBJECTS)
+$(DISTDIR)/$(PACKAGE)-$(VERSION)-$(RELEASE)_$(GOARCH)$(GOPROXY_DISTEXT): $(OBJECTS)
 	( mkdir -p $(DISTDIR) ; \
 	  mkdir -p $(GOPROXY_STAGEDIR)/ ; \
-	  cp $(OBJECTDIR)/$(GOPROXY) $(GOPROXY_STAGEDIR)/$(GOPROXY) ; \
+	  cp $(OBJECTDIR)/$(PACKAGE)$(GOEXE) $(GOPROXY_STAGEDIR)/$(PACKAGE)$(GOEXE) ; \
 	  cd $(STAGEDIR) ; \
 	  for f in $(SOURCES) ; do cp $$f $(GOPROXY_STAGEDIR)/ ; done ; \
 	  $(GOPROXY_DISTCMD) $@ * \
 	)
 
-$(OBJECTDIR)/$(GOPROXY):
+$(OBJECTDIR)/$(PACKAGE)$(GOEXE):
 	for p in $(GODEPS) ; do go get -v $$p ; done
 	mkdir -p $(OBJECTDIR)
 	( cd $(SOURCEDIR) ; \
 	  cp main.go main.go.orig ; \
 	  sed -i "s/@VERSION@/$(VERSION)-$(RELEASE)/g" main.go ; \
-	  $(GOBUILD) $(GOFLAGS) -o $@ . ; \
+	  go build -v -o $@ . ; \
 	  mv main.go.orig main.go ; \
 	)
