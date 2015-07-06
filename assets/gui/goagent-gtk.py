@@ -82,7 +82,7 @@ try:
     import gtk
     # gtk.gdk.threads_init()
 except Exception:
-    sys.exit(os.system(u'gdialog --title "GoAgent GTK" --msgbox "\u8bf7\u5b89\u88c5 python-gtk2" 15 60'.encode(sys.getfilesystemencoding() or sys.getdefaultencoding(), 'replace')))
+    sys.exit(os.system(u'gdialog --title "GoAgent GTK" --msgbox "Please install python-gtk2" 15 60'.encode(sys.getfilesystemencoding() or sys.getdefaultencoding(), 'replace')))
 try:
     import pynotify
     pynotify.init('GoAgent Notify')
@@ -95,7 +95,7 @@ except ImportError:
 try:
     import vte
 except ImportError:
-    sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, u'请安装 python-vte').run())
+    sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, u'Please install python-vte').run())
 
 
 def spawn_later(seconds, target, *args, **kwargs):
@@ -116,26 +116,19 @@ Type=Application
 Name=GoAgent GTK
 Comment=GoAgent GTK Launcher
 Categories=Network;Proxy;
-Exec=/usr/bin/env python "%s"
+Exec=/usr/bin/env python2 "%s"
 Icon=%s/goagent-logo.png
 Terminal=false
 StartupNotify=true
 ''' % (filename, dirname)
-    for dirname in map(os.path.expanduser, ['~/Desktop', u'~/桌面']):
-        if os.path.isdir(dirname):
-            filename = os.path.join(dirname, 'goagent-gtk.desktop')
-            with open(filename, 'w') as fp:
-                fp.write(DESKTOP_FILE)
-            os.chmod(filename, 0755)
+    filename1 = os.path.join(dirname, 'goagent-gtk.desktop')
+    with open(filename1, 'w') as fp:
+        fp.write(DESKTOP_FILE)
+        os.chmod(filename1, 0755)
 
 
 def should_visible():
-    import ConfigParser
-    ConfigParser.RawConfigParser.OPTCRE = re.compile(r'(?P<option>[^=\s][^=]*)\s*(?P<vi>[=])\s*(?P<value>.*)$')
-    config = ConfigParser.ConfigParser()
-    config.read(['proxy.ini', 'proxy.user.ini'])
-    visible = config.has_option('listen', 'visible') and config.getint('listen', 'visible')
-    return visible
+    return False
 
 #gtk.main_quit = lambda: None
 #appindicator = None
@@ -143,9 +136,9 @@ def should_visible():
 
 class GoAgentGTK:
 
-    command = ['/usr/bin/env', 'python', 'proxy.py']
-    message = u'GoAgent已经启动，单击托盘图标可以最小化'
-    fail_message = u'GoAgent启动失败，请查看控制台窗口的错误信息。'
+    command = [os.path.join(os.path.dirname(os.path.abspath(__file__)), 'goproxy'), '-v=2']
+    message = u'GoAgent already started.'
+    fail_message = u'GoAgent start failed, refer to terminal for details'
 
     def __init__(self, window, terminal):
         self.window = window
@@ -153,11 +146,6 @@ class GoAgentGTK:
         self.window.set_position(gtk.WIN_POS_CENTER)
         self.window.connect('delete-event',self.delete_event)
         self.terminal = terminal
-
-        for cmd in ('python2.7', 'python27', 'python2'):
-            if os.system('which %s' % cmd) == 0:
-                self.command[1] = cmd
-                break
 
         self.window.add(terminal)
         self.childpid = self.terminal.fork_command(self.command[0], self.command, os.getcwd())
@@ -194,11 +182,11 @@ class GoAgentGTK:
 
     def make_menu(self):
         menu = gtk.Menu()
-        itemlist = [(u'\u663e\u793a', self.on_show),
-                    (u'\u9690\u85cf', self.on_hide),
-                    (u'\u505c\u6b62', self.on_stop),
-                    (u'\u91cd\u65b0\u8f7d\u5165', self.on_reload),
-                    (u'\u9000\u51fa', self.on_quit)]
+        itemlist = [(u'Show', self.on_show),
+                    (u'Hide', self.on_hide),
+                    (u'Stop', self.on_stop),
+                    (u'Restart', self.on_reload),
+                    (u'Quit', self.on_quit)]
         for text, callback in itemlist:
             item = gtk.MenuItem(text)
             item.connect('activate', callback)
@@ -264,7 +252,6 @@ class GoAgentGTK:
 
     def delete_event(self, widget, data=None):
         self.on_hide(widget, data)
-        # 默认最小化至托盘
         return True
 
     def on_quit(self, widget, data=None):
