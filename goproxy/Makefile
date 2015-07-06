@@ -1,4 +1,4 @@
-RELEASE = $(shell git rev-list HEAD | wc -l | xargs)
+RELEASE = r$(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
