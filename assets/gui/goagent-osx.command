@@ -1,4 +1,4 @@
-(/usr/bin/env python2.6 -x "$0" 2>&1 >/dev/null &);exit
+(exec /usr/bin/env python2.7 -x "$0" 2>&1 >/dev/null &);exit
 # coding:utf-8
 # Contributor:
 #      Phus Lu        <phuslu@hotmail.com>
@@ -115,10 +115,7 @@ class GoAgentOSX(NSObject):
         nc.addObserver_selector_name_object_(self, 'exit:', NSWorkspaceWillPowerOffNotification, None)
 
     def startGoAgent(self):
-        for pycmd in ('python2.7', 'python2', 'python'):
-            if os.system('which %s' % pycmd) == 0:
-                cmd = '/usr/bin/env %s proxy.py' % pycmd
-                break
+        cmd = '%s/goproxy -v=2' % os.path.dirname(os.path.abspath(__file__))
         self.master, self.slave = pty.openpty()
         self.pipe = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=self.slave, stderr=self.slave, close_fds=True)
         self.pipe_fd = os.fdopen(self.master)
@@ -141,7 +138,6 @@ class GoAgentOSX(NSObject):
         return line
 
     def refreshDisplay_(self, line):
-        #print line
         line = self.parseLine(line)
         console_line = NSMutableAttributedString.alloc().initWithString_(line)
         console_line.addAttribute_value_range_(NSForegroundColorAttributeName, self.console_color, NSMakeRange(0,len(line)))
