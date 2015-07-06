@@ -41,15 +41,19 @@ SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(GOOS), windows)
-	SOURCES += $(REPO)/assets/goagent/goagent.exe
+	SOURCES += $(REPO)/assets/gui/goagent.exe
 	SOURCES += $(REPO)/assets/openssl/openssl.exe
 	SOURCES += $(REPO)/assets/openssl/openssl.cnf
 	SOURCES += $(REPO)/assets/openssl/libcrypto.dll
 	SOURCES += $(REPO)/assets/openssl/libssl.dll
-else
+else ifeq ($(GOOS), linux)
+	SOURCES += $(REPO)/assets/gui/goagent-gtk.py
 	SOURCES += $(REPO)/assets/systemd/goproxy.service
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.service
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.timer
+	SOURCES += $(REPO)/assets/systemd/goproxy.sh
+else
+	SOURCES +=
 endif
 
 
