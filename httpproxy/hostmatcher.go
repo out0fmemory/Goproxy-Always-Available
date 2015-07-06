@@ -6,8 +6,9 @@ import (
 )
 
 type HostMatcher struct {
-	list1 map[string]struct{}
-	list2 []string
+	matchAll bool
+	list1    map[string]struct{}
+	list2    []string
 }
 
 func NewHostMatcher(rules []string) *HostMatcher {
@@ -17,10 +18,13 @@ func NewHostMatcher(rules []string) *HostMatcher {
 	}
 
 	for _, s := range rules {
-		if !strings.Contains(s, "*") {
-			sm.list1[s] = struct{}{}
-		} else {
+		switch {
+		case s == "*":
+			sm.matchAll = true
+		case strings.Contains(s, "*"):
 			sm.list2 = append(sm.list2, s)
+		default:
+			sm.list1[s] = struct{}{}
 		}
 	}
 
@@ -28,6 +32,10 @@ func NewHostMatcher(rules []string) *HostMatcher {
 }
 
 func (sm *HostMatcher) Match(host string) bool {
+	if sm.matchAll {
+		return true
+	}
+
 	if _, ok := sm.list1[host]; ok {
 		return true
 	}

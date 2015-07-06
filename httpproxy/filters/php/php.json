@@ -7,7 +7,7 @@
 		}
 	],
 	"sites": [
-		"*.org"
+		"*"
 	],
 	"transport": "direct"
 }
