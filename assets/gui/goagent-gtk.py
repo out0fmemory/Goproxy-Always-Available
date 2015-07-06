@@ -185,7 +185,7 @@ class GoAgentGTK:
         itemlist = [(u'Show', self.on_show),
                     (u'Hide', self.on_hide),
                     (u'Stop', self.on_stop),
-                    (u'Restart', self.on_reload),
+                    (u'Reload', self.on_reload),
                     (u'Quit', self.on_quit)]
         for text, callback in itemlist:
             item = gtk.MenuItem(text)
