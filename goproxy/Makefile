@@ -69,6 +69,10 @@ build: $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPRO
 clean:
 	$(RM) -rf $(BUILDDIR)
 
+.PHONY: release
+release:
+	ssh phuslu@vps.phus.tk sh /home/phuslu/goproxy-release.sh
+
 $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)
 	mkdir -p $(GOPROXY_STAGEDIR)/ && \
