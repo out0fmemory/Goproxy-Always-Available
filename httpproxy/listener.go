@@ -51,15 +51,21 @@ type listener struct {
 
 type conn struct {
 	net.Conn
-	wg *sync.WaitGroup
+	wg     *sync.WaitGroup
+	mu     *sync.Mutex
+	closed bool
 }
 
 func (c *conn) Close() error {
-	err := c.Conn.Close()
-	if err == nil {
-		c.wg.Done()
+	if c.closed {
+		return nil
 	}
-	return err
+
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.wg.Done()
+	c.closed = true
+	return c.Conn.Close()
 }
 
 type ListenOptions struct {
@@ -220,7 +226,7 @@ func (l *listener) Accept() (c net.Conn, err error) {
 	}
 
 	l.wg.Add(1)
-	return &conn{r.conn, l.wg}, nil
+	return &conn{r.conn, l.wg, new(sync.Mutex), false}, nil
 }
 
 func (l *listener) Close() error {
