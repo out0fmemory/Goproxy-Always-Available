@@ -9,7 +9,7 @@
 		"DisableKeepAlives": true,
 		"DisableCompression": false,
 		"TLSHandshakeTimeout": 8,
-		"MaxIdleConnsPerHost": 0
+		"MaxIdleConnsPerHost": -1
 	},
 	"hosts": {
 		"dl.google.com": "google_cn",

@@ -169,7 +169,7 @@ func (d *Dialer) Dial(network, address string) (net.Conn, error) {
 		if host, port, err := net.SplitHostPort(address); err == nil {
 			if alias := d.hosts.Lookup(host); alias != "" {
 				if hosts, err := d.iplist.Lookup(alias); err == nil {
-					return d.DialMulti(network, hosts, port)
+					return d.dialMulti(network, hosts, port)
 				}
 			}
 		}
@@ -185,7 +185,7 @@ func (d *Dialer) DialTLS(network, address string) (net.Conn, error) {
 		if host, port, err := net.SplitHostPort(address); err == nil {
 			if alias := d.hosts.Lookup(host); alias != "" {
 				if ips, err := d.iplist.Lookup(alias); err == nil {
-					return d.DialMultiTLS(network, ips, port)
+					return d.dialMultiTLS(network, ips, port)
 				}
 			}
 		}
@@ -195,7 +195,7 @@ func (d *Dialer) DialTLS(network, address string) (net.Conn, error) {
 	return tls.DialWithDialer(&d.Dialer, network, address, d.TLSConfig)
 }
 
-func (d *Dialer) DialMulti(network string, hosts []string, port string) (net.Conn, error) {
+func (d *Dialer) dialMulti(network string, hosts []string, port string) (net.Conn, error) {
 	type racer struct {
 		conn net.Conn
 		err  error
@@ -210,11 +210,15 @@ func (d *Dialer) DialMulti(network string, hosts []string, port string) (net.Con
 
 	lane := make(chan racer, length)
 
-	for _, h := range hosts {
+	for _, h := range hosts[:length] {
 		go func(h string, c chan<- racer) {
-			addr := net.JoinHostPort(h, port)
-			conn, err := d.Dialer.Dial(network, addr)
-			c <- racer{conn, err}
+			raddr, err := net.ResolveTCPAddr(network, net.JoinHostPort(h, port))
+			if err != nil {
+				lane <- racer{nil, err}
+				return
+			}
+			conn, err := net.DialTCP(network, nil, raddr)
+			lane <- racer{conn, err}
 		}(h, lane)
 	}
 
@@ -224,20 +228,20 @@ func (d *Dialer) DialMulti(network string, hosts []string, port string) (net.Con
 		if r.err == nil {
 			go func(count int) {
 				var r1 racer
-				for i := 0; i < count; i++ {
+				for ; count > 0; count-- {
 					r1 = <-lane
-					if r1.err == nil {
+					if r1.conn != nil {
 						r1.conn.Close()
 					}
 				}
-			}(length - i - 1)
+			}(length - 1 - i)
 			return r.conn, nil
 		}
 	}
 	return nil, r.err
 }
 
-func (d *Dialer) DialMultiTLS(network string, hosts []string, port string) (net.Conn, error) {
+func (d *Dialer) dialMultiTLS(network string, hosts []string, port string) (net.Conn, error) {
 	type racer struct {
 		conn net.Conn
 		err  error
@@ -252,7 +256,7 @@ func (d *Dialer) DialMultiTLS(network string, hosts []string, port string) (net.
 
 	lane := make(chan racer, length)
 
-	for _, h := range hosts {
+	for _, h := range hosts[:length] {
 		go func(h string, c chan<- racer) {
 			config := d.TLSConfig
 			if config == nil {
@@ -265,9 +269,20 @@ func (d *Dialer) DialMultiTLS(network string, hosts []string, port string) (net.
 				c.ServerName = h
 				config = &c
 			}
-			addr := net.JoinHostPort(h, port)
-			conn, err := tls.DialWithDialer(&d.Dialer, network, addr, config)
-			lane <- racer{conn, err}
+			raddr, err := net.ResolveTCPAddr(network, net.JoinHostPort(h, port))
+			if err != nil {
+				lane <- racer{nil, err}
+				return
+			}
+			conn, err := net.DialTCP(network, nil, raddr)
+			if err != nil {
+				lane <- racer{conn, err}
+				return
+			}
+
+			tlsConn := tls.Client(conn, config)
+			err = tlsConn.Handshake()
+			lane <- racer{tlsConn, err}
 		}(h, lane)
 	}
 
@@ -277,13 +292,13 @@ func (d *Dialer) DialMultiTLS(network string, hosts []string, port string) (net.
 		if r.err == nil {
 			go func(count int) {
 				var r1 racer
-				for i := 0; i < count; i++ {
+				for ; count > 0; count-- {
 					r1 = <-lane
-					if r1.err == nil {
+					if r1.conn != nil {
 						r1.conn.Close()
 					}
 				}
-			}(length - i - 1)
+			}(length - 1 - i)
 			return r.conn, nil
 		}
 	}

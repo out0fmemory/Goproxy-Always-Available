@@ -75,15 +75,18 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		return nil, err
 	}
 
+	d.TLSConfig = &tls.Config{
+		InsecureSkipVerify: true,
+	}
+
 	return &Filter{
 		transport: &http.Transport{
-			Dial: d.Dial,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: false,
-			},
+			Dial:                d.Dial,
+			DialTLS:             d.DialTLS,
+			DisableKeepAlives:   config.Transport.DisableKeepAlives,
+			DisableCompression:  config.Transport.DisableCompression,
 			TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 			MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
-			DisableCompression:  config.Transport.DisableCompression,
 		},
 		dialer: d,
 	}, nil
