@@ -128,7 +128,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	cert, err := f.issue(req.Host)
 	if err != nil {
-		return ctx, nil, fmt.Errorf("tls.LoadX509KeyPair failed: %s", err)
+		return ctx, nil, err
 	}
 
 	tlsConfig := &tls.Config{
@@ -138,7 +138,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	tlsConn := tls.Server(conn, tlsConfig)
 
 	if err := tlsConn.Handshake(); err != nil {
-		return ctx, nil, fmt.Errorf("tlsConn.Handshake error: %v", err)
+		return ctx, nil, err
 	}
 
 	if ln1, ok := ctx.GetListener().(httpproxy.Listener); ok {
@@ -149,7 +149,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	loConn, err := net.Dial("tcp", ctx.GetListener().Addr().String())
 	if err != nil {
-		return ctx, nil, fmt.Errorf("net.Dial failed: %v", err)
+		return ctx, nil, err
 	}
 
 	go httpproxy.IoCopy(loConn, tlsConn)

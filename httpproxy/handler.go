@@ -1,6 +1,7 @@
 package httpproxy
 
 import (
+	"io"
 	"net/http"
 
 	"./filters"
@@ -18,6 +19,8 @@ type Handler struct {
 
 func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
+
+	remoteAddr := req.RemoteAddr
 
 	// Prepare filter.Context
 	ctx := filters.NewContext(h.Listener, rw, req)
@@ -45,7 +48,9 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 		if err != nil {
-			glog.Errorf("ServeHTTP %#v error: %v", f, err)
+			if err != io.EOF {
+				glog.Errorf("%s Filter Request %T(%v) error: %v", remoteAddr, f, f, err)
+			}
 			return
 		}
 	}
@@ -60,7 +65,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		// Unexcepted errors
 		if err != nil {
-			glog.Errorf("ServeHTTP %#v error: %v", f, err)
+			glog.Errorf("%s Filter RoundTrip %T(%v) error: %v", remoteAddr, f, f, err)
 			return
 		}
 		// A roundtrip filter give a response
@@ -77,7 +82,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		ctx, resp, err = f.Response(ctx, resp)
 		if err != nil {
-			glog.Errorf("ServeHTTP %#v error: %v", f, err)
+			glog.Errorf("%s Filter Response %T(%v) error: %v", remoteAddr, f, f, err)
 			return
 		}
 	}
