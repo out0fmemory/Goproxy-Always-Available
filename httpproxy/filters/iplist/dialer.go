@@ -239,10 +239,11 @@ func (d *Dialer) DialTLS(network, address string) (net.Conn, error) {
 						InsecureSkipVerify: true,
 						ServerName:         address,
 					}
-					if strings.Contains(address, ".google") || strings.HasSuffix(address, ".appspot.com") {
+					if strings.Contains(address, ".google") || strings.Contains(address, ".appspot.com") {
 						config.ServerName = "www.bing.com"
 						config.CipherSuites = []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA}
 					}
+					// glog.V(2).Infof("dialMultiTLS(%#v, %#v) with %#v for %#v", ips, port, config, address)
 					return d.dialMultiTLS(network, ips, port, config)
 				}
 			}
