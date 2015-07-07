@@ -27,16 +27,21 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	// Enable transport http proxy
 	if req.Method != "CONNECT" && !req.URL.IsAbs() {
-		if req.TLS != nil {
-			req.URL.Scheme = "https"
+		if req.URL.Scheme == "" {
+			if req.TLS != nil && req.ProtoMajor == 1 {
+				req.URL.Scheme = "https"
+			} else {
+				req.URL.Scheme = "http"
+			}
+		}
+		if req.URL.Host == "" {
 			if req.Host != "" {
 				req.URL.Host = req.Host
 			} else {
-				req.URL.Host = req.TLS.ServerName
+				if req.TLS != nil {
+					req.URL.Host = req.TLS.ServerName
+				}
 			}
-		} else {
-			req.URL.Scheme = "http"
-			req.URL.Host = req.Host
 		}
 	}
 

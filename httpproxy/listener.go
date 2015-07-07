@@ -36,7 +36,6 @@ type Listener interface {
 type racer struct {
 	conn net.Conn
 	err  error
-	ref  bool
 }
 
 type listener struct {
@@ -46,26 +45,6 @@ type listener struct {
 	stopped         bool
 	once            *sync.Once
 	mu              *sync.Mutex
-	wg              *sync.WaitGroup
-}
-
-type conn struct {
-	net.Conn
-	wg     *sync.WaitGroup
-	mu     *sync.Mutex
-	closed bool
-}
-
-func (c *conn) Close() error {
-	if c.closed {
-		return nil
-	}
-
-	c.mu.Lock()
-	defer c.mu.Unlock()
-	c.wg.Done()
-	c.closed = true
-	return c.Conn.Close()
 }
 
 type ListenOptions struct {
@@ -105,7 +84,6 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 			keepAlivePeriod: keepAlivePeriod,
 			once:            new(sync.Once),
 			mu:              new(sync.Mutex),
-			wg:              new(sync.WaitGroup),
 		}
 
 		go l.startListen()
@@ -145,7 +123,6 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 			keepAlivePeriod: keepAlivePeriod,
 			once:            new(sync.Once),
 			mu:              new(sync.Mutex),
-			wg:              new(sync.WaitGroup),
 		}
 
 		go l.startListen()
@@ -188,7 +165,7 @@ func (l *listener) startListen() {
 	var tempDelay time.Duration
 	for {
 		conn, err := l.ln.Accept()
-		l.lane <- racer{conn, err, true}
+		l.lane <- racer{conn, err}
 		if err != nil {
 			if ne, ok := err.(net.Error); ok && ne.Temporary() {
 				if tempDelay == 0 {
@@ -221,12 +198,7 @@ func (l *listener) Accept() (c net.Conn, err error) {
 		}
 	}
 
-	if tc, ok := r.conn.(*tls.Conn); ok && !r.ref {
-		return tc, nil
-	}
-
-	l.wg.Add(1)
-	return &conn{r.conn, l.wg, new(sync.Mutex), false}, nil
+	return r.conn, nil
 }
 
 func (l *listener) Close() error {
@@ -259,11 +231,11 @@ func (l *listener) Add(conn net.Conn) error {
 		return fmt.Errorf("%#v already closed", l)
 	}
 
-	l.lane <- racer{conn, nil, false}
+	l.lane <- racer{conn, nil}
 
 	return nil
 }
 
 func (l *listener) Wait() {
-	l.wg.Wait()
+	time.Sleep(2 * time.Minute)
 }
