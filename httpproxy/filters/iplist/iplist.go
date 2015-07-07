@@ -70,13 +70,25 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		return nil, err
 	}
 
-	d.iplist, err = NewIplist(config.Iplist, config.DNS.Blacklist, d.DualStack)
+	d.iplist, err = NewIplist(config.Iplist, config.DNS.Servers, config.DNS.Blacklist, d.DualStack)
 	if err != nil {
 		return nil, err
 	}
 
 	d.TLSConfig = &tls.Config{
 		InsecureSkipVerify: true,
+	}
+
+	if _, ok := config.Iplist["google_hk"]; ok {
+		go func(name string) {
+			t := time.Tick(3 * time.Minute)
+			for {
+				select {
+				case <-t:
+					d.iplist.ExpandList(name)
+				}
+			}
+		}("google_hk")
 	}
 
 	return &Filter{

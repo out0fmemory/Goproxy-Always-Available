@@ -2,9 +2,11 @@ package iplist
 
 import (
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"math/rand"
 	"net"
+	"regexp"
 	"strings"
 	"time"
 
@@ -16,24 +18,26 @@ import (
 )
 
 type Iplist struct {
-	lists     map[string][]string
-	blacklist *httpproxy.HostMatcher
-	dnsCache  lrucache.Cache
-	dualStack bool
+	lists      map[string][]string
+	dnsservers []string
+	blacklist  *httpproxy.HostMatcher
+	dnsCache   lrucache.Cache
+	dualStack  bool
 }
 
-func NewIplist(lists map[string][]string, blacklist []string, dualStack bool) (*Iplist, error) {
+func NewIplist(lists map[string][]string, dnsservers []string, blacklist []string, dualStack bool) (*Iplist, error) {
 	iplist := &Iplist{
-		lists:     lists,
-		blacklist: httpproxy.NewHostMatcher(blacklist),
-		dnsCache:  lrucache.NewMultiLRUCache(4, 10240),
-		dualStack: dualStack,
+		lists:      lists,
+		dnsservers: dnsservers,
+		blacklist:  httpproxy.NewHostMatcher(blacklist),
+		dnsCache:   lrucache.NewMultiLRUCache(4, 10240),
+		dualStack:  dualStack,
 	}
 
 	return iplist, nil
 }
 
-func (i *Iplist) lookupOne(name string) (hosts []string, err error) {
+func (i *Iplist) lookupHost(name string) (hosts []string, err error) {
 	hs, err := net.LookupHost(name)
 	if err != nil {
 		return hs, err
@@ -52,25 +56,25 @@ func (i *Iplist) lookupOne(name string) (hosts []string, err error) {
 	return hosts, nil
 }
 
-func (i *Iplist) lookupOneRemote(name string, dnsserver string) (hosts []string, err error) {
-	c := new(dns.Client)
-	m := new(dns.Msg)
-	m.SetQuestion(name+".", dns.TypeA)
+func (i *Iplist) lookupHost2(name string, dnsserver string) (hosts []string, err error) {
+	m := &dns.Msg{}
+	m.SetQuestion(dns.Fqdn(name), dns.TypeA)
 
-	r, _, err := c.Exchange(m, net.JoinHostPort(dnsserver, "53"))
+	r, err := dns.Exchange(m, dnsserver+":53")
 	if err != nil {
 		return nil, err
 	}
 
-	if r.Rcode != dns.RcodeSuccess {
-		return nil, fmt.Errorf("lookupOneRemote(%#v, %#v) return %#v", name, dnsserver, r.Rcode)
+	if len(r.Answer) < 1 {
+		return nil, errors.New("no Answer")
 	}
 
-	hosts = make([]string, 0)
-	for _, a := range r.Answer {
-		h := a.String()
-		if !i.blacklist.Match(h) {
-			hosts = append(hosts, h)
+	hosts = []string{}
+
+	for _, rr := range r.Answer {
+		if a, ok := rr.(*dns.A); ok {
+			ip := a.A.String()
+			hosts = append(hosts, ip)
 		}
 	}
 
@@ -90,10 +94,9 @@ func (i *Iplist) Lookup(name string) (hosts []string, err error) {
 		if hs0, ok := i.dnsCache.Get(addr); ok {
 			hs = hs0.([]string)
 		} else {
-			hs, err = i.lookupOne(addr)
-			// hs, err = i.lookupOneRemote(addr, "114.114.114.114")
+			hs, err = i.lookupHost(addr)
 			if err != nil {
-				glog.Warningf("net.ResolveIPAddr(\"tcp\", %#v) error: %s", addr, err)
+				glog.Warningf("lookupHost(%#v) error: %s", addr, err)
 				continue
 			}
 			glog.V(2).Infof("Lookup(%#v) return %v", addr, hs)
@@ -114,6 +117,53 @@ func (i *Iplist) Lookup(name string) (hosts []string, err error) {
 	}
 
 	return hosts, nil
+}
+
+func (i *Iplist) ExpandList(name string) error {
+	list, ok := i.lists[name]
+	if !ok {
+		return fmt.Errorf("iplist %#v not exists", name)
+	}
+
+	expire := time.Now().Add(24 * time.Hour)
+	for _, addr := range list {
+		if regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`).MatchString(addr) {
+			continue
+		}
+
+		hostSet := make(map[string]struct{}, 0)
+		for _, ds := range i.dnsservers {
+			hs, err := i.lookupHost2(addr, ds)
+			if err != nil {
+				glog.V(2).Infof("lookupHost2(%#v) error: %s", addr, err)
+				continue
+			}
+			glog.V(2).Infof("ExpandList(%#v) %#v return %v", addr, ds, hs)
+			for _, h := range hs {
+				hostSet[h] = struct{}{}
+			}
+		}
+
+		if len(hostSet) == 0 {
+			continue
+		}
+
+		if hs, ok := i.dnsCache.Get(addr); ok {
+			hs1 := hs.([]string)
+			for _, h := range hs1 {
+				hostSet[h] = struct{}{}
+			}
+		}
+
+		hosts := make([]string, 0)
+		for h, _ := range hostSet {
+			hosts = append(hosts, h)
+		}
+
+		i.dnsCache.Set(addr, hosts, expire)
+	}
+
+	return nil
 }
 
 type Hosts struct {
