@@ -116,13 +116,11 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	conn, _, err := hijacker.Hijack()
 	if err != nil {
-		defer conn.Close()
 		return ctx, nil, fmt.Errorf("http.ResponseWriter Hijack failed: %s", err)
 	}
 
 	_, err = io.WriteString(conn, "HTTP/1.1 200 OK\r\n\r\n")
 	if err != nil {
-		defer conn.Close()
 		return ctx, nil, err
 	}
 
@@ -130,7 +128,6 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	cert, err := f.issue(req.Host)
 	if err != nil {
-		defer conn.Close()
 		return ctx, nil, fmt.Errorf("tls.LoadX509KeyPair failed: %s", err)
 	}
 
@@ -141,7 +138,6 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	tlsConn := tls.Server(conn, tlsConfig)
 
 	if err := tlsConn.Handshake(); err != nil {
-		defer tlsConn.Close()
 		return ctx, nil, fmt.Errorf("tlsConn.Handshake error: %v", err)
 	}
 
@@ -153,7 +149,6 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	loConn, err := net.Dial("tcp", ctx.GetListener().Addr().String())
 	if err != nil {
-		defer tlsConn.Close()
 		return ctx, nil, fmt.Errorf("net.Dial failed: %v", err)
 	}
 
