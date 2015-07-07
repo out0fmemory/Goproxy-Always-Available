@@ -185,7 +185,15 @@ func (d *Dialer) DialTLS(network, address string) (net.Conn, error) {
 		if host, port, err := net.SplitHostPort(address); err == nil {
 			if alias := d.hosts.Lookup(host); alias != "" {
 				if ips, err := d.iplist.Lookup(alias); err == nil {
-					return d.dialMultiTLS(network, ips, port)
+					config := &tls.Config{
+						InsecureSkipVerify: true,
+						ServerName:         address,
+					}
+					if strings.Contains(address, ".google") || strings.HasSuffix(address, ".appspot.com") {
+						config.ServerName = "www.bing.com"
+						config.CipherSuites = []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA}
+					}
+					return d.dialMultiTLS(network, ips, port, config)
 				}
 			}
 		}
@@ -241,7 +249,7 @@ func (d *Dialer) dialMulti(network string, hosts []string, port string) (net.Con
 	return nil, r.err
 }
 
-func (d *Dialer) dialMultiTLS(network string, hosts []string, port string) (net.Conn, error) {
+func (d *Dialer) dialMultiTLS(network string, hosts []string, port string, config *tls.Config) (net.Conn, error) {
 	type racer struct {
 		conn net.Conn
 		err  error
@@ -258,17 +266,6 @@ func (d *Dialer) dialMultiTLS(network string, hosts []string, port string) (net.
 
 	for _, h := range hosts[:length] {
 		go func(h string, c chan<- racer) {
-			config := d.TLSConfig
-			if config == nil {
-				config = &tls.Config{
-					InsecureSkipVerify: true,
-				}
-			}
-			if config.ServerName == "" {
-				c := *config
-				c.ServerName = h
-				config = &c
-			}
 			raddr, err := net.ResolveTCPAddr(network, net.JoinHostPort(h, port))
 			if err != nil {
 				lane <- racer{nil, err}
@@ -278,6 +275,17 @@ func (d *Dialer) dialMultiTLS(network string, hosts []string, port string) (net.
 			if err != nil {
 				lane <- racer{conn, err}
 				return
+			}
+
+			if config == nil {
+				config = &tls.Config{
+					InsecureSkipVerify: true,
+				}
+			}
+			if config.ServerName == "" {
+				c := *config
+				c.ServerName = h
+				config = &c
 			}
 
 			tlsConn := tls.Client(conn, config)
