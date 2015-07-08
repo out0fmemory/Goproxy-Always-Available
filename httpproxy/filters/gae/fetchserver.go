@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"strings"
 
 	"../../../httpproxy"
 )
@@ -97,6 +98,26 @@ func (f *FetchServer) decodeResponse(resp *http.Response) (resp1 *http.Response,
 	resp1, err = http.ReadResponse(bufio.NewReader(flate.NewReader(bytes.NewReader(hdrBuf))), resp.Request)
 	if err != nil {
 		return
+	}
+
+	const cookieKey string = "Set-Cookie"
+	if cookie := resp1.Header.Get(cookieKey); cookie != "" {
+		parts := strings.Split(cookie, ", ")
+
+		parts1 := make([]string, 0)
+		for i := 0; i < len(parts); i++ {
+			c := parts[i]
+			if i == 0 || strings.Contains(strings.Split(c, ";")[0], "=") {
+				parts1 = append(parts1, c)
+			} else {
+				parts1[len(parts1)-1] = parts1[len(parts1)-1] + ", " + c
+			}
+		}
+
+		resp1.Header.Del(cookieKey)
+		for i := 0; i < len(parts1); i++ {
+			resp1.Header.Add(cookieKey, parts1[i])
+		}
 	}
 
 	data, _ := ioutil.ReadAll(resp.Body)
