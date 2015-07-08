@@ -271,12 +271,7 @@ func (d *Dialer) dialMulti(network string, hosts []string, port string) (net.Con
 
 	for _, h := range hosts[:length] {
 		go func(h string, c chan<- racer) {
-			raddr, err := net.ResolveTCPAddr(network, net.JoinHostPort(h, port))
-			if err != nil {
-				lane <- racer{nil, err}
-				return
-			}
-			conn, err := net.DialTCP(network, nil, raddr)
+			conn, err := d.Dialer.Dial(network, net.JoinHostPort(h, port))
 			lane <- racer{conn, err}
 		}(h, lane)
 	}
@@ -317,12 +312,7 @@ func (d *Dialer) dialMultiTLS(network string, hosts []string, port string, confi
 
 	for _, h := range hosts[:length] {
 		go func(h string, c chan<- racer) {
-			raddr, err := net.ResolveTCPAddr(network, net.JoinHostPort(h, port))
-			if err != nil {
-				lane <- racer{nil, err}
-				return
-			}
-			conn, err := net.DialTCP(network, nil, raddr)
+			conn, err := d.Dialer.Dial(network, net.JoinHostPort(h, port))
 			if err != nil {
 				lane <- racer{conn, err}
 				return
