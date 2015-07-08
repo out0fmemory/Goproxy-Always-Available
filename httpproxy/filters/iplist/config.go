@@ -2,7 +2,6 @@ package iplist
 
 import (
 	"encoding/json"
-	"io/ioutil"
 
 	"../../../storage"
 )
@@ -24,6 +23,7 @@ type Config struct {
 	Iplist map[string][]string
 	DNS    struct {
 		Servers   []string
+		Expand    []string
 		Blacklist []string
 	}
 }
@@ -42,7 +42,7 @@ func NewConfig(uri, path string) (*Config, error) {
 	rc := object.Body()
 	defer rc.Close()
 
-	data, err := ioutil.ReadAll(rc)
+	data, err := storage.ReadJson(rc)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,6 @@ package php
 
 import (
 	"encoding/json"
-	"io/ioutil"
 
 	"../../../storage"
 )
@@ -31,7 +30,7 @@ func NewConfig(uri, path string) (*Config, error) {
 	rc := object.Body()
 	defer rc.Close()
 
-	data, err := ioutil.ReadAll(rc)
+	data, err := storage.ReadJson(rc)
 	if err != nil {
 		return nil, err
 	}
