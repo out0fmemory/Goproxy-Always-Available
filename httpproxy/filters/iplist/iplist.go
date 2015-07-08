@@ -79,16 +79,18 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		InsecureSkipVerify: true,
 	}
 
-	if _, ok := config.Iplist["google_hk"]; ok {
-		go func(name string) {
-			t := time.Tick(3 * time.Minute)
-			for {
-				select {
-				case <-t:
-					d.iplist.ExpandList(name)
+	for _, name := range config.DNS.Expand {
+		if _, ok := config.Iplist[name]; ok {
+			go func(name string) {
+				t := time.Tick(3 * time.Minute)
+				for {
+					select {
+					case <-t:
+						d.iplist.ExpandList(name)
+					}
 				}
-			}
-		}("google_hk")
+			}(name)
+		}
 	}
 
 	return &Filter{

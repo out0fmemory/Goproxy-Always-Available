@@ -20,9 +20,9 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("NewConfig Dialer.Timeout failed")
 	}
 
-	if config.Transport.MaxIdleConnsPerHost < 0 {
-		t.Fatalf("NewConfig Transport.MaxIdleConnsPerHost failed")
-	}
+	// if config.Transport.MaxIdleConnsPerHost < 0 {
+	// 	t.Fatalf("NewConfig Transport.MaxIdleConnsPerHost failed")
+	// }
 
 	if config.Transport.TLSHandshakeTimeout <= 0 {
 		t.Fatalf("NewConfig Transport.TLSHandshakeTimeout failed")
@@ -42,6 +42,10 @@ func TestConfig(t *testing.T) {
 
 	if config.DNS.Servers == nil || len(config.DNS.Servers) == 0 {
 		t.Fatalf("NewConfig DNS.Servers failed")
+	}
+
+	if config.DNS.Expand == nil {
+		t.Fatalf("NewConfig DNS.Expand failed")
 	}
 
 	if config.DNS.Blacklist == nil || len(config.DNS.Blacklist) == 0 {
