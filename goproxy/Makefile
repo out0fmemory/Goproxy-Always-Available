@@ -43,7 +43,7 @@ ifeq ($(PACKAGE_GOOS), windows)
 	SOURCES += $(REPO)/assets/openssl/libssl.dll
 else ifeq ($(PACKAGE_GOOS), darwin)
 	SOURCES += $(REPO)/assets/gui/goagent-osx.command
-else ifeq ($(PACKAGE_GOOS), linux)
+else ifeq ($(PACKAGE_GOOS)_$(PACKAGE_GOARCH), linux_amd64)
 	SOURCES += $(REPO)/assets/gui/goagent-gtk.py
 	SOURCES += $(REPO)/assets/systemd/goproxy.service
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.service
@@ -84,7 +84,7 @@ $(OBJECTDIR)/$(GOPROXY_EXE):
 	for p in $(GODEPS) ; do go get -v $$p ; done
 	mkdir -p $(OBJECTDIR)
 	cp main.go main.go.orig
-	sed -i "s/@VERSION@/$(RELEASE)/g" main.go
+	sed "s/@VERSION@/$(RELEASE)/g" main.go.orig > main.go
 	if type -p gox; then \
 		gox -verbose -os=$(PACKAGE_GOOS) -arch=$(PACKAGE_GOARCH) -output="$(OBJECTDIR)/$(PACKAGE)" ; \
 	else \
