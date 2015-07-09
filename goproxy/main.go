@@ -89,12 +89,12 @@ func main() {
 	}
 
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
-GoAgent Version    : %s (go/%s tls/%s)
+GoProxy Version    : %s (go/%s %s/%s)
 Listen Address     : %s
 RoundTrip Filters  : %v
 Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
-`, Version, runtime.Version(), "1.2",
+`, Version, runtime.Version(), runtime.GOOS, runtime.GOARCH,
 		config.Addr,
 		strings.Join(config.Filters.RoundTrip, ","),
 		config.Addr)
