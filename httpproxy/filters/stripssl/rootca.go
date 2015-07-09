@@ -70,11 +70,11 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) (
 	csrFile := c.toFilename(commonName, ".csr")
 
 	input := fmt.Sprintf(`genrsa -out %s %d
-req -new -sha256 -subj "/CN=%s" -key %s -out %s
+req -new -sha256 -subj "/CN=%s" -newkey rsa:%d -key %s -out %s
 x509 -req -sha256 -days %d -CA %s -CAkey %s -set_serial %d -in %s -out %s
 quit
 `, keyFile, rsaBits,
-		commonName, keyFile, csrFile,
+		commonName, rsaBits, keyFile, csrFile,
 		vaildFor/(24*time.Hour), c.certFile, c.keyFile, time.Now().UnixNano(), csrFile, certFile)
 	glog.V(2).Infof("openssl input: %#v", input)
 
