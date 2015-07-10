@@ -1,4 +1,1 @@
-*.exe
-*.crt
-.tags
-.tags_sorted_by_file
+gfwlist.txt

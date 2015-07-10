@@ -14,7 +14,9 @@ type Config struct {
 		URL      string
 		File     string
 		Encoding string
+		Duration int
 	}
+	Transport string
 }
 
 func NewConfig(uri, filename string) (*Config, error) {

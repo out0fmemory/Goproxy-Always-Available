@@ -17,8 +17,10 @@
 		"youtube.com"
 	],
 	"gfwlist": {
-		"url": "https://github.com/gfwlist/gfwlist/raw/master/gfwlist.txt",
+		"url": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
 		"file": "gfwlist.txt",
-		"encoding": "base64"
-	}
+		"encoding": "base64",
+		"duration": 86400
+	},
+	"transport": "direct"
 }

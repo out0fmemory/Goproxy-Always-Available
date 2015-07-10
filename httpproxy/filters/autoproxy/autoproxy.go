@@ -2,9 +2,14 @@ package autoproxy
 
 import (
 	"bytes"
+	"encoding/base64"
+	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"sync"
+	"time"
 
 	"../../../httpproxy"
 	"../../../storage"
@@ -18,10 +23,15 @@ const (
 	placeholderPath string = "/proxy.pac"
 )
 
+var (
+	onceUpdater sync.Once
+)
+
 type GFWList struct {
 	URL      *url.URL
 	Filename string
 	Encoding string
+	Duration time.Duration
 }
 
 type Filter struct {
@@ -29,6 +39,7 @@ type Filter struct {
 	Sites         *httpproxy.HostMatcher
 	GFWList       *GFWList
 	AutoProxy2Pac *AutoProxy2Pac
+	Transport     filters.RoundTripFilter
 }
 
 func init() {
@@ -54,6 +65,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 	gfwlist.Encoding = config.GFWList.Encoding
 	gfwlist.Filename = config.GFWList.File
+	gfwlist.Duration = time.Duration(config.GFWList.Duration) * time.Second
 	gfwlist.URL, err = url.Parse(config.GFWList.URL)
 	if err != nil {
 		return nil, err
@@ -85,12 +97,25 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		return nil, err
 	}
 
+	f1, err := filters.NewFilter(config.Transport)
+	if err != nil {
+		return nil, err
+	}
+
+	f2, ok := f1.(filters.RoundTripFilter)
+	if !ok {
+		return nil, fmt.Errorf("%#v was not a filters.RoundTripFilter", f1)
+	}
+
 	f := &Filter{
 		Store:         store,
 		Sites:         httpproxy.NewHostMatcher(config.Sites),
 		GFWList:       &gfwlist,
 		AutoProxy2Pac: autoproxy2pac,
+		Transport:     f2,
 	}
+
+	go onceUpdater.Do(f.updater)
 
 	return f, nil
 }
@@ -99,11 +124,77 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
+func (f *Filter) updater() {
+	glog.V(2).Infof("start updater for %#v", f.GFWList)
 
-	if req.Method != "GET" {
-		return ctx, nil, nil
+	for {
+		time.Sleep(10 * time.Minute)
+
+		h, err := f.Store.HeadObject(f.GFWList.Filename)
+		if err != nil {
+			glog.Warningf("stat gfwlist(%#v) err: %v", f.GFWList.Filename, err)
+			continue
+		}
+
+		lm := h.Get("Last-Modified")
+		if lm == "" {
+			glog.Warningf("gfwlist(%#v) header(%#v) does not contains last-modified", f.GFWList.Filename, h)
+			continue
+		}
+
+		modTime, err := time.Parse(f.Store.DateFormat(), lm)
+		if err != nil {
+			glog.Warningf("stat gfwlist(%#v) has parse %#v error: %v", f.GFWList.Filename, lm, err)
+			continue
+		}
+
+		if time.Now().Sub(modTime) > f.GFWList.Duration {
+			req, err := http.NewRequest("GET", f.GFWList.URL.String(), nil)
+			if err != nil {
+				glog.Warningf("NewRequest(%#v) error: %v", f.GFWList.URL.String(), err)
+				continue
+			}
+
+			_, resp, err := f.Transport.RoundTrip(nil, req)
+			if err != nil {
+				glog.Warningf("%T.RoundTrip(%#v) error: %v", f, f.GFWList.URL.String(), err)
+				continue
+			}
+
+			var r io.Reader = resp.Body
+			switch f.GFWList.Encoding {
+			case "base64":
+				r = base64.NewDecoder(base64.StdEncoding, r)
+			default:
+				break
+			}
+
+			data, err := ioutil.ReadAll(r)
+			if err != nil {
+				glog.Warningf("ReadAll(%#v) error: %v", r, err)
+				resp.Body.Close()
+				continue
+			}
+
+			err = f.Store.DeleteObject(f.GFWList.Filename)
+			if err != nil {
+				glog.Warningf("%T.DeleteObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
+				continue
+			}
+
+			err = f.Store.PutObject(f.GFWList.Filename, http.Header{}, ioutil.NopCloser(bytes.NewReader(data)))
+			if err != nil {
+				glog.Warningf("%T.PutObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
+				continue
+			}
+
+			glog.Infof("Update %#v from %#v OK", f.GFWList.Filename, f.GFWList.URL.String())
+			resp.Body.Close()
+		}
 	}
+}
+
+func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
 
 	if req.RequestURI != placeholderPath {
 		return ctx, nil, nil

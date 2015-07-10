@@ -51,7 +51,12 @@ func OpenURI(uri string) (Store, error) {
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("Invalid URI: %s", uri)
 	}
-	return Open(parts[0], parts[1])
+	scheme := parts[0]
+	dirname := parts[1]
+	if dirname == "" {
+		dirname = "."
+	}
+	return Open(scheme, dirname)
 }
 
 func expandPick(sourceString string) string {

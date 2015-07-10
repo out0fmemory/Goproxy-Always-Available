@@ -28,4 +28,12 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("NewConfig config.Encoding failed")
 	}
 
+	if config.GFWList.Duration < 0 {
+		t.Fatalf("NewConfig config.Duration failed")
+	}
+
+	if config.Transport == "" {
+		t.Fatalf("NewConfig config.Transport failed")
+	}
+
 }
