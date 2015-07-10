@@ -62,7 +62,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		context.Criticalf("binary.Read(&hdrLen) return %v", err)
 	}
 
-	req, err := http.ReadRequest(bufio.NewReader(flate.NewReader(&io.LimitedReader{r.Body, int64(hdrLen)})))
+	req, err := http.ReadRequest(bufio.NewReader(flate.NewReader(&io.LimitedReader{R: r.Body, N: int64(hdrLen)})))
 	if err != nil {
 		context.Criticalf("http.ReadRequest(%#v) return %#v", r.Body, err)
 	}
