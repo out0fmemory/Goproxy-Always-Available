@@ -74,17 +74,17 @@ func (a *AutoProxy2Pac) Read(r io.Reader) error {
 	var b bytes.Buffer
 	var w io.Writer = &b
 
-	io.WriteString(w, "var sites = {\r\n")
+	io.WriteString(w, "var sites = {\n")
 
 	for s, _ := range sites {
-		fmt.Fprintf(w, "'%s': 1,\r\n", s)
+		fmt.Fprintf(w, "'%s': 1,\n", s)
 	}
 
 	for i, s := range a.Sites {
 		if i == len(a.Sites)-1 {
 			fmt.Fprintf(w, "'%s': 1", s)
 		} else {
-			fmt.Fprintf(w, "'%s': 1,\r\n", s)
+			fmt.Fprintf(w, "'%s': 1,\n", s)
 		}
 	}
 
