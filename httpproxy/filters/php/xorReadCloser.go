@@ -18,9 +18,9 @@ func newXorReadCloser(rc io.ReadCloser, key []byte) io.ReadCloser {
 
 func (x *xorReadCloser) Read(p []byte) (n int, err error) {
 	n, err = x.rc.Read(p)
-
+	c := x.key[0]
 	for i := 0; i < n; i++ {
-		p[i] ^= x.key[0]
+		p[i] ^= c
 	}
 
 	return n, err
