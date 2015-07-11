@@ -17,6 +17,7 @@ import (
 )
 
 type RootCA struct {
+	name     string
 	keyFile  string
 	certFile string
 	rsaBits  int
@@ -43,7 +44,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 			"-nodes",
 			"-x509",
 			"-subj",
-			fmt.Sprintf("/C=CN/O=%s/CN=%s", name, name),
+			fmt.Sprintf("/C=CN/S=Internet/L=Cernet/O=%s/OU=%s/CN=%s", name, name, name),
 			"-keyout",
 			keyFile,
 			"-out",
@@ -56,6 +57,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 	}
 
 	return &RootCA{
+		name:     name,
 		keyFile:  keyFile,
 		certFile: certFile,
 		rsaBits:  rsaBits,
@@ -70,11 +72,11 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) (
 	csrFile := c.toFilename(commonName, ".csr")
 
 	input := fmt.Sprintf(`genrsa -out %s %d
-req -new -sha256 -subj "/CN=%s" -newkey rsa:%d -key %s -out %s
-x509 -req -sha256 -days %d -CA %s -CAkey %s -set_serial %d -in %s -out %s
+req -new -sha256 -subj "/C=CN/S=Internet/L=Cernet/OU=%s/O=%s/CN=%s" -newkey rsa:%d -key %s -out %s
+x509 -req -sha256 -days %d -CA %s -CAkey %s -set_serial %d -extensions v3_ca -in %s -out %s
 quit
 `, keyFile, rsaBits,
-		commonName, rsaBits, keyFile, csrFile,
+		c.name, commonName, commonName, rsaBits, keyFile, csrFile,
 		vaildFor/(24*time.Hour), c.certFile, c.keyFile, time.Now().UnixNano(), csrFile, certFile)
 	glog.V(2).Infof("openssl input: %#v", input)
 
