@@ -13,6 +13,7 @@ import (
 	"../../../httpproxy"
 	"../../filters"
 
+	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 )
 
@@ -78,6 +79,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	d.TLSConfig = &tls.Config{
 		InsecureSkipVerify: true,
 	}
+
+	d.connTCPDuration = lrucache.NewMultiLRUCache(4, 4096)
+	d.connTLSDuration = lrucache.NewMultiLRUCache(4, 4096)
+	d.connExpireDuration = 5 * time.Minute
 
 	for _, name := range config.DNS.Expand {
 		if _, ok := config.Iplist[name]; ok {
