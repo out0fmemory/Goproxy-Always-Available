@@ -121,6 +121,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	_, err = io.WriteString(conn, "HTTP/1.1 200 OK\r\n\r\n")
 	if err != nil {
+		conn.Close()
 		return ctx, nil, err
 	}
 
@@ -128,6 +129,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	cert, err := f.issue(req.Host)
 	if err != nil {
+		conn.Close()
 		return ctx, nil, err
 	}
 
@@ -138,6 +140,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	tlsConn := tls.Server(conn, tlsConfig)
 
 	if err := tlsConn.Handshake(); err != nil {
+		conn.Close()
 		return ctx, nil, err
 	}
 
