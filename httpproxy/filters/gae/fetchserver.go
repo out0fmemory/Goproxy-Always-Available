@@ -7,7 +7,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -120,9 +119,7 @@ func (f *FetchServer) decodeResponse(resp *http.Response) (resp1 *http.Response,
 		}
 	}
 
-	data, _ := ioutil.ReadAll(resp.Body)
-
-	resp1.Body = httpproxy.NewMultiReadCloser(bytes.NewReader(data), resp.Body)
+	resp1.Body = resp.Body
 
 	return
 }
