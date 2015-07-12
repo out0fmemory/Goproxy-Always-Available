@@ -3,8 +3,11 @@ package gae
 import (
 	"fmt"
 	"math/rand"
+	"mime"
 	"net/http"
 	"net/url"
+	"path"
+	"strings"
 
 	"../../../httpproxy"
 	"../../filters"
@@ -80,7 +83,7 @@ func (p *Filter) FilterName() string {
 
 func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
 	i := 0
-	if true {
+	if strings.HasPrefix(mime.TypeByExtension(path.Ext(req.URL.Path)), "image/") {
 		i = rand.Intn(len(f.FetchServers))
 	}
 
