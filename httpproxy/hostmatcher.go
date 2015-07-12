@@ -6,45 +6,86 @@ import (
 )
 
 type HostMatcher struct {
-	matchAll bool
-	list1    map[string]struct{}
-	list2    []string
+	all0       interface{}
+	list1_keys []string
+	list1_map  map[string]interface{}
+	list2_keys []string
+	list2_map  map[string]interface{}
+	list3_keys []string
+	list3_map  map[string]interface{}
 }
 
-func NewHostMatcher(rules []string) *HostMatcher {
-	sm := &HostMatcher{
-		list1: make(map[string]struct{}),
-		list2: make([]string, 0),
+func NewHostMatcher(hosts []string) *HostMatcher {
+	values := make(map[string]interface{}, len(hosts))
+	for _, host := range hosts {
+		values[host] = struct{}{}
+	}
+	return NewHostMatcherWithValue(values)
+}
+
+func NewHostMatcherWithString(hosts map[string]string) *HostMatcher {
+	values := make(map[string]interface{}, len(hosts))
+	for host, value := range hosts {
+		values[host] = value
+	}
+	return NewHostMatcherWithValue(values)
+}
+
+func NewHostMatcherWithValue(values map[string]interface{}) *HostMatcher {
+	hm := &HostMatcher{
+		all0:       nil,
+		list1_keys: make([]string, 0),
+		list1_map:  make(map[string]interface{}),
+		list2_keys: make([]string, 0),
+		list2_map:  make(map[string]interface{}),
+		list3_keys: make([]string, 0),
+		list3_map:  make(map[string]interface{}),
 	}
 
-	for _, s := range rules {
+	for key, value := range values {
 		switch {
-		case s == "*":
-			sm.matchAll = true
-		case strings.Contains(s, "*"):
-			sm.list2 = append(sm.list2, s)
+		case key == "*":
+			hm.all0 = value
+		case !strings.Contains(key, "*"):
+			hm.list1_keys = append(hm.list1_keys, key)
+			hm.list1_map[key] = value
+		case strings.HasPrefix(key, "*") && !strings.Contains(key[1:], "*"):
+			hm.list2_keys = append(hm.list1_keys, key[1:])
+			hm.list2_map[key] = value
 		default:
-			sm.list1[s] = struct{}{}
+			hm.list3_keys = append(hm.list1_keys, key)
+			hm.list3_map[key] = value
 		}
 	}
 
-	return sm
+	return hm
 }
 
-func (sm *HostMatcher) Match(host string) bool {
-	if sm.matchAll {
-		return true
+func (hm *HostMatcher) Match(host string) bool {
+	_, ok := hm.Lookup(host)
+	return ok
+}
+
+func (hm *HostMatcher) Lookup(host string) (interface{}, bool) {
+	if hm.all0 != nil {
+		return hm.all0, true
 	}
 
-	if _, ok := sm.list1[host]; ok {
-		return true
+	if value, ok := hm.list1_map[host]; ok {
+		return value, true
 	}
 
-	for _, s := range sm.list2 {
-		if matched, _ := path.Match(s, host); matched {
-			return true
+	for _, key := range hm.list2_keys {
+		if strings.HasSuffix(host, key) {
+			return hm.list2_map[key], true
 		}
 	}
 
-	return false
+	for _, key := range hm.list3_keys {
+		if matched, _ := path.Match(key, host); matched {
+			return hm.list3_map[key], true
+		}
+	}
+
+	return nil, false
 }
