@@ -249,7 +249,8 @@ func (d *Dialer) DialTLS(network, address string) (net.Conn, error) {
 					}
 					if strings.Contains(address, ".appspot.com") ||
 						strings.Contains(address, ".google") ||
-						strings.Contains(address, ".gstatic.com") {
+						strings.Contains(address, ".gstatic.com") ||
+						strings.Contains(address, ".ggpht.com") {
 						config.ServerName = "www.bing.com"
 						config.CipherSuites = []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA}
 					}
