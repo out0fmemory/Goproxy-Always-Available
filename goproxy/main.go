@@ -227,9 +227,9 @@ func getFilters(config *Config) ([]filters.RequestFilter, []filters.RoundTripFil
 		config.Filters.Response} {
 		for _, name := range names {
 			if _, ok := fs[name]; !ok {
-				f, err := filters.NewFilter(name)
+				f, err := filters.GetFilter(name)
 				if err != nil {
-					glog.Fatalf("filters.NewFilter(%#v) failed: %#v", name, err)
+					glog.Fatalf("filters.GetFilter(%#v) failed: %#v", name, err)
 				}
 				fs[name] = f
 			}

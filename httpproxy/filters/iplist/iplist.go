@@ -66,10 +66,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	var err error
 
-	d.hosts, err = NewHosts(config.Hosts)
-	if err != nil {
-		return nil, err
-	}
+	d.hosts = httpproxy.NewHostMatcherWithString(config.Hosts)
 
 	d.iplist, err = NewIplist(config.Iplist, config.DNS.Servers, config.DNS.Blacklist, d.DualStack)
 	if err != nil {
@@ -116,7 +113,7 @@ func (f *Filter) FilterName() string {
 }
 
 func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
-	if alias := f.dialer.hosts.Lookup(req.Host); alias == "" {
+	if _, ok := f.dialer.hosts.Lookup(req.Host); !ok {
 		return ctx, nil, nil
 	}
 

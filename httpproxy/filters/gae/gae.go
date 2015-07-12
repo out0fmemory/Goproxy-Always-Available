@@ -41,7 +41,7 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	f1, err := filters.NewFilter(config.Transport)
+	f1, err := filters.GetFilter(config.Transport)
 	if err != nil {
 		return nil, err
 	}

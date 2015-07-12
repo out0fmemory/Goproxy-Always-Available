@@ -167,49 +167,12 @@ func (i *Iplist) ExpandList(name string) error {
 	return nil
 }
 
-type Hosts struct {
-	hosts       map[string]string
-	suffixHosts map[string]string
-}
-
-func NewHosts(hosts map[string]string) (*Hosts, error) {
-	h := &Hosts{
-		hosts:       make(map[string]string),
-		suffixHosts: make(map[string]string),
-	}
-
-	for k, v := range hosts {
-		if strings.HasPrefix(k, ".") {
-			h.suffixHosts[k] = v
-		} else {
-			h.hosts[k] = v
-		}
-	}
-
-	return h, nil
-}
-
-func (h *Hosts) Lookup(name string) (alias string) {
-	s, ok := h.hosts[name]
-	if ok {
-		return s
-	}
-
-	for k, v := range h.suffixHosts {
-		if strings.HasSuffix(name, k) {
-			return v
-		}
-	}
-
-	return ""
-}
-
 type Dialer struct {
 	net.Dialer
 	TLSConfig          *tls.Config
 	Window             int
 	Blacklist          map[string]struct{}
-	hosts              *Hosts
+	hosts              *httpproxy.HostMatcher
 	iplist             *Iplist
 	connTCPDuration    lrucache.Cache
 	connTLSDuration    lrucache.Cache
@@ -221,7 +184,8 @@ func (d *Dialer) Dial(network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias := d.hosts.Lookup(host); alias != "" {
+			if alias0, ok := d.hosts.Lookup(host); ok {
+				alias := alias0.(string)
 				if hosts, err := d.iplist.Lookup(alias); err == nil {
 					addrs := make([]string, len(hosts))
 					for i, host := range hosts {
@@ -241,7 +205,8 @@ func (d *Dialer) DialTLS(network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias := d.hosts.Lookup(host); alias != "" {
+			if alias0, ok := d.hosts.Lookup(host); ok {
+				alias := alias0.(string)
 				if hosts, err := d.iplist.Lookup(alias); err == nil {
 					config := &tls.Config{
 						InsecureSkipVerify: true,

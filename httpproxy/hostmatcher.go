@@ -50,10 +50,10 @@ func NewHostMatcherWithValue(values map[string]interface{}) *HostMatcher {
 			hm.list1_keys = append(hm.list1_keys, key)
 			hm.list1_map[key] = value
 		case strings.HasPrefix(key, "*") && !strings.Contains(key[1:], "*"):
-			hm.list2_keys = append(hm.list1_keys, key[1:])
-			hm.list2_map[key] = value
+			hm.list2_keys = append(hm.list2_keys, key[1:])
+			hm.list2_map[key[1:]] = value
 		default:
-			hm.list3_keys = append(hm.list1_keys, key)
+			hm.list3_keys = append(hm.list3_keys, key)
 			hm.list3_map[key] = value
 		}
 	}

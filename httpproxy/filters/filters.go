@@ -36,20 +36,21 @@ type RegisteredFilter struct {
 }
 
 var (
-	filters map[string]*RegisteredFilter
+	registeredFilters map[string]*RegisteredFilter
+	filters           map[string]Filter
 )
 
 func init() {
-	filters = make(map[string]*RegisteredFilter)
+	registeredFilters = make(map[string]*RegisteredFilter)
 }
 
 // Register a Filter
 func Register(name string, registeredFilter *RegisteredFilter) error {
-	if _, exists := filters[name]; exists {
+	if _, exists := registeredFilters[name]; exists {
 		return fmt.Errorf("Name already registered %s", name)
 	}
 
-	filters[name] = registeredFilter
+	registeredFilters[name] = registeredFilter
 	return nil
 }
 
@@ -73,9 +74,18 @@ func LookupConfigStoreURI(filterName string) string {
 
 // NewFilter creates a new Filter of type "name"
 func NewFilter(name string) (Filter, error) {
-	filter, exists := filters[name]
+	filter, exists := registeredFilters[name]
 	if !exists {
-		return nil, fmt.Errorf("filters: Unknown filter %q", name)
+		return nil, fmt.Errorf("registeredFilters: Unknown filter %q", name)
 	}
 	return filter.New()
+}
+
+// GetFilter try get a existing Filter of type "name", otherwise create new one
+func GetFilter(name string) (Filter, error) {
+	filter, exists := filters[name]
+	if exists {
+		return filter, nil
+	}
+	return NewFilter(name)
 }
