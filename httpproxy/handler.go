@@ -60,6 +60,10 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	if req.Body != nil {
+		defer req.Body.Close()
+	}
+
 	// Filter Request -> Response
 	var resp *http.Response
 	for _, f := range h.RoundTripFilters {

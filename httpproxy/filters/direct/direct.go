@@ -130,7 +130,6 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		//TODO: fix for http2
 		return ctx, nil, nil
 	default:
-		defer req.Body.Close()
 		resp, err := f.transport.RoundTrip(req)
 		if err != nil {
 			glog.Errorf("%s \"DIRECT %s %s %s\" error: %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, err)
