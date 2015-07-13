@@ -17,6 +17,13 @@ type Config struct {
 	SSLVerify bool
 	Transport string
 	Sites     []string
+	AutoRange struct {
+		Threads int
+		MaxSize int
+		BufSize int
+		Sites   []string
+		Suffixs []string
+	}
 }
 
 func NewConfig(uri, filename string) (*Config, error) {

@@ -81,6 +81,20 @@ func (p *Filter) FilterName() string {
 }
 
 func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
+	ctx, resp, err := f.roundTrip(ctx, req)
+
+	if err != nil || resp == nil {
+		return ctx, resp, err
+	}
+
+	if resp.StatusCode == 206 {
+		return ctx, resp, err
+	}
+
+	return ctx, resp, err
+}
+
+func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
 	i := 0
 	if strings.HasPrefix(mime.TypeByExtension(path.Ext(req.URL.Path)), "image/") {
 		i = rand.Intn(len(f.FetchServers))
@@ -97,7 +111,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	ctx, resp, err := f.Transport.RoundTrip(ctx, req1)
 	if err != nil || resp == nil {
 		glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
-		return ctx, nil, err
+		return ctx, resp, err
 	} else {
 		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}

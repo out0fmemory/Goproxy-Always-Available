@@ -10,5 +10,45 @@
 	"transport": "iplist",
 	"sites": [
 		"*"
-	]
+	],
+	"autorange": {
+		"threads": 3,
+		"maxsize": 1572864,
+		"bufsize": 8192,
+		"sites": [
+			"*.atm.youku.com",
+			"*.c.docs.google.com",
+			"*.c.youtube.com",
+			"*.d.rncdn3.com",
+			"*.edgecastcdn.net",
+			"*.googlevideo.com",
+			"*.mms.vlog.xuite.net",
+			"*.x.xvideos.com",
+			"*av.vimeo.com",
+			"archive.rthk.hk",
+			"cdn*.public.extremetube.phncdn.com",
+			"cdn*.public.tube8.com",
+			"cdn*.video.pornhub.phncdn.com",
+			"s*.last.fm",
+			"smile-*.nicovideo.jp",
+			"video*.modimovie.com",
+			"video.*.fbcdn.net",
+			"videos.flv*.redtubefiles.com",
+			"vs*.thisav.com",
+			"x*.last.fm"
+		],
+		"suffixs": [
+			"*.avi",
+			"*.dmg",
+			"*.f4v",
+			"*.flv",
+			"*.hlv",
+			"*.iso",
+			"*.m4v",
+			"*.mp3",
+			"*.mp4",
+			"*.ogg",
+			"*play*"
+		]
+	}
 }
