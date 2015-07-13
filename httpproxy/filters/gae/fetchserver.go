@@ -119,7 +119,11 @@ func (f *FetchServer) decodeResponse(resp *http.Response) (resp1 *http.Response,
 		}
 	}
 
-	resp1.Body = resp.Body
+	if resp1.StatusCode < 400 {
+		resp1.Body = resp.Body
+	} else {
+		resp1.ContentLength = -1
+	}
 
 	return
 }
