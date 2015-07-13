@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -119,10 +120,22 @@ func (f *FetchServer) decodeResponse(resp *http.Response) (resp1 *http.Response,
 		}
 	}
 
-	if resp1.StatusCode < 400 {
-		resp1.Body = resp.Body
+	if resp1.StatusCode >= 400 {
+		switch {
+		case resp.Body == nil:
+			break
+		case resp1.Body == nil:
+			resp1.Body = resp.Body
+		default:
+			b, _ := ioutil.ReadAll(resp1.Body)
+			if b != nil && len(b) > 0 {
+				resp1.Body = httpproxy.NewMultiReadCloser(bytes.NewReader(b), resp.Body)
+			} else {
+				resp1.Body = resp.Body
+			}
+		}
 	} else {
-		resp1.ContentLength = -1
+		resp1.Body = resp.Body
 	}
 
 	return
