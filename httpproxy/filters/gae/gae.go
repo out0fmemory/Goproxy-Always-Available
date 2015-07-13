@@ -93,12 +93,15 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		return ctx, nil, fmt.Errorf("GAE encodeRequest: %s", err.Error())
 	}
 	req1.Header = req.Header
-	ctx, res, err := f.Transport.RoundTrip(ctx, req1)
-	if err != nil {
+
+	ctx, resp, err := f.Transport.RoundTrip(ctx, req1)
+	if err != nil || resp == nil {
+		glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
 		return ctx, nil, err
 	} else {
-		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, res.StatusCode, res.Header.Get("Content-Length"))
+		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
-	resp, err := fetchServer.decodeResponse(res)
-	return ctx, resp, err
+
+	resp1, err := fetchServer.decodeResponse(resp)
+	return ctx, resp1, err
 }
