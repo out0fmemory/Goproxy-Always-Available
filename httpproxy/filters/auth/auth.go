@@ -7,10 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"../../filters"
-
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
+	"github.com/phuslu/goproxy/httpproxy/filters"
 )
 
 const (

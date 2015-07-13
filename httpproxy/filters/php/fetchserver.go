@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"../../../httpproxy"
+	"github.com/phuslu/goproxy/httpproxy"
 )
 
 var (

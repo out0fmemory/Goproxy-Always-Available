@@ -11,11 +11,10 @@ import (
 	"sync"
 	"time"
 
-	"../../../httpproxy"
-	"../../../storage"
-	"../../filters"
-
 	"github.com/golang/glog"
+	"github.com/phuslu/goproxy/httpproxy"
+	"github.com/phuslu/goproxy/httpproxy/filters"
+	"github.com/phuslu/goproxy/storage"
 )
 
 const (
