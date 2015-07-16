@@ -1,6 +1,4 @@
-// Copyright 2012 Phus Lu. All rights reserved.
-
-package gae
+package main
 
 import (
 	"bufio"
@@ -10,6 +8,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -82,6 +81,10 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	io.Copy(rw, resp.Body)
 }
 
-func init() {
+func main() {
 	http.HandleFunc("/", handler)
+	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	if err != nil {
+		panic(err)
+	}
 }
