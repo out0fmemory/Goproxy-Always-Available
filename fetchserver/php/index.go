@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -19,8 +20,18 @@ const (
 	Password = "123456"
 )
 
+func main() {
+	http.HandleFunc("/", handler)
+	err := http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func handler(rw http.ResponseWriter, r *http.Request) {
 	var err error
+
+	logger := log.New(os.Stderr, "index.go: ", 0)
 
 	var hdrLen uint16
 	if err := binary.Read(r.Body, binary.BigEndian, &hdrLen); err != nil {
@@ -36,24 +47,16 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	req.Body = r.Body
 
-	params := make(map[string]string)
-	paramPrefix := "X-UrlFetch-"
-	for key, values := range r.Header {
-		if strings.HasPrefix(key, paramPrefix) {
-			params[strings.ToLower(key[len(paramPrefix):])] = values[0]
-		}
-	}
+	logger.Printf("%s \"%s %s %s\" - -", r.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
-	for key, _ := range params {
-		req.Header.Del(paramPrefix + key)
-	}
-
+	const PasswordKey string = "X-UrlFetch-Password"
 	if Password != "" {
-		if password, ok := params["password"]; !ok || password != Password {
-			http.Error(rw, err.Error(), http.StatusForbidden)
+		if password := req.Header.Get(PasswordKey); password != Password {
+			http.Error(rw, fmt.Sprintf("wrong password %#v", password), http.StatusForbidden)
 			return
 		}
 	}
+	req.Header.Del(PasswordKey)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -63,7 +66,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	resp, err := tr.RoundTrip(req)
-	if err == nil {
+	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadGateway)
 		return
 	}
@@ -72,19 +75,40 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
-	rw.Header().Set("Content-Type", "image/gif")
+	var w io.Writer = rw
+	switch strings.Split(resp.Header.Get("Content-Type"), "/")[0] {
+	case "image", "audio", "video":
+		rw.Header().Set("Content-Type", "image/gif")
+		w = newXorWriter(rw, []byte(Password))
+	default:
+		rw.Header().Set("Content-Type", "image/x-png")
+	}
+
 	rw.WriteHeader(http.StatusOK)
 
-	fmt.Fprintf(rw, "HTTP/1.1 200\r\n")
-	resp.Header.Write(rw)
-	io.WriteString(rw, "\r\n")
-	io.Copy(rw, resp.Body)
+	fmt.Fprintf(w, "HTTP/1.1 200\r\n")
+	resp.Header.Write(w)
+	io.WriteString(w, "\r\n")
+	io.Copy(w, resp.Body)
 }
 
-func main() {
-	http.HandleFunc("/", handler)
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
-	if err != nil {
-		panic(err)
+type xorWriter struct {
+	w   io.Writer
+	key []byte
+}
+
+func newXorWriter(w io.Writer, key []byte) io.Writer {
+	x := new(xorWriter)
+	x.w = w
+	x.key = key
+	return x
+}
+
+func (x *xorWriter) Write(p []byte) (n int, err error) {
+	c := x.key[0]
+	for i := 0; i < len(p); i++ {
+		p[i] ^= c
 	}
+
+	return x.w.Write(p)
 }
