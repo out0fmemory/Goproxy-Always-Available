@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -28,35 +29,94 @@ func main() {
 	}
 }
 
-func handler(rw http.ResponseWriter, r *http.Request) {
+func ReadRequest(r io.Reader) (req *http.Request, err error) {
+	req = new(http.Request)
+
+	scanner := bufio.NewScanner(r)
+	if scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.Split(line, " ")
+		if len(parts) != 3 {
+			err = fmt.Errorf("Invaild Request Line: %#v", line)
+			return
+		}
+
+		req.Method = parts[0]
+		req.RequestURI = parts[1]
+		req.Proto = "HTTP/1.1"
+		req.ProtoMajor = 1
+		req.ProtoMinor = 1
+
+		if req.URL, err = url.Parse(req.RequestURI); err != nil {
+			return
+		}
+		req.Host = req.URL.Host
+
+		req.Header = http.Header{}
+	}
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
+			err = fmt.Errorf("Invaild Request Line: %#v", line)
+			return
+		}
+
+		key := strings.TrimSpace(parts[0])
+		value := strings.TrimSpace(parts[1])
+		req.Header.Add(key, value)
+	}
+
+	if err = scanner.Err(); err != nil {
+		return
+	}
+
+	if cl := req.Header.Get("Content-Length"); cl != "" {
+		if req.ContentLength, err = strconv.ParseInt(cl, 10, 64); err != nil {
+			return
+		}
+	}
+
+	req.Host = req.URL.Host
+	if req.Host == "" {
+		req.Host = req.Header.Get("Host")
+	}
+	delete(req.Header, "Host")
+
+	return
+}
+
+func httpError(rw http.ResponseWriter, err string, code int) {
+	rw.Header().Set("Content-Length", strconv.Itoa(len(err)))
+	rw.Header().Set("Connection", "close")
+	http.Error(rw, err, http.StatusBadRequest)
+}
+
+func handler(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
 	logger := log.New(os.Stderr, "index.go: ", 0)
 
 	var hdrLen uint16
-	if err := binary.Read(r.Body, binary.BigEndian, &hdrLen); err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
+	if err := binary.Read(req.Body, binary.BigEndian, &hdrLen); err != nil {
+		httpError(rw, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	req, err := http.ReadRequest(bufio.NewReader(flate.NewReader(&io.LimitedReader{R: r.Body, N: int64(hdrLen)})))
-	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadRequest)
-		return
-	}
+	req1, err := ReadRequest(flate.NewReader(&io.LimitedReader{R: req.Body, N: int64(hdrLen)}))
+	req1.Body = req.Body
 
-	req.Body = r.Body
-
-	logger.Printf("%s \"%s %s %s\" - -", r.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+	logger.Printf("%s \"%s %s %s\" - -", req.RemoteAddr, req1.Method, req1.URL.String(), req1.Proto)
 
 	const PasswordKey string = "X-UrlFetch-Password"
 	if Password != "" {
-		if password := req.Header.Get(PasswordKey); password != Password {
-			http.Error(rw, fmt.Sprintf("wrong password %#v", password), http.StatusForbidden)
+		if password := req1.Header.Get(PasswordKey); password != Password {
+			httpError(rw, fmt.Sprintf("wrong password %#v", password), http.StatusForbidden)
 			return
 		}
 	}
-	req.Header.Del(PasswordKey)
+	req1.Header.Del(PasswordKey)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -65,9 +125,9 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		TLSHandshakeTimeout: 30 * time.Second,
 	}
 
-	resp, err := tr.RoundTrip(req)
+	resp, err := tr.RoundTrip(req1)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadGateway)
+		httpError(rw, err.Error(), http.StatusBadGateway)
 		return
 	}
 
