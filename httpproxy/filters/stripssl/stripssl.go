@@ -23,11 +23,11 @@ const (
 )
 
 type Filter struct {
-	CA         *RootCA
-	CAExpires  time.Duration
-	CACache    lrucache.Cache
-	SiteLists1 map[string]struct{}
-	SiteLists2 []string
+	CA             *RootCA
+	CAExpires      time.Duration
+	TLSConfigCache lrucache.Cache
+	SiteLists1     map[string]struct{}
+	SiteLists2     []string
 }
 
 func init() {
@@ -63,11 +63,11 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	f := &Filter{
-		CA:         ca,
-		CAExpires:  time.Duration(config.RootCA.Duration) * time.Second,
-		CACache:    lrucache.NewMultiLRUCache(4, 4096),
-		SiteLists1: make(map[string]struct{}),
-		SiteLists2: make([]string, 0),
+		CA:             ca,
+		CAExpires:      time.Duration(config.RootCA.Duration) * time.Second,
+		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
+		SiteLists1:     make(map[string]struct{}),
+		SiteLists2:     make([]string, 0),
 	}
 
 	for _, site := range config.Sites {
@@ -126,19 +126,16 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	glog.Infof("%s \"STRIP %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
 
-	cert, err := f.issue(req.Host)
+	config, err := f.issue(req.Host)
 	if err != nil {
 		conn.Close()
 		return ctx, nil, err
 	}
 
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{*cert},
-		ClientAuth:   tls.VerifyClientCertIfGiven,
-	}
-	tlsConn := tls.Server(conn, tlsConfig)
+	tlsConn := tls.Server(conn, config)
 
 	if err := tlsConn.Handshake(); err != nil {
+		glog.V(2).Infof("%s %T.Handshake() error: %#v", req.RemoteAddr, tlsConn, err)
 		conn.Close()
 		return ctx, nil, err
 	}
@@ -161,7 +158,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	return ctx, nil, nil
 }
 
-func (f *Filter) issue(host string) (_ *tls.Certificate, err error) {
+func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 	if h, _, err := net.SplitHostPort(host); err == nil {
 		host = h
 	}
@@ -171,15 +168,19 @@ func (f *Filter) issue(host string) (_ *tls.Certificate, err error) {
 		return nil, err
 	}
 
-	var cert interface{}
+	var config interface{}
 	var ok bool
-	if cert, ok = f.CACache.Get(name); !ok {
+	if config, ok = f.TLSConfigCache.Get(name); !ok {
 		glog.Infof("generate certificate for %s...", name)
-		cert, err = f.CA.Issue(name, f.CAExpires, f.CA.RsaBits())
+		cert, err := f.CA.Issue(name, f.CAExpires, f.CA.RsaBits())
 		if err != nil {
 			return nil, err
 		}
-		f.CACache.Set(name, cert, time.Now().Add(f.CAExpires))
+		config = &tls.Config{
+			Certificates: []tls.Certificate{*cert},
+			ClientAuth:   tls.VerifyClientCertIfGiven,
+		}
+		f.TLSConfigCache.Set(name, config, time.Now().Add(f.CAExpires))
 	}
-	return cert.(*tls.Certificate), nil
+	return config.(*tls.Config), nil
 }
