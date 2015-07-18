@@ -71,6 +71,8 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// rewise resp.Header
+	resp.Header.Del("Transfer-Encoding")
 	if resp.ContentLength > 0 {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
@@ -86,7 +88,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	rw.WriteHeader(http.StatusOK)
 
-	fmt.Fprintf(w, "HTTP/1.1 200\r\n")
+	fmt.Fprintf(w, fmt.Sprintf("%s %s\r\n", resp.Proto, resp.Status))
 	resp.Header.Write(w)
 	io.WriteString(w, "\r\n")
 	io.Copy(w, resp.Body)
