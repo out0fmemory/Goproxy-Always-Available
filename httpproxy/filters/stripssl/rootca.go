@@ -1,19 +1,20 @@
 package stripssl
 
 import (
+	"crypto/rand"
+	"crypto/rsa"
 	"crypto/tls"
-	"fmt"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/pem"
 	"io/ioutil"
+	"math/big"
 	"os"
-	"os/exec"
-	"path/filepath"
-	"runtime"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	// "github.com/golang/glog"
 )
 
 type RootCA struct {
@@ -23,97 +24,193 @@ type RootCA struct {
 	rsaBits  int
 	certDir  string
 	mu       *sync.Mutex
+
+	ca       *x509.Certificate
+	priv     *rsa.PrivateKey
+	derBytes []byte
 }
 
 func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string) (*RootCA, error) {
-	if err := prepare(); err != nil {
-		return nil, err
-	}
-
 	keyFile := name + ".key"
 	certFile := name + ".crt"
 
-	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-		cmd := exec.Command("openssl",
-			"req",
-			"-new",
-			"-newkey",
-			fmt.Sprintf("rsa:%d", rsaBits),
-			"-days",
-			strconv.Itoa(int(vaildFor/(24*time.Hour))),
-			"-nodes",
-			"-x509",
-			"-subj",
-			fmt.Sprintf("/C=CN/S=Internet/L=Cernet/O=%s/OU=%s/CN=%s", name, name, name),
-			"-keyout",
-			keyFile,
-			"-out",
-			certFile)
-
-		if err := cmd.Run(); err != nil {
-			glog.Errorf("exec.Command(%v) error: %v", cmd.Args, err)
-			return nil, err
-		}
-	}
-
-	return &RootCA{
+	rootCA := &RootCA{
 		name:     name,
 		keyFile:  keyFile,
 		certFile: certFile,
 		rsaBits:  rsaBits,
 		certDir:  certDir,
 		mu:       new(sync.Mutex),
-	}, nil
-}
-
-func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) (err error) {
-	certFile := c.toFilename(commonName, ".crt")
-	keyFile := c.toFilename(commonName, ".key")
-	csrFile := c.toFilename(commonName, ".csr")
-	extFile := c.toFilename(commonName, ".ext")
-
-	extData := `extensions = x509v3
-[ x509v3 ]
-nsCertType              = server
-keyUsage                = digitalSignature,nonRepudiation,keyEncipherment
-extendedKeyUsage        = msSGC,nsSGC,serverAuth
-`
-	err = ioutil.WriteFile(extFile, []byte(extData), 0644)
-	if err != nil {
-		return
 	}
 
-	subj := fmt.Sprintf("/C=CN/ST=Internet/L=Cernet/OU=%s/O=%s/CN=%s", c.name, strings.TrimPrefix(commonName, "*."), commonName)
-	input := fmt.Sprintf(`req -new -nodes -sha256 -newkey rsa:%d -subj "%s" -keyout %s -out %s
-x509 -req -sha256 -days %d -CA %s -CAkey %s -extfile %s -set_serial %d -in %s -out %s
-quit
-`, rsaBits, subj, keyFile, csrFile,
-		vaildFor/(24*time.Hour), c.certFile, c.keyFile, extFile, time.Now().UnixNano(), csrFile, certFile)
-	glog.V(2).Infof("openssl input: %#v", input)
+	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		template := x509.Certificate{
+			IsCA:         true,
+			SerialNumber: big.NewInt(1),
+			Subject: pkix.Name{
+				Organization: []string{name},
+			},
+			NotBefore: time.Now().Add(-time.Duration(5 * time.Minute)),
+			NotAfter:  time.Now().Add(vaildFor),
 
-	cmd := exec.Command("openssl")
+			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+			BasicConstraintsValid: true,
+		}
 
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		return
-	}
+		priv, err := rsa.GenerateKey(rand.Reader, rsaBits)
+		if err != nil {
+			return nil, err
+		}
 
-	if err = cmd.Start(); err != nil {
-		return
-	}
+		derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+		if err != nil {
+			return nil, err
+		}
 
-	stdin.Write([]byte(input))
-	stdin.Close()
+		ca, err := x509.ParseCertificate(derBytes)
+		if err != nil {
+			return nil, err
+		}
 
-	if err = cmd.Wait(); err != nil {
-		return
-	}
+		rootCA.ca = ca
+		rootCA.priv = priv
+		rootCA.derBytes = derBytes
 
-	for _, filename := range []string{csrFile, extFile} {
-		if err = os.Remove(filename); err != nil {
-			return
+		outFile1, err := os.Create(keyFile)
+		defer outFile1.Close()
+		if err != nil {
+			return nil, err
+		}
+		pem.Encode(outFile1, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
+
+		outFile2, err := os.Create(certFile)
+		defer outFile2.Close()
+		if err != nil {
+			return nil, err
+		}
+		pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
+	} else {
+		data, err := ioutil.ReadFile(keyFile)
+		if err != nil {
+			return nil, err
+		}
+
+		var b *pem.Block
+		for {
+			b, data = pem.Decode(data)
+			if b == nil {
+				break
+			}
+			if b.Type == "CERTIFICATE" {
+				rootCA.derBytes = b.Bytes
+				ca, err := x509.ParseCertificate(rootCA.derBytes)
+				if err != nil {
+					return nil, err
+				}
+				rootCA.ca = ca
+			} else if b.Type == "RSA PRIVATE KEY" {
+				priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
+				if err != nil {
+					return nil, err
+				}
+				rootCA.priv = priv
+			}
+		}
+
+		data, err = ioutil.ReadFile(certFile)
+		if err != nil {
+			return nil, err
+		}
+
+		for {
+			b, data = pem.Decode(data)
+			if b == nil {
+				break
+			}
+			if b.Type == "CERTIFICATE" {
+				rootCA.derBytes = b.Bytes
+				ca, err := x509.ParseCertificate(rootCA.derBytes)
+				if err != nil {
+					return nil, err
+				}
+				rootCA.ca = ca
+			} else if b.Type == "RSA PRIVATE KEY" {
+				priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
+				if err != nil {
+					return nil, err
+				}
+				rootCA.priv = priv
+			}
 		}
 	}
+
+	return rootCA, nil
+}
+
+func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) error {
+	keyFile := c.toFilename(commonName, ".key")
+	certFile := c.toFilename(commonName, ".crt")
+
+	csrTemplate := &x509.CertificateRequest{
+		Signature: []byte(commonName),
+		Subject: pkix.Name{
+			Country:      []string{"CN"},
+			Organization: []string{commonName},
+		},
+		DNSNames:           []string{commonName},
+		SignatureAlgorithm: x509.SHA256WithRSA,
+	}
+
+	priv, err := rsa.GenerateKey(rand.Reader, rsaBits)
+	if err != nil {
+		return err
+	}
+
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, csrTemplate, priv)
+	if err != nil {
+		return err
+	}
+
+	csr, err := x509.ParseCertificateRequest(csrBytes)
+	if err != nil {
+		return err
+	}
+
+	certTemplate := &x509.Certificate{
+		Subject:            csr.Subject,
+		PublicKeyAlgorithm: csr.PublicKeyAlgorithm,
+		PublicKey:          csr.PublicKey,
+		SerialNumber:       big.NewInt(time.Now().UnixNano()),
+		SignatureAlgorithm: x509.SHA256WithRSA,
+		NotBefore:          time.Now().Add(-time.Duration(10 * time.Minute)).UTC(),
+		NotAfter:           time.Now().Add(vaildFor),
+		KeyUsage:           x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		ExtKeyUsage: []x509.ExtKeyUsage{
+			x509.ExtKeyUsageServerAuth,
+			x509.ExtKeyUsageClientAuth,
+		},
+		DNSNames: []string{commonName},
+	}
+
+	certBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, c.ca, csr.PublicKey, c.priv)
+	if err != nil {
+		return err
+	}
+
+	outFile1, err := os.Create(keyFile)
+	defer outFile1.Close()
+	if err != nil {
+		return err
+	}
+	pem.Encode(outFile1, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+
+	outFile2, err := os.Create(certFile)
+	defer outFile2.Close()
+	if err != nil {
+		return err
+	}
+	pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
 
 	return nil
 }
@@ -163,31 +260,4 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (
 		return nil, err
 	}
 	return &tlsCert, nil
-}
-
-func prepare() error {
-	const ENV_OPENSSL_CONF = "OPENSSL_CONF"
-
-	if runtime.GOOS == "windows" {
-		p, err := exec.LookPath("openssl.exe")
-		if err != nil {
-			return fmt.Errorf("Unable locate openssl.exe: %v", err)
-		}
-		dirname1 := filepath.Dir(p)
-		dirname2 := filepath.Join(dirname1, "../ssl")
-		for _, d := range []string{dirname1, dirname2} {
-			filename := filepath.Join(d, "openssl.cnf")
-			if _, err := os.Stat(filename); err == nil {
-				os.Setenv(ENV_OPENSSL_CONF, filename)
-			}
-		}
-
-		conf := os.Getenv(ENV_OPENSSL_CONF)
-		if conf == "" {
-			return fmt.Errorf("%s is not set.", ENV_OPENSSL_CONF)
-		} else {
-			glog.V(1).Infof("set %s=%s", ENV_OPENSSL_CONF, conf)
-		}
-	}
-	return nil
 }
