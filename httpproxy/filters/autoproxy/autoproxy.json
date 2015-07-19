@@ -17,7 +17,7 @@
 		"youtube.com"
 	],
 	"gfwlist": {
-		"url": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
+		"url": "https://raw.githubusercontent.com/calfzhou/autoproxy-gfwlist/master/gfwlist.txt",
 		"file": "gfwlist.txt",
 		"encoding": "base64",
 		"duration": 86400
