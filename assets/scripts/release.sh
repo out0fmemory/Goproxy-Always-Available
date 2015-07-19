@@ -27,11 +27,12 @@ PACKAGE_GOOS=linux PACKAGE_GOARCH=amd64 make && mv build/dist/goproxy* dist/ && 
 PACKAGE_GOOS=linux PACKAGE_GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
 PACKAGE_GOOS=linux PACKAGE_GOARCH=arm make && mv build/dist/goproxy* dist/ && make clean
 PACKAGE_GOOS=darwin PACKAGE_GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
+PACKAGE_GOOS=darwin PACKAGE_GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
 
 export GITHUB_TOKEN=`cat ~/GITHUB_TOKEN`
 
-github-release delete -user phuslu --repo goproxy --tag goproxy
-github-release release -user phuslu --repo goproxy --tag goproxy --name "goproxy r${REV}" --description "r${REV}: ${NOTE}"
+github-release delete --user phuslu --repo goproxy --tag goproxy
+github-release release --user phuslu --repo goproxy --tag goproxy --name "goproxy r${REV}" --description "r${REV}: ${NOTE}"
 for f in `ls dist`; do
     github-release -v upload --user phuslu --repo goproxy --tag goproxy --name $f --file dist/$f
 done
