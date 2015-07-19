@@ -59,8 +59,7 @@ func ReadRequest(r io.Reader) (req *http.Request, err error) {
 		line := scanner.Text()
 		parts := strings.SplitN(line, ":", 2)
 		if len(parts) != 2 {
-			err = fmt.Errorf("Invaild Request Line: %#v", line)
-			return
+			continue
 		}
 
 		key := strings.TrimSpace(parts[0])
@@ -69,7 +68,7 @@ func ReadRequest(r io.Reader) (req *http.Request, err error) {
 	}
 
 	if err = scanner.Err(); err != nil {
-		return
+		// ignore
 	}
 
 	if cl := req.Header.Get("Content-Length"); cl != "" {
@@ -82,7 +81,6 @@ func ReadRequest(r io.Reader) (req *http.Request, err error) {
 	if req.Host == "" {
 		req.Host = req.Header.Get("Host")
 	}
-	delete(req.Header, "Host")
 
 	return
 }
@@ -109,14 +107,24 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 
 	logger.Printf("%s \"%s %s %s\" - -", req.RemoteAddr, req1.Method, req1.URL.String(), req1.Proto)
 
-	const PasswordKey string = "X-UrlFetch-Password"
+	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
+	params := map[string]string{}
+	for key, values := range req1.Header {
+		if strings.HasPrefix(key, paramsPreifx) {
+			params[strings.ToLower(key[len(paramsPreifx):])] = values[0]
+		}
+	}
+
+	for _, key := range params {
+		req1.Header.Del(paramsPreifx + key)
+	}
+
 	if Password != "" {
-		if password := req1.Header.Get(PasswordKey); password != Password {
+		if password, ok := params["password"]; !ok || password != Password {
 			httpError(rw, fmt.Sprintf("wrong password %#v", password), http.StatusForbidden)
 			return
 		}
 	}
-	req1.Header.Del(PasswordKey)
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
