@@ -149,7 +149,6 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 }
 
 func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) error {
-	keyFile := c.toFilename(commonName, ".key")
 	certFile := c.toFilename(commonName, ".crt")
 
 	csrTemplate := &x509.CertificateRequest{
@@ -198,19 +197,13 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) e
 		return err
 	}
 
-	outFile1, err := os.Create(keyFile)
-	defer outFile1.Close()
+	outFile, err := os.Create(certFile)
+	defer outFile.Close()
 	if err != nil {
 		return err
 	}
-	pem.Encode(outFile1, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-
-	outFile2, err := os.Create(certFile)
-	defer outFile2.Close()
-	if err != nil {
-		return err
-	}
-	pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+	pem.Encode(outFile, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+	pem.Encode(outFile, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 
 	return nil
 }
@@ -243,7 +236,6 @@ func (c *RootCA) toFilename(commonName, suffix string) string {
 
 func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (*tls.Certificate, error) {
 	certFile := c.toFilename(commonName, ".crt")
-	keyFile := c.toFilename(commonName, ".key")
 
 	if _, err := os.Stat(certFile); os.IsNotExist(err) {
 		c.mu.Lock()
@@ -255,7 +247,7 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (
 		}
 	}
 
-	tlsCert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	tlsCert, err := tls.LoadX509KeyPair(certFile, certFile)
 	if err != nil {
 		return nil, err
 	}
