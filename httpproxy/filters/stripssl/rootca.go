@@ -98,6 +98,8 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		switch runtime.GOOS {
 		case "windows":
 			cmd = exec.Command("certmgr.exe", "-add", "-c", certFile, "-s", "-r", "localMachine", "root")
+		case "darwin":
+			cmd = exec.Command("security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", certFile)
 		default:
 			break
 		}
