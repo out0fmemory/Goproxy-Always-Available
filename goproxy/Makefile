@@ -36,6 +36,7 @@ SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(PACKAGE_GOOS), windows)
 	SOURCES += $(REPO)/assets/gui/goagent.exe
+	SOURCES += $(REPO)/assets/certmgr/certmgr.exe
 	SOURCES += $(REPO)/assets/startup/addto-startup.js
 else ifeq ($(PACKAGE_GOOS), darwin)
 	SOURCES += $(REPO)/assets/gui/goagent-osx.command

@@ -10,11 +10,13 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"os/exec"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
 
-	// "github.com/golang/glog"
+	"github.com/golang/glog"
 )
 
 type RootCA struct {
@@ -44,6 +46,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 	}
 
 	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		glog.Infof("Generating RootCA for %s", certFile)
 		template := x509.Certificate{
 			IsCA:         true,
 			SerialNumber: big.NewInt(1),
@@ -78,18 +81,34 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		rootCA.derBytes = derBytes
 
 		outFile1, err := os.Create(keyFile)
-		defer outFile1.Close()
 		if err != nil {
 			return nil, err
 		}
 		pem.Encode(outFile1, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
+		outFile1.Close()
 
 		outFile2, err := os.Create(certFile)
-		defer outFile2.Close()
 		if err != nil {
 			return nil, err
 		}
 		pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
+		outFile2.Close()
+
+		var cmd *exec.Cmd
+		switch runtime.GOOS {
+		case "windows":
+			cmd = exec.Command("certmgr.exe", "-add", "-c", certFile, "-s", "-r", "localMachine", "root")
+		default:
+			break
+		}
+
+		if cmd != nil {
+			if err := cmd.Run(); err != nil {
+				glog.Errorf("Import RootCA(%#v) error: %v", cmd.Args, err)
+			} else {
+				glog.Infof("Import RootCA(%s) OK", certFile)
+			}
+		}
 	} else {
 		data, err := ioutil.ReadFile(keyFile)
 		if err != nil {
