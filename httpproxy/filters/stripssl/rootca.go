@@ -107,7 +107,14 @@ quit
 
 func GetCommonName(domain string) string {
 	parts := strings.Split(domain, ".")
-	if len(parts) >= 3 && len(parts[len(parts)-1]) >= 2 && len(parts[len(parts)-2]) >= 4 {
+	switch len(parts) {
+	case 1, 2:
+		break
+	case 3:
+		if len(parts[len(parts)-1]) >= 2 && len(parts[len(parts)-2]) >= 4 {
+			domain = "*." + strings.Join(parts[1:], ".")
+		}
+	default:
 		domain = "*." + strings.Join(parts[1:], ".")
 	}
 	return domain
