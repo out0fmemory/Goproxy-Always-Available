@@ -18,8 +18,7 @@ import (
 )
 
 const (
-	filterName       string = "stripssl"
-	ENV_OPENSSL_CONF string = "OPENSSL_CONF"
+	filterName string = "stripssl"
 )
 
 type Filter struct {

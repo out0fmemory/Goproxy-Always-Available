@@ -166,6 +166,8 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (
 }
 
 func prepare() error {
+	const ENV_OPENSSL_CONF = "OPENSSL_CONF"
+
 	if runtime.GOOS == "windows" {
 		p, err := exec.LookPath("openssl.exe")
 		if err != nil {
