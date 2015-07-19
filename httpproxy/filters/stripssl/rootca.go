@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"golang.org/x/net/publicsuffix"
 )
 
 type RootCA struct {
@@ -106,24 +105,12 @@ quit
 	return nil
 }
 
-func GetCommonName(domain string) (host string, err error) {
-	eTLD_1, err := publicsuffix.EffectiveTLDPlusOne(domain)
-	if err != nil {
-		glog.V(1).Infof("GetCommonName(%s) error: %v", domain, err)
-		return domain, nil
+func GetCommonName(domain string) string {
+	parts := strings.Split(domain, ".")
+	if len(parts) >= 3 && len(parts[len(parts)-1]) >= 2 && len(parts[len(parts)-2]) >= 4 {
+		domain = "*." + strings.Join(parts[1:], ".")
 	}
-
-	prefix := strings.TrimRight(strings.TrimSuffix(domain, eTLD_1), ".")
-	switch {
-	case prefix == "":
-		host = eTLD_1
-	case strings.Contains(prefix, "."):
-		host = fmt.Sprintf("*.%s.%s", strings.SplitN(prefix, ".", 2)[1], eTLD_1)
-	default:
-		host = "*." + eTLD_1
-	}
-
-	return
+	return domain
 }
 
 func (c *RootCA) RsaBits() int {

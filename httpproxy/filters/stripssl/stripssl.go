@@ -163,10 +163,7 @@ func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 		host = h
 	}
 
-	name, err := GetCommonName(host)
-	if err != nil {
-		return nil, err
-	}
+	name := GetCommonName(host)
 
 	var config interface{}
 	var ok bool
