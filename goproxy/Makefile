@@ -67,7 +67,7 @@ clean:
 
 .PHONY: release
 release:
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.tk sh /home/phuslu/goproxy/assets/scripts/release.sh
+	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.tk sh /home/phuslu/GOPATH/src/github.com/phuslu/goproxy/assets/scripts/release.sh
 
 $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)

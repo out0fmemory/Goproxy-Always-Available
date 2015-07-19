@@ -4,7 +4,7 @@ GOROOT=/go
 GOPATH=/home/phuslu/GOPATH
 PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
-cd /home/phuslu/goproxy
+cd ${GOPATH}/src/github.com/phuslu/goproxy
 git clean -df
 git reset --hard
 
@@ -18,7 +18,7 @@ REV=`git rev-list HEAD | wc -l | xargs`
 NOTE=`git log --oneline | head -1`
 REMOTE=`git remote -v | head -1 | awk '{print $2}'`
 
-cd /home/phuslu/goproxy/goproxy
+cd ${GOPATH}/src/github.com/phuslu/goproxy/goproxy
 mkdir -p dist
 
 PACKAGE_GOOS=windows PACKAGE_GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
