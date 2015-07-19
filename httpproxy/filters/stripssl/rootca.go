@@ -3,6 +3,7 @@ package stripssl
 import (
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -69,37 +70,49 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) (
 	certFile := c.toFilename(commonName, ".crt")
 	keyFile := c.toFilename(commonName, ".key")
 	csrFile := c.toFilename(commonName, ".csr")
+	extFile := c.toFilename(commonName, ".ext")
 
-	input := fmt.Sprintf(`genrsa -out %s %d
-req -new -sha256 -subj "/C=CN/S=Internet/L=Cernet/OU=%s/O=%s/CN=%s" -newkey rsa:%d -key %s -out %s
-x509 -req -sha256 -days %d -CA %s -CAkey %s -set_serial %d -extensions v3_ca -in %s -out %s
+	extData := `extensions = x509v3
+[ x509v3 ]
+nsCertType              = server
+keyUsage                = digitalSignature,nonRepudiation,keyEncipherment
+extendedKeyUsage        = msSGC,nsSGC,serverAuth
+`
+	err = ioutil.WriteFile(extFile, []byte(extData), 0644)
+	if err != nil {
+		return
+	}
+
+	subj := fmt.Sprintf("/C=CN/ST=Internet/L=Cernet/OU=%s/O=%s/CN=%s", c.name, strings.TrimPrefix(commonName, "*."), commonName)
+	input := fmt.Sprintf(`req -new -nodes -sha256 -newkey rsa:%d -subj "%s" -keyout %s -out %s
+x509 -req -sha256 -days %d -CA %s -CAkey %s -extfile %s -set_serial %d -in %s -out %s
 quit
-`, keyFile, rsaBits,
-		c.name, commonName, commonName, rsaBits, keyFile, csrFile,
-		vaildFor/(24*time.Hour), c.certFile, c.keyFile, time.Now().UnixNano(), csrFile, certFile)
+`, rsaBits, subj, keyFile, csrFile,
+		vaildFor/(24*time.Hour), c.certFile, c.keyFile, extFile, time.Now().UnixNano(), csrFile, certFile)
 	glog.V(2).Infof("openssl input: %#v", input)
 
 	cmd := exec.Command("openssl")
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		return err
+		return
 	}
 
-	err = cmd.Start()
-	if err != nil {
-		return err
+	if err = cmd.Start(); err != nil {
+		return
 	}
 
 	stdin.Write([]byte(input))
 	stdin.Close()
 
-	if err := cmd.Wait(); err != nil {
-		return err
+	if err = cmd.Wait(); err != nil {
+		return
 	}
 
-	if err := os.Remove(csrFile); err != nil {
-		return err
+	for _, filename := range []string{csrFile, extFile} {
+		if err = os.Remove(filename); err != nil {
+			return
+		}
 	}
 
 	return nil
