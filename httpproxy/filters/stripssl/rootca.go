@@ -155,10 +155,11 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) e
 	csrTemplate := &x509.CertificateRequest{
 		Signature: []byte(commonName),
 		Subject: pkix.Name{
-			Country:      []string{"CN"},
-			Organization: []string{commonName},
+			Country:            []string{"CN"},
+			Organization:       []string{commonName},
+			OrganizationalUnit: []string{c.name},
+			CommonName:         commonName,
 		},
-		DNSNames:           []string{commonName},
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
 
@@ -190,7 +191,6 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) e
 			x509.ExtKeyUsageServerAuth,
 			x509.ExtKeyUsageClientAuth,
 		},
-		DNSNames: []string{commonName},
 	}
 
 	certBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, c.ca, csr.PublicKey, c.priv)

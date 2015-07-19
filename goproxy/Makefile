@@ -37,10 +37,6 @@ SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 ifeq ($(PACKAGE_GOOS), windows)
 	SOURCES += $(REPO)/assets/gui/goagent.exe
 	SOURCES += $(REPO)/assets/startup/addto-startup.js
-	SOURCES += $(REPO)/assets/openssl/openssl.exe
-	SOURCES += $(REPO)/assets/openssl/openssl.cnf
-	SOURCES += $(REPO)/assets/openssl/libcrypto.dll
-	SOURCES += $(REPO)/assets/openssl/libssl.dll
 else ifeq ($(PACKAGE_GOOS), darwin)
 	SOURCES += $(REPO)/assets/gui/goagent-osx.command
 else ifeq ($(PACKAGE_GOOS)_$(PACKAGE_GOARCH), linux_amd64)
