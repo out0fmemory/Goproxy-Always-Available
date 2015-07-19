@@ -174,7 +174,6 @@ func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 		}
 		config = &tls.Config{
 			Certificates: []tls.Certificate{*cert},
-			ClientAuth:   tls.VerifyClientCertIfGiven,
 		}
 		f.TLSConfigCache.Set(name, config, time.Now().Add(f.CAExpires))
 	}
