@@ -150,13 +150,12 @@ func (s *fileStore) PutObject(object string, header http.Header, data io.ReadClo
 	defer data.Close()
 
 	filename := filepath.Join(s.Dirname, object)
-
-	f, err := os.OpenFile(filename, os.O_CREATE|os.O_EXCL, defaultFilePerm)
+	b, err := ioutil.ReadAll(data)
 	if err != nil {
 		return err
 	}
 
-	if _, err = io.Copy(f, data); err != nil {
+	if err = ioutil.WriteFile(filename, b, defaultFilePerm); err != nil {
 		return err
 	}
 

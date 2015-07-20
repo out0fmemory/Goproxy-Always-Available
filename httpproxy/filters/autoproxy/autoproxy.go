@@ -147,12 +147,14 @@ func (f *Filter) updater() {
 			continue
 		}
 
-		if time.Now().Sub(modTime) > f.GFWList.Duration {
+		if time.Now().After(modTime.Add(f.GFWList.Duration)) {
 			req, err := http.NewRequest("GET", f.GFWList.URL.String(), nil)
 			if err != nil {
 				glog.Warningf("NewRequest(%#v) error: %v", f.GFWList.URL.String(), err)
 				continue
 			}
+
+			glog.Infof("Downloading %#v", f.GFWList.URL.String())
 
 			_, resp, err := f.Transport.RoundTrip(nil, req)
 			if err != nil {
