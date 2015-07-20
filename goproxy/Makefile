@@ -57,7 +57,6 @@ GODEPS += github.com/golang/groupcache
 GODEPS += github.com/juju/ratelimit
 GODEPS += github.com/miekg/dns
 GODEPS += github.com/phuslu/http2
-GODEPS += golang.org/x/net/publicsuffix
 
 .PHONY: build
 build: $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
