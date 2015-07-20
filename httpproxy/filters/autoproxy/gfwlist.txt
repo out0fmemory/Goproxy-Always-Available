@@ -1,32 +1,48 @@
 [AutoProxy 0.2.9]
-! Checksum: YrZtd6aAA145k6yAirTQNA
+! Checksum: 15iXZRKuwvMhXPLdd4ljZw
 ! Expires: 6h
-! Last Modified: Tue, 12 May 2015 08:52:11 -0400
+! Last Modified: Sun, 19 Jul 2015 07:27:52 -0400
 ! HomePage: https://autoproxy-gfwlist.googlecode.com/
 
 !---------------------Fraud------------------------
 .lsxszzg.com
 
-!--------------------Restricted--------------------
+!------------Restricted & URL Redirects------------
+!--ehentai
+|http://85.17.73.31/
+
+||alien-ufos.com
 ||altrec.com
+||asianspiss.com
 ||azubu.tv
 ||beeg.com
 ||darpa.mil
+|http://img.dlsite.jp/
+||dmm.co.jp
 !--||dmm.com
 ||fastpic.ru
+||flipboard.com
 ||fxnetworks.com
+||getuploader.com
 hulu.com
 huluim.com
+||hybrid-analysis.com
 |http://www.ilovelongtoes.com/
+|http://www.m-sport.co.uk
 ||metarthunter.com
+||mfxmedia.com
 ||muzu.tv
 |http://www.nbc.com/live
 ||netflix.com
+||nuuvem.com
+||osaka69.com
 ||pandora.com
 .pandora.tv
 |http://www.parkansky.com
 |http://*.pimg.tw/
 ||pure18.com
+||qq.co.za
+|http://radiko.jp
 ||rdio.com
 |http://cdn*.search.xxx/
 ||slacker.com
@@ -34,9 +50,11 @@ huluim.com
 ||springboardplatform.com
 ||target.com
 ||turntable.fm
+||twerkingbutt.com
 ||vevo.com
+|http://ecsm.vs.com/
+||wheretowatch.com
 ||zattoo.com
-||qq.co.za
 ||zozotown.com
 
 !--------------------Num--------------------
@@ -61,6 +79,7 @@ huluim.com
 !--||1984blog.com
 .1984bbs.org
 ||1984bbs.org
+.1998cdp.org
 .1bao.org
 |http://1bao.org
 ||1pondo.tv
@@ -71,18 +90,22 @@ huluim.com
 ||2008xianzhang.info
 .213.so
 21andy.com/blog
+.228.net.tw
 24smile.org
 .2shared.com
 .315lz.com
 ||32red.com
 ||36rain.com
+.3a5a.com
 .3boys2girls.com
+.3tui.net
 ||4bluestones.biz
 ||4chan.org
 ||4shared.com
 5i01.com
 taiwannation.50webs.com
 ||51.ca
+.5isotoi5.org
 .5maodang.com
 64memo
 64tianwang.com
@@ -90,8 +113,8 @@ taiwannation.50webs.com
 666kb.com
 6park.com
 ||6park.com
-||www.6v6dota.com
 ||7capture.com
+|http://85st.com
 .881903.com/page/zh-tw/
 .888.com
 ||881903.com
@@ -105,6 +128,8 @@ taiwannation.50webs.com
 ||9bis.net
 
 !--------------------AA--------------------
+.tibet.a.se
+|http://tibet.a.se
 ||a-normal-day.com
 a5.com.ru
 |http://aamacau.com
@@ -125,9 +150,10 @@ adultkeep.net/peepshow/members/main.htm
 ||af.mil
 aiph.net
 ||aiph.net
+|http://download.aircrack-ng.org
 .aisex.com
 ||ait.org.tw
-|http://aiweiwei.com
+aiweiwei.com
 .aiweiweiblog.com
 ||aiweiweiblog.com
 ||www.ajsands.com
@@ -162,6 +188,7 @@ ameblo.jp
 ||amnesty.org
 .amnestyusa.org
 ||amnestyusa.org
+.amnyemachen.org
 .amoiist.com
 analyze-v.com
 ||anchorfree.com
@@ -169,8 +196,11 @@ analyze-v.com
 ||ancsconf.org
 ||andfaraway.net
 ||android.com
+||android-x86.org
 ||angularjs.org
 animecrazy.net
+aniscartujo.com
+||aniscartujo.com
 ||anobii.com
 .anonymizer.com
 anontext.com
@@ -198,6 +228,7 @@ archive.is
 .arctosia.com
 |http://arctosia.com
 ||areca-backup.org
+||arlingtoncemetery.mil
 ||army.mil
 artsy.net
 .asahichinese.com
@@ -221,6 +252,7 @@ atgfw.org
 ||atj.org.tw
 .atlaspost.com
 ||atlaspost.com
+||atdmt.com
 .atnext.com
 ||atnext.com
 avaaz.org
@@ -246,6 +278,7 @@ badoo.com
 ||baidu.jp
 ||baixing.me
 hen.bao.li
+||bannedbook.org
 bannedbook.org
 ||bannedbook.org
 .barenakedislam.com
@@ -255,7 +288,7 @@ bayvoice.net
 dajusha.baywords.com
 .bbc.co.uk*chinese
 .bbc.co.uk/tv
-.bbc.co.uk*zhongwen
+.bbc.co*zhongwen
 news.bbc.co.uk/onthisday*newsid_2496000/2496277
 newsforums.bbc.co.uk
 .bbcchinese.com
@@ -264,6 +297,7 @@ newsforums.bbc.co.uk
 .bbg.gov
 ||bbsfeed.com
 bbsland.com
+.bbsone.com
 .bcc.com.tw/board
 .bcchinese.net
 .bebo.com
@@ -275,7 +309,9 @@ beijingspring.com
 ||berlintwitterwall.com
 .bestforchina.org
 ||bestforchina.org
+||bestvpn.com
 .bestvpnservice.com
+.bestvpnusa.com
 ||bet365.com
 .betfair.com
 .bettween.com
@@ -287,13 +323,15 @@ beijingspring.com
 ||bfsh.hk/
 biantailajiao.com
 biantailajiao.in
+.biblesforamerica.org
+|http://biblesforamerica.org
 .bic2011.org
 bigfools.com
 .bignews.org
 ||bignews.org
 .bigsound.org/portnoy
 ||bill2-software.com
-billypan.com/wiki/%E9%A6%96%E9%A0%81
+|http://billypan.com/wiki
 ||billywr.com
 bipic.net
 .bit.ly
@@ -340,6 +378,8 @@ bloomberg.de
 ||bnrmetal.com
 boardreader.com/thread
 ||boardreader.com
+.bod.asia
+|http://bod.asia
 bonbonme.com
 ||boobstagram.com
 ||book.com.tw
@@ -360,21 +400,26 @@ boxunblog.com
 ||br.st
 ||brandonhutchinson.com
 ||braumeister.org
+.bravotube.net
+||bravotube.net
+.brazzers.com
 .break.com
 ||break.com
 .breakingtweets.com
 ||breakingtweets.com
 ||breakwall.net
+briian.com/6511/freegate
 .briefdream.com/%E7%B4%A0%E6%A3%BA
 brightkite.com
 ||brightkite.com
 brizzly.com
 ||brizzly.com
 broadbook.com
-ibros.org
+.broadpressinc.com
 brucewang.net
 ||bt95.com
 |http://btdigg.org
+.btspread.com
 .budaedu.org
 ||budaedu.org
 .bullog.org
@@ -407,6 +452,10 @@ holz.byethost8.com
 .calameo.com/books
 cn.calameo.com
 |http://cn.calameo.com
+.its.caltech.edu/~falun/
+.cam4.com
+.cam4.jp
+.cam4.sg
 ||cams.com
 .cams.org.sg
 canadameet.com
@@ -416,7 +465,8 @@ canadameet.com
 .cao.im
 .caobian.info
 ||caobian.info
-|http://catcatbox.com/forum.php*
+cardinalkungfoundation.org
+.casatibet.org.mx
 caochangqing.com
 ||caochangqing.com
 cari.com.my
@@ -427,8 +477,9 @@ cari.com.my
 catholic.org.tw
 ||catholic.org.tw
 ||cattt.com
+||cbc.ca
 .cbsnews.com/video
-||ccavtop10.com
+.cbtc.org.hk
 !-.ccc.de
 !-||ccc.de
 .ccdtr.org
@@ -441,15 +492,19 @@ ccue.ca
 ccue.com
 .cgdepot.org
 |http://cgdepot.org
+.cdef.org
 ||cdig.info
 cdjp.org
 ||cdjp.org/
+||cdninstagram.com
 .cdnews.com.tw
+cdp1989.org
 cdp1998.org
 ||cdp1998.org
 cdp2006.org
 ||cdp2006.org
 .cdpa.url.tw
+cdpeu.org
 cdpusa.org
 cdpweb.org
 ||cdpweb.org
@@ -466,6 +521,7 @@ cdpwu.org
 |http://centurys.net
 .cfhks.org.hk
 .cftfc.com
+.cgst.edu
 ||chandoo.org
 .change.org
 |http://change.org
@@ -483,6 +539,7 @@ chenpokong.com
 .china-week.com
 china101.com
 ||china101.com
+||china18.org
 ||china21.com
 china21.org
 ||china21.org
@@ -509,7 +566,10 @@ chinagfw.org
 ||chinagfw.org
 .chinagreenparty.org
 ||chinagreenparty.org
+.chinahorizon.org
+||chinahorizon.org
 .chinahush.com
+chinalaborwatch.org
 chinalawtranslate.com
 chinaxchina.com/howto
 .chinainperspective.com
@@ -540,11 +600,11 @@ chinese-memorial.org
 ||chinesedailynews.com
 .chinesen.de
 ||chinesen.de
-chinesenewsnet.com
 .chinesepen.org
 .chinesetalks.net/ch
 .chingcheong.com
 ||chingcheong.com
+chithu.org
 chn.chosun.com
 christianstudy.com
 ||christianstudy.com
@@ -555,13 +615,15 @@ christusrex.org/www1/sdc
 ||chromium.org
 chubun.com
 chuizi.net
-||chuizi.net
 ||christiantimes.org.hk
 .chrlawyers.hk
-||allaboutalpha.com
-.circlethebayfortibet.org
+!--||allaboutalpha.com
+||circlethebayfortibet.org
+||citizenscommission.hk
 .citizenlab.org
 citizensradio.org
+.city365.ca
+|http://city365.ca
 city9x.com
 .civicparty.hk
 ||civicparty.hk
@@ -569,12 +631,16 @@ civilhrfront.org
 ||civilhrfront.org
 .civilmedia.tw
 psiphon.civisec.org
-||cjb.net
+!--||cjb.net
 .ck101.com
 ||ck101.com
 ||classicalguitarblog.net
 .clb.org.hk
+clearharmony.net
+clearwisdom.net
 .clipfish.de
+||club1069.com
+cmi.org.tw
 |http://www.cmoinc.org
 !--.cmule.com
 !--||cmule.com
@@ -590,13 +656,16 @@ news.cnyes.com
 ||cochina.org
 .code1984.com/64
 ||codeshare.io
+||codeskulptor.org
 |http://tosh.comedycentral.com
 comefromchina.com
 ||comefromchina.com
+||commentshk.com
 ||compileheart.com
 ||conoyo.com
 .contactmagazine.net
 .convio.net
+.coobay.com
 |http://www.cool18.com/bbs*/
 .coolaler.com
 ||coolaler.com
@@ -610,6 +679,7 @@ cpj.org
 ||cpj.org/
 crackle.com
 ||crackle.com
+||crchina.org
 crd-net.org
 creaders.net
 ||creaders.net
@@ -619,9 +689,10 @@ csdparty.com
 ||csdparty.com
 ||csuchen.de
 .ctfriend.net
+.ctitv.com.tw
 cts.com.tw
-|http://library.usc.cuhk.edu.hk/Default.aspx?url=dflms%2fsub%2f%2f1%2fdict%2f50
-|http://mjlsh.usc.cuhk.edu.hk
+|http://library.usc.cuhk.edu.hk/
+|http://mjlsh.usc.cuhk.edu.hk/
 .cuhkacs.org/~benng
 .cuihua.org
 ||cuihua.org
@@ -652,24 +723,30 @@ dadazim.com
 dafagood.com
 dafahao.com
 ||dalailama.ru
+.dalailamavisit.org.nz
 .dailidaili.com
 ||dailidaili.com
 .dailymotion.com
 .dajiyuan.com
 .dajiyuan.eu
 dalailama.com
+.dalailamaprotesters.info
 .dalailamaworld.com
 ||dalailamaworld.com
 dalianmeng.org
 ||dalianmeng.org
+.daliulian.org
 .danke4china.net
 ||danke4china.net
 .danwei.org
 daolan.net
+.david-kilgour.com
+|http://david-kilgour.com
 daxa.cn
 ||daxa.cn/
 cn.dayabook.com
 .daylife.com/topic/dalai_lama
+||dcard.tw
 .ddc.com.tw
 ||de-sci.org
 .de-sci.org
@@ -682,13 +759,13 @@ delicious.com/GFWbookmark
 ||desc.se/
 .destroy-china.jp
 ||deutsche-welle.de
-||dev102.com
 ||deviantart.com
 ||deviantart.net
 ||devio.us
 ||devpn.com
 |http://www.dfanning.com
 ||dfas.mil
+.dharamsalanet.com
 .diaoyuislands.org
 ||diaoyuislands.org
 static.digg.com
@@ -706,6 +783,7 @@ disp.cc
 .dit-inc.us
 ||dit-inc.us
 .dizhidizhi.com
+||dizhuzhishang.com
 djangosnippets.org
 ||dl-laby.jp
 ||dlsite.com
@@ -713,12 +791,13 @@ djangosnippets.org
 ||dnscrypt.org
 ||dns2go.com
 ||dnssec.net
+.dogfartnetwork.com/tour
 .dojin.com
 .dok-forum.net
 ||dolc.de
+||dolf.org.hk
 ||dollf.com
 .domain.club.tw
-dongde.com
 dongtaiwang.com
 ||dongtaiwang.com
 .dongtaiwang.net
@@ -729,7 +808,6 @@ dongtaiwang.com
 .dotplane.com
 ||dotplane.com
 ||dotsub.com
-doubleaf.com
 ||dougscripts.com
 dowei.org
 ||doxygen.org
@@ -737,6 +815,7 @@ dphk.org
 dpp.org.tw
 ||dpp.org.tw
 ||weigegebyc.dreamhosters.com
+.drepung.org
 ||drgan.net
 ||dropbox.com
 ||dropboxusercontent.com
@@ -759,8 +838,9 @@ duping.net
 dupola.com
 dupola.net
 ||dvorak.org
-.dw.de
-|http://dw.de
+.dw.com
+|http://www.dw.com
+||dw.de
 .dw-world.com
 ||dw-world.com
 .dw-world.de
@@ -771,22 +851,24 @@ dwnews.com
 dwnews.net
 ||dwnews.net
 xys.dxiong.com
-dy24k.info
 ||dynawebinc.com
 .dyndns.org
 .dzze.com
 
 !--------------------EE--------------------
+||e-classical.com.tw
 ||e-gold.com
 .e-gold.com
-|http://g.e-hentai.org/
+||g.e-hentai.org
+||lofi.e-hentai.org
 e-info.org.tw
 .e-traderland.net/board
 .e123.hk
 .eastturkestan.com
+|http://www.eastturkistan.net/
 .eastturkistan-gov.org
 .eastturkistangovernmentinexile.us
-hkjp.easyweb.hk
+||eastturkistangovernmentinexile.us
 ebookbrowse.com
 ebookee.com
 ecministry.net
@@ -834,13 +916,14 @@ epochtimestr.com
 ||epochweekly.com
 erabaru.net
 .erepublik.com
+|http://erktv.com/
 ||ernestmandel.org
 ||erights.net
 .etaa.org.au
 etaiwannews.com
 ||etizer.org
 .ettoday.net
-www.eulam.com
+.eulam.com
 eventful.com
 ||exblog.jp
 ||blog.exblog.co.jp
@@ -848,6 +931,7 @@ eventful.com
 |http://blog.excite.co.jp/
 ||expatshield.com
 ||exploader.net
+.expressvpn.com
 .extremetube.com
 eyevio.jp
 ||eyevio.jp
@@ -862,14 +946,31 @@ eyevio.jp
 @@||*v6.facebook.com
 ||connect.facebook.net
 ||facebookquotes4u.com
+|http://facesoftibetanselfimmolators.info
 ||facesofnyfw.com
+
+!--Enhancement:
+!--http://faithfuleye.com.detail.website/
+!--http://faithfuleye.com.ipaddress.com/
+.faithfuleye.com
+
 ||faiththedog.info
 .fakku.net
+falun-co.org
 falunart.org
 ||falunasia.info
 falundafa.org
+falundafa-dc.org
+||falundafa-florida.org
+||falundafa-nc.org
+falun-ny.net
 falundafamuseum.org
+falungong.org.uk
 ||falunhr.org
+faluninfo.net
+.falunpilipinas.net
+||falunworld.net
+familyfed.org
 ||fanglizhi.info
 ||fangong.org
 fangongheike.com
@@ -901,6 +1002,7 @@ fb.me
 fc2.com
 .fc2china.com
 fc2blog.net
+|http://uygur.fc2web.com/
 video.fdbox.com
 .fdc89.jp
 ||fourface.nodesnoop.com
@@ -911,13 +1013,16 @@ video.fdbox.com
 ||feedzshare.com
 ||feelssh.com
 feer.com
+|http://feitianacademy.org
+.feitian-california.org
 ||feministteacher.com
 .fengzhenghu.com
 ||fengzhenghu.com
+|http://ff.im
 fflick.com
 fgmtv.net
 .fgmtv.org
-!--.filefactory.com/file
+|http://feeds.fileforum.com
 .files2me.com
 |http://files2me.com
 .fileserve.com/file
@@ -967,6 +1072,12 @@ footwiball.com
 ||foxdie.us
 ||foxsub.com
 foxtang.com
+.fpmt.org
+|http://fpmt.org
+.fpmt.tw
+.fpmt-osel.org
+||fpmtmexico.org
+fqok.org
 ||fqrouter.com
 ||franklc.com
 .freakshare.com
@@ -1015,9 +1126,12 @@ free4u.com.ar
 ||freeyoutubeproxy.net
 friendfeed.com
 friendfeed-media.com/e99a4ebe2fb4c1985c2a58775eb4422961aa5a2e
-|http://ff.im
+friends-of-tibet.org
+.friendsoftibet.org
+freechina.net
 |http://www.zensur.freerk.com/
 freevpn.nl
+|http://adult.friendfinder.com/
 .fring.com
 ||fring.com
 ||frommel.net
@@ -1033,6 +1147,7 @@ fuckgfw.org
 fulue.com
 .funf.tw
 funp.com
+.furhhdl.org
 ||furinkan.com
 .futurechinaforum.org
 ||futuremessage.org
@@ -1044,9 +1159,11 @@ fzh999.net
 !--------------------GG--------------------
 ||gabocorp.com
 .gaeproxy.com
+.gaforum.org
 ||galenwu.com
 ||game735.com
 gamebase.com.tw
+|http://wiki.gamerp.jp
 ||gamer.com.tw
 .gamer.com.tw
 .gamez.com.tw
@@ -1065,6 +1182,7 @@ gardennetworks.com
 ||gartlive.com
 ||gather.com
 ||gaymap.cc
+.gaytube.com
 .gazotube.com
 ||gazotube.com
 ||gcc.org.hk
@@ -1075,7 +1193,7 @@ gdzf.org
 ||geek-art.net
 geekerhome.com/2010/03/xixiang-project-cross-gfw
 ||geekmanuals.com
-||genuitec.com
+!--||genuitec.com
 .geocities.co.jp
 .geocities.com/SiliconValley/Circuit/5683/download.html
 hk.geocities.com
@@ -1114,11 +1232,15 @@ globalmuseumoncommunism.org
 ||globalvoicesonline.org
 gmbd.cn
 ||gmhz.org
+|http://www.gmiddle.com/
+|http://www.gmiddle.net/
+.gmll.org
 ||gnci.org.hk
 ||goagent.biz
 ||goagentplus.com
 godfootsteps.org
 ||godfootsteps.org
+godsdirectcontact.org.tw
 .gokbayrak.com
 ||goldbetsports.com
 |http://www.goldenmelody.com.tw
@@ -1127,10 +1249,13 @@ gongmeng.info
 gongm.in
 gongminliliang.com
 .gongwt.com
+|http://gongwt.com/
 .goodreads.com
 ||goodreads.com
 .goodreaders.com
 ||goodreaders.com
+.goodtv.com.tw
+.goodtv.tv
 ||goofind.com
 .googlesile.com
 .gopetition.com
@@ -1192,6 +1317,7 @@ guancha.org
 !--||googletagservices.com
 ||googleusercontent.com
 ||googlevideo.com
+||proxy.googlezip.net
 ||groups.google.cn
 ||gvt0.com
 ||gvt1.com
@@ -1232,7 +1358,6 @@ guancha.org
 !-A
 !-||abelhadigital.com
 !-||blog.aegisub.org
-!-||pdk.android.com
 !-||android-x86.org
 !-||chrome.angrybirds.com
 !-||appbrain.com
@@ -1240,7 +1365,6 @@ guancha.org
 !-||feeds.arstechnica.com
 !-||blog.athico.com
 !-||aurorasoftworks.com
-!-||avwikipedia.com
 !-B
 !-||www.benjamingolub.com
 !-||rss.berryreview.com
@@ -1248,7 +1372,6 @@ guancha.org
 !-||secrets.blacktree.com
 !-||www.blacktree.com
 !-||feeds.boingboing.net
-!-||boxunblog.com
 !-||moblog.bradleyit.com
 !-||www.buddyrunner.com
 !-||buzzcantweet.com
@@ -1489,350 +1612,24 @@ wozy.in
 !-------------Google Minganci-----
 !--@@||ipv6.google.com
 
-!--.google.*%D8%BA%D8%A7
-!--.google.*/complete/search
-!--/search?q=cache
-!--/search%3Fq%3Dcache
-!--%2Fsearch%3Fq%3Dcache
-!--google*search*q=cache
-!--.google.*301
-!--.google.*search*8964
-!--.google.*boxun
-!--.google.*chinese+people+eating+babies
-!--.google.*http*dotsub.com
-!--.google.*east*turkistan
-!--.google.*facebook
-!--.google.*falun
-!--.google.*freechina
-!--.google.*freetibet
-!--.google.*gfw
-!--.google.*goagent
-!--.google.*&q=gpass
-!--.google.*great*firewall
-!--.google.*hujin
-!--.google.*huayuan
-!--.google.*jiaqinglin
-!--.google.*jiangzemin
-!--.google.*&q=jzm&
-!--.google.*nytimes
-!--.google.*peacehall
-!--.google.*president.gov.tw
-!--.google.*protest*1989
-!--.google.*prisoner+of+the+state
-!--.google.*search*Tankman
-!--.google.*tbm=mbl
-!--.google.*tbm%3Dmbl
-!--.google.*search*tbs=mbl
-!--.google.*search*tbs%3Dmbl
-!--.google.*tbs=qdr
-!--.google.*tbs%3Dqdr
-!--.google.*tbs=rltm
-!--.google.*tbs%3Drltm
-!--.google.*Tiananmen
-!--.google.*tianwang
-!--.google.*Tibetan*independence
-!--.google.*twitter
-!--.google.*xijinping
-!--.google.*&q=ytht&
-!--.google.*zhouyongkang
-
-
-!--08 * Xian Zhang
-!--.google.*08*%E5%AE%AA%E7%AB%A0
-!--64 * Zhen Xiang
-!--.google.*64*%E7%9C%9F%E7%9B%B8
-!--64 * Zhen Ya
-!--.google.*64*%E9%95%87%E5%8E%8B
-!--Ba Jiu
-!--.google.*%E5%85%AB%E4%B9%9D
-!--Bei Guo Zhi Chun
-!--.google.*%E5%8C%97%E5%9B%BD%E4%B9%8B%E6%98%A5
-!--Bei Jing Zhi Chun
-!--.google.*%E5%8C%97%E4%BA%AC%E4%B9%8B%E6%98%A5 
-!--Chen Po Kong
-!--.google.*%E9%99%88%E7%A0%B4%E7%A9%BA
-!--Chi Fei
-!--.google.*%E8%B5%A4%E5%8C%AA
-!--Da Lai La Ma
-!--.google.*%E8%BE%BE%E8%B5%96%E5%96%87%E5%98%9B
-!--Dai Kai + Fa Piao(reversed)
-!--.google.*%E4%BB%A3%E5%BC%80*%E5%8F%91%E7%A5%A8
-!--.google.*%E5%8F%91%E7%A5%A8*%E4%BB%A3%E5%BC%80
-!--Dai Li/Proxy
-!--.google.*%E4%BB%A3%E7%90%86
-!--Di Xia Jiao Hui
-!--.google.*%E5%9C%B0%E4%B8%8B%E6%95%99%E4%BC%9A
-!--Du Li Tai Wan Hui
-!--.google.*%E7%8B%AC%E7%AB%8B%E5%8F%B0%E6%B9%BE%E4%BC%9A
-!--Du Li Zhong Wen Bi Hui
-!--.google.*%E7%8B%AC%E7%AB%8B%E4%B8%AD%E6%96%87%E7%AC%94%E4%BC%9A
-!--Fa Ke
-!--.google.*%E5%8F%91%E8%AF%BE
-!--Fa La Li
-!--.google.*%E6%B3%95%E6%8B%89%E5%88%A9
-!--Fan Qiang
-!--.google.*%E7%BF%BB%E5%A2%99
-!--Fang Bin Xing(SB)
-!--.google.*%E6%96%B9%E6%BB%A8%E5%85%B4
-!--Fang Huo Chang Cheng
-!--.google.*%E9%98%B2%E7%81%AB%E9%95%BF%E5%9F%8E
-!--Feng Zheng Hu
-!--.google.*%E5%86%AF%E6%AD%A3%E8%99%8E
-!--Gao Zhi Sheng
-!--.google.*%E9%AB%98%E6%99%BA%E6%99%9F
-!--Ge Ming
-!--.google.*%E9%9D%A9%E5%91%BD
-!--Gong Chan
-!--.google.*%E5%85%B1%E4%BA%A7
-!--Guan Jian Shi Ke
-!--.google.*%E5%85%B3%E9%94%AE%E6%97%B6%E5%88%BB
-!--Guang Chang
-!--.google.*%E5%B9%BF%E5%9C%BA
-!--Guo Jia Fang Huo Qiang Zhi Fu
-!--.google.*%E5%9B%BD%E5%AE%B6%E9%98%B2%E7%81%AB%E5%A2%99
-!--Ha Ma
-!--.google.*%E8%9B%A4%E8%9F%86
-!--Ji Hui
-!--.google.*%E9%9B%86%E4%BC%9A
-!--Ji Zhe Wu Jiang Jie
-!--.google.*%E8%AE%B0%E8%80%85%E6%97%A0%E7%96%86%E7%95%8C
-!--Jia Bao
-!--.google.*%E5%AE%B6%E5%AE%9D
-!--Jia Qing Lin
-!--.google.*%E5%81%87%E5%BA%86%E6%B7%8B
-!--Jie Yan
-!--.google.*%E6%88%92%E4%B8%A5
-!--Jin Tao
-!--.google.*%E9%94%A6%E6%B6%9B
-!--Jing Wen
-!--.google.*%E7%BB%8F%E6%96%87
-!--Jin Ping
-!--.google.*%E8%BF%91%E5%B9%B3
-!--Jiu Chang Wei
-!--.google.*%E4%B9%9D%E5%B8%B8%E5%A7%94
-!--Ku Xing
-!--.google.*%E9%85%B7%E5%88%91
-!--Ling
-!--.google.*%E4%BB%A4
-!--Ling Ba Xian Zhang
-!--.google.*%E9%9B%B6%E5%85%AB*%E5%AE%AA%E7%AB%A0
-!--Liu Qi
-!--.google.*search*%E5%88%98%E6%B7%87
-!--Liu * Si
-!--.google.*%E5%85%AD*%E5%9B%9B
-!--Lu Xi
-!--.google.*%E9%B2%81%E6%98%95
-!--Ma Kai
-!--.google.*%E9%A9%AC%E5%87%AF
-!--Ma Li
-!--.google.*%E9%A9%AC%E5%8A%9B
-!--Mai Dang Lao | McDonald
-!--.google.*%E9%BA%A6%E5%BD%93%E5%8A%B3
-!--Mao Xiang Hui
-!--.google.*%E6%AF%9B%E5%90%91%E8%BE%89
-!--Meng Gu+Shi Wei
-!--.google.*%E5%86%85%E8%92%99*%E7%A4%BA%E5%A8%81
-!--Meng Jian Zhu
-!--.google.*%E5%AD%9F%E5%BB%BA%E6%9F%B1
-!--Meng Ying Wei Ming Hu
-!--.google.*%E6%A2%A6%E8%90%A6%E6%9C%AA%E5%90%8D%E6%B9%96
-!--Mian Fei * VPN
-!--.google.*%E5%85%8D%E8%B4%B9*vpn
-!--Mo Li
-!--.google.*%E8%8C%89%E8%8E%89
-!--Mo Ri Gen
-!--.google.*%E8%8E%AB%E6%97%A5%E6%A0%B9
-!--Na Mi Bi Ya
-!--.google.*%E7%BA%B3%E7%B1%B3%E6%AF%94%E4%BA%9A
-!--Nuo Bei Er He Ping Jiang / Nobel Peace Prize
-!--.google.*%E8%AF%BA%E8%B4%9D%E5%B0%94%E5%92%8C%E5%B9%B3%E5%A5%96
-!--Namibia + Nuctech
-!--.google.com*search*namibia*nuctech
-!--Pan Gu Yue Dui
-!--.google.*%E7%9B%98%E5%8F%A4%E4%B9%90%E9%98%9F
-!--Peng Li Yuan
-!--.google.*%E5%BD%AD%E4%B8%BD%E5%AA%9B
-!--Po Hai
-!--.google.*%E8%BF%AB%E5%AE%B3
-!--Qian Shi Jin Sheng
-!--.google.*%E5%89%8D%E4%B8%96%E4%BB%8A%E7%94%9F
-!--Qiang Sheng
-!--.google.*%E6%9E%AA%E5%A3%B0
-!--Qing Tian Bai Ri Qi
-!--.google.*%E9%9D%92%E5%A4%A9%E7%99%BD%E6%97%A5%E6%97%97
-!--Ren Min Gong Yuan
-!--.google.*%E4%BA%BA%E6%B0%91%E5%85%AC%E5%9B%AD
-!--Ri Ji
-!--.google.*%E6%97%A5%E8%AE%B0
-!--San Tui
-!--.google.*%E4%B8%89%E9%80%80
-!--Shi Wei Hui
-!--.google.*%E4%B8%96%E7%BB%B4%E4%BC%9A
-!--Si Tu Hua
-!--.google.*%E5%8F%B8%E5%BE%92%E5%8D%8E
-!--Tai Zi
-!--.google.*%E5%A4%AA%E5%AD%90
-!--Tan Zuo Ren
-!--.google.*search*%E8%B0%AD%E4%BD%9C%E4%BA%BA
-!--Tian An Men
-!--.google.*%E5%A4%A9%E5%AE%89%E9%97%A8
-!--Tian Mie
-!--.google.*%E5%A4%A9%E7%81%AD
-!--Tian Xian Bao Bao + Kang Shi Fu + *(reversed)
-!--.google.*%E5%A4%A9%E7%BA%BF%E5%AE%9D%E5%AE%9D*%E5%BA%B7%E5%B8%88%E5%82%85
-!--.google.*%E5%BA%B7%E5%B8%88%E5%82%85*%E5%A4%A9%E7%BA%BF%E5%AE%9D%E5%AE%9D
-!--Tu Ni Si
-!--.google.*%E7%AA%81%E5%B0%BC%E6%96%AF
-!--Tui Te
-!--.google.*%E6%8E%A8%E7%89%B9
-!--Wang Yang
-!--.google.*%E6%B1%AA%E6%96%AF
-!--Wei Se
-!--.google.*%E5%94%AF%E8%89%B2
-!--Wei Shi Gong Si
-!--.google.*%E5%A8%81%E8%A7%86%E5%85%AC%E5%8F%B8
-!--Wo Mei You Di Ren
-!--.google.com*%E6%88%91%E6%B2%A1%E6%9C%89%E6%95%8C%E4%BA%BA
-!--Wu Er Kai Xi
-!--.google.*%E4%B9%8C%E5%B0%94%E5%87%AF%E8%A5%BF
-!--Wu Fan
-!--.google.*%E4%BC%8D%E5%87%A1
-!--Xi Lai
-!--.google.*%E7%86%99%E6%9D%A5
-!--Xin Jiang * Du Li(reversed)
-!--.google.%E6%96%B0%E7%96%86*%E7%8B%AC%E7%AB%8B
-!--Xin Jing Bao
-!--.google.*%E6%96%B0%E4%BA%AC%E6%8A%A5
-!--Xu Cai Hou
-!--.google.*%E5%BE%90%E6%89%8D%E5%8E%9A
-!--Xuan Yan
-!--.google.com.*%E5%AE%A3%E8%A8%80
-!--Xue Chao
-!--.google.*%E5%AD%A6%E6%BD%AE
-!--Yao Bang
-!--.google.*%E8%80%80%E9%82%A6
-!--Yue Yue
-!--.google.*%E6%9C%88%E6%9C%88
-!--Ying Di
-!--.google.*%E5%BD%B1%E5%B8%9D
-!--Yu Zheng Sheng
-!--.google.*search*%E4%BF%9E%E6%AD%A3%E5%A3%B0
-!--Yue Hou Ji Fen
-!--.google.*%E9%98%85%E5%90%8E%E5%8D%B3%E7%84%9A
-!--Zang Du
-!--.google.*%E8%97%8F%E7%8B%AC
-!--Ze Min
-!--.google.*%E6%B3%BD%E6%B0%91
-!--Zhang Gao Li
-!--.google.*%E5%BC%A0%E9%AB%98%E4%B8%BD
-!--Zhe Da Zhao Sheng bAN
-!--.google.*%E6%B5%99%E5%A4%A7%E6%8B%9B%E7%94%9F%E5%8A%9E
-!--Zhen Li Bu
-!--.google.*%E7%9C%9F%E7%90%86%E9%83%A8
-!--Zhen Xiang
-!--.google.*%E7%9C%9F%E7%9B%B8
-!--Zheng Bian
-!--.google.*%E6%94%BF%E5%8F%98
-!--Zheng Zhi Ju
-!--.google.*%E6%94%BF%E6%B2%BB%E5%B1%80
-!--Zhi Qing Zhe
-!--.google.*%E7%9F%A5%E6%83%85%E8%80%85
-!--Zhong Gong
-!--.google.*%E4%B8%AD%E5%85%B1
-!--Zhong Guo * Jin Wen
-!--.google.*%E4%B8%AD%E5%9B%BD*%E7%A6%81%E9%97%BB
-!--Zhong Guo Min Zhu Dang
-!--.google.*%E4%B8%AD%E5%9B%BD%E6%B0%91%E4%B8%BB%E5%85%9A
-!--Zhong Guo Min Zhu Yun Dong
-!--.google.*%E4%B8%AD%E5%9B%BD%E6%B0%91%E4%B8%BB%E8%BF%90%E5%8A%A8
-!--Zhong Guo Shu Zi Shi Dai
-!--.google.*%E4%B8%AD%E5%9B%BD%E6%95%B0%E5%AD%97%E6%97%B6%E4%BB%A3
-!--Zhong Guo Yuan Min Da Tong Meng
-!--.google.*%E4%B8%AD%E5%9B%BD%E5%86%A4%E6%B0%91%E5%A4%A7%E5%90%8C%E7%9B%9F
-!--Zhui Cha Guo Ji
-!--.google.*%E8%BF%BD%E6%9F%A5%E5%9B%BD%E9%99%85
-!--Zi Yang
-!--.google.*%E7%B4%AB%E9%98%B3
-!--Zi You Men
-!--.google.*%E8%87%AA%E7%94%B1%E9%97%A8
-!--.google.*%E8%87%AA%E7%94%B1%E9%96%80
-!--Zi You Ya Zou Dian Tai
-!--.google.*q=%E8%87%AA%E7%94%B1%E4%BA%9A%E6%B4%B2%E7%94%B5%E5%8F%B0
-
-!-----Surnames-----
-!--He
-!--.google.com/m*%E8%B4%BA
-!--.google.*/search*%E8%B4%BA
-!--Hu
-!--.google.com/m*%E8%83%A1
-!--.google.*/search*%E8%83%A1
-!--Huang
-!--.google.*/search*%E9%BB%84
-!--Jia
-!--.google.com/m*%E8%B4%BE
-!--.google.*/search*%E8%B4%BE
-!--Jiang
-!--.google.*%E6%B1%9F
-!--Li
-!--.google.com/m*%E6%9D%8E
-!--.google.*/search*%E6%9D%8E
-!--Liu
-!--.google.*/search*%E5%88%98
-!--Wang
-!--.google.*%E7%8E%8B
-!--Wen
-!--.google.com/m*%E6%B8%A9
-!--.google.*/search*%E6%B8%A9
-!--Wu
-!--.google.com/m*%E5%90%B4
-!--.google.*/search*%E5%90%B4
-!--Xi
-!--.google.com/m*%E4%B9%A0
-!--.google.*/search*%E4%B9%A0
-!--Zhou
-!--.google.*%E5%91%A8
-
-!-------------Google.other-----
-!--|https://*docs.google.com
-!--|https://*drive.google.com
-!--|https://groups.google.com
-!--|https://plus*.google.com
-!--.google.com/moderator
-!--.google.com%2Fmoderator
-!--.google.com/reader/view/feed
-!--.google.com%2Freader%2Fview%2Ffeed
-!--.google.com.hk/wenda
-!--.google.com.hk%2Fwenda
-!--||encrypted.google.com
-!--feedproxy.google.com
-!--groups.google.*group
-!--knol.google.com/k/-/08/3jhi1zdzvxj3f
-!--news.google.com.hk/nwshp?hl=zh-cn&tab=wn
-!--picasaweb.google.com
-!--sites.google.com
-!--||sites.google.com
-!--|https://talkgadget.google.com/
-!--video.google.com
-anti.anti.cnn.googlepages.com
-||freegateget.googlepages.com
-myboooks.googlepages.com
-.googlevideo.com
-!--|https://apis.google.com
-
 gospelherald.com
 ||gospelherald.com
 |http://hk.gradconnection.com/
+||grangorz.org
 ||graylog2.org
 greatfire.org
 ||greatfire.org
 greatfirewallofchina.org
 ||greatroc.tw
 ||gstatic.com
-!--.theguardian.co*
+.gu-chu-sum.org
+|http://gu-chu-sum.org
 guishan.org
 ||guishan.org
 ||gunsamerica.com
+|http://gvlib.com
 .gyalwarinpoche.com
+.gyatsostudio.com
 
 !--------------------HH--------------------
 ||h-china.org
@@ -1841,9 +1638,11 @@ h1n1china.org
 ||hackthatphone.net
 hahlo.com
 ||hakkatv.org.tw
+|http://bbs.hanminzu.org/
 .hanunyi.com
 |http://jp.hao123.com
 ||hardsextube.com
+.harunyahya.com
 ||hasaowall.com
 have8.com
 @@||haygo.com
@@ -1893,6 +1692,8 @@ hellotxt.com
 heqinglian.net
 here4news.com
 ||heungkongdiscuss.com
+!--Google employee within Google IP
+||hexxeh.net
 app.heywire.com
 .hgseav.com
 hidden-advent.org
@@ -1906,7 +1707,9 @@ hidecloud.com/blog/2008/07/29/fuck-beijing-olympics.html
 ||hihistory.net
 .higfw.com
 ||highrockmedia.com
+||hiitch.com
 ||hikinggfw.org
+.himalayan-foundation.org
 .himemix.com
 ||himemix.com
 .himemix.net
@@ -1936,9 +1739,9 @@ hkjc.com
 hkptu.org
 .hkreporter.com
 ||hkreporter.com
+|http://hkupop.hku.hk/
 .hkwcc.org.hk
 ||hkzone.org
-apps.hloli.net/gfwtube
 hnjhj.com
 ||hnjhj.com
 ||hola.com
@@ -1961,6 +1764,7 @@ hotpot.hk
 .hqcdp.org
 ||hqcdp.org
 .hrcir.com
+.hrcchina.org
 .hrichina.org
 ||hrichina.org
 .hrw.org
@@ -1975,18 +1779,21 @@ huaglad.com
 .huaren.us
 ||huaren.us
 huaxia-news.com
+huaxiabao.org
 huaxin.ph
 hua-yue.net
 ||hugoroy.eu
-t.huhaitai.com
+||huhaitai.com
 ||huhamhire.com
+humanrightsbriefing.org
 ||hung-ya.com
 ||hungerstrikeforaids.org
 ||huping.net
 ||hutianyi.net
 hutong9.net
+||hwayue.org.tw
 ||hwinfo.com
-.hxwq.org
+hxwq.org
 ||hypeshell.com
 ||hyperrate.com
 
@@ -2001,10 +1808,15 @@ iask.bz
 ||iask.bz
 ibiblio.org/pub/packages/ccic
 ||iblogserv-f.net
+ibros.org
 |http://cn.ibtimes.com
 blogs.icerocket.com/tag
 .icij.org
 ||icl-fi.org
+
+!--http://furbo.org/2015/01/28/grass-mud-horse/
+||iconfactory.com
+
 ||iconpaper.org
 !-- Google Pages
 ||icu-project.org
@@ -2026,7 +1838,7 @@ ifanqiang.com
 ||ifcss.org
 ifjc.org
 |http://ift.tt
-||antidrm.hpg.ig.com.br
+||ifreewares.com
 ||igfw.net
 ||ignitedetroit.net
 ||igvita.com
@@ -2037,6 +1849,8 @@ ifjc.org
 ||im.tv
 @@||myvlog.im.tv
 ||im88.tw
+.imagefap.com
+||imagefap.com
 ||imageflea.com
 imageshack.us
 ||imagevenue.com
@@ -2068,11 +1882,12 @@ internetfreedom.org
 ||internetpopculture.com
 inxian.com
 ||inxian.com
+||ipcf.org.tw
 ||iphone4hongkong.com
 ||iphonehacks.com
 ||iphonix.fr
 ||ipicture.ru
-ipobar.com
+!--ipobar.com
 ||ippotv.com
 |https://*.iptorrents.com
 |https://iptorrents.com
@@ -2089,6 +1904,7 @@ forum.iset.com.tw
 .isaacmao.com
 ||!--isaacmao.com
 ||isgreat.org
+||ismaelan.com
 ||ismprofessional.net
 isohunt.com
 ||israbox.com
@@ -2120,6 +1936,7 @@ blog.jackjia.com
 jbtalks.cc
 jbtalks.com
 jbtalks.my
+.jdwsy.com
 jeanyim.com
 ||jgoodies.com
 ||jiaoyou8.com
@@ -2127,6 +1944,7 @@ jeanyim.com
 ||hk.jiepang.com
 ||tw.jiepang.com
 jieshibaobao.com
+jigong1024.com
 jinbushe.org
 ||jinbushe.org
 zhao.jinhai.de
@@ -2147,6 +1965,7 @@ jpopforum.net
 ||junefourth-20.net
 justfreevpn.com
 justtristan.com
+juyuange.org
 juziyue.com
 ||juziyue.com
 ||jwmusic.org
@@ -2155,7 +1974,8 @@ juziyue.com
 
 !--------------------KK--------------------
 ||ka-wai.com
-.kagyuoffice.org.tw
+.kagyuoffice.org
+||kagyuoffice.org
 ||kagyuoffice.org.tw
 .kaiyuan.de
 ||kakao.com
@@ -2170,14 +1990,16 @@ kanzhongguo.eu
 ||kenengba.com
 ||keontech.net
 wiki.keso.cn/Home
+.khabdha.org
 .khmusic.com.tw
 bbs.kimy.com.tw
-kingdomsalvation.org
+.kingdomsalvation.org
 kinghost.com
 .kingstone.com.tw
 killwall.com
 ||killwall.com
 .kissbbao.cn
+||kmt.org.tw
 .knowledgerush.com/kr/encyclopedia
 ||kodingen.com
 @@||www.kodingen.com
@@ -2186,7 +2008,9 @@ killwall.com
 .koornk.com
 ||koornk.com
 .kui.name/event
+.kuliwang.com
 kun.im
+.kurashsultan.com
 ||kurtmunger.com
 kusocity.com
 ||kwcg.ca
@@ -2212,8 +2036,11 @@ laomiu.com
 ||larsgeorge.com
 ||lastfm.es
 latelinenews.com
+.latibet.org
 ||lazarsearlymusic.com
 ||leecheukyan.org
+|http://leirentv.ca
+leisurecafe.ca
 ||lematin.ch
 .lemonde.fr
 ||lenwhite.com
@@ -2277,9 +2104,12 @@ logbot.net
 |http://lookatgame.com
 ||lookingglasstheatre.org
 ||lookpic.com
+.looktoronto.com
+.lotsawahouse.org/tibetan-masters/fourteenth-dalai-lama
 .lotuslight.org.tw
 hkreporter.loved.hk
 ||lrfz.com
+.lrip.org
 |http://lrip.org/
 .lsd.org.hk
 ||lsd.org.hk
@@ -2287,7 +2117,9 @@ lsforum.net
 ||lsm.org
 ||lsmchinese.org
 ||lsmkorean.org
+.lsmradio.com/rad_archives
 .ltn.com.tw
+|http://ltn.com.tw
 .lupm.org
 ||lupm.org
 ||lushstories.com
@@ -2310,6 +2142,8 @@ mail-archive.com
 ||marines.mil
 markmail.org*message
 ||martau.com
+.martsangkagyuofficial.org
+|http://martsangkagyuofficial.org
 maruta.be/forget
 .marxist.com
 ||marxist.net
@@ -2329,6 +2163,7 @@ mcfog.com
 ||meetup.com
 mefeedia.com
 .megaporn.com
+||megaproxy.com
 ||megarotic.com
 megavideo.com
 ||megurineluka.com
@@ -2342,6 +2177,7 @@ merit-times.com.tw
 .mesotw.com/bbs
 .metacafe.com
 ||meteorshowersonline.com
+|http://www.metro.taipei/
 ||metrolife.ca
 mgoon.com
 ||mgstage.com
@@ -2352,6 +2188,9 @@ middle-way.net
 .mihk.hk/forum
 mihua.org
 .mimivip.com
+.mimivv.com
+.mindrolling.org
+|http://mindrolling.org
 minghui.org
 ||minghui.org
 minghui-a.org
@@ -2360,6 +2199,7 @@ minghui-school.org
 .mingjinglishi.com
 ||mingjinglishi.com
 mingjingnews.com
+||mingjingtimes.com
 mingpao.com
 .mingpaocanada.com
 .mingpaomonthly.com
@@ -2368,8 +2208,8 @@ mingpaonews.com
 .mingpaosf.com
 .mingpaotor.com
 .mingpaovan.com
-.mininova.org/tor/2593503
-.mimivv.com
+.mingshengbao.com
+.ministrybooks.org
 .minzhuhua.net
 ||minzhuhua.net
 minzhuzhanxian.com
@@ -2461,7 +2301,7 @@ nanyang.com
 .nanzao.com
 ||jpl.nasa.gov
 ||pds.nasa.gov
-/^http:\/\/[^\/]+line\.naver\.jp/
+/^https?:\/\/[^\/]+line\.naver\.jp/
 ||navicat.com
 .nakido.com
 ||nakido.com
@@ -2507,18 +2347,18 @@ newtalk.tw
 newyorktimes.com
 hk*.nextmedia.com
 tw*.nextmedia.com
-static.apple.nextmedia.com
+static*.nextmedia.com
 ||nexton-net.jp
 nexttv.com.tw
 ||nga.mil
 ngensis.com
-.nicovideo.jp/watch/
+.nicovideo.jp/watch
 !--||nicovideo.jp
 ||nighost.org
 nintendium.com
-.dayaarmongol.ning.com
-|http://dayaarmongol.ning.com
 taiwanyes.ning.com
+usmgtcg.ning.com/forum
+||niusnews.com
 ||njactb.org
 njuice.com
 ||njuice.com
@@ -2532,7 +2372,7 @@ nobodycanstop.us
 ||nobodycanstop.us
 ||nokogiri.org
 ||nokola.com
-||noobbox.com
+.norbulingka.org
 ||novelasia.com
 |http://news.now.com/home*
 ||nownews.com
@@ -2544,17 +2384,20 @@ nobodycanstop.us
 .nrk.no
 ||nrk.no
 ||nsc.gov.tw
+.ntd.tv
 ||ntd.tv
 ntdtv.co
 ntdtv.ca
 ntdtv.org
 ntdtv.ru
 ||cbs.ntu.edu.tw
+.nubiles.net
 ||nuexpo.com
 ||nurgo-software.com
 .nuvid.com
 nuzcom.com
 .nvquan.org
+.nwtca.org
 |http://www.nyaa.se
 .nydus.ca
 ||nyt.com
@@ -2570,8 +2413,10 @@ observechina.net
 oclp.hk
 ||october-review.org
 offbeatchina.com
+officeoftibet.com
 ||ogaoga.org
 twtr2src.ogaoga.org
+www2.ohchr.org/english/bodies/cat/docs/ngos/II_China_41.pdf
 .oikos.com.tw/v4
 .oiktv.com
 oizoblog.com
@@ -2582,11 +2427,13 @@ old-cat.net
 omgili.com
 ||omnitalk.com
 ||omnitalk.org
+cling.omy.sg
 forum.omy.sg
 news.omy.sg
 showbiz.omy.sg
-.on.cc
-|https://onedrive.live.com/
+||on.cc
+||onedrive.live.com
+|http://www.onion.city
 .onlylady.cn
 onmoon.net
 onmoon.com
@@ -2608,8 +2455,8 @@ openvpn.net
 |http://help.opera.com
 my.opera.com/dahema
 ||demo.opera-mini.net
-opnir.com/215/myentunnel-ssh-autoproxy-cross-gfw
 www.orchidbbs.com
+organharvestinvestigation.net
 ||orient-doll.com
 orientaldaily.com.my
 ||orientaldaily.com.my
@@ -2641,6 +2488,7 @@ bbs.ozchinese.com
 !--------------------PP--------------------
 .pacificpoker.com
 .packetix.net
+.padmanet.com
 page2rss.com
 ||pagodabox.com
 
@@ -2649,15 +2497,16 @@ page2rss.com
 ||coveringweb.com
 .palacemoon.com
 forum.palmislife.com
-!--Same IP
-||paper-replika.com
 ||eriversoft.com
+paljorpublications.com
 paper.li
 paperb.us
 .panluan.net
 ||panluan.net
 ||pao-pao.net
 .parade.com/dictators/2009
+.passion.com
+||passion.com
 .passiontimes.hk
 pastebin.com
 .pastie.org
@@ -2665,6 +2514,7 @@ pastebin.com
 ||blog.pathtosharepoint.com
 pbs.org/wgbh/pages/frontline/gate
 pbs.org/wgbh/pages/frontline/tankman
+pbs.org/wgbh/pages/frontline/tibet
 
 !--Pbwiki
 pbwiki.com
@@ -2683,6 +2533,7 @@ pcdvd.com.tw
 ||pct.org.tw
 pdetails.com
 ||pdproxy.com
+||peace.ca
 peacefire.org
 peacehall.com
 .peeasian.com
@@ -2700,20 +2551,19 @@ pengyulong.com
 .perfectgirls.net
 perfectvpn.net
 perfspot.com
-||perlhowto.com
+.persecutionblog.com
+phayul.com
 philly.com
+||photodharma.net
 ||photofocus.com
 ||phuquocservices.com
 .picidae.net
 ||img*.picturedip.com
 picturesocial.com
-.pidown.com
-.pign.net
-blog.pilotmoon.com
 .pin6.com
 ||pin6.com
 .ping.fm
-||ping.fm/
+||ping.fm
 ||pinoy-n.com
 .piposay.com
 .piring.com
@@ -2740,6 +2590,7 @@ plunder.com
 ||pokerstars.com
 zh.pokerstrategy.com
 politicalchina.org
+politicalconsultation.org
 !--||popularpages.net
 ||popvote.hk
 popyard.com
@@ -2765,6 +2616,7 @@ postadult.com
 ||pts.org.tw
 pubu.com.tw
 puffinbrowser.com
+pureinsight.org
 ||putty.org
 
 !-------------Posterous-----
@@ -2799,6 +2651,8 @@ heix.pp.ru
 ||presentationzen.com
 ||prestige-av.com
 prisoner-state-secret-journal-premier
+.prisoneralert.com
+||pritunl.com
 ||privacybox.de
 ||privateinternetaccess.com
 privatepaste.com
@@ -2818,7 +2672,7 @@ proxyroad.com
 prozz.net
 psblog.name
 ||psblog.name
-psiphon.ca
+!--psiphon.ca
 .ptt.cc
 .puffstore.com
 ||pullfolio.com
@@ -2849,10 +2703,11 @@ blog.qooza.hk*dafengqixi
 ||qstatus.com
 ||qtweeter.com
 ||qtrac.eu
-!--quadedge
-||quadedge.com
-||www.getyouram.com
-||hiitch.com
+||quitccp.net
+.quitccp.net
+||quitccp.org
+.quitccp.org
+|http://quran.com
 qusi8.net
 .qvodzy.org
 nemesis2.qx.net*pages*MyEnTunnel
@@ -2866,6 +2721,8 @@ opml.radiotime.com
 ||radiovncr.com
 ||raidcall.com.tw
 .raidtalk.com.tw
+rangzen.com
+rangzen.net
 rangzen.org
 |http://blog.ranxiang.com/
 ranyunfei.com
@@ -2882,6 +2739,7 @@ rcinet.ca
 .readingtimes.com.tw
 ||readingtimes.com.tw
 ||readmoo.com
+.realcourage.org
 .realraptalk.com
 .recordhistory.org
 redchinacn.org
@@ -2890,6 +2748,8 @@ referer.us
 ||referer.us
 ||reflectivecode.com
 relaxbbs.com
+.releaseinternational.org
+religioustolerance.org
 renminbao.com
 .renyurenquan.org
 ||renyurenquan.org
@@ -2922,14 +2782,16 @@ chinese.rnw.nl
 .rnw.nl
 robtex.com
 ||robustnessiskey.com
+|http://www2.rocketbbs.com/11/bbs.cgi?id=5mus
+|http://www2.rocketbbs.com/11/bbs.cgi?id=freemgl
 ||rocmp.org
 ||rojo.com
 ||ronjoneswriter.com
 .roodo.com
-!--||roosong.cn
+.rosechina.net
 .rotten.com
 .rsf.org
-||rsf.org/
+||rsf.org
 .rsf-chinese.org
 ||rsf-chinese.org
 .rssmeme.com
@@ -2944,6 +2806,7 @@ rti.org.tw
 rutube.ru
 .ruyiseek.com
 .rxhj.net
+|http://rxhj.net
 
 !--------------------SS--------------------
 ||s-cute.com
@@ -2955,12 +2818,13 @@ sacom.hk
 ||sacom.hk
 ||sadpanda.us
 .saiq.me
-||saiq.me/
+||saiq.me
+||sakuralive.com
 .salvation.org.hk
 ||salvation.org.hk
 .samair.ru/proxy/type-01
+.sambhota.org
 sammyjs.org
-sandnoble.com/bookSearch/isbnInquiry.asp
 ||sankaizok.com
 .sanmin.com.tw
 sapikachu.net
@@ -3024,11 +2888,13 @@ shapeservices.com
 sharpdaily.com.hk
 ||sharpdaily.com.hk
 .sharpdaily.hk
+.shat-tibet.com
 .shaunthesheep.com
 ||shaunthesheep.com
 sheikyermami.com
 ||shellmix.com
 shenshou.org
+shenyun.com
 shenyunperformingarts.org
 shenzhoufilm.com
 ||shenzhoufilm.com
@@ -3060,6 +2926,7 @@ home.sina.com
 ||magazines.sina.com.tw
 news.sina.com.hk
 news.sina.com.tw
+|http://news.sinchew.com.my
 singtao.com
 ||singtao.com
 news.singtao.ca
@@ -3075,6 +2942,7 @@ sinomontreal.ca
 sinoquebec.com
 ||site90.net
 .sitebro.tw
+||sitekreator.com
 ||siteks.uk.to
 ||sitemaps.org
 sitetag.us
@@ -3084,6 +2952,7 @@ sis001.us
 ||sjum.cn/
 ||skimtube.com
 ||skybet.com
+|http://users.skynet.be/reves/tibethome.html
 |http://skyhighpremium.com/
 bbs.skykiwi.com
 |http://www.skype.com/intl/
@@ -3127,6 +2996,7 @@ sohcradio.com
 ||snaptu.com
 sneakme.net
 ||snooper.co.uk
+snowlionpub.com
 .sobees.com
 ||sobees.com
 socialwhale.com
@@ -3159,6 +3029,7 @@ southnews.com.tw
 sowers.org.hk
 ||wlx.sowiki.net
 ||space-scape.com
+||spankbang.com
 .spankwire.com
 ||spb.com
 ||spencertipping.com
@@ -3169,17 +3040,18 @@ squarespace.com
 !--|http://cdn.sstatic.net/
 www.stackfile.com/freedur
 ||standupfortibet.org
+stanford.edu/group/falun
 usinfo.state.gov
 .starp2p.com
 ||starp2p.com
 ||startpage.com
 .state168.com
 ||steel-storm.com
+||stepmania.com
 sthoo.com
 ||sthoo.com
 .stickam.com
 stickeraction.com/sesawe
-||stonegames.net
 ||stoneip.info
 ||storagenewsletter.com
 .stoptibetcrisis.net
@@ -3199,6 +3071,10 @@ stupidvideos.com
 ||sugarsync.com
 summify.com
 sun1911.com
+.sunporno.com
+||sunporno.com
+.suyangg.com
+|http://suyangg.com/
 .suoluo.org
 api.supertweet.net
 www.supertweet.net
@@ -3231,6 +3107,7 @@ tabtter.jp
 ||tafaward.com
 tagwalk.com
 ||tagwalk.com
+tahr.org.tw
 taipei.gov.tw
 .taipeisociety.org
 ||taipeisociety.org
@@ -3261,41 +3138,44 @@ blog.taragana.com
 ||tbsec.org
 ||tbsn.org
 .tbsseattle.org
+.tccwonline.org
+.tcewf.org
 tchrd.org
-tcno.net*doc*tor
-||teamseesmic.com
-.teashark.com/download.html
 ||techlifeweb.com
 !--technorati.com
 ||techparaiso.com
-||teck.in/
+||teck.in
+teensinasia.com
 .telecomspace.com
+||telegram.org
 ||telegraph.co.uk
 .tenacy.com
-||theampfactory.com
-||theappleblog.com
+.tew.org
 ||theatrum-belli.com
 ||thebodyshop-usa.com
 theblemish.com
 ||thebcomplex.com
+||thebobs.com
 .thechinabeat.org
 |http://www.thechinastory.org/yearbooks/yearbook-2012/
 ||thedieline.com
 ||thedw.us
-||thegatesnotes.com
+thefrontier.hk/tf
+!--||thegatesnotes.com
 |http://thegioitinhoc.vn/
 .thehots.info
 thehousenews.com
 ||thehun.net
 ||thelifeyoucansave.com
-||thelius.org
+.thenewslens.com
 thepiratebay.org
 !--||thepiratebay.se
-theqii.info/blog
 thereallove.kr
 ||thesartorialist.com
 thespeeder.com
-|http://thestandnews.com/
+||thestandnews.com
+thetibetconnection.org
+.thetibetmuseum.org
 ||thetibetpost.com
 thetrotskymovie.com/
 thevivekspot.com
@@ -3303,7 +3183,6 @@ thevivekspot.com
 .thinkingtaiwan.com
 .thisav.com
 |http://thisav.com
-thkphoto.com
 ||thomasbernhard.org
 threatchaos.com
 ||throughnightsfire.com
@@ -3314,27 +3193,64 @@ tiananmenmother.org
 ||tiananmenuniv.net
 ||tiandixing.org
 .tianhuayuan.com
+.tianlawoffice.com
 tiantibooks.org
 .tianzhu.org
 .tibet.at
+tibet.ca
 .tibet.com
 ||tibet.com
+tibet.fr
 .tibet.net
 ||tibet.net
+tibet.nu
 .tibet.org
 ||tibet.org
 tibet.org.tw
+.tibet-foundation.org
+.tibet-house-trust.co.uk
+tibet-info.net
+tibet-initiative.de
+||tibet-initiative.de
+.tibet-munich.de
+.tibetaid.org
 tibetalk.com
+tibetan-alliance.org
+.tibetanarts.org
+.tibetcollection.com
+tibetanculture.org
+.tibetanpaintings.com
+.tibetanphotoproject.com
+.tibetanwomen.org
+|http://tibetanwomen.org
 .tibetanyouthcongress.org
 ||tibetanyouthcongress.org
+.tibetcharity.dk
+tibetcharity.in
+.tibetcity.com
 .tibetcorps.org
+tibetfocus.com
 tibetfund.org
+tibethouse.jp
+tibethouse.org
+||tibethouse.us
+tibettimes.net
 .tibetjustice.org
+|http://tibetmuseum.org
+tibetnetwork.org
+||tibetnetwork.org
+.tibetoffice.ch
+|http://tibetoffice.ch
 tibetoffice.org
 tibetonline.com
 ||tibetonline.com
+.tibetoffice.com.au
+|http://tibetoffice.com.au
 ||tibetonline.tv
 .tibetonline.tv
+.tibetoralhistory.org
+.tibetrelieffund.co.uk
+tibetsites.com
 .tibetsun.com
 ||tibetwrites.org
 .time.com/time/time100/leaders/profile/rebel
@@ -3343,7 +3259,6 @@ tibetonline.com
 ||blog.tiney.com
 tinychat.com
 ||tinypaste.com
-||tidyread.com
 .tistory.com
 ||tkcs-collins.com
 ||tkforum.tk
@@ -3352,6 +3267,8 @@ tinychat.com
 |http://tmi.me
 .tnaflix.com
 ||tnaflix.com
+.tnp.org
+|http://tnp.org
 togetter.com
 .tokyo-247.com
 tokyo-hot.com
@@ -3365,7 +3282,8 @@ toonel.net
 .topshareware.com
 ||topstyle4.com
 ||topsy.com
-topsy.com
+.topsy.com
+||toptip.ca
 tora.to
 .torproject.org
 ||torproject.org
@@ -3398,7 +3316,7 @@ trulyergonomic.com
 .truveo.com
 .tsemtulku.com
 tsquare.tv
-|http:/www.tsu.org.tw
+|http://www.tsu.org.tw
 tsunagarumon.com
 |http://www.tsuru-bird.net/
 .tsctv.net
@@ -3407,10 +3325,13 @@ tsunagarumon.com
 ||tttan.com
 .tttan.com
 bb.ttv.com.tw/bb
+tu8964.com
 .tuanzt.com
 .tube.com
 tube8.com
 ||tube8.com
+.tube911.com
+||tube911.com
 tubecao.com
 ||tubewolf.com
 tuidang.net
@@ -3420,11 +3341,15 @@ bbs.tuitui.info
 .tunein.com
 |http://tunein.com
 ||tunnelbear.com
+.tuo8.hk
+.tuo8.org
+||tuo8.org
 .turbobit.net
 |http://turbobit.net
 ||turningtorso.com
 ||tuxtraining.com
-
+.tw01.org
+|http://tw01.org
 
 !-------------Tumblr-----
 !--||tumblr.com
@@ -3597,6 +3522,7 @@ twipple.jp
 ||twip.me/
 twistar.cc
 ||twister.net.co
+||twisterio.com
 twisternow.com
 twistory.net
 twitbrowser.net
@@ -3614,13 +3540,11 @@ twitoaster.com
 ||twitonmsn.com
 .twitpic.com
 ||twitpic.com
-twitreferral.com
 !--Same IP
 .twit2d.com
 ||twit2d.com
 .twitstat.com
 ||twitstat.com
-||dotheyfolloweachother.com
 ||firstfivefollowers.com
 ||retweeteffect.com
 ||tweeplike.me
@@ -3691,13 +3615,16 @@ guomin.us/login
 ||uberproxy.net
 .srcf.ucam.org/salon/
 ||ucdc1998.org
-|http://hum*.uchicago.edu/faculty/ywang/history/
+|http://hum*.uchicago.edu/faculty/ywang/history
 ||uderzo.it
 ||udn.com
 .udn.com
+||uforadio.com.tw
 ufreevpn.com
 .ugo.com
 ||uhrp.org
+.uighur.nl
+||uighur.nl
 uighurbiz.net
 .ulike.net
 ukliferadio.co.uk
@@ -3705,6 +3632,7 @@ ukliferadio.co.uk
 ultravpn.fr
 ||ultravpn.fr
 ultraxs.com
+umich.edu/~falun
 ||unblock.cn.com
 ||unblocksit.es
 uncyclomedia.org
@@ -3713,6 +3641,7 @@ uncyclopedia.info
 ||unholyknight.com
 .uni.cc
 unicode.org
+.unification.org.tw
 .uniteddaily.com.my/index.php?
 .unix100.com
 ||unknownspace.org
@@ -3725,6 +3654,7 @@ tor.updatestar.com
 .uploaded.to/file
 |http://uploaded.to/file
 .uploadstation.com/file
+.upwill.org
 www.urbanoutfitters.com
 myshare.url.com.tw/
 ||urlborg.com
@@ -3733,20 +3663,23 @@ us.to
 ||usacn.com
 beta.usejump.com
 ||usfk.mil
-earthquake.usgs.gov/eqcenter/recenteqsww/Maps/10/105_30.php
+||usma.edu
 ||usmc.mil
+|http://tarr.uspto.gov/
+||tsdr.uspto.gov
 .ustream.tv
 ||ustream.tv
 ||ustwrap.info
 usus.cc
-.uushare.com
-|http://uushare.com
 .uwants.com
 .uwants.net
-|http://uyghur-j.org/
-.uyghurcanadiansociety.org
-||uyghurcongress.org
+|http://uyghur-j.org
 ||uyghuramerican.org
+.uyghurcanadiansociety.org
+.uyghurensemble.co.uk
+||uyghurcongress.org
+.uyghurpen.org
+.uyghurpress.com
 uygur.org
 |http://uymaarip.com/
 
@@ -3754,15 +3687,11 @@ uygur.org
 !--|http://cdn.v2ex.com
 !--|http://v2ex.com
 !--|http://www.v2ex.com
-v70.us
-|http://v7976888.info/
 ||vaayoo.com
-||value-domain.com
 .van698.com
 .vanemu.cn
 .vanilla-jp.com
 vansky.com
-||vapurl.com
 ||vcf-online.org
 ||vcfbuilder.org
 .velkaepocha.sk
@@ -3774,6 +3703,8 @@ veoh.com
 .vft.com.tw
 videobam.com
 ||videobam.com
+.videomega.tv
+||videomega.tv
 .videomo.com
 ||vidoemo.com
 ||viki.com
@@ -3782,6 +3713,7 @@ vimeo.com
 ||vimperator.org
 ||vincnd.com
 ||vinniev.com
+|http://www.lib.virginia.edu/area-studies/Tibet/tibet.html
 |http://ny.visiontimes.com/
 .vjmedia.com.hk
 .vllcs.org
@@ -3811,11 +3743,15 @@ vpnfire.com
 ||vpngate.net
 ||vpnpop.com
 ||vpnpronet.com
+||vpnreviewz.com
+.vporn.com
+||vporn.com
 ||vtunnel.com
 
 !--------------------------WW--------------------------
 ||w.org
 lists.w3.org/archives/public
+||w3schools.com
 ||waffle1999.com
 .wahas.com
 .waigaobu.com
@@ -3850,32 +3786,34 @@ webbang.net
 weblagu.com
 ||webmproject.org
 webs-tv.net
-webshots.com
+!--webshots.com
 websitepulse.com/help/testtools.china-test.html
+|http://www.websnapr.com
 webworkerdaily.com
-weeewooo.net/hss/hotspot_cn
 .weekmag.info
+||wefightcensorship.org
 .wefong.com
 weiboleak.com
 weijingsheng.org
 .weiming.info
 weiquanwang.org
 |http://weisuo.ws
+.wemigrate.org
 wengewang.com
-.wengewang.org
 ||wengewang.org
 .wenhui.ch
-||wenku.com
-|http://blog.wenweipo.com/
+|http://trans.wenweipo.com/gb/
 wenxuecity.com
 .wenyunchao.com
 ||wenyunchao.com
 westca.com
 ||westca.com
 ||westernwolves.com
-hkg.westkit.net
+.westkit.net
+||westpoint.edu
 www.wet123.com
 ||wepn.info
+.westernshugdensociety.org
 wetpussygames.com
 .wetplace.com
 wexiaobo.org
@@ -3915,18 +3853,18 @@ winwhispers.info
 ||wiredbytes.com
 ||wiredpen.com
 ||wireshark.org
+.wisdompubs.org
 .wisevid.com
 ||wisevid.com
 .witnessleeteaching.com
 .witopia.net
+|http://wn.com
 .wnacg.com
 .wo.tc
 ||woeser.com
 |http://woesermiddle-way.net/
 wolfax.com
 ||wolfax.com
-.womensrightsofchina.org
-||womensrightsofchina.org
 woopie.jp
 ||woopie.jp
 woopie.tv
@@ -4000,6 +3938,7 @@ wretch.cc
 .wuala.com
 wuerkaixi.com
 wufi.org.tw
+||wufoo.com
 ||wuguoguang.com
 wujie.net
 wujieliulan.com
@@ -4028,9 +3967,11 @@ xgmyd.com
 xh4n.cn/blog
 xhamster.com
 one.xthost.info
+.xianqiao.net
 .xiaochuncnjp.com
 s.xiaod.in
 .xiaohexie.com
+||xiaolan.me
 ||xiaoma.org
 ||xiaohexie.com
 xiezhua.com
@@ -4042,6 +3983,7 @@ xinsheng.net
 xinshijue.com
 xinhuanet.org
 |http://xinyubbs.net
+.xiongpian.com
 xizang-zhiye.org
 xjp.cc
 ||xjp.cc
@@ -4059,7 +4001,6 @@ xuzhiyong.net
 ||xuchao.org
 xuchao.net
 ||xuchao.net
-xvedios.com
 .xvideos.com
 .xxbbx.com
 ||xxxx.com.au
@@ -4080,15 +4021,18 @@ hk.rd.yahoo.com
 hk.search.yahoo.com/search
 hk.video.news.yahoo.com/video
 meme.yahoo.com
-tw.yahoo.com
+!--tw.yahoo.com
+||tw.knowledge.yahoo.com
 tw.myblog.yahoo.com
 ||tw.news.yahoo.com
 pulse.yahoo.com
 upcoming.yahoo.com
 video.yahoo.com
 ||yahoo.com.hk
+||yakbutterblues.com
 yam.com
 ||yam.com
+yangjianli.com
 yasni.co.uk
 ||yasukuni.or.jp
 .ydy.com
@@ -4096,10 +4040,14 @@ yasni.co.uk
 yeeyi.com
 yegle.net
 ||yegle.net
+||yes123.com.tw
+||yesasia.com
+||yesasia.com.hk
 yfrog.com
 ||yhcw.net
 .yi.org
 .yibada.com
+.yibaochina.com
 .yidio.com
 ||yidio.com
 yilubbs.com
@@ -4131,10 +4079,10 @@ share.youthwant.com.tw
 topic.youthwant.com.tw
 .youporn.com
 ||youporn.com
+.youporngay.com
 ||youtu.be
 .youtube.com
 ||youtube.com
-!--/^https?:\/\/[^\/]+youtube\.com/
 ||youtube-nocookie.com
 .youtubecn.com
 youversion.com
@@ -4166,10 +4114,15 @@ www.zfreet.com/post/usejump-browns.html
 zgzcjj.net
 .zhanbin.net
 ||zhanbin.net
+.zhangboli.net
 zhenghui.org
+||zhangtianliang.com
+zhengwunet.org
 zhenlibu.info
 ||zhenlibu.info
+|http://zhenxiang.biz
 .zhinengluyou.com
+|http://zhongguorenquan.org
 ||zhongguotese.net
 ||zhongmeng.org
 ||zhreader.com
@@ -4281,8 +4234,6 @@ search*%E6%88%91%E7%9A%84%E5%A5%8B%E6%96%97
 search*%E6%97%A0%E7%95%8C
 !--Xie E
 search*%E9%82%AA%E6%81%B6
-!--Xi Nao
-search*%E6%B4%97%E8%84%91
 !--Xin Tang Ren
 search*%E6%96%B0%E5%94%90%E4%BA%BA
 !--Xin Yu Si
@@ -4298,761 +4249,22 @@ search*%E4%B8%AD%E5%AE%A3%E9%83%A8
 
 !-------------Wikipedia----------------
 |https://upload.wikimedia.org
-|https://*.wikipedia.org
-.wikipedia.org/wiki/Dalai_Lama
-.wikipedia.org/wiki/Dalai-Lama
-ar.wikipedia.org*%D8%AF%D8%A7%D9%84%D8%A7%D9%8A_%D9%84%D8%A7%D9%85%D8%A7
-zh-yue.wikipedia.org/wiki/%E5%8A%89%E6%9B%89%E6%B3%A2
-
-!-------------en.Wikipedia-------------
-en.wikipedia.org/wiki/Anti-communism
-en.wikipedia.org/wiki/Book_burning
-en.wikipedia.org/wiki/Censorship_in_the_People%27s_Republic_of_China
-en.wikipedia.org/wiki/Charter_08
-en.wikipedia.org/wiki/Chen_Guangcheng
-en.wikipedia.org/wiki/Deep_packet_inspection
-en.wikipedia.org/wiki/Freegate
-en.wikipedia.org/wiki/Golden_Shield_Project
-en.wikipedia.org/wiki/Great_Firewall_of_China
-en.wikipedia.org/wiki/Hong_Kong
-en.wikipedia.org/wiki/Huang_Qi
-en.wikipedia.org/wiki/Internet_censorship
-en.wikipedia.org/wiki/Java_Anon_Proxy
-en.wikipedia.org/wiki/Liu_Xiaobo
-en.wikipedia.org/wiki/Shi_Tao
-en.wikipedia.org/wiki/Students_for_a_Free_Tibet
-en.wikipedia.org/wiki/Tank_man
-en.wikipedia.org/wiki/Tiananmen_Papers
-en.wikipedia.org/wiki/Tiananmen_Square_protests_of_1989
-en.wikipedia.org/wiki/Tibetan_independence_movement
-
-!-------------zh.Wikipedia----------
-zh.wikipedia.org/wiki/Wikipedia:%E9%A0%81%E9%9D%A2%E5%AD%98%E5%BB%A2%E8%A8%8E%E8%AB%96
+zh.wikipedia.org
+|https://zh.wikipedia.org
 zh.m.wikipedia.org
-zh.wikisource.org
-!--2012 Nian Zhong Hua Ren Min Gong He Guo Fu Bai An Jian
-zh.wikipedia.org*2012%E5%B9%B4%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E8%85%90%E8%B4%A5%E6%A1%88%E4%BB%B6
-!--2014 Nian Kun Ming Huo Che Zhan Bao Li Kong Bu Xi Ji Shi Jian
-zh.wikipedia.org*2014%E5%B9%B4%E6%98%86%E6%98%8E%E7%81%AB%E8%BD%A6%E7%AB%99%E6%9A%B4%E5%8A%9B%E6%81%90%E6%80%96%E8%A2%AD%E5%87%BB%E4%BA%8B%E4%BB%B6
-!--512 Da Di Zhen
-zh.wikipedia.org*512%E5%A4%A7%E5%9C%B0%E9%9C%87
-!--08 Xian Zhang
-zh.wikipedia.org*08%E5%AE%AA%E7%AB%A0
-!--1959 Nian
-zh.wikipedia.org*1959%E5%B9%B4
-!--1989 Nian
-zh.wikipedia.org*1989%E5%B9%B4
-!--610 Ban Gong Shi
-zh.wikipedia.org*610%E8%BE%A6%E5%85%AC%E5%AE%A4
-!--Anti-CNN
-zh.wikipedia.org*Anti-CNN
-!--A Di Xia
-zh.wikipedia.org*%E9%98%BF%E5%BA%95%E5%B3%BD
-!--A Pei A Wang Jin Mei
-zh.wikipedia.org*%E9%98%BF%E6%B2%9B%C2%B7%E9%98%BF%E6%97%BA%E6%99%8B%E7%BE%8E
-!--Ai Wei Wei
-zh.wikipedia.org*%E8%89%BE%E6%9C%AA%E6%9C%AA
-!--Ba Jiu Xue Yun
-zh.wikipedia.org*%E5%85%AB%E4%B9%9D%E5%AD%A6%E8%BF%90
-!--Ba Si Ba
-zh.wikipedia.org*%E5%85%AB%E6%80%9D%E5%B7%B4
-!--Ban Chan
-zh.wikipedia.org*%E7%8F%AD%E7%A6%85
-!--Bao Tong
-zh.wikipedia.org*%E9%B2%8D%E5%BD%A4
-zh.wikipedia.org*%E9%AE%91%E5%BD%A4
-!--Bei Jing Gao Xiao Xue Sheng Zi Zhi Lian He Hui
-zh.wikipedia.org*%E5%8C%97%E4%BA%AC%E9%AB%98%E6%A0%A1%E5%AD%A6%E7%94%9F%E8%87%AA%E6%B2%BB%E8%81%94%E5%90%88%E4%BC%9A
-!--Bei Jing Zhi Chun
-zh.wikipedia.org*%E5%8C%97%E4%BA%AC%E4%B9%8B%E6%98%A5
-!--Bo Xi Lai
-zh.wikipedia.org*%E8%96%84%E7%86%99%E6%9D%A5
-!--Bo Xun
-zh.wikipedia.org*%E5%8D%9A%E8%AE%AF
-!--Bu La Ge Zhi Chun
-zh.wikipedia.org*%E5%B8%83%E6%8B%89%E6%A0%BC%E4%B9%8B%E6%98%A5
-!--Cai Ling
-zh.wikipedia.org*%E6%9F%B4%E7%8E%B2
-!--Cang Yang Jia Cuo
-zh.wikipedia.org*%E4%BB%93%E5%A4%AE%E5%98%89%E6%8E%AA
-!--Cao Chang Qing
-zh.wikipedia.org*%E6%9B%B9%E9%95%B7%E9%9D%92
-!--Chen Guang Cheng
-zh.wikipedia.org*%E9%99%88%E5%85%89%E8%AF%9A
-!--Chu Bu Si
-zh.wikipedia.org*%E6%A5%9A%E5%B8%83%E5%AF%BA
-!--Da Can Kao (Wang Luo Za Zhi)
-zh.wikipedia.org*%e5%a4%a7%e5%8f%82%e8%80%83_(%e7%bd%91%e7%bb%9c%e6%9d%82%e5%bf%97)
-!--Da Ji Yuan
-zh.wikipedia.org*%E5%A4%A7%E7%B4%80%E5%85%83
-!--Da Ji Yuan Shi Bao (zh-hans)
-zh.wikipedia.org*%E5%A4%A7%E7%BA%AA%E5%85%83%E6%97%B6%E6%8A%A5
-!--Da Lai La Ma
-zh.wikipedia.org*%E8%BE%BE%E8%B5%96%E5%96%87%E5%98%9B
-!--Da Lan Sa La
-zh.wikipedia.org*%E8%BE%BE%E5%85%B0%E8%90%A8%E6%8B%89
-!--Da Lan Sha La
-zh.wikipedia.org*%E9%81%94%E8%98%AD%E8%96%A9%E6%8B%89
-!--Da Er Han Huo Fo
-zh.wikipedia.org*%E8%BE%BE%E5%B0%94%E7%BD%95%E6%B4%BB%E4%BD%9B
-!--Da She Guo JI
-zh.wikipedia.org*%E5%A4%A7%E8%B5%A6%E5%9B%BD%E9%99%85
-zh.wikipedia.org*%E5%A4%A7%E8%B5%A6%E5%9C%8B%E9%9A%9B
-!--Da Tu Sha Lie Biao
-zh.wikipedia.org*%E5%A4%A7%E5%B1%A0%E6%9D%80%E5%88%97%E8%A1%A8
-!--Da Zang Si
-zh.wikipedia.org*%E5%A4%A7%E8%97%8F%E5%AF%BA
-!--Da Zhao Si
-zh.wikipedia.org*%E5%A4%A7%E6%98%AD%E5%AF%BA
-!--Dan Zeng Jia Cuo
-zh.wikipedia.org*%E4%B8%B9%E5%A2%9E%E5%98%89%E6%8E%AA
-!--Ding Zi Lin
-zh.wikipedia.org*%E4%B8%81%E5%AD%90%E9%9C%96
-!--Dong Feng - 21 Zhong Cheng Dan Dao Dao Dan
-zh.wikipedia.org*%E4%B8%9C%E9%A3%8E-21%E4%B8%AD%E7%A8%8B%E5%BC%B9%E9%81%93%E5%AF%BC%E5%BC%B9 
-!--Dong Feng - 31 Zhou Ji Dan Dao Dao Dan
-zh.wikipedia.org*%E6%9D%B1%E9%A2%A8-31%E6%B4%B2%E9%9A%9B%E5%BD%88%E9%81%93%E5%B0%8E%E5%BD%88
-!--Dong Tu Jue(zh-Hant)
-zh.wikipedia.org*%E6%9D%B1%E7%AA%81%E5%8E%A5
-!--Dong Tu Jue Si Tan
-zh.wikipedia.org*%E4%B8%9C%E7%AA%81%E5%8E%A5%E6%96%AF%E5%9D%A6
-!--Duo Wei
-zh.wikipedia.org*%E5%A4%9A%E7%BB%B4
-zh.wikipedia.org*%E5%A4%9A%E7%B6%AD
-!--E Luo Si (zh-hant)
-zh.wikipedia.org*%E4%BF%84%E7%BE%85%E6%96%AF
-!-- Fa La Li Shi Jian
-zh.wikipedia.org*%E6%B3%95%E6%8B%89%E5%88%A9%E4%BA%8B%E4%BB%B6
-!--Fan Hua Shi Li
-zh.wikipedia.org*%E5%8F%8D%E5%8D%8E%E5%8A%BF%E5%8A%9B
-!--Fang Huo Chang Cheng
-zh.wikipedia.org*%E9%98%B2%E7%81%AB%E9%95%BF%E5%9F%8E
-!--Fang Li Zhi
-zh.wikipedia.org*%E6%96%B9%E5%8A%B1%E4%B9%8B
-zh.wikipedia.org*%E6%96%B9%E5%8B%B5%E4%B9%8B
-!--Fang Zhou Zi
-zh.wikipedia.org*%E6%96%B9%E8%88%9F%E5%AD%90
-!--Fen Qing
-zh.wikipedia.org*%E6%84%A4%E9%9D%92
-!--Feng Cong De
-zh.wikipedia.org*%E5%B0%81%E4%BB%8E%E5%BE%B7
-zh.wikipedia.org*%E5%B0%81%E5%BE%9E%E5%BE%B7
-!--Feng Zheng Hu
-zh.wikipedia.org*%E5%86%AF%E6%AD%A3%E8%99%8E
-!--Fu Tie Shan
-zh.wikipedia.org*%E5%82%85%E9%93%81%E5%B1%B1
-!--Ga Lun Chi Ba
-zh.wikipedia.org*%E5%99%B6%E5%80%AB%E8%B5%A4%E5%B7%B4
-!--Gao Zhi Sheng
-zh.wikipedia.org*%E9%AB%98%E6%99%BA%E6%99%9F
-!--Di Shi Yi Shi Ban Chan Er Er De Ni Geng Deng Que Ji Ni Ma
-zh.wikipedia.org*%E6%9B%B4%E7%99%BB%E7%A2%BA%E5%90%89%E5%B0%BC%E7%91%AA
-!--Ga Ju Pai
-zh.wikipedia.org*%E5%99%B6%E4%B8%BE%E6%B4%BE
-!--Gai Ge Li Cheng
-zh.wikipedia.org*%E6%94%B9%E9%9D%A9%E5%8E%86%E7%A8%8B
-!--Gan Dan Si
-zh.wikipedia.org*%E7%94%98%E4%B8%B9%E5%AF%BA
-!--Gao Xing Jian
-zh.wikipedia.org*%E9%AB%98%E8%A1%8C%E5%81%A5
-!--Ge Dang Pai
-zh.wikipedia.org*%E5%99%B6%E5%BD%93%E6%B4%BE
-!--Ge Lu Pai
-zh.wikipedia.org*%E6%A0%BC%E9%B2%81%E6%B4%BE
-!--GFW
-zh.wikipedia.org*GFW
-!--Gong Fei
-zh.wikipedia.org*%E5%85%B1%E5%8C%AA
-!--Gong Gong Zhi Shi Fen Zi
-zh.wikipedia.org*%E5%85%AC%E5%85%B1%E7%9F%A5%E8%AF%86%E5%88%86%E5%AD%90
-!--Google Shen Cha
-zh.wikipedia.org*Google%E5%AE%A1%E6%9F%A5
-!--Gu Ge Tui Chu Zhong Guo Shi Jian (Google)
-zh.wikipedia.org/zh-cn/%E8%B0%B7%E6%AD%8C%E9%80%80%E5%87%BA%E4%B8%AD%E5%9B%BD%E4%BA%8B%E4%BB%B6
-zh.wikipedia.org/wiki/%E8%B0%B7%E6%AD%8C%E9%80%80%E5%87%BA%E4%B8%AD%E5%9B%BD%E4%BA%8B%E4%BB%B6
-!--Guang Zhou Shi Xin Tang Shi Jian
-zh.wikipedia.org/wiki/%E5%B9%BF%E5%B7%9E%E5%B8%82%E6%96%B0%E5%A1%98%E4%BA%8B%E4%BB%B6
-!--Guo Bao
-zh.wikipedia.org*%E5%9B%BD%E4%BF%9D
-!--Guo Bo Xiong
-zh.wikipedia.org*%E9%83%AD%E4%BC%AF%E9%9B%84
-!--Guo Ji Te She Zu Zhi
-zh.wikipedia.org*%E5%9B%BD%E9%99%85%E7%89%B9%E8%B5%A6%E7%BB%84%E7%BB%87
-!--Guo Nei An Quan Bao Wei Zhi Dui
-zh.wikipedia.org*%E5%9B%BD%E5%86%85%E5%AE%89%E5%85%A8%E4%BF%9D%E5%8D%AB%E6%94%AF%E9%98%9F
-!--Guo Wu Yuan Fang Fan He Chu Li Xie Jiao Wen Ti Ban Gong Shi
-zh.wikipedia.org*%E5%9C%8B%E5%8B%99%E9%99%A2%E9%98%B2%E7%AF%84%E5%92%8C%E8%99%95%E7%90%86%E9%82%AA%E6%95%99%E5%95%8F%E9%A1%8C%E8%BE%A6%E5%85%AC%E5%AE%A4
-!--Han Dong Fang
-zh.wikipedia.org*%E9%9F%A9%E4%B8%9C%E6%96%B9
-!--He Guo Qiang
-zh.wikipedia.org*%E8%B4%BA%E5%9B%BD%E5%BC%BA
-!--He Jun Ren
-zh.wikipedia.org*%E4%BD%95%E4%BF%8A%E4%BB%81
-!--He Shang
-zh.wikipedia.org*%E6%B2%B3%E6%AE%87
-!--Hong Zhe Sheng
-zh.wikipedia.org*%E6%B4%AA%E5%93%B2%E5%8B%9D
-!--Hou De Jian
-zh.wikipedia.org*%E4%BE%AF%E5%BE%B7%E5%BB%BA
-zh.wikipedia.org*%E4%BE%AF%E8%B5%9B%E5%9B%A0%E6%B1%9F
-zh.wikipedia.org*%E4%BE%AF%E5%BE%B7%E5%81%A5
-!--Hu Jia (She Hui Huo Dong Jia) (+Redir)
-zh.wikipedia.org*%E8%83%A1%E4%BD%B3_%281973%E5%B9%B4%29
-zh.wikipedia.org*%E8%83%A1%E4%BD%B3_%28%E7%A4%BE%E6%B4%BB%E5%8B%95%E5%AE%B6%29
-zh.wikipedia.org*%E8%83%A1%E4%BD%B3_%28%E7%A4%BE%E6%9C%83%E6%B4%BB%E5%8B%95%E5%AE%B6%29
-!--Hu Jing Tao
-zh.wikipedia.org*%E8%83%A1%E9%94%A6%E6%B6%9B
-!--Hu Ping (Zuo Jia)
-zh.wikipedia.org*%E8%83%A1%E5%B9%B3_%28%E4%BD%9C%E5%AE%B6%29
-!--Hu Tu Ke Tu
-zh.wikipedia.org*%E5%91%BC%E5%9C%96%E5%85%8B%E5%9C%96
-!--Hu Wen Ti Zhi (Who&Wen :D)
-zh.wikipedia.org*%E8%83%A1%E6%B8%A9%E4%BD%93%E5%88%B6
-!--Hu Yao Bang
-zh.wikipedia.org*%E8%83%A1%E8%80%80%E9%82%A6
-!--Hua Guo Feng (zh-hans/hant)
-zh.wikipedia.org*%E5%8D%8E%E5%9B%BD%E9%94%8B
-zh.wikipedia.org*%E8%8F%AF%E5%9C%8B%E9%8B%92
-!--Hua Xia Wen Zhai
-zh.wikipedia.org*%E5%8D%8E%E5%A4%8F%E6%96%87%E6%91%98
-!--Hua Yuan Ruan Jian
-zh.wikipedia.org*%E8%8A%B1%E5%9B%AD%E8%BD%AF%E4%BB%B6
-!--Hua Yuan Wang
-zh.wikipedia.org*%E8%8A%B1%E5%9B%AD%E7%BD%91
-!--Huang Qi
-zh.wikipedia.org*%E9%BB%84%E7%90%A6
-zh.wikipedia.org*%E9%BB%83%E7%90%A6
-!--Huang Que Xing Dong
-zh.wikipedia.org*%E9%BB%83%E9%9B%80%E8%A1%8C%E5%8B%95
-!--Huang Wan Li
-zh.wikipedia.org*%E9%BB%84%E4%B8%87%E9%87%8C
-!--Huang Xiao Min
-zh.wikipedia.org*%E9%BB%83%E6%9B%89%E6%95%8F
-!--Hui Liang Yu
-zh.wikipedia.org*%E5%9B%9E%E8%89%AF%E7%8E%89
-!--Huo Ying Dong
-zh.wikipedia.org*%E9%9C%8D%E8%8B%B1%E6%9D%B1
-!--Ji Hu
-zh.wikipedia.org*%E5%AF%82%E8%AD%B7
-!--Ji Liu Zhong Guo
-zh.wikipedia.org*%E6%BF%80%E6%B5%81%E4%B8%AD%E5%9B%BD
-!--Jia Jing
-zh.wikipedia.org*%E5%98%89%E9%9D%96
-!--Jia Le Fu
-zh.wikipedia.org*%E5%AE%B6%E4%B9%90%E7%A6%8F
-!--Jia Qing Lin
-zh.wikipedia.org*%E8%B3%88%E6%85%B6%E6%9E%97
-zh.wikipedia.org*%E8%B4%BE%E5%BA%86%E6%9E%97
-!--Jian Guo Men Shi Jian
-zh.wikipedia.org*%E5%BB%BA%E5%9B%BD%E9%97%A8%E4%BA%8B%E4%BB%B6
-!--Jiang Wei Ping
-zh.wikipedia.org*%E5%A7%9C%E7%BB%B4%E5%B9%B3
-!--Jiang Ze Min (zh-hans/hant)
-zh.wikipedia.org*%E6%B1%9F%E6%B3%BD%E6%B0%91
-zh.wikipedia.org*%E6%B1%9F%E6%BE%A4%E6%B0%91
-!--Jin Dun Gong Cheng
-zh.wikipedia.org*%E9%87%91%E7%9B%BE%E5%B7%A5%E7%A8%8B
-!--Jin Dun Gong Cheng ?
-zh.wikipedia.org*%BD%F0%B6%DC%B9%A4%B3%CC
-!--Jiu Ping Gong Chan Dang
-zh.wikipedia.org*%E4%B9%9D%E8%AF%84%E5%85%B1%E4%BA%A7%E5%85%9A
-zh.wikipedia.org*%E4%B9%9D%E8%A9%95%E5%85%B1%E7%94%A2%E9%BB%A8
-!--Ju Lang 2 Xing Qian She Dan Dao Dao Dan
-zh.wikipedia.org*%E5%B7%A8%E6%B5%AA2%E5%9E%8B%E6%BD%9C%E5%B0%84%E5%BC%B9%E9%81%93%E5%AF%BC%E5%BC%B9
-!--Jue Nang Pai
-zh.wikipedia.org*%E8%A6%BA%E5%9B%8A%E6%B4%BE
-!--Jue Shi
-zh.wikipedia.org*%E7%BB%9D%E9%A3%9F
-!--La Bu Leng Si
-zh.wikipedia.org*%E6%8B%89%E5%8D%9C%E6%A5%9E%E5%AF%BA
-!--La Sa
-zh.wikipedia.org*%E6%8B%89%E8%90%A8
-!--Li An You
-zh.wikipedia.org*%E9%BB%8E%E5%AE%89%E5%8F%8B
-!--Li Chang Chun (zh-hans/hant)
-zh.wikipedia.org*%E6%9D%8E%E9%95%BF%E6%98%A5
-zh.wikipedia.org*%E6%9D%8E%E9%95%B7%E6%98%A5
-!--Li Hong Zhi
-zh.wikipedia.org*%E6%9D%8E%E6%B4%AA%E5%BF%97
-!--Li Ke Qiang
-zh.wikipedia.org*%E6%9D%8E%E5%85%8B%E5%BC%BA
-!--Li Peng/Li Peng Hui/Li Peng *
-zh.wikipedia.org*%E6%9D%8E%E9%B5%AC
-zh.wikipedia.org*%E6%9D%8E%E9%B9%8F
-!--Li Rui Huan (zh-hans/hant)
-zh.wikipedia.org*%E6%9D%8E%E7%91%9E%E7%8E%AF
-zh.wikipedia.org*%E6%9D%8E%E7%91%9E%E7%92%B0
-!--Li Shen Zhi
-zh.wikipedia.org*%E6%9D%8E%E6%85%8E%E4%B9%8B
-!--Li Shi De Shang Kou
-zh.wikipedia.org*%E5%8E%86%E5%8F%B2%E7%9A%84%E4%BC%A4%E5%8F%A3
-!--Li Xiao Lin
-zh.wikipedia.org*%E6%9D%8E%E5%B0%8F%E7%90%B3
-!--Li Ying Hao
-zh.wikipedia.org*%E6%9D%8E%E8%8B%B1%E6%B5%A9
-!--Li Yuan Chao
-zh.wikipedia.org*%E6%9D%8E%E6%BA%90%E6%BD%AE
-!--Li Zhuo Ren
-zh.wikipedia.org*%E6%9D%8E%E5%8D%93%E4%BA%BA
-!--Liao Yi Wu
-zh.wikipedia.org*%E5%BB%96%E4%BA%A6%E6%AD%A6
-!--Lian Hua Sheng
-zh.wikipedia.org*%E8%93%AE%E8%8A%B1%E7%94%9F
-!--Liang Guo Xiong
-zh.wikipedia.org*%E6%A2%81%E5%9B%BD%E9%9B%84
-!--Lin Guo Xiong
-zh.wikipedia.org*%E6%A2%81%E5%9C%8B%E9%9B%84
-!--Ling Ba Xian Zhang
-zh.wikipedia.org*%E9%9B%B6%E5%85%AB%E5%AE%AA%E7%AB%A0
-!--Ling Gu
-zh.wikipedia.org*%E4%BB%A4%E8%B0%B7
-!--Ling Ji Hua
-zh.wikipedia.org*%E4%BB%A4%E8%AE%A1%E5%88%92
-!--Liu Bin Yan
-zh.wikipedia.org*%E5%88%98%E5%AE%BE%E9%9B%81
-!--Liu Gang
-zh.wikipedia.org*%E5%8A%89%E5%89%9B_(%E6%B0%91%E9%81%8B%E4%BA%BA%E5%A3%AB)
-!--Liu Hui Qing
-zh.wikipedia.org*%E5%88%98%E6%85%A7%E5%8D%BF
-!--Liu Hui Qing (zh-hant)
-zh.wikipedia.org*%E5%8A%89%E6%85%A7%E5%8D%BF
-!--Liu Qi
-zh.wikipedia.org*%E5%88%98%E6%B7%87
-!--Liu Si (Ge Qu / Shi Ji / Shi Jian)
-zh.wikipedia.org*%E5%85%AD%E5%9B%9B
-!--Liu Si Shi Jian
-zh-yue.wikipedia.org*%E5%85%AD%E5%9B%9B%E4%BA%8B%E4%BB%B6
-!--Liu Xiao Bo
-zh.wikipedia.org*%E5%8A%89%E6%9B%89%E6%B3%A2
-!--Liu Yan Dong
-zh.wikipedia.org*%E5%88%98%E5%BB%B6%E4%B8%9C
-!--Liu Yun Shan
-zh.wikipedia.org*%E5%88%98%E4%BA%91%E5%B1%B1
-!--Luo Gan
-zh.wikipedia.org*%E7%BE%85%E5%B9%B9
-zh.wikipedia.org*%E7%BE%85%E5%B9%B2
-!--Luo Sang Sen Ge
-zh.wikipedia.org*%E6%B4%9B%E6%A1%91%E6%A3%AE%E6%A0%BC
-!--Lv Ba Hua Ji Hu Hang
-zh.wikipedia.org*%E7%B6%A0%E5%A3%A9%C2%B7%E8%8A%B1%E5%AD%A3%E8%AD%B7%E8%88%AA
-zh.wikipedia.org*%E7%BB%BF%E5%9D%9D%C2%B7%E8%8A%B1%E5%AD%A3%E6%8A%A4%E8%88%AA
-!--Lv Ba Niang
-zh.wikipedia.org/wiki/%e7%bb%bf%e5%9d%9d%e5%a8%98
-!--Ma San Jia Nv Zi Lao Jiao Suo
-zh.wikipedia.org*%E9%A6%AC%E4%B8%89%E5%AE%B6%E5%A5%B3%E5%AD%90%E5%8B%9E%E6%95%99%E6%89%80
-!--Ma Ying Jiu
-zh.wikipedia.org*%E9%A6%AC%E8%8B%B1%E4%B9%9D
-!--Mei Guo Guo Jia Min Zhu Ji Jin Hui
-zh.wikipedia.org*%E7%BE%8E%E5%9B%BD%E5%9B%BD%E5%AE%B6%E6%B0%91%E4%B8%BB%E5%9F%BA%E9%87%91%E4%BC%9A
-!--Min Gan Ren Shi
-zh.wikipedia.org*%E6%95%8F%E6%84%9F%E4%BA%BA%E5%A3%AB
-!--Min Jian Ren Quan Zhen Xian
-zh.wikipedia.org*%E6%B0%91%E9%96%93%E4%BA%BA%E6%AC%8A%E9%99%A3%E7%B7%9A
-!--Min Zhu Lin Si
-zh.wikipedia.org*%E6%95%8F%E7%8F%A0%E6%9E%97%E5%AF%BA
-!--Min Zhu Nv Shen
-zh.wikipedia.org*%E6%B0%91%E4%B8%BB%E5%A5%B3%E7%A5%9E
-!--Min Zhu Dang _ Xiang Gang
-zh.wikipedia.org*%E6%B0%91%E4%B8%BB%E9%BB%A8_(%E9%A6%99%E6%B8%AF)
-!--Min Zhu Ge Sheng Xian Zhong Hua
-zh.wikipedia.org*%E6%B0%91%E4%B8%BB%E6%AD%8C%E8%81%B2%E7%8D%BB%E4%B8%AD%E8%8F%AF
-!--Mo Li Hua Ge Ming
-zh.wikipedia.org*%E8%8C%89%E8%8E%89%E8%8A%B1%E9%9D%A9%E5%91%BD
-!--Nan Fang Du Shi Bao (An)
-zh.wikipedia.org*%E5%8D%97%E6%96%B9%E9%83%BD%E5%B8%82%E6%8A%A5*
-!--Nei Meng Gu Kang Yi
-zh.wikipedia.org/wiki/%E5%86%85%E8%92%99%E5%8F%A4%E6%8A%97%E8%AE%AE
-zh.wikipedia.org/zh-hk/%E5%86%85%E8%92%99%E5%8F%A4%E6%8A%97%E8%AE%AE
-zh.wikipedia.org/zh-tw/%E5%86%85%E8%92%99%E5%8F%A4%E6%8A%97%E8%AE%AE
-!--Nei Meng Gu Ren Min Dang
-zh.wikipedia.org*%E5%86%85%E8%92%99%E5%8F%A4%E4%BA%BA%E6%B0%91%E5%85%9A
-zh.wikipedia.org*%E5%85%A7%E8%92%99%E5%8F%A4%E4%BA%BA%E6%B0%91%E9%BB%A8
-!--Ning Ma Pai
-zh.wikipedia.org*%E5%AE%81%E7%8E%9B%E6%B4%BE
-!--Niu Bo Wang--
-zh.wikipedia.org*%E7%89%9B%E5%8D%9A%E7%BD%91
-!--Nuo Bei Er He Ping Jiang
-zh.wikipedia.org*%E8%AF%BA%E8%B4%9D%E5%B0%94%E5%92%8C%E5%B9%B3%E5%A5%96
-!--Nuo Wei
-zh.wikipedia.org*%E6%8C%AA%E5%A8%81
-!--Pan Gu Yue Dui
-zh.wikipedia.org*%E7%9B%98%E5%8F%A4%E4%B9%90%E9%98%9F
-!--Peng Li Yuan
-zh.wikipedia.org*%E5%BD%AD%E4%B8%BD%E5%AA%9B
-!--Po Wang
-zh.wikipedia.org*%E7%A0%B4%E7%BD%91
-!--Pu Zhi Qiang
-zh.wikipedia.org*%E6%B5%A6%E5%BF%97%E5%BC%BA
-!--Qi Yi You Xing
-zh.wikipedia.org*%E4%B8%83%E4%B8%80%E9%81%8A%E8%A1%8C
-!--Qin Cheng Jian Yu
-zh.wikipedia.org*%E7%A7%A6%E5%9F%8E%E7%9B%91%E7%8B%B1
-!--Qing Chao
-zh.wikipedia.org*%E6%B8%85%E6%9C%9D
-!--Quan Qiu Zang Ren Te Bie Da Hui
-zh.wikipedia.org*%E5%85%A8%E7%90%83%E8%97%8F%E4%BA%BA%E7%89%B9%E5%88%AB%E5%A4%A7%E4%BC%9A
-!--Ran Shao Ping (GB+UTF8)
-zh.wikipedia.org*%C8%BC%C9%D5%C6%BF
-zh.wikipedia.org*%E7%87%83%E7%83%A7%E7%93%B6
-!--Re Bi Ya
-zh.wikipedia.org*%E7%83%AD%E6%AF%94%E5%A8%85
-zh.wikipedia.org*%E7%86%B1%E6%AF%94%E5%A9%AD
-!--Rui Dian
-zh.wikipedia.org*%E7%91%9E%E5%85%B8
-!--Sa Jia Pai
-zh.wikipedia.org*%E8%90%A8%E8%BF%A6%E6%B4%BE
-!--San Nian Zi Ran Zai Hai
-zh.wikipedia.org*%E4%B8%89%E5%B9%B4%E8%87%AA%E7%84%B6%E7%81%BE%E5%AE%B3
-!--San Tui
-zh.wikipedia.org*%E4%B8%89%E9%80%80
-!--Se La Si
-zh.wikipedia.org*%E8%89%B2%E6%8B%89%E5%AF%BA
-!--Sheng Xiong Gan Di
-zh.wikipedia.org*%E5%9C%A3%E9%9B%84%E7%94%98%E5%9C%B0
-!--Sheng Xue
-zh.wikipedia.org*%E7%9B%9B%E9%9B%AA
-!--Shi Jie Ge Zheng Quan Shou Cheng Ren Zhuang Kuang Lie Biao
-zh.wikipedia.org/zh-cn/%E4%B8%96%E7%95%8C%E5%90%84%E6%94%BF%E6%9D%83%E5%8F%97%E6%89%BF%E8%AE%A4%E7%8A%B6%E5%86%B5%E5%88%97%E8%A1%A8
-!--Shi Jie Jing Ji Dao Bao
-zh.wikipedia.org*%E4%B8%96%E7%95%8C%E7%BB%8F%E6%B5%8E%E5%AF%BC%E6%8A%A5
-!--Shi Jie Wei Wu Er Da Hui
-zh.wikipedia.org*%E4%B8%96%E7%95%8C%E7%BB%B4%E5%90%BE%E5%B0%94%E5%A4%A7%E4%BC%9A!--Shi Jie Wei Wu Er Qing Nian Dai Biao Da Hui
-zh.wikipedia.org*%E4%B8%96%E7%95%8C%E7%BB%B4%E5%90%BE%E5%B0%94%E9%9D%92%E5%B9%B4%E4%BB%A3%E8%A1%A8%E5%A4%A7%E4%BC%9A
-!--Shi Jie Wei Wu Er Dai Biao Da Hui
-zh.wikipedia.org*%E4%B8%96%E7%95%8C%E7%B6%AD%E5%90%BE%E7%88%BE%E4%BB%A3%E8%A1%A8%E5%A4%A7%E6%9C%83
-!--Shi Si Shi Da Lai
-zh.wikipedia.org*%E5%8D%81%E5%9B%9B%E4%B8%96%E8%BE%BE%E8%B5%96
-!--Shi Tao
-zh.wikipedia.org*%E5%B8%88%E6%B6%9B
-zh.wikipedia.org*%E5%B8%AB%E6%BF%A4
-!--Shi Xing Yun
-zh.wikipedia.org*%E9%87%8A%E6%98%9F%E4%BA%91
-!--Shi You Bang
-zh.wikipedia.org*%E7%9F%B3%E6%B2%B9%E5%B8%AE
-!--Si Tu Hua (zh-hans/hant)
-zh.wikipedia.org*%E5%8F%B8%E5%BE%92%E5%8D%8E
-zh.wikipedia.org*%E5%8F%B8%E5%BE%92%E8%8F%AF
-!--Si Wu Xing Dong
-zh.wikipedia.org*%E5%9B%9B%E4%BA%94%E8%A1%8C%E5%8B%95
-!--Song Bing Bing
-zh.wikipedia.org*%E5%AE%8B%E5%BD%AC%E5%BD%AC
-!--Song Ren Qiong (zh-hans/hant)
-zh.wikipedia.org*%E5%AE%8B%E4%BB%BB%E7%A9%B7
-zh.wikipedia.org*%E5%AE%8B%E4%BB%BB%E7%AA%AE
-!--Su Jia Tun Shi Jian
-zh.wikipedia.org*%E8%8B%8F%E5%AE%B6%E5%B1%AF%E4%BA%8B%E4%BB%B6
-!--Sun Wen Guang
-zh.wikipedia.org*%E5%AD%99%E6%96%87%E5%B9%BF
-!--Ta Er Si
-zh.wikipedia.org*%E5%A1%94%E5%B0%94%E5%AF%BA
-!--Tai Wan Du Li Jian Guo Lian Meng
-zh.wikipedia.org*%E5%8F%B0%E7%81%A3%E7%8D%A8%E7%AB%8B%E5%BB%BA%E5%9C%8B%E8%81%AF%E7%9B%9F
-!--Tai Zi Dang
-zh.wikipedia.org*%E5%A4%AA%E5%AD%90%E5%85%9A
-zh.wikipedia.org*%E5%A4%AA%E5%AD%90%E5%85%9A
-zh.wikipedia.org/zh-cn/%E5%A4%AA%E5%AD%90%E5%85%9A
-!--Tan Zuo Ren
-zh.wikipedia.org*%E8%B0%AD%E4%BD%9C%E4%BA%BA
-!--Tang Bo Qiao
-zh.wikipedia.org*%E5%94%90%E6%9F%8F%E6%A1%A5
-!--Tao Si Ju
-zh.wikipedia.org/zh/%E9%99%B6%E9%A9%B7%E9%A9%B9
-!--Tian An Men Guang Chang
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%97%A8%E5%B9%BF%E5%9C%BA
-!--Tian An Men Min Zhu Da Xue
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%97%A8%E6%B0%91%E4%B8%BB%E5%A4%A7%E5%AD%A6
-!--Tian An Men Mu Qin Yun Dong
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%97%A8%E6%AF%8D%E4%BA%B2%E8%BF%90%E5%8A%A8
-!--Tian An Men Shi Jian
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%96%80%E4%BA%8B%E4%BB%B6
-!--Tian An Men Wen Jian
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%97%A8%E6%96%87%E4%BB%B6
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%96%80%E6%96%87%E4%BB%B6
-!--Tian An Men Zi Fen Shi Jian
-zh.wikipedia.org*%E5%A4%A9%E5%AE%89%E9%97%A8%E8%87%AA%E7%84%9A%E4%BA%8B%E4%BB%B6
-!--Tian Zang
-zh.wikipedia.org*%E5%A4%A9%E8%91%AC
-!--Tor
-zh.wikipedia.org/zh-cn/Tor
-!--Twitter
-zh.wikipedia.org/zh-hk/Twitter
-!--Wan Li
-zh.wikipedia.org*%E4%B8%87%E9%87%8C
-!--Wang Gang_(Zheng Zhi Ren Wu)
-zh.wikipedia.org*%E7%8E%8B%E5%89%9B*%E6%94%BF%E6%B2%BB%E4%BA%BA%E7%89%A9
-zh.wikipedia.org*%E7%8E%8B%E5%88%9A*%E6%94%BF%E6%B2%BB%E4%BA%BA%E7%89%A9
-!--Wang Jun Tao
-zh.wikipedia.org*%E7%8E%8B%E5%86%9B%E6%B6%9B
-!--Wang Le Quan
-zh.wikipedia.org*%E7%8E%8B%E6%A8%82%E6%B3%89
-!--Wang Li Jun(*/Shi Jian)
-zh.wikipedia.org*%E7%8E%8B%E7%AB%8B%E5%86%9B
-!--Wang Qi Shan
-zh.wikipedia.org*%E7%8E%8B%E5%B2%90%E5%B1%B1
-!--Wang Qian Yuan
-zh.wikipedia.org*%E7%8E%8B%E5%8D%83%E6%BA%90
-!--Wang Shu Hua
-zh.wikipedia.org*%E7%8E%8B%E6%B7%91%E5%8D%8E
-!--Wang Wei Lin
-zh.wikipedia.org*%E7%8E%8B%E7%BB%B4%E6%9E%97
-!--Wang You Cai
-zh.wikipedia.org*%E7%8E%8B%E6%9C%89%E6%89%8D
-!--Wei Jing Sheng
-zh.wikipedia.org*%E9%AD%8F%E4%BA%AC%E7%94%9F
-!--Wen Chuan Da Di Zhen
-zh.wikipedia.org*%E6%B1%B6%E5%B7%9D%E5%A4%A7%E5%9C%B0%E9%9C%87
-!--Wang Bing Zhang
-zh.wikipedia.org*%E7%8E%8B%E7%82%B3%E7%AB%A0
-!--Wang Le Quan
-zh.wikipedia.org*%E7%8E%8B%E4%B9%90%E6%B3%89
-!--Wang Li Xiong
-zh.wikipedia.org*%E7%8E%8B%E5%8A%9B%E9%9B%84
-!--Wang Luo Ping Lun Yuan
-zh.wikipedia.org*%E7%BD%91%E7%BB%9C%E8%AF%84%E8%AE%BA%E5%91%98
-!--Wang Xing
-zh.wikipedia.org/wiki/%E7%8E%8B%E5%A7%93
-!--Wang Yang
-zh.wikipedia.org*%E6%B1%AA%E6%B4%8B
-!--Wang Zhao Guo
-zh.wikipedia.org*%E7%8E%8B%E5%85%86%E5%9B%BD
-!--Wei Se
-zh.wikipedia.org*%E5%94%AF%E8%89%B2
-!--Wei Shi Fu Bai An
-zh.wikipedia.org*%E5%A8%81%E8%A7%86%E8%85%90%E8%B4%A5%E6%A1%88
-!--Wen Chuan Di Zhen
-zh.wikipedia.org*%E6%B1%B6%E5%B7%9D%E5%9C%B0%E9%9C%87
-!--Wen Jia Bao
-zh.wikipedia.org*%E6%B8%A9%E5%AE%B6%E5%AE%9D
-!--Wen Ru Chun
-zh.wikipedia.org*%E6%B8%A9%E5%A6%82%E6%98%A5
-!--Wen Yun Song
-zh.wikipedia.org*%E6%B8%A9%E4%BA%91%E6%9D%BE
-!--Wen Zi Yu (zh-hans/hant)
-zh.wikipedia.org/wiki/%E6%96%87%E5%AD%97%E7%8B%B1
-zh.wikipedia.org/wiki/%E6%96%87%E5%AD%97%E7%8D%84
-!--Wu Bang Guo
-zh.wikipedia.org*%E5%90%B4%E9%82%A6%E5%9B%BD
-!--Wo De Fen Dou
-zh.wikipedia.org*%E6%88%91%E7%9A%84%E5%A5%8B%E6%96%97
-!--Wu Er Kai Xi
-zh.wikipedia.org*%E5%90%BE%E5%B0%94%E5%BC%80%E5%B8%8C
-zh.wikipedia.org*%E5%90%BE%E7%88%BE%E9%96%8B%E5%B8%8C
-!--Wu Guo Jie Ji Zhe
-zh.wikipedia.org*%E6%97%A0%E5%9B%BD%E7%95%8C%E8%AE%B0%E8%80%85
-!--Wu Hong Da
-zh.wikipedia.org*%E5%90%B4%E5%BC%98%E8%BE%BE
-!--Wu Jie
-zh.wikipedia.org*%E6%97%A0%E7%95%8C
-!--Wu Kan Shi Jian
-zh.wikipedia.org*%E7%83%8F%E5%9D%8E%E4%BA%8B%E4%BB%B6
-!--Wu Lu Mu Qi Qi Wu Bao Li Shi Jian
-zh.wikipedia.org*%E4%B9%8C%E9%B2%81%E6%9C%A8%E9%BD%90%E4%B8%83%C2%B7%E4%BA%94%E6%9A%B4%E5%8A%9B%E4%BA%8B%E4%BB%B6
-!--Wu Mao Dan Shi Jian
-zh.wikipedia.org*%E4%BA%94%E6%AF%9B%E8%9B%8B%E4%BA%8B%E4%BB%B6
-!--Xi Dan Min Zhu Qiang
-zh.wikipedia.org*%E8%A5%BF%E5%8D%95%E6%B0%91%E4%B8%BB%E5%A2%99
-!--Xi Jin Ping (zh-hant)
-zh.wikipedia.org*%E7%BF%92%E8%BF%91%E5%B9%B3
-!--Xi Jin Ping
-zh.wikipedia.org*%E4%B9%A0%E8%BF%91%E5%B9%B3
-!--Xi Xiang Ji Hua
-zh.wikipedia.org*%E8%A5%BF%E5%8E%A2%E8%AE%A1%E5%88%92
-!--Xi Zang
-zh.wikipedia.org*%E8%A5%BF%E8%97%8F
-!--Xi Zhong Xun
-zh.wikipedia.org*%E4%B9%A0%E4%BB%B2%E5%8B%8B
-!--Xia Ma Ba
-zh.wikipedia.org*%E5%A4%8F%E7%91%AA%E5%B7%B4
-!--Xiang Gang Du Li Yun Dong
-zh.wikipedia.org*%E9%A6%99%E6%B8%AF%E7%8D%A8%E7%AB%8B%E9%81%8B%E5%8B%95
-!--Xiang Gang Min Zhu Dang
-zh.wikipedia.org*%E9%A6%99%E6%B8%AF%E6%B0%91%E4%B8%BB%E9%BB%A8
-!--Xiang Gang Min Zhu Pai
-zh.wikipedia.org*%E9%A6%99%E6%B8%AF*%E6%B0%91%E4%B8%BB%E6%B4%BE
-!--Xiang Gang Ren Quan Jian Cha
-zh.wikipedia.org*%E9%A6%99%E6%B8%AF%E4%BA%BA%E6%AC%8A%E7%9B%A3%E5%AF%9F
-!--Xiao Zhao Si
-zh.wikipedia.org*%E5%B0%8F%E6%98%AD%E5%AF%BA
-!--Xie Yan Fei
-zh.wikipedia.org*%E8%B0%A2%E5%BD%A6%E9%A3%9E
-!--Xin Hao Nian
-zh.wikipedia.org*%E8%BE%9B%E7%81%8F%E5%B9%B4
-!--Xin Jiang Du Li *(zh-cn/zh-Hans)
-zh.wikipedia.org*%E6%96%B0%E7%96%86%E7%8B%AC%E7%AB%8B
-zh.wikipedia.org*%E6%96%B0%E7%96%86%E7%8D%A8%E7%AB%8B
-!--Xin Tang Ren Dian Shi Tai
-zh.wikipedia.org*%E6%96%B0%E5%94%90%E4%BA%BA%E9%9B%BB%E8%A6%96%E5%8F%B0
-!--Xin Wen Zi You Lue Duo Zhe
-zh.wikipedia.org*%E6%96%B0%E9%97%BB%E8%87%AA%E7%94%B1%E6%8E%A0%E5%A4%BA%E8%80%85
-!--Xing Yun Fa Shi
-zh.wikipedia.org*%E6%98%9F%E4%BA%91%E6%B3%95%E5%B8%88
-!--Xiong Yan
-zh.wikipedia.org*%E7%86%8A%E7%84%B1
-!--Xu Cai Hou
-zh.wikipedia.org*%E5%BE%90%E6%89%8D%E5%8E%9A
-!--Xu Jia Tun
-zh.wikipedia.org*%E8%AE%B8%E5%AE%B6%E5%B1%AF
-!--Xue Shan Shi Zi Qi
-zh.wikipedia.org*%E9%9B%AA%E5%B1%B1%E7%8D%85%E5%AD%90%E6%97%97
-!--Xun Wen Chu
-zh.wikipedia.org*%E8%A9%A2%E5%95%8F%E8%99%95
-!--Yan Jia Qi
-zh.wikipedia.org*%E5%9A%B4%E5%AE%B6%E5%85%B6
-zh.wikipedia.org*%E4%B8%A5%E5%AE%B6%E5%85%B6
-!--Yan Ming Fu
-zh.wikipedia.org*%E9%98%8E%E6%98%8E%E5%A4%8D
-!--Yang Jia Xi Jing An
-zh.wikipedia.org*%E6%9D%A8%E4%BD%B3%E8%A2%AD%E8%AD%A6%E6%A1%88
-!--Yang Jian Li
-zh.wikipedia.org*%E6%A5%8A%E5%BB%BA%E5%88%A9
-!--Yi Li Shen
-zh.wikipedia.org*%E8%9A%81%E5%8A%9B%E7%A5%9E
-!--Yong He Gong
-zh.wikipedia.org*%E9%9B%8D%E5%92%8C%E5%AE%AB
-!--You Ling Wang
-zh.wikipedia.org*%E5%B9%BD%E7%81%B5%E7%BD%91
-!--Yu Jie
-zh.wikipedia.org*%E4%BD%99%E6%9D%B0
-!--Yu Li Ping
-zh.wikipedia.org*%E4%BF%9E%E4%B8%BD%E8%90%8D
-!--Yu San Ge Ming
-zh.wikipedia.org*%E9%9B%A8%E5%82%98%E9%9D%A9%E5%91%BD
-!--Yu Zheng Sheng
-zh.wikipedia.org*%E4%BF%9E%E6%AD%A3%E5%A3%B0
-!--Yuan Hong Bing
-zh.wikipedia.org*%E8%A2%81%E7%BA%A2%E5%86%B0
-zh.wikipedia.org*%E8%A2%81%E7%B4%85%E5%86%B0
-!--Zang Chuan Fo Jiao
-zh.wikipedia.org*%E8%97%8F%E4%BC%A0%E4%BD%9B%E6%95%99
-!--Zeng Qing Hong
-zh.wikipedia.org*%E6%9B%BE%E5%BA%86%E7%BA%A2
-zh.wikipedia.org*%E6%9B%BE%E6%85%B6%E7%B4%85
-!--Zha Shi Lun Bu Si
-zh.wikipedia.org*%E6%89%8E%E4%BB%80%E4%BC%A6%E5%B8%83%E5%AF%BA
-!--Zhang De Jiang
-zh.wikipedia.org*%E5%BC%A0%E5%BE%B7%E6%B1%9F
-!--Zhang Gao Li
-zh.wikipedia.org*%E5%BC%A0%E9%AB%98%E4%B8%BD
-zh.wikipedia.org*%E5%BC%B5%E9%AB%98%E9%BA%97
-!--Zhang Jia Hu Tu Ke Tu
-zh.wikipedia.org*%E7%AB%A0%E5%98%89%E5%91%BC%E5%9B%BE%E5%85%8B%E5%9B%BE
-!--Zhang Li Chang
-zh.wikipedia.org*%E5%BC%A0%E7%AB%8B%E6%98%8C
-!--Zhang Pei Li
-zh.wikipedia.org*%E5%BC%A0%E5%9F%B9%E8%8E%89
-!--Zhang Wen Guang
-zh.wikipedia.org*%E5%BC%B5%E6%96%87%E5%85%89
-!--Zhang Yi He (zh-hans/hant)
-zh.wikipedia.org*%E7%AB%A0%E8%A9%92%E5%92%8C
-zh.wikipedia.org*%E7%AB%A0%E8%AF%92%E5%92%8C
-!--Zhang Yu
-zh.wikipedia.org*%E5%BC%A0%E9%92%B0
-!--Zhang Yu (zh-hant)
-zh.wikipedia.org*%E5%BC%B5%E9%88%BA
-!--Zhao Zi Yang (zh-hans/zh-hant)
-zh.wikipedia.org*%E8%B5%B5%E7%B4%AB%E9%98%B3
-zh.wikipedia.org*%E8%B6%99%E7%B4%AB%E9%99%BD
-!--Zhe Bu Zun Dan Ba Hu Tu Ke Tu
-zh.wikipedia.org*%E5%93%B2%E5%B8%83%E5%B0%8A%E4%B8%B9%E5%B7%B4%E5%91%BC%E5%9B%BE%E5%85%8B%E5%9B%BE
-!--Zhen Shan Ren
-zh.wikipedia.org*%E7%9C%9F%E5%96%84%E5%BF%8D
-!--Zhong Gong Zhong Yang Xuan Chuan Bu
-zh.wikipedia.org*%E4%B8%AD%E5%85%B1%E4%B8%AD%E5%A4%AE%E5%AE%A3%E4%BC%A0%E9%83%A8
-!--Zhong Guo
-zh.wikipedia.org/wiki/%E4%B8%AD%E5%9B%BD
-!--Zhong Guo Chi Bu Tong Zheng Jian Zhe Ming Dan
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E6%8C%81%E4%B8%8D%E5%90%8C%E6%94%BF%E8%A6%8B%E8%80%85%E5%90%8D%E5%96%AE
-!--Zhong Guo Da Lu Feng Suo Wei Ji Mei Ti Shi Jian (zh-hans/hant)
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E5%B0%81%E9%94%81%E7%BB%B4%E5%9F%BA%E5%AA%92%E4%BD%93%E4%BA%8B%E4%BB%B6
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E5%A4%A7%E9%99%86%E5%B0%81%E9%94%81%E7%BB%B4%E5%9F%BA%E7%99%BE%E7%A7%91%E4%BA%8B%E4%BB%B6
-!--Zhong Guo Da Lu Wang Luo Feng Suo
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E5%A4%A7%E9%99%B8%E7%B6%B2%E8%B7%AF%E5%B0%81%E9%8E%96
-!--Zhong Guo Dian Shi Shen Cha
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E7%94%B5%E8%A7%86%E5%AE%A1%E6%9F%A5
-!--Zhong Guo Fan Lan Lian Meng
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E6%B3%9B%E8%93%9D%E8%81%94%E7%9B%9F
-!--Zhong Guo Gong Chan Dang(Zheng Zhi Yun Dong(Lie Biao))/(Zhong Yang Jun Shi Wei Yuan Hui)...
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E5%85%B1%E4%BA%A7%E5%85%9A
-!--Zhong Guo Gong Chan Dang (zh-hant)
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E5%85%B1%E7%94%A2%E9%BB
-!--Zhong Guo Ji Du Jiao Xie Hui
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E5%9F%BA%E7%9D%A3%E6%95%99%E5%8D%8F%E4%BC%9A
-!--Zhong Guo Jia Jiao Xie Hui
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E5%AE%B6%E5%BA%AD%E6%95%99%E4%BC%9A
-!--Zhong Guo Lian Bang Zhu Yi
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E8%81%AF%E9%82%A6%E4%B8%BB%E7%BE%A9
-!--Zhong Guo Ren Quan Min Yun Xin Xi Zhong Xin
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E4%BA%BA%E6%AC%8A%E6%B0%91%E9%81%8B%E4%BF%A1%E6%81%AF%E4%B8%AD%E5%BF%83
-!--Zhong Guo Min Zhu Dang
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E6%B0%91%E4%B8%BB%E5%85%9A
-!--Zhong Guo Min Zhu Yun Dong(zh-Hans/zh-Hant)
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E6%B0%91%E4%B8%BB%E8%BF%90%E5%8A%A8
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E6%B0%91%E4%B8%BB%E9%81%8B%E5%8B%95
-!--Zhong Guo Mo Li Hua Ge Ming
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E8%8C%89%E8%8E%89%E8%8A%B1%E9%9D%A9%E5%91%BD
-!--Zhong (Hua Ren Min Gong He) Guo Ren Quan
-zh.wikipedia.org*%E4%B8%AD*%E5%9B%BD%E4%BA%BA%E6%9D%83
-!--Zhong Guo Wang Luo Ruan Jian Guo Lv Guan Jian Zi Lie Biao
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E7%BD%91%E7%BB%9C%E8%BD%AF%E4%BB%B6%E8%BF%87%E6%BB%A4%E5%85%B3%E9%94%AE%E5%AD%97%E5%88%97%E8%A1%A8
-!--Zhong Guo Wang Luo Shen Cha
-zh.wikipedia.org*%E4%B8%AD%E5%9B%BD%E7%BD%91%E7%BB%9C%E5%AE%A1%E6%9F%A5
-zh.wikipedia.org*%E4%B8%AD%E5%9C%8B%E7%B6%B2%E8%B7%AF%E5%AF%A9%E6%9F%A5
-!--Zhong Hua Ren Min Gong He Guo Bei Feng Suo Wang Zhan Lie Biao
-zh.wikipedia.org*%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E8%A2%AB%E5%B0%81%E9%94%81%E7%BD%91%E7%AB%99%E5%88%97%E8%A1%A8
-!--Zhong Hua Ren Min Gong He Guo Ren Quan
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9C%8B%E4%BA%BA%E6%AC%8A
-!--Zhong Hua Ren Min Gong He Guo Shen Cha Ci Hui Lie Biao
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9C%8B%E5%AF%A9%E6%9F%A5%E8%BE%AD%E5%BD%99%E5%88%97%E8%A1%A8
-!--Zhong Hua Ren Min Gong He Guo Xian Fa
-zh.wikipedia.org*%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E5%AE%AA%E6%B3%95
-!--Zhong Hua Min Guo Guo Min Da Hui
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E6%B0%91%E5%9C%8B%E5%9C%8B%E6%B0%91%E5%A4%A7%E6%9C%83
-!--Zhong Hua Min Guo Zhi Zang Li Shi
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E6%B0%91%E5%9C%8B%E6%B2%BB%E8%97%8F%E6%AD%B7%E5%8F%B2
-!--Zhong Hua Min Guo Zong Tong Fu
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E6%B0%91%E5%9C%8B%E7%B8%BD%E7%B5%B1%E5%BA%9C
-!--Zhong Hua Ren Min Gong He Guo Wang Luo Shen Cha
-zh.wikipedia.org*%E4%B8%AD%E5%8D%8E%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9B%BD%E7%BD%91%E7%BB%9C%E5%AE%A1%E6%9F%A5
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9C%8B%E7%B6%B2%E7%B5%A1%E5%AF%A9%E6%9F%A5
-!--Zhong Hua Ren Min Gong He Guo Min Zhu Yun Dong
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9C%8B%E6%B0%91%E4%B8%BB%E9%81%8B%E5%8B%95
-!--Zhong Hua Ren Min Gong Ge Guo Zong Jiao
-zh.wikipedia.org*%E4%B8%AD%E8%8F%AF%E4%BA%BA%E6%B0%91%E5%85%B1%E5%92%8C%E5%9C%8B%E5%AE%97%E6%95%99
-!--Zhong Wen Wei Ji Bai Ke
-zh.wikipedia.org*%E4%B8%AD%E6%96%87%E7%BB%B4%E5%9F%BA%E7%99%BE%E7%A7%91
-!--Zhong Yang Jing Wei Ju
-zh.wikipedia.org*%E4%B8%AD%E5%A4%AE%E8%AD%A6%E8%A1%9B%E5%B1%80
-!--Zhong Yang Wen Hua Ge Ming Xiao Zu
-zh.wikipedia.org*%E4%B8%AD%E5%A4%AE%E6%96%87%E5%8C%96%E9%9D%A9%E5%91%BD%E5%B0%8F%E7%BB%84
-!--Zhong Ying Xu Ding Zang Yin Tiao Yue
-zh.wikipedia.org*%E4%B8%AD%E8%8B%B1%E7%BA%8C%E8%A8%82%E8%97%8F%E5%8D%B0%E6%A2%9D%E7%B4%84
-!--Zhou Bin
-zh.wikipedia.org*%E5%91%A8%E6%BB%A8
-!--Zhou Yong Kang
-zh.wikipedia.org*%E5%91%A8%E6%B0%B8%E5%BA%B7
-!--Zhuan Fa Lun
-zh.wikipedia.org*%E8%BD%AC%E6%B3%95%E8%BD%AE
-!--Zi You Men
-zh.wikipedia.org*%E8%87%AA%E7%94%B1%E9%97%A8
-!--Zi You Ya Zhou
-zh.wikipedia.org*%E8%87%AA%E7%94%B1%E4%BA%9A%E6%B4%B2
-!--Zong Ge Ba
-zh.wikipedia.org*%E5%AE%97%E5%96%80%E5%B7%B4
+|https://zh.m.wikipedia.org
 
-!---------------Other Wiki---------------
+!---------------Other Wikis---------------
 !--Tu Po Wang Luo Shen Cha--Wikibooks
 zh.wikibooks.org*%E7%AA%81%E7%A0%B4%E7%BD%91%E7%BB%9C%E5%AE%A1%E6%9F%A5
-!--Ling Ba Xian Zhang--WikiSource
-!--zh.wikisource.org/wiki/%E9%9B%B6%E5%85%AB%E5%AE%AA%E7%AB%A0
 
 !------------TW Gov-------------------------
-gov.tw
+.gov.tw
 @@||tax.nat.gov.tw
 @@||moe.gov.tw
 @@||cwb.gov.tw
 @@||npm.gov.tw
 @@||yatsen.gov.tw
-@@||aec.gov.tw
 @@||mvdis.gov.tw
 @@||stdtime.gov.tw
 @@||nmmba.gov.tw
@@ -5060,7 +4272,6 @@ gov.tw
 @@||grb.gov.tw
 @@||tpde.aide.gov.tw
 @@||matsu-news.gov.tw
-@@||nerhl.gov.tw
 @@||dapu-house.gov.tw
 @@||vghtc.gov.tw
 @@||aide.gov.tw
