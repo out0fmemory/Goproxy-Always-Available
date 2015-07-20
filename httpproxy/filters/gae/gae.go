@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"sync/atomic"
 
 	"github.com/golang/glog"
 	"github.com/phuslu/goproxy/httpproxy"
@@ -19,9 +20,10 @@ const (
 )
 
 type Filter struct {
-	FetchServers []*FetchServer
-	Transport    filters.RoundTripFilter
-	Sites        *httpproxy.HostMatcher
+	FetchServers     []*FetchServer
+	FetchServerIndex int64
+	Transport        filters.RoundTripFilter
+	Sites            *httpproxy.HostMatcher
 }
 
 func init() {
@@ -95,9 +97,13 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 }
 
 func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
-	i := 0
+	i := int(atomic.LoadInt64(&f.FetchServerIndex))
+	if i > len(f.FetchServers) {
+		return ctx, nil, fmt.Errorf("All GAE fetchservers are over qouta!")
+	}
+
 	if strings.HasPrefix(mime.TypeByExtension(path.Ext(req.URL.Path)), "image/") {
-		i = rand.Intn(len(f.FetchServers))
+		i += rand.Intn(len(f.FetchServers) - i)
 	}
 
 	fetchServer := f.FetchServers[i]
@@ -116,6 +122,32 @@ func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 
+	switch resp.StatusCode {
+	case 503:
+		glog.Warningf("%s over qouta, switch to next appid.", fetchServer.URL.String())
+		atomic.AddInt64(&f.FetchServerIndex, 1)
+		resp := &http.Response{
+			Status:     "302 Moved Temporarily",
+			StatusCode: 302,
+			Proto:      "HTTP/1.1",
+			ProtoMajor: 1,
+			ProtoMinor: 1,
+			Header: http.Header{
+				"Location": []string{req.URL.String()},
+			},
+			Request:       req,
+			Close:         false,
+			ContentLength: 0,
+		}
+		return ctx, resp, nil
+	default:
+		break
+	}
+
 	resp1, err := fetchServer.decodeResponse(resp)
+	if resp1 != nil {
+		resp1.Request = req
+	}
+
 	return ctx, resp1, err
 }
