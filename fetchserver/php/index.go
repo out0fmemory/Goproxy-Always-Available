@@ -2,11 +2,14 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"compress/flate"
+	"compress/gzip"
 	"crypto/tls"
 	"encoding/binary"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"net/url"
@@ -104,6 +107,33 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 
 	req1, err := ReadRequest(flate.NewReader(&io.LimitedReader{R: req.Body, N: int64(hdrLen)}))
 	req1.Body = req.Body
+
+	if ce := req1.Header.Get("Content-Encoding"); ce != "" {
+		var r io.Reader
+		switch ce {
+		case "deflate":
+			r = flate.NewReader(req1.Body)
+		case "gzip":
+			if r, err = gzip.NewReader(req1.Body); err != nil {
+				httpError(rw, err.Error(), http.StatusBadRequest)
+				return
+			}
+		default:
+			httpError(rw, fmt.Sprintf("Unsupported Content-Encoding: %#v", ce), http.StatusBadRequest)
+			return
+		}
+		data, err := ioutil.ReadAll(r)
+		if err != nil {
+			req1.Body.Close()
+			httpError(rw, err.Error(), http.StatusBadRequest)
+			return
+		}
+		req1.Body.Close()
+		req1.Body = ioutil.NopCloser(bytes.NewReader(data))
+		req1.ContentLength = int64(len(data))
+		req1.Header.Set("Content-Length", strconv.FormatInt(req1.ContentLength, 10))
+		req1.Header.Del("Content-Encoding")
+	}
 
 	logger.Printf("%s \"%s %s %s\" - -", req.RemoteAddr, req1.Method, req1.URL.String(), req1.Proto)
 
