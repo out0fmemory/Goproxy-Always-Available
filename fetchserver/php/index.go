@@ -24,9 +24,20 @@ const (
 	Password = "123456"
 )
 
+var (
+	transport *http.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+		TLSHandshakeTimeout: 30 * time.Second,
+		MaxIdleConnsPerHost: 4,
+		DisableCompression:  false,
+	}
+)
+
 func main() {
 	http.HandleFunc("/", handler)
-	err := http.ListenAndServe("0.0.0.0:"+os.Getenv("PORT"), nil)
+	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
 	if err != nil {
 		panic(err)
 	}
@@ -156,14 +167,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-		},
-		TLSHandshakeTimeout: 30 * time.Second,
-	}
-
-	resp, err := tr.RoundTrip(req1)
+	resp, err := transport.RoundTrip(req1)
 	if err != nil {
 		httpError(rw, err.Error(), http.StatusBadGateway)
 		return
