@@ -37,7 +37,8 @@ var (
 
 func main() {
 	http.HandleFunc("/", handler)
-	err := http.ListenAndServe(":"+os.Getenv("PORT"), nil)
+	addr := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		panic(err)
 	}
