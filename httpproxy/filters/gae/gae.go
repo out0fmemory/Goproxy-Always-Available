@@ -57,7 +57,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	fetchServers := make([]*FetchServer, 0)
 	for _, appid := range config.AppIds {
-		u, err := url.Parse(fmt.Sprintf("%s://%s.%s%s", config.Scheme, appid, config.Domain, config.Path))
+		var rawurl string
+		switch strings.Count(appid, ".") {
+		case 0, 1:
+			rawurl = fmt.Sprintf("%s://%s.%s%s", config.Scheme, appid, config.Domain, config.Path)
+		default:
+			rawurl = fmt.Sprintf("%s://%s.%s%s", config.Scheme, appid, config.Path)
+		}
+		u, err := url.Parse(rawurl)
 		if err != nil {
 			return nil, err
 		}
