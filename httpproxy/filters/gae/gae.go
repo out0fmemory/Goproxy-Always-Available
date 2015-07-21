@@ -8,7 +8,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"sync/atomic"
+	"sync"
 
 	"github.com/golang/glog"
 	"github.com/phuslu/goproxy/httpproxy"
@@ -20,10 +20,10 @@ const (
 )
 
 type Filter struct {
-	FetchServers     []*FetchServer
-	FetchServerIndex int64
-	Transport        filters.RoundTripFilter
-	Sites            *httpproxy.HostMatcher
+	FetchServers   []*FetchServer
+	muFetchServers sync.Mutex
+	Transport      filters.RoundTripFilter
+	Sites          *httpproxy.HostMatcher
 }
 
 func init() {
@@ -97,11 +97,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 }
 
 func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
-	i := int(atomic.LoadInt64(&f.FetchServerIndex))
-	if i > len(f.FetchServers) {
-		return ctx, nil, fmt.Errorf("All GAE fetchservers are over qouta!")
-	}
-
+	i := 0
 	if strings.HasPrefix(mime.TypeByExtension(path.Ext(req.URL.Path)), "image/") {
 		i += rand.Intn(len(f.FetchServers) - i)
 	}
@@ -124,8 +120,18 @@ func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 	switch resp.StatusCode {
 	case 503:
+		if len(f.FetchServers) == 1 {
+			break
+		}
 		glog.Warningf("%s over qouta, switch to next appid.", fetchServer.URL.String())
-		atomic.AddInt64(&f.FetchServerIndex, 1)
+		f.muFetchServers.Lock()
+		if fetchServer == f.FetchServers[0] {
+			for i := 1; i < len(f.FetchServers)-1; i++ {
+				f.FetchServers[i] = f.FetchServers[i+1]
+			}
+			f.FetchServers[len(f.FetchServers)-1] = fetchServer
+		}
+		f.muFetchServers.Unlock()
 		resp := &http.Response{
 			Status:     "302 Moved Temporarily",
 			StatusCode: 302,
