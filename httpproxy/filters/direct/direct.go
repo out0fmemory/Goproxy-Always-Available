@@ -75,6 +75,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Dial: d.Dial,
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: false,
+				ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 			},
 			TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 			MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,

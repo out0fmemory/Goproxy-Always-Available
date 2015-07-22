@@ -28,6 +28,7 @@ var (
 	transport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
 		TLSHandshakeTimeout: 30 * time.Second,
 		MaxIdleConnsPerHost: 4,

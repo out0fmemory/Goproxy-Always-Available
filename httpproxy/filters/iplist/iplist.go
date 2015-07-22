@@ -74,6 +74,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	d.TLSConfig = &tls.Config{
 		InsecureSkipVerify: true,
+		ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 	}
 
 	d.connTCPDuration = lrucache.NewMultiLRUCache(4, 4096)
