@@ -1,6 +1,7 @@
 package autoproxy
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/base64"
 	"fmt"
@@ -91,7 +92,17 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	rc := object.Body()
 	defer rc.Close()
 
-	err = autoproxy2pac.Read(rc)
+	var r io.Reader
+	br := bufio.NewReader(rc)
+	if data, err := br.Peek(20); err == nil {
+		if bytes.HasPrefix(data, []byte("[AutoProxy ")) {
+			r = br
+		} else {
+			r = base64.NewDecoder(base64.StdEncoding, br)
+		}
+	}
+
+	err = autoproxy2pac.Read(r)
 	if err != nil {
 		return nil, err
 	}
@@ -197,7 +208,13 @@ func (f *Filter) updater() {
 
 func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
 
+	if req.RequestURI[0] != '/' {
+		return ctx, nil, nil
+	}
+
 	if req.RequestURI != placeholderPath {
+		// http.FileServer(http.Dir(".")).ServeHTTP(ctx.GetResponseWriter(), req)
+		// ctx.SetHijacked(true)
 		return ctx, nil, nil
 	}
 
