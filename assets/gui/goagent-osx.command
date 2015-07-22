@@ -49,16 +49,6 @@ from AppKit import *
 ColorSet=[NSColor.blackColor(), NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
 
 
-def notify(title, subtitle, text):
-    from Foundation import NSUserNotification, NSUserNotificationCenter
-    notification = NSUserNotification.alloc().init()
-    notification.setTitle_(str(title))
-    notification.setSubtitle_(str(subtitle))
-    notification.setInformativeText_(str(text))
-    notification.setSoundName_("NSUserNotificationDefaultSoundName")
-    NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
-
-
 class GoAgentOSX(NSObject):
 
     console_color=ColorSet[0]
@@ -66,6 +56,7 @@ class GoAgentOSX(NSObject):
     def applicationDidFinishLaunching_(self, notification):
         self.setupUI()
         self.startGoAgent()
+        self.notify()
         self.registerObserver()
 
     def windowWillClose_(self, notification):
@@ -139,8 +130,17 @@ class GoAgentOSX(NSObject):
         self.master, self.slave = pty.openpty()
         self.pipe = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=self.slave, stderr=self.slave, close_fds=True)
         self.pipe_fd = os.fdopen(self.master)
-        notify('GoAgent Notify', '', 'GoAgent Started')
         self.performSelectorInBackground_withObject_('readProxyOutput', None)
+
+    def notify(self):
+        from Foundation import NSUserNotification, NSUserNotificationCenter
+        notification = NSUserNotification.alloc().init()
+        notification.setTitle_("GoAgent OSX Started.")
+        notification.setSubtitle_("")
+        notification.setInformativeText_("")
+        notification.setSoundName_("NSUserNotificationDefaultSoundName")
+        notification.setContentImage_(self.image)
+        NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
 
     def stopGoAgent(self):
         self.pipe.terminate()
