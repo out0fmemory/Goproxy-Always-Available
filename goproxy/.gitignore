@@ -4,6 +4,7 @@ goagent-gtk.desktop
 goagent-gtk.py
 goagent-osx.command
 goagent-logo.png
+*.user.json
 *.exe
 *.crt
 *.key
