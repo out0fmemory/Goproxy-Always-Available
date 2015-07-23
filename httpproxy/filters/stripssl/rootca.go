@@ -94,17 +94,18 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
 		outFile2.Close()
 
-		var cmd *exec.Cmd
+		cmds := make([]*exec.Cmd, 0)
 		switch runtime.GOOS {
 		case "windows":
-			cmd = exec.Command("certmgr.exe", "-add", "-c", certFile, "-s", "-r", "localMachine", "root")
+			cmds = append(cmds, exec.Command("certmgr.exe", "-del", "-c", "-n", name, "-s", "-r", "localMachine", "root"))
+			cmds = append(cmds, exec.Command("certmgr.exe", "-add", "-c", certFile, "-s", "-r", "localMachine", "root"))
 		case "darwin":
-			cmd = exec.Command("security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", certFile)
+			cmds = append(cmds, exec.Command("security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", certFile))
 		default:
 			break
 		}
 
-		if cmd != nil {
+		for _, cmd := range cmds {
 			if err := cmd.Run(); err != nil {
 				glog.Errorf("Import RootCA(%#v) error: %v", cmd.Args, err)
 			} else {
