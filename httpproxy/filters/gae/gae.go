@@ -133,7 +133,7 @@ func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		glog.Warningf("%s over qouta, switch to next appid.", fetchServer.URL.String())
 		f.muFetchServers.Lock()
 		if fetchServer == f.FetchServers[0] {
-			for i := 1; i < len(f.FetchServers)-1; i++ {
+			for i := 0; i < len(f.FetchServers)-1; i++ {
 				f.FetchServers[i] = f.FetchServers[i+1]
 			}
 			f.FetchServers[len(f.FetchServers)-1] = fetchServer
