@@ -14,12 +14,12 @@ PACKAGE_GOARCH ?= $(shell go env GOARCH)
 ifeq ($(PACKAGE_GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
 	GOPROXY_STAGEDIR = $(STAGEDIR)
-	GOPROXY_DISTCMD = 7za a -y -t7z
+	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9
 	GOPROXY_DISTEXT = .7z
 else
 	GOPROXY_EXE = $(PACKAGE)
 	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
-	GOPROXY_DISTCMD = tar cvjpf
+	GOPROXY_DISTCMD = BZIP=-9 tar cvjpf
 	GOPROXY_DISTEXT = .tar.bz2
 endif
 
