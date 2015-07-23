@@ -1,6 +1,7 @@
 package direct
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"time"
@@ -9,11 +10,15 @@ import (
 	"github.com/golang/glog"
 )
 
+var (
+	ErrLoopbackAddr = errors.New("dial to loopback addr")
+)
+
 type Dailer struct {
 	net.Dialer
 	DNSCache        lrucache.Cache
 	DNSCacheExpires time.Duration
-	Blacklist       map[string]struct{}
+	LoopbackAddrs   map[string]struct{}
 }
 
 func (d *Dailer) Dial(network, address string) (net.Conn, error) {
@@ -26,7 +31,7 @@ func (d *Dailer) Dial(network, address string) (net.Conn, error) {
 				if host, port, err := net.SplitHostPort(address); err == nil {
 					if ips, err := net.LookupIP(host); err == nil && len(ips) > 0 {
 						ip := ips[0].String()
-						if _, ok := d.Blacklist[ip]; ok {
+						if _, ok := d.LoopbackAddrs[ip]; ok {
 							return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%s)", host, ip))
 						}
 						addr := net.JoinHostPort(ip, port)

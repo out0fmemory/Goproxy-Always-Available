@@ -56,19 +56,19 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	d.KeepAlive = time.Duration(config.Dialer.KeepAlive) * time.Second
 	d.DNSCache = lrucache.NewMultiLRUCache(4, uint(config.DNSCache.Size))
 	d.DNSCacheExpires = time.Duration(config.DNSCache.Expires) * time.Second
-	d.Blacklist = make(map[string]struct{})
+	d.LoopbackAddrs = make(map[string]struct{})
 
-	// d.Blacklist["127.0.0.1"] = struct{}{}
-	d.Blacklist["::1"] = struct{}{}
+	// d.LoopbackAddrs["127.0.0.1"] = struct{}{}
+	d.LoopbackAddrs["::1"] = struct{}{}
 	if addrs, err := net.InterfaceAddrs(); err == nil {
 		for _, addr := range addrs {
 			switch addr.Network() {
 			case "ip":
-				d.Blacklist[addr.String()] = struct{}{}
+				d.LoopbackAddrs[addr.String()] = struct{}{}
 			}
 		}
 	}
-	// glog.V(2).Infof("add blacklist=%v to direct filter", d.Blacklist)
+	// glog.V(2).Infof("add LoopbackAddrs=%v to direct filter", d.LoopbackAddrs)
 
 	return &Filter{
 		transport: &http.Transport{
@@ -131,6 +131,12 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		return ctx, nil, nil
 	default:
 		resp, err := f.transport.RoundTrip(req)
+		if err == ErrLoopbackAddr {
+			http.FileServer(http.Dir(".")).ServeHTTP(ctx.GetResponseWriter(), req)
+			ctx.SetHijacked(true)
+			return ctx, nil, nil
+		}
+
 		if err != nil {
 			glog.Errorf("%s \"DIRECT %s %s %s\" error: %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, err)
 			data := err.Error()
