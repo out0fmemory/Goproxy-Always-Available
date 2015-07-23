@@ -167,7 +167,6 @@ func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 	var config interface{}
 	var ok bool
 	if config, ok = f.TLSConfigCache.Get(name); !ok {
-		glog.Infof("generate certificate for %s...", name)
 		cert, err := f.CA.Issue(name, f.CAExpires, f.CA.RsaBits())
 		if err != nil {
 			return nil, err
