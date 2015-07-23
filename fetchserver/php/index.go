@@ -102,9 +102,12 @@ func ReadRequest(r io.Reader) (req *http.Request, err error) {
 }
 
 func httpError(rw http.ResponseWriter, err string, code int) {
-	rw.Header().Set("Content-Length", strconv.Itoa(len(err)))
-	rw.Header().Set("Connection", "close")
-	http.Error(rw, err, http.StatusBadRequest)
+	rw.WriteHeader(http.StatusOK)
+	fmt.Fprintf(rw, "HTTP/1.1 %d\r\n", code)
+	fmt.Fprintf(rw, "Content-Length: %d\r\n", len(err))
+	fmt.Fprintf(rw, "Content-Type: text/plain\r\n")
+	io.WriteString(rw, "\r\n")
+	io.WriteString(rw, err)
 }
 
 func handler(rw http.ResponseWriter, req *http.Request) {
@@ -114,7 +117,30 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 
 	var hdrLen uint16
 	if err := binary.Read(req.Body, binary.BigEndian, &hdrLen); err != nil {
-		httpError(rw, err.Error(), http.StatusBadRequest)
+		parts := strings.Split(req.Host, ".")
+		switch len(parts) {
+		case 1, 2:
+			httpError(rw, err.Error(), http.StatusBadRequest)
+		default:
+			u := *req.URL
+			if u.Scheme == "" {
+				u.Scheme = "http"
+			}
+			u.Host = fmt.Sprintf("phuslu-%d.%s", time.Now().Nanosecond(), strings.Join(parts[1:], "."))
+			if resp, err := http.Get(u.String()); err == nil {
+				defer resp.Body.Close()
+				for key, values := range resp.Header {
+					for _, value := range values {
+						rw.Header().Add(key, value)
+					}
+				}
+				rw.WriteHeader(resp.StatusCode)
+				io.Copy(rw, resp.Body)
+			} else {
+				u.Host = "www." + strings.Join(parts[1:], ".")
+				http.Redirect(rw, req, u.String(), 301)
+			}
+		}
 		return
 	}
 
@@ -174,6 +200,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		httpError(rw, err.Error(), http.StatusBadGateway)
 		return
 	}
+	defer resp.Body.Close()
 
 	// rewise resp.Header
 	resp.Header.Del("Transfer-Encoding")
@@ -192,7 +219,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 
 	rw.WriteHeader(http.StatusOK)
 
-	fmt.Fprintf(w, fmt.Sprintf("%s %s\r\n", resp.Proto, resp.Status))
+	fmt.Fprintf(w, "%s %s\r\n", resp.Proto, resp.Status)
 	resp.Header.Write(w)
 	io.WriteString(w, "\r\n")
 	io.Copy(w, resp.Body)
