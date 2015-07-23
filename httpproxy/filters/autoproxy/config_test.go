@@ -32,8 +32,4 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("NewConfig config.Duration failed")
 	}
 
-	if config.Transport == "" {
-		t.Fatalf("NewConfig config.Transport failed")
-	}
-
 }

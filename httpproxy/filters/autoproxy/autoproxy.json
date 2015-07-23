@@ -21,6 +21,5 @@
 		"file": "gfwlist.txt",
 		"encoding": "base64",
 		"duration": 86400
-	},
-	"transport": "direct"
+	}
 }

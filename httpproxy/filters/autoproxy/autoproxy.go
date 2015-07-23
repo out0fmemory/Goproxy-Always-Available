@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -39,7 +38,7 @@ type Filter struct {
 	Sites         *httpproxy.HostMatcher
 	GFWList       *GFWList
 	AutoProxy2Pac *AutoProxy2Pac
-	Transport     filters.RoundTripFilter
+	Transport     http.RoundTripper
 }
 
 func init() {
@@ -107,14 +106,15 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		return nil, err
 	}
 
-	f1, err := filters.NewFilter(config.Transport)
-	if err != nil {
-		return nil, err
+	proxy := func(req *http.Request) (*url.URL, error) {
+		return &url.URL{
+			Scheme: "http",
+			Host:   req.Host,
+		}, nil
 	}
 
-	f2, ok := f1.(filters.RoundTripFilter)
-	if !ok {
-		return nil, fmt.Errorf("%#v was not a filters.RoundTripFilter", f1)
+	transport := &http.Transport{
+		Proxy: proxy,
 	}
 
 	f := &Filter{
@@ -122,7 +122,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		Sites:         httpproxy.NewHostMatcher(config.Sites),
 		GFWList:       &gfwlist,
 		AutoProxy2Pac: autoproxy2pac,
-		Transport:     f2,
+		Transport:     transport,
 	}
 
 	go onceUpdater.Do(f.updater)
@@ -167,7 +167,7 @@ func (f *Filter) updater() {
 
 			glog.Infof("Downloading %#v", f.GFWList.URL.String())
 
-			_, resp, err := f.Transport.RoundTrip(nil, req)
+			resp, err := f.Transport.RoundTrip(req)
 			if err != nil {
 				glog.Warningf("%T.RoundTrip(%#v) error: %v", f, f.GFWList.URL.String(), err)
 				continue
