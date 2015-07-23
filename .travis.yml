@@ -1,7 +1,0 @@
-language: go
-sudo: false
-go:
-  - 1.4.2
-  - release
-script:
-  - make -f goproxy/Makefile
