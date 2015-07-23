@@ -1,7 +1,7 @@
 [AutoProxy 0.2.9]
-! Checksum: 15iXZRKuwvMhXPLdd4ljZw
+! Checksum: qL7dJyqFQYumJJ2r3VuATg
 ! Expires: 6h
-! Last Modified: Sun, 19 Jul 2015 07:27:52 -0400
+! Last Modified: Mon, 20 Jul 2015 11:10:00 -0400
 ! HomePage: https://autoproxy-gfwlist.googlecode.com/
 
 !---------------------Fraud------------------------
@@ -302,6 +302,7 @@ bbsland.com
 .bcchinese.net
 .bebo.com
 ||bebo.com
+.behindkink.com
 ||beijing1989.com
 beijingspring.com
 ||beijingspring.com
@@ -606,6 +607,8 @@ chinese-memorial.org
 ||chingcheong.com
 chithu.org
 chn.chosun.com
+.chrdnet.com
+|http://chrdnet.com
 christianstudy.com
 ||christianstudy.com
 christusrex.org/www1/sdc
@@ -1985,6 +1988,7 @@ kanzhongguo.eu
 ||kcsoftwares.com
 .kechara.com
 .keepandshare.com/visit/visit_page.php?i=688154
+||keepvid.com
 .kendincos.net
 .kenengba.com
 ||kenengba.com
@@ -1999,6 +2003,7 @@ kinghost.com
 killwall.com
 ||killwall.com
 .kissbbao.cn
+|http://kiwi.kz
 ||kmt.org.tw
 .knowledgerush.com/kr/encyclopedia
 ||kodingen.com
@@ -2355,6 +2360,7 @@ ngensis.com
 .nicovideo.jp/watch
 !--||nicovideo.jp
 ||nighost.org
+ninecommentaries.com
 nintendium.com
 taiwanyes.ning.com
 usmgtcg.ning.com/forum
@@ -2536,6 +2542,7 @@ pdetails.com
 ||peace.ca
 peacefire.org
 peacehall.com
+|http://pearlher.org
 .peeasian.com
 .pekingduck.org
 ||pekingduck.org
@@ -2851,7 +2858,7 @@ seesmic.com
 ||seevpn.com
 ||seezone.net
 sejie.com
-.sendspace.com/file
+.sendspace.com
 |http://tweets.seraph.me/
 sesawe.net
 ||sesawe.net
@@ -3124,6 +3131,8 @@ taiwanus.net
 taiwanyes.com
 taiwan-sex.com
 .talk853.com
+.talkboxapp.com
+||talkboxapp.com
 ||tamiaode.tk
 ||tanc.org
 tangben.com
