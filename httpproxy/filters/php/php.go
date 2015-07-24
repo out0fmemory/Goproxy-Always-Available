@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"strings"
 
 	"github.com/golang/glog"
 	"github.com/phuslu/goproxy/httpproxy"
@@ -87,6 +88,12 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	switch path.Ext(req.URL.Path) {
 	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
 		i = rand.Intn(len(f.FetchServers))
+	case "":
+		name := path.Base(req.URL.Path)
+		if strings.Contains(name, "play") ||
+			strings.Contains(name, "video") {
+			i = rand.Intn(len(f.FetchServers))
+		}
 	}
 
 	fetchServer := f.FetchServers[i]
