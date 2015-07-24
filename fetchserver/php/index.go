@@ -25,9 +25,19 @@ const (
 )
 
 var (
-	transport *http.Transport = &http.Transport{
+	secureTransport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+		},
+		TLSHandshakeTimeout: 30 * time.Second,
+		MaxIdleConnsPerHost: 4,
+		DisableCompression:  false,
+	}
+
+	insecureTransport *http.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
 		TLSHandshakeTimeout: 30 * time.Second,
@@ -195,6 +205,11 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	transport := insecureTransport
+	if v, ok := params["sslverify"]; ok && v == "1" {
+		transport = secureTransport
+	}
+
 	resp, err := transport.RoundTrip(req1)
 	if err != nil {
 		httpError(rw, err.Error(), http.StatusBadGateway)
@@ -208,12 +223,21 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
+	needCrypto := false
+	if v, ok := params["https"]; !ok || v == "0" {
+		switch strings.Split(resp.Header.Get("Content-Type"), "/")[0] {
+		case "image", "audio", "video":
+			break
+		default:
+			needCrypto = true
+		}
+	}
+
 	var w io.Writer = rw
-	switch strings.Split(resp.Header.Get("Content-Type"), "/")[0] {
-	case "image", "audio", "video":
+	if needCrypto {
 		rw.Header().Set("Content-Type", "image/gif")
 		w = newXorWriter(rw, []byte(Password))
-	default:
+	} else {
 		rw.Header().Set("Content-Type", "image/x-png")
 	}
 

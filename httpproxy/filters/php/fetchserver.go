@@ -45,6 +45,12 @@ func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
 	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
 	req.Header.WriteSubset(w, reqWriteExcludeHeader)
 	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", f.Password)
+	if f.URL.Scheme == "https" {
+		io.WriteString(w, "X-Urlfetch-Https: 1\r\n")
+	}
+	if f.SSLVerify {
+		io.WriteString(w, "X-Urlfetch-SSLVerify: 1\r\n")
+	}
 	io.WriteString(w, "\r\n")
 	if err != nil {
 		return nil, err
