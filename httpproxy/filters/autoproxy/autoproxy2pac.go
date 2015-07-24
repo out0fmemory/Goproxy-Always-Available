@@ -27,6 +27,7 @@ func (a *AutoProxy2Pac) Read(r io.Reader) error {
 		if s == "" ||
 			strings.HasPrefix(s, "[") ||
 			strings.HasPrefix(s, "!") ||
+			strings.HasPrefix(s, "||!") ||
 			strings.HasPrefix(s, "@@") {
 			continue
 		}
