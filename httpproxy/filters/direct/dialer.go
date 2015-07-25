@@ -10,6 +10,10 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	maxDialTries = 2
+)
+
 var (
 	ErrLoopbackAddr = errors.New("dial to loopback addr")
 )
@@ -21,7 +25,7 @@ type Dailer struct {
 	LoopbackAddrs   map[string]struct{}
 }
 
-func (d *Dailer) Dial(network, address string) (net.Conn, error) {
+func (d *Dailer) Dial(network, address string) (conn net.Conn, err error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if d.DNSCache != nil {
@@ -45,5 +49,12 @@ func (d *Dailer) Dial(network, address string) (net.Conn, error) {
 	default:
 		break
 	}
-	return d.Dialer.Dial(network, address)
+	for i := 0; i < maxDialTries; i++ {
+		conn, err = d.Dialer.Dial(network, address)
+		if err == nil || i == maxDialTries-1 {
+			break
+		}
+		time.Sleep(100 * time.Millisecond)
+	}
+	return conn, err
 }
