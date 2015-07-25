@@ -17,12 +17,12 @@
 	},
 	"filters": {
 		"request": [
-			"auth",
+			// "auth",
 			"stripssl"
 		],
 		"roundtrip": [
 			"autoproxy",
-			"auth",
+			// "auth",
 			// "iplist",
 			"php",
 			"gae",
