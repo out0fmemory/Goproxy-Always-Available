@@ -23,7 +23,6 @@ import (
 )
 
 var (
-	PORT      string          = os.Getenv("PORT")
 	PASSWROD  string          = os.Getenv("PASSWORD")
 	transport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -132,9 +131,10 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 func main() {
 	flag.Parse()
 
-	ln, err := net.Listen("tcp", ":"+PORT)
+	addr := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+	ln, err := net.Listen("tcp", addr)
 	if err != nil {
-		glog.Fatalf("Listen(%s) error: %s", PORT, err)
+		glog.Fatalf("Listen(%s) error: %s", addr, err)
 	}
 
 	cert, err := getCertificate(nil)
