@@ -27,6 +27,7 @@ import (
 	_ "github.com/phuslu/goproxy/httpproxy/filters/iplist"
 	_ "github.com/phuslu/goproxy/httpproxy/filters/php"
 	_ "github.com/phuslu/goproxy/httpproxy/filters/stripssl"
+	_ "github.com/phuslu/goproxy/httpproxy/filters/vps"
 	"github.com/phuslu/goproxy/storage"
 	"github.com/phuslu/http2"
 )

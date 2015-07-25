@@ -1,0 +1,12 @@
+{
+	"fetchservers": [
+		{
+			"url": "https://yourvps.com/",
+			"password": "123456",
+			"sslverify": false
+		}
+	],
+	"sites": [
+		"*"
+	]
+}

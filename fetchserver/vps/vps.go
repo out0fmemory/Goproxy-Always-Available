@@ -119,12 +119,11 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	for key, values := range resp.Header {
-		for _, value := range values {
-			rw.Header().Add(key, value)
-		}
-	}
 	rw.WriteHeader(http.StatusOK)
+
+	fmt.Fprintf(rw, "%s %s\r\n", resp.Proto, resp.Status)
+	resp.Header.Write(rw)
+	io.WriteString(rw, "\r\n")
 	io.Copy(rw, resp.Body)
 }
 
