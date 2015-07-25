@@ -24,8 +24,9 @@
 			"autoproxy",
 			// "auth",
 			// "iplist",
+			// "vps",
 			"php",
-			"gae",
+			// "gae",
 			"direct"
 		],
 		"response": [

@@ -13,6 +13,7 @@ import (
 	"math/big"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -113,6 +114,16 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
+	if rawurl, ok := params["url"]; ok && rawurl != "" {
+		req.URL, err = url.Parse(rawurl)
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadGateway)
+			return
+		}
+		req.Host = req.URL.Host
+		req.Header.Set("Host", req.Host)
+	}
+
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadGateway)
@@ -151,6 +162,7 @@ func main() {
 		TLSConfig: tlsConfig,
 	}
 
+	// http2.VerboseLogs = true
 	http2.ConfigureServer(s, &http2.Server{})
 	glog.Infof("ListenAndServe on %s\n", ln.Addr().String())
 	s.Serve(tls.NewListener(ln, tlsConfig))

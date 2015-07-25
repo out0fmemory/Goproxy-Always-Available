@@ -140,7 +140,7 @@ Pac Server         : http://%s/proxy.pac
 	listenOpts := &httpproxy.ListenOptions{TLSConfig: tlsConfig}
 
 	if strings.HasPrefix(config.Http.Mode, "h2") {
-		http2.VerboseLogs = true
+		// http2.VerboseLogs = true
 		listenOpts.KeepAlivePeriod = 3 * time.Minute
 	}
 

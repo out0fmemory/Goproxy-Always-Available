@@ -97,7 +97,6 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	if err != nil {
 		return ctx, nil, fmt.Errorf("VPS encodeRequest: %s", err.Error())
 	}
-	req1.Header = req.Header
 	res, err := f.Transport.RoundTrip(req1)
 	if err != nil {
 		return ctx, nil, err

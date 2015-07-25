@@ -28,12 +28,12 @@ type FetchServer struct {
 
 func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
 	req1 := &http.Request{
-		Proto:      "HTTP/1.2",
+		Proto:      "HTTP/2.0",
 		ProtoMajor: 2,
 		ProtoMinor: 0,
-		Method:     "POST",
-		URL:        req.URL,
-		Host:       req.Host,
+		Method:     req.Method,
+		URL:        f.URL,
+		Host:       f.URL.Host,
 		Header:     http.Header{},
 	}
 
@@ -45,6 +45,9 @@ func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
 			req1.Header.Add(key, value)
 		}
 	}
+
+	req1.Header.Set("X-UrlFetch-Url", req.URL.String())
+	req1.Header.Set("X-UrlFetch-Password", f.Password)
 
 	return req1, nil
 }
