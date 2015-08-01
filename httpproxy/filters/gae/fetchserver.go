@@ -64,9 +64,7 @@ func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
 		Method:     "POST",
 		URL:        f.URL,
 		Host:       f.URL.Host,
-		Header: http.Header{
-			"User-Agent": []string{"B"},
-		},
+		Header:     http.Header{},
 	}
 
 	if req.ContentLength > 0 {

@@ -115,7 +115,6 @@ func (f *Filter) roundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	if err != nil {
 		return ctx, nil, fmt.Errorf("GAE encodeRequest: %s", err.Error())
 	}
-	req1.Header = req.Header
 
 	ctx, resp, err := f.Transport.RoundTrip(ctx, req1)
 	if err != nil || resp == nil {
