@@ -102,7 +102,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	if err != nil {
 		return ctx, nil, fmt.Errorf("PHP encodeRequest: %s", err.Error())
 	}
-	req1.Header = req.Header
+
 	ctx, res, err := f.Transport.RoundTrip(ctx, req1)
 	if err != nil {
 		return ctx, nil, err
