@@ -48,7 +48,19 @@ var (
 
 func main() {
 	http.HandleFunc("/", handler)
-	addr := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
+
+	parts := []string{"", "8080"}
+
+	for i, keys := range [][]string{{"VCAP_APP_HOST", "HOST"}, {"VCAP_APP_PORT", "PORT"}} {
+		for _, key := range keys {
+			if s := os.Getenv(key); s != "" {
+				parts[i] = s
+			}
+		}
+	}
+
+	addr := strings.Join(parts, ":")
+	fmt.Fprintf(os.Stdout, "Start ListenAndServe on %v\n", addr)
 	err := http.ListenAndServe(addr, nil)
 	if err != nil {
 		panic(err)
@@ -123,7 +135,7 @@ func httpError(rw http.ResponseWriter, err string, code int) {
 func handler(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
-	logger := log.New(os.Stderr, "index.go: ", 0)
+	logger := log.New(os.Stdout, "index.go: ", 0)
 
 	var hdrLen uint16
 	if err := binary.Read(req.Body, binary.BigEndian, &hdrLen); err != nil {
