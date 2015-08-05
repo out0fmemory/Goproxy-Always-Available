@@ -182,8 +182,9 @@ class GoAgentOSX(NSObject):
         #self.console_window.orderOut(None)
 
     def reset_(self, notification):
-        self.console_view.setString_('')
+        self.show_(True)
         self.stopGoAgent()
+        self.console_view.setString_('')
         self.startGoAgent()
 
     def exit_(self, notification):
