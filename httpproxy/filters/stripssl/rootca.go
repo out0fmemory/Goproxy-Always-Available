@@ -112,6 +112,14 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 				glog.Infof("Import RootCA(%s) OK", certFile)
 			}
 		}
+
+		if fis, err := ioutil.ReadDir(certDir); err == nil {
+			for _, fi := range fis {
+				if err = os.Remove(certDir + "/" + fi.Name()); err != nil {
+					glog.Errorf("Remove(%#v) error: %v", fi.Name(), err)
+				}
+			}
+		}
 	} else {
 		data, err := ioutil.ReadFile(keyFile)
 		if err != nil {
