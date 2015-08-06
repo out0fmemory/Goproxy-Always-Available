@@ -50,14 +50,6 @@ else
 	SOURCES += $(REPO)/assets/startup/goproxy.sh
 endif
 
-GODEPS :=
-GODEPS += github.com/cloudflare/golibs/lrucache
-GODEPS += github.com/golang/glog
-GODEPS += github.com/golang/groupcache
-GODEPS += github.com/juju/ratelimit
-GODEPS += github.com/miekg/dns
-GODEPS += github.com/phuslu/http2
-
 .PHONY: build
 build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
 
