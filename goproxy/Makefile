@@ -8,10 +8,10 @@ STAGEDIR = $(BUILDDIR)/stage
 OBJECTDIR = $(BUILDDIR)/obj
 DISTDIR = $(BUILDDIR)/dist
 
-PACKAGE_GOOS ?= $(shell go env GOOS)
-PACKAGE_GOARCH ?= $(shell go env GOARCH)
+GOOS ?= $(shell go env GOOS)
+GOARCH ?= $(shell go env GOARCH)
 
-ifeq ($(PACKAGE_GOOS), windows)
+ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
 	GOPROXY_STAGEDIR = $(STAGEDIR)
 	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9
@@ -34,13 +34,13 @@ SOURCES += $(SOURCEDIR)/main.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
-ifeq ($(PACKAGE_GOOS), windows)
+ifeq ($(GOOS), windows)
 	SOURCES += $(REPO)/assets/gui/goagent.exe
 	SOURCES += $(REPO)/assets/certmgr/certmgr.exe
 	SOURCES += $(REPO)/assets/startup/addto-startup.js
-else ifeq ($(PACKAGE_GOOS), darwin)
+else ifeq ($(GOOS), darwin)
 	SOURCES += $(REPO)/assets/gui/goagent-osx.command
-else ifeq ($(PACKAGE_GOOS)_$(PACKAGE_GOARCH), linux_amd64)
+else ifeq ($(GOOS)_$(GOARCH), linux_amd64)
 	SOURCES += $(REPO)/assets/gui/goagent-gtk.py
 	SOURCES += $(REPO)/assets/systemd/goproxy.service
 	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.service
@@ -59,7 +59,7 @@ GODEPS += github.com/miekg/dns
 GODEPS += github.com/phuslu/http2
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
+build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
 
 .PHONY: clean
 clean:
@@ -67,9 +67,9 @@ clean:
 
 .PHONY: release
 release:
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.tk sh /home/phuslu/GOPATH/src/github.com/phuslu/goproxy/assets/scripts/release.sh
+	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.tk sh /home/phuslu/go1.5/gopath/src/github.com/phuslu/goproxy/goproxy/assets/scripts/release.sh
 
-$(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
+$(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)
 	mkdir -p $(GOPROXY_STAGEDIR)/ && \
 	cp $(OBJECTDIR)/$(GOPROXY_EXE) $(GOPROXY_STAGEDIR)/$(GOPROXY_EXE)
@@ -77,13 +77,8 @@ $(DISTDIR)/$(PACKAGE)_$(PACKAGE_GOOS)_$(PACKAGE_GOARCH)-$(RELEASE)$(GOPROXY_DIST
 	cd $(STAGEDIR) && $(GOPROXY_DISTCMD) $@ *
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
-	for p in $(GODEPS) ; do go get -v $$p ; done
 	mkdir -p $(OBJECTDIR)
 	cp main.go main.go.orig
 	sed "s/@VERSION@/$(RELEASE)/g" main.go.orig > main.go
-	if type -p gox; then \
-		gox -verbose -os=$(PACKAGE_GOOS) -arch=$(PACKAGE_GOARCH) -output="$(OBJECTDIR)/$(PACKAGE)" ; \
-	else \
-		go build -v -o $@ . ; \
-	fi
+	go build -v -o $@ . ; \
 	mv main.go.orig main.go

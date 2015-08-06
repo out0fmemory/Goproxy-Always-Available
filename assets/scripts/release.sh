@@ -1,7 +1,7 @@
 #!/bin/bash
 
-GOROOT=/go
-GOPATH=/home/phuslu/GOPATH
+GOROOT=$HOME/go1.5
+GOPATH=$HOME/go1.5/gopath
 PATH=$PATH:$GOROOT/bin:$GOPATH/bin
 
 cd ${GOPATH}/src/github.com/phuslu/goproxy
@@ -21,13 +21,13 @@ REMOTE=`git remote -v | head -1 | awk '{print $2}'`
 cd ${GOPATH}/src/github.com/phuslu/goproxy/goproxy
 mkdir -p dist
 
-PACKAGE_GOOS=windows PACKAGE_GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
-PACKAGE_GOOS=windows PACKAGE_GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
-PACKAGE_GOOS=linux PACKAGE_GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
-PACKAGE_GOOS=linux PACKAGE_GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
-PACKAGE_GOOS=linux PACKAGE_GOARCH=arm make && mv build/dist/goproxy* dist/ && make clean
-PACKAGE_GOOS=darwin PACKAGE_GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
-PACKAGE_GOOS=darwin PACKAGE_GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
+GOOS=windows GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
+GOOS=windows GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
+GOOS=linux GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
+GOOS=linux GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
+GOOS=linux GOARCH=arm make && mv build/dist/goproxy* dist/ && make clean
+GOOS=darwin GOARCH=amd64 make && mv build/dist/goproxy* dist/ && make clean
+GOOS=darwin GOARCH=386 make && mv build/dist/goproxy* dist/ && make clean
 
 export GITHUB_TOKEN=`cat ~/GITHUB_TOKEN`
 
