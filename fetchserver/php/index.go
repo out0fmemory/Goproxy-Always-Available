@@ -222,8 +222,24 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		transport = secureTransport
 	}
 
-	resp, err := transport.RoundTrip(req1)
-	if err != nil {
+	var resp *http.Response
+	for i := 0; i < 2; i++ {
+		resp, err = transport.RoundTrip(req1)
+		if err == nil {
+			break
+		}
+
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+
+		if err1, ok := err.(interface {
+			Temporary() bool
+		}); ok && err1.Temporary() {
+			time.Sleep(1 * time.Second)
+			continue
+		}
+
 		httpError(rw, err.Error(), http.StatusBadGateway)
 		return
 	}
