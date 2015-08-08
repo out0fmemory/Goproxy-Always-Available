@@ -1,7 +1,7 @@
 [AutoProxy 0.2.9]
-! Checksum: qL7dJyqFQYumJJ2r3VuATg
+! Checksum: X/oo+oF+rltQawd+RByGJQ
 ! Expires: 6h
-! Last Modified: Mon, 20 Jul 2015 11:10:00 -0400
+! Last Modified: Mon, 03 Aug 2015 03:33:42 -0400
 ! HomePage: https://autoproxy-gfwlist.googlecode.com/
 
 !---------------------Fraud------------------------
@@ -16,6 +16,7 @@
 ||asianspiss.com
 ||azubu.tv
 ||beeg.com
+||boysmaster.com
 ||darpa.mil
 |http://img.dlsite.jp/
 ||dmm.co.jp
@@ -28,7 +29,9 @@ hulu.com
 huluim.com
 ||hybrid-analysis.com
 |http://www.ilovelongtoes.com/
+||juliepost.com
 |http://www.m-sport.co.uk
+||macgamestore.com
 ||metarthunter.com
 ||mfxmedia.com
 ||muzu.tv
@@ -54,6 +57,7 @@ huluim.com
 ||vevo.com
 |http://ecsm.vs.com/
 ||wheretowatch.com
+||wingamestore.com
 ||zattoo.com
 ||zozotown.com
 
@@ -108,6 +112,7 @@ taiwannation.50webs.com
 .5isotoi5.org
 .5maodang.com
 64memo
+.64museum.org
 64tianwang.com
 64wiki.com
 666kb.com
@@ -389,6 +394,7 @@ bonbonme.com
 .bot.nu
 .bowenpress.com
 ||bowenpress.com
+||app.box.com
 dl.box.net
 ||dl.box.net
 boxun.com
@@ -398,6 +404,7 @@ boxun.com
 boxunblog.com
 ||boxunblog.com
 .boxunclub.com
+.boyfriendtv.com
 ||br.st
 ||brandonhutchinson.com
 ||braumeister.org
@@ -411,8 +418,6 @@ boxunblog.com
 ||breakwall.net
 briian.com/6511/freegate
 .briefdream.com/%E7%B4%A0%E6%A3%BA
-brightkite.com
-||brightkite.com
 brizzly.com
 ||brizzly.com
 broadbook.com
@@ -493,6 +498,8 @@ ccue.ca
 ccue.com
 .cgdepot.org
 |http://cgdepot.org
+||cdbook.org
+||cdd.me
 .cdef.org
 ||cdig.info
 cdjp.org
@@ -817,7 +824,7 @@ dowei.org
 dphk.org
 dpp.org.tw
 ||dpp.org.tw
-||weigegebyc.dreamhosters.com
+||dreammask.org
 .drepung.org
 ||drgan.net
 ||dropbox.com
@@ -877,7 +884,7 @@ ebookee.com
 ecministry.net
 bbs.ecstart.com
 ||edgecastcdn.net
-twimg\.edgesuite\.net\/\/?appledaily
+/twimg\.edgesuite\.net\/\/?appledaily/
 edicypages.com
 edoors.com
 .edubridge.com
@@ -899,6 +906,7 @@ electionsmeter.com
 chinese.engadget.com
 ||englishfromengland.co.uk
 ||entermap.com
+.episcopalchurch.org
 epochtimes-bg.com
 ||epochtimes-bg.com
 epochtimes-romania.com
@@ -1011,8 +1019,6 @@ video.fdbox.com
 ||fourface.nodesnoop.com
 !--feedbooks.mobi
 ||feedburner.com
-!--feeds.feedburner.com
-!--feeds2.feedburner.com/chinagfwblog
 ||feedzshare.com
 ||feelssh.com
 feer.com
@@ -1056,6 +1062,7 @@ fleshbot.com
 flickrhivemind.net
 yuming.flnet.org
 |http://cn.fmnnow.com
+fofldfradio.org
 blog.foolsmountain.com
 www.forum4hk.com
 pioneer-worker.forums-free.com
@@ -1063,6 +1070,7 @@ pioneer-worker.forums-free.com
 |http://4sq.com
 ||fotop.net
 video.foxbusiness.com
+|http://foxgay.com
 ||fringenetwork.com
 ||flecheinthepeche.fr
 ||focustaiwan.tw
@@ -1115,6 +1123,7 @@ freenewscn.com
 free4u.com.ar
 .free-ssh.com
 ||free-ssh.com
+.freedomcollection.org/interviews/rebiya_kadeer
 .freeforums.org
 ||freenetproject.org
 .freeoz.org
@@ -1643,7 +1652,17 @@ hahlo.com
 ||hakkatv.org.tw
 |http://bbs.hanminzu.org/
 .hanunyi.com
+|http://ae.hao123.com
+|http://ar.hao123.com
+|http://br.hao123.com
+|http://en.hao123.com
+|http://id.hao123.com
 |http://jp.hao123.com
+|http://ma.hao123.com
+|http://sa.hao123.com
+|http://th.hao123.com
+|http://tw.hao123.com
+|http://vn.hao123.com
 ||hardsextube.com
 .harunyahya.com
 ||hasaowall.com
@@ -1702,6 +1721,7 @@ app.heywire.com
 hidden-advent.org
 ||hidden-advent.org
 hidecloud.com/blog/2008/07/29/fuck-beijing-olympics.html
+||hide.me
 .hidemyass.com
 ||hidemyass.com
 ||hideipvpn.com
@@ -1927,6 +1947,8 @@ ithelp.ithome.com.tw
 .iverycd.com
 ||lvv2.com
 ||ixquick.com
+iyouport.com
+||iyouport.com
 .izaobao.us
 ||gmozomg.izihost.org
 .izles.net
@@ -2404,7 +2426,7 @@ ntdtv.ru
 nuzcom.com
 .nvquan.org
 .nwtca.org
-|http://www.nyaa.se
+||nyaa.se
 .nydus.ca
 ||nyt.com
 ||nytco.com
@@ -2723,6 +2745,8 @@ qxbbs.org
 !--------------------RR--------------------
 .radicalparty.org
 radioaustralia.net.au
+.radiohilight.net
+||radiohilight.net
 opml.radiotime.com
 ||radiovaticana.org
 ||radiovncr.com
@@ -2770,6 +2794,7 @@ retweetist.com
 !--|http://www.reuters.com/news/video
 revver.com
 .rfa.org
+|http://rfa.org
 .rfachina.com
 .rfamobile.org
 ||rferl.org
@@ -3299,6 +3324,7 @@ tora.to
 torrentcrazy.com
 ||torrentcrazy.com
 ||torrentproject.se
+||torrentz.eu
 ||torvpn.com
 touch99.com
 ||toutfr.com
@@ -3716,6 +3742,7 @@ videobam.com
 ||videomega.tv
 .videomo.com
 ||vidoemo.com
+videopediaworld.com
 ||viki.com
 vimeo.com
 ||vimgolf.com
@@ -3724,6 +3751,7 @@ vimeo.com
 ||vinniev.com
 |http://www.lib.virginia.edu/area-studies/Tibet/tibet.html
 |http://ny.visiontimes.com/
+.vivatube.com
 .vjmedia.com.hk
 .vllcs.org
 ||vmixcore.com
@@ -3879,19 +3907,15 @@ woopie.jp
 woopie.tv
 ||woopie.tv
 ||workatruna.com
+||workersthebig.net
 .worldcat.org
 worldjournal.com
 
 !-------------Wordpress Blog-----
-!-||tech.blog.aknin.name
-!-||automattic.com
 !-||bhorowitz.com
-!-||blog.bittorrent.com
 !-||blogmaverick.com
-!-||breakingnewsworld.org
 !-||blogs.cnn.com
 !-||blog.drakengren.com
-!-||blog.feedly.com
 !-||fourwallsandaroof.com
 !-||herbsutter.com
 !-||hiveminds.co.uk
@@ -3899,7 +3923,6 @@ worldjournal.com
 !-||hunbulin.com
 !-||icanhascheezburger.com
 !-||support.intensedebate.com
-!-||blog.linkedin.com
 !-||menro.me
 !-||michaeldehaan.net
 !-||mynokiablog.com
@@ -3914,16 +3937,12 @@ worldjournal.com
 !-||sharpinsandiego.com
 !-||smedio.com
 !-||steveblank.com
-!-||blog.symbian.org
 !-||thebrigade.com
 !-||blog.thinglabs.com
 !-||china.blogs.time.com
-!-||blog.tinypic.com
-!-||blog.typekit.com
 !-||blog.wakoopa.com
 !-||wattsupwiththat.com
 !-||webmink.com
-!-zhenxiang.wordpress.com
 .wordpress.com
 |http://*.wordpress.com
 ||wp.com
@@ -3931,7 +3950,6 @@ worldjournal.com
 woxinghuiguo.com
 wow-life.net
 ||wowlegacy.ml
-!-||wp.me
 
 .wpoforum.com
 ||wpoforum.com
