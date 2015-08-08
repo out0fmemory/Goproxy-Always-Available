@@ -45,7 +45,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		mu:       new(sync.Mutex),
 	}
 
-	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+	if _, err := os.Stat(certFile); os.IsNotExist(err) {
 		glog.Infof("Generating RootCA for %s", certFile)
 		template := x509.Certificate{
 			IsCA:         true,
