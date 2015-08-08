@@ -38,9 +38,6 @@ const (
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
-	if os.Getenv("GOMAXPROCS") == "" {
-		runtime.GOMAXPROCS(runtime.NumCPU())
-	}
 }
 
 func main() {
