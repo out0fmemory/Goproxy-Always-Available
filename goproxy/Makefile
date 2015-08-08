@@ -16,6 +16,11 @@ ifeq ($(GOOS), windows)
 	GOPROXY_STAGEDIR = $(STAGEDIR)
 	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9
 	GOPROXY_DISTEXT = .7z
+else ifeq ($(GOOS), darwin)
+	GOPROXY_EXE = $(PACKAGE)
+	GOPROXY_STAGEDIR = $(STAGEDIR)
+	GOPROXY_DISTCMD = zip -r
+	GOPROXY_DISTEXT = .zip
 else
 	GOPROXY_EXE = $(PACKAGE)
 	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
