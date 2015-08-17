@@ -9,7 +9,6 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"flag"
-	"fmt"
 	"io"
 	"math/big"
 	"net"
@@ -54,7 +53,6 @@ func (l *listener) Accept() (c net.Conn, err error) {
 }
 
 func getCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	fmt.Printf("getCertificate(%#v)", clientHello)
 	// name := clientHello.ServerName
 	name := "www.gov.cn"
 	glog.Infof("Generating RootCA for %s", name)
@@ -141,9 +139,20 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	logToStderr := true
+	for i := 1; i < len(os.Args); i++ {
+		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
+			logToStderr = false
+			break
+		}
+	}
+	if logToStderr {
+		flag.Set("logtostderr", "true")
+	}
+
+	addr := *flag.String("addr", ":443", "goproxy vps listen addr")
 	flag.Parse()
 
-	addr := fmt.Sprintf("%s:%s", os.Getenv("HOST"), os.Getenv("PORT"))
 	ln, err := net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("Listen(%s) error: %s", addr, err)
