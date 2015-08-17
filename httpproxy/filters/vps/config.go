@@ -11,11 +11,11 @@ import (
 type Config struct {
 	FetchServers []struct {
 		URL       string
+		Username  string
 		Password  string
 		SSLVerify bool
 	}
-	Sites     []string
-	Transport string
+	Sites []string
 }
 
 func NewConfig(uri, filename string) (*Config, error) {

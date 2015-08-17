@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/pem"
 	"flag"
 	"fmt"
@@ -13,7 +14,6 @@ import (
 	"math/big"
 	"net"
 	"net/http"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -24,7 +24,6 @@ import (
 )
 
 var (
-	PASSWROD  string          = os.Getenv("PASSWORD")
 	transport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
@@ -107,21 +106,23 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(paramsPreifx + key)
 	}
 
-	if PASSWROD != "" {
-		if password, ok := params["password"]; !ok || password != PASSWROD {
-			http.Error(rw, fmt.Sprintf("wrong password %#v", password), http.StatusForbidden)
-			return
+	if auth := req.Header.Get("Proxy-Authorization"); auth != "" {
+		parts := strings.SplitN(auth, " ", 2)
+		if len(parts) == 2 {
+			switch parts[0] {
+			case "Basic":
+				if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
+					parts := strings.Split(string(userpass), ":")
+					user := parts[0]
+					pass := parts[1]
+					glog.Infof("username=%v password=%v", user, pass)
+				}
+			default:
+				glog.Errorf("Unrecognized auth type: %#v", parts[0])
+				break
+			}
 		}
-	}
-
-	if rawurl, ok := params["url"]; ok && rawurl != "" {
-		req.URL, err = url.Parse(rawurl)
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadGateway)
-			return
-		}
-		req.Host = req.URL.Host
-		req.Header.Set("Host", req.Host)
+		req.Header.Del("Proxy-Authorization")
 	}
 
 	resp, err := transport.RoundTrip(req)
@@ -130,11 +131,12 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	rw.WriteHeader(http.StatusOK)
-
-	fmt.Fprintf(rw, "%s %s\r\n", resp.Proto, resp.Status)
-	resp.Header.Write(rw)
-	io.WriteString(rw, "\r\n")
+	for key, values := range resp.Header {
+		for _, value := range values {
+			rw.Header().Add(key, value)
+		}
+	}
+	rw.WriteHeader(resp.StatusCode)
 	io.Copy(rw, resp.Body)
 }
 
@@ -162,7 +164,7 @@ func main() {
 		TLSConfig: tlsConfig,
 	}
 
-	// http2.VerboseLogs = true
+	http2.VerboseLogs = true
 	http2.ConfigureServer(s, &http2.Server{})
 	glog.Infof("ListenAndServe on %s\n", ln.Addr().String())
 	s.Serve(tls.NewListener(ln, tlsConfig))

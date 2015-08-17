@@ -1,9 +1,12 @@
 package vps
 
 import (
-	"bufio"
+	"encoding/base64"
 	"net/http"
 	"net/url"
+
+	"github.com/golang/glog"
+	"github.com/phuslu/http2"
 )
 
 var (
@@ -22,41 +25,46 @@ var (
 
 type FetchServer struct {
 	URL       *url.URL
+	Username  string
 	Password  string
 	SSLVerify bool
+	Transport *http2.Transport
+}
+
+func (f *FetchServer) RoundTrip(req *http.Request) (resp *http.Response, err error) {
+	var req1 *http.Request
+	var resp1 *http.Response
+
+	req1, err = f.encodeRequest(req)
+	if err != nil {
+		return nil, err
+	}
+
+	resp1, err = f.Transport.RoundTrip(req1)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err = f.decodeResponse(resp1)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
 func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
-	req1 := &http.Request{
-		Proto:      "HTTP/2.0",
-		ProtoMajor: 2,
-		ProtoMinor: 0,
-		Method:     req.Method,
-		URL:        f.URL,
-		Host:       f.URL.Host,
-		Header:     http.Header{},
-	}
-
-	for key, values := range req.Header {
-		if b, ok := reqWriteExcludeHeader[key]; ok && b {
-			continue
-		}
-		for _, value := range values {
-			req1.Header.Add(key, value)
+	for key, shouldDelete := range reqWriteExcludeHeader {
+		if shouldDelete && req.Header.Get(key) != "" {
+			req.Header.Del(key)
 		}
 	}
 
-	req1.Header.Set("X-UrlFetch-Url", req.URL.String())
-	req1.Header.Set("X-UrlFetch-Password", f.Password)
+	req.Header.Set("Proxy-Authorization", base64.StdEncoding.EncodeToString([]byte(f.Username+":"+f.Password)))
 
-	return req1, nil
+	return req, nil
 }
 
 func (f *FetchServer) decodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
-	if resp.StatusCode != 200 {
-		return resp, nil
-	}
-
-	resp, err = http.ReadResponse(bufio.NewReader(resp.Body), resp.Request)
-	return resp, err
+	return resp, nil
 }

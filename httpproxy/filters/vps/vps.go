@@ -1,7 +1,6 @@
 package vps
 
 import (
-	"fmt"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -20,7 +19,6 @@ const (
 
 type Filter struct {
 	FetchServers []*FetchServer
-	Transport    *http2.Transport
 	Sites        *httpproxy.HostMatcher
 }
 
@@ -50,22 +48,26 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			return nil, err
 		}
 
+		transport := &http2.Transport{
+			InsecureTLSDial: true,
+			Proxy: func(req *http.Request) (*url.URL, error) {
+				return u, nil
+			},
+		}
+
 		fs := &FetchServer{
 			URL:       u,
+			Username:  fs.Username,
 			Password:  fs.Password,
 			SSLVerify: fs.SSLVerify,
+			Transport: transport,
 		}
 
 		fetchServers = append(fetchServers, fs)
 	}
 
-	transport := &http2.Transport{
-		InsecureTLSDial: true,
-	}
-
 	return &Filter{
 		FetchServers: fetchServers,
-		Transport:    transport,
 		Sites:        httpproxy.NewHostMatcher(config.Sites),
 	}, nil
 }
@@ -91,32 +93,27 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 	default:
 		if strings.Contains(req.URL.Host, "img.") ||
-		strings.Contains(req.URL.Host, "cache.") ||
-		strings.Contains(req.URL.Host, "video.") ||
-		strings.Contains(req.URL.Host, "static.") ||
-		strings.HasPrefix(req.URL.Host, "img") ||
-		strings.HasPrefix(req.URL.Path, "/static") ||
-		strings.HasPrefix(req.URL.Path, "/asset") ||
-		strings.Contains(req.URL.Path, "min.js") ||
-		strings.Contains(req.URL.Path, "static") ||
-		strings.Contains(req.URL.Path, "asset") ||
-		strings.Contains(req.URL.Path, "/cache/") {
+			strings.Contains(req.URL.Host, "cache.") ||
+			strings.Contains(req.URL.Host, "video.") ||
+			strings.Contains(req.URL.Host, "static.") ||
+			strings.HasPrefix(req.URL.Host, "img") ||
+			strings.HasPrefix(req.URL.Path, "/static") ||
+			strings.HasPrefix(req.URL.Path, "/asset") ||
+			strings.Contains(req.URL.Path, "min.js") ||
+			strings.Contains(req.URL.Path, "static") ||
+			strings.Contains(req.URL.Path, "asset") ||
+			strings.Contains(req.URL.Path, "/cache/") {
 			i = rand.Intn(len(f.FetchServers))
 		}
 	}
 
 	fetchServer := f.FetchServers[i]
 
-	req1, err := fetchServer.encodeRequest(req)
-	if err != nil {
-		return ctx, nil, fmt.Errorf("VPS encodeRequest: %s", err.Error())
-	}
-	res, err := f.Transport.RoundTrip(req1)
+	resp, err := fetchServer.RoundTrip(req)
 	if err != nil {
 		return ctx, nil, err
 	} else {
-		glog.Infof("%s \"VPS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, res.StatusCode, res.Header.Get("Content-Length"))
+		glog.Infof("%s \"VPS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
-	resp, err := fetchServer.decodeResponse(res)
 	return ctx, resp, err
 }
