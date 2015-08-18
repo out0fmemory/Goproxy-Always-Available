@@ -153,16 +153,28 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 			host = req.Host
 			port = "443"
 		}
-		conn, err := transport.Dial("tcp", net.JoinHostPort(host, port))
+		conn, err := net.Dial("tcp", net.JoinHostPort(host, port))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
 		}
-
-		io.WriteString(rw, "HTTP/1.1 200 OK\r\n\r\n")
+		rw.Header().Set("Content-Length", "0")
+		rw.WriteHeader(http.StatusOK)
+		rw.(http.Flusher).Flush()
 		go io.Copy(conn, req.Body)
 		io.Copy(rw, conn)
 		return
+	}
+
+	if req.URL.Scheme == "" {
+		req.URL.Scheme = "http"
+	}
+
+	if req.URL.Host == "" {
+		if req.Host == "" {
+			req.Host = req.Header.Get("Host")
+		}
+		req.URL.Host = req.Host
 	}
 
 	resp, err := transport.RoundTrip(req)
@@ -193,6 +205,7 @@ func main() {
 	}
 
 	addr := *flag.String("addr", ":443", "goproxy vps listen addr")
+	h2 := *flag.Bool("h2", true, "goproxy vps http2 mode")
 	flag.Parse()
 
 	ln, err := net.Listen("tcp", addr)
@@ -215,8 +228,11 @@ func main() {
 		TLSConfig: tlsConfig,
 	}
 
-	http2.VerboseLogs = true
-	http2.ConfigureServer(s, &http2.Server{})
+	if h2 {
+		http2.VerboseLogs = true
+		http2.ConfigureServer(s, &http2.Server{})
+	}
 	glog.Infof("ListenAndServe on %s\n", ln.Addr().String())
-	s.Serve(tls.NewListener(ln, tlsConfig))
+	// s.Serve(tls.NewListener(ln, tlsConfig))
+	s.Serve(ln)
 }
