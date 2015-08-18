@@ -147,6 +147,24 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del("Proxy-Authorization")
 	}
 
+	if req.Method == "CONNECT" {
+		host, port, err := net.SplitHostPort(req.Host)
+		if err != nil {
+			host = req.Host
+			port = "443"
+		}
+		conn, err := transport.Dial("tcp", net.JoinHostPort(host, port))
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadGateway)
+			return
+		}
+
+		io.WriteString(rw, "HTTP/1.1 200 OK\r\n\r\n")
+		go io.Copy(conn, req.Body)
+		io.Copy(rw, conn)
+		return
+	}
+
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadGateway)
