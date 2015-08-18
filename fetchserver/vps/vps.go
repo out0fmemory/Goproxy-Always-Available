@@ -7,8 +7,10 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
+	"encoding/binary"
 	"encoding/pem"
 	"flag"
+	"fmt"
 	"io"
 	"math/big"
 	"net"
@@ -52,10 +54,32 @@ func (l *listener) Accept() (c net.Conn, err error) {
 	return
 }
 
+func genHostname() (hostname string, err error) {
+	var length uint16
+	if err = binary.Read(rand.Reader, binary.BigEndian, &length); err != nil {
+		return
+	}
+
+	buf := make([]byte, 5+length%7)
+	for i := 0; i < len(buf); i++ {
+		var c uint8
+		if err = binary.Read(rand.Reader, binary.BigEndian, &c); err != nil {
+			return
+		}
+		buf[i] = 'a' + c%('z'-'a')
+	}
+
+	return fmt.Sprintf("www.%s.com", buf), nil
+}
+
 func getCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	// name := clientHello.ServerName
 	name := "www.gov.cn"
-	glog.Infof("Generating RootCA for %s", name)
+	if name1, err := genHostname(); err == nil {
+		name = name1
+	}
+
+	glog.Infof("Generating RootCA for %v", name)
 	template := x509.Certificate{
 		IsCA:         true,
 		SerialNumber: big.NewInt(1),
