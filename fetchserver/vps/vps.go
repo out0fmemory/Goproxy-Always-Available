@@ -115,7 +115,11 @@ func getCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) 
 	return &cert, err
 }
 
-func handler(rw http.ResponseWriter, req *http.Request) {
+type ProxyHandler struct {
+	AuthMap map[string]string
+}
+
+func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
@@ -130,7 +134,12 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(paramsPreifx + key)
 	}
 
-	if auth := req.Header.Get("Proxy-Authorization"); auth != "" {
+	if p.AuthMap != nil {
+		auth := req.Header.Get("Proxy-Authorization")
+		if auth == "" {
+			http.Error(rw, "403 Forbidden", http.StatusForbidden)
+			return
+		}
 		parts := strings.SplitN(auth, " ", 2)
 		if len(parts) == 2 {
 			switch parts[0] {
@@ -140,10 +149,15 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 					user := parts[0]
 					pass := parts[1]
 					glog.Infof("username=%v password=%v", user, pass)
+					if pass1, ok := p.AuthMap[user]; !ok || pass != pass1 {
+						http.Error(rw, "403 Forbidden", http.StatusForbidden)
+						return
+					}
 				}
 			default:
 				glog.Errorf("Unrecognized auth type: %#v", parts[0])
-				break
+				http.Error(rw, "403 Forbidden", http.StatusForbidden)
+				return
 			}
 		}
 		req.Header.Del("Proxy-Authorization")
@@ -223,6 +237,9 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 func main() {
 	var err error
 
+	addr := ":443"
+	auth := `test:123456 foobar:123456`
+	verbose := false
 	logToStderr := true
 	for i := 1; i < len(os.Args); i++ {
 		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
@@ -234,9 +251,20 @@ func main() {
 		flag.Set("logtostderr", "true")
 	}
 
-	addr := *flag.String("addr", ":443", "goproxy vps listen addr")
-	verbose := *flag.Bool("verbose", false, "goproxy vps http2 verbose mode")
+	flag.StringVar(&addr, "addr", addr, "goproxy vps listen addr")
+	flag.BoolVar(&verbose, "verbose", verbose, "goproxy vps http2 verbose mode")
+	flag.StringVar(&auth, "auth", auth, "goproxy vps auth user:pass list")
 	flag.Parse()
+
+	authMap := map[string]string{}
+	for _, pair := range strings.Split(auth, " ") {
+		parts := strings.Split(pair, ":")
+		if len(parts) == 2 {
+			username := strings.TrimSpace(parts[0])
+			password := strings.TrimSpace(parts[1])
+			authMap[username] = password
+		}
+	}
 
 	var ln net.Listener
 	ln, err = net.Listen("tcp", addr)
@@ -250,7 +278,7 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Handler: http.HandlerFunc(handler),
+		Handler: &ProxyHandler{authMap},
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{*cert},
 			// GetCertificate: getCertificate,
