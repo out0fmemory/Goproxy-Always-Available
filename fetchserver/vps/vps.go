@@ -281,6 +281,7 @@ func main() {
 		Handler: &ProxyHandler{authMap},
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{*cert},
+			MinVersion:   tls.VersionTLS11,
 			// GetCertificate: getCertificate,
 		},
 	}
