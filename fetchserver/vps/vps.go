@@ -19,7 +19,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bradfitz/http2"
+	"github.com/phuslu/http2"
 	// "github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 )
@@ -114,8 +114,6 @@ func getCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) 
 func handler(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
-	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
-
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
 	params := map[string]string{}
 	for key, values := range req.Header {
@@ -153,16 +151,40 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 			host = req.Host
 			port = "443"
 		}
+
+		glog.Infof("%s \"%s %s:%s %s\" - -", req.RemoteAddr, req.Method, host, port, req.Proto)
+
 		conn, err := net.Dial("tcp", net.JoinHostPort(host, port))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
 		}
-		rw.Header().Set("Content-Length", "0")
+
+		hijacker, ok := rw.(http.Hijacker)
+		if !ok {
+			http.Error(rw, fmt.Sprintf("%#v is not http.Hijacker", rw), http.StatusBadGateway)
+			return
+		}
+
+		flusher, ok := rw.(http.Flusher)
+		if !ok {
+			http.Error(rw, fmt.Sprintf("%#v is not http.Flusher", rw), http.StatusBadGateway)
+			return
+		}
+
 		rw.WriteHeader(http.StatusOK)
-		rw.(http.Flusher).Flush()
-		go io.Copy(conn, req.Body)
-		io.Copy(rw, conn)
+		flusher.Flush()
+
+		lconn, _, err := hijacker.Hijack()
+		if err != nil {
+			http.Error(rw, err.Error(), http.StatusBadGateway)
+			return
+		}
+		defer lconn.Close()
+
+		go io.Copy(conn, lconn)
+		io.Copy(lconn, conn)
+
 		return
 	}
 
@@ -176,6 +198,8 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		}
 		req.URL.Host = req.Host
 	}
+
+	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
@@ -206,6 +230,7 @@ func main() {
 
 	addr := *flag.String("addr", ":443", "goproxy vps listen addr")
 	h2 := *flag.Bool("h2", true, "goproxy vps http2 mode")
+	h2v := *flag.Bool("h2v", false, "goproxy vps http2 debug mode")
 	flag.Parse()
 
 	ln, err := net.Listen("tcp", addr)
@@ -229,10 +254,12 @@ func main() {
 	}
 
 	if h2 {
-		http2.VerboseLogs = true
+		if h2v {
+			http2.VerboseLogs = true
+		}
 		http2.ConfigureServer(s, &http2.Server{})
+		ln = tls.NewListener(ln, tlsConfig)
 	}
 	glog.Infof("ListenAndServe on %s\n", ln.Addr().String())
-	// s.Serve(tls.NewListener(ln, tlsConfig))
 	s.Serve(ln)
 }
