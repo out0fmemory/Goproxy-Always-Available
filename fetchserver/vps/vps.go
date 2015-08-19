@@ -24,6 +24,10 @@ import (
 	"github.com/golang/glog"
 )
 
+const (
+	Version = "@VERSION@"
+)
+
 var (
 	transport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -217,6 +221,8 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
+	var err error
+
 	logToStderr := true
 	for i := 1; i < len(os.Args); i++ {
 		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
@@ -229,11 +235,11 @@ func main() {
 	}
 
 	addr := *flag.String("addr", ":443", "goproxy vps listen addr")
-	h2 := *flag.Bool("h2", true, "goproxy vps http2 mode")
-	h2v := *flag.Bool("h2v", false, "goproxy vps http2 debug mode")
+	verbose := *flag.Bool("verbose", false, "goproxy vps http2 verbose mode")
 	flag.Parse()
 
-	ln, err := net.Listen("tcp", addr)
+	var ln net.Listener
+	ln, err = net.Listen("tcp", addr)
 	if err != nil {
 		glog.Fatalf("Listen(%s) error: %s", addr, err)
 	}
@@ -243,23 +249,32 @@ func main() {
 		glog.Fatalf("getCertificate error: %s", err)
 	}
 
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{*cert},
-		// GetCertificate: getCertificate,
+	srv := &http.Server{
+		Handler: http.HandlerFunc(handler),
+		TLSConfig: &tls.Config{
+			Certificates: []tls.Certificate{*cert},
+			// GetCertificate: getCertificate,
+		},
 	}
 
-	s := &http.Server{
-		Handler:   http.HandlerFunc(handler),
-		TLSConfig: tlsConfig,
+	if verbose {
+		http2.VerboseLogs = true
 	}
+	http2.ConfigureServer(srv, &http2.Server{})
+	glog.Infof("goproxy %s ListenAndServe on %s\n", Version, ln.Addr().String())
+	srv.Serve(tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+}
 
-	if h2 {
-		if h2v {
-			http2.VerboseLogs = true
-		}
-		http2.ConfigureServer(s, &http2.Server{})
-		ln = tls.NewListener(ln, tlsConfig)
+type tcpKeepAliveListener struct {
+	*net.TCPListener
+}
+
+func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
+	tc, err := ln.AcceptTCP()
+	if err != nil {
+		return
 	}
-	glog.Infof("ListenAndServe on %s\n", ln.Addr().String())
-	s.Serve(ln)
+	tc.SetKeepAlive(true)
+	tc.SetKeepAlivePeriod(3 * time.Minute)
+	return tc, nil
 }

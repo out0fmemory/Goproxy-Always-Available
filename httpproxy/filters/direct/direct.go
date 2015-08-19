@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/tls"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -97,33 +96,35 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	switch req.Method {
 	case "CONNECT":
 		glog.Infof("%s \"DIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
-		remote, err := f.transport.Dial("tcp", req.Host)
+		rconn, err := f.transport.Dial("tcp", req.Host)
 		if err != nil {
 			return ctx, nil, err
 		}
 
-		switch req.Proto {
-		case "HTTP/2.0":
-			rw := ctx.GetResponseWriter()
-			io.WriteString(rw, "HTTP/1.1 200 OK\r\n\r\n")
-			go httpproxy.IoCopy(remote, req.Body)
-			httpproxy.IoCopy(rw, remote)
-		case "HTTP/1.1", "HTTP/1.0":
-			rw := ctx.GetResponseWriter()
-			hijacker, ok := rw.(http.Hijacker)
-			if !ok {
-				return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments Hijacker", rw)
-			}
-			local, _, err := hijacker.Hijack()
-			if err != nil {
-				return ctx, nil, err
-			}
-			local.Write([]byte("HTTP/1.1 200 OK\r\n\r\n"))
-			go httpproxy.IoCopy(remote, local)
-			httpproxy.IoCopy(local, remote)
-		default:
-			glog.Warningf("Unkown req=%#v", req)
+		rw := ctx.GetResponseWriter()
+
+		hijacker, ok := rw.(http.Hijacker)
+		if !ok {
+			return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Hijacker", rw)
 		}
+
+		flusher, ok := rw.(http.Flusher)
+		if !ok {
+			return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Flusher", rw)
+		}
+
+		rw.WriteHeader(http.StatusOK)
+		flusher.Flush()
+
+		lconn, _, err := hijacker.Hijack()
+		if err != nil {
+			return ctx, nil, fmt.Errorf("%#v.Hijack() error: %v", hijacker, err)
+		}
+		defer lconn.Close()
+
+		go httpproxy.IoCopy(rconn, lconn)
+		httpproxy.IoCopy(lconn, rconn)
+
 		ctx.SetHijacked(true)
 		return ctx, nil, nil
 	case "PRI":
