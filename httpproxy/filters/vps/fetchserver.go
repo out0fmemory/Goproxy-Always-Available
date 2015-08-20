@@ -2,10 +2,10 @@ package vps
 
 import (
 	"encoding/base64"
+	"net"
 	"net/http"
 	"net/url"
 
-	"github.com/golang/glog"
 	"github.com/phuslu/http2"
 )
 
@@ -32,28 +32,6 @@ type FetchServer struct {
 }
 
 func (f *FetchServer) RoundTrip(req *http.Request) (resp *http.Response, err error) {
-	var req1 *http.Request
-	var resp1 *http.Response
-
-	req1, err = f.encodeRequest(req)
-	if err != nil {
-		return nil, err
-	}
-
-	resp1, err = f.Transport.RoundTrip(req1)
-	if err != nil {
-		return nil, err
-	}
-
-	resp, err = f.decodeResponse(resp1)
-	if err != nil {
-		return nil, err
-	}
-
-	return resp, nil
-}
-
-func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
 	for key, shouldDelete := range reqWriteExcludeHeader {
 		if shouldDelete && req.Header.Get(key) != "" {
 			req.Header.Del(key)
@@ -62,9 +40,14 @@ func (f *FetchServer) encodeRequest(req *http.Request) (*http.Request, error) {
 
 	req.Header.Set("Proxy-Authorization", base64.StdEncoding.EncodeToString([]byte(f.Username+":"+f.Password)))
 
-	return req, nil
+	resp, err = f.Transport.RoundTrip(req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp, nil
 }
 
-func (f *FetchServer) decodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
-	return resp, nil
+func (f *FetchServer) Connect(req *http.Request) (conn net.Conn, err error) {
+	return nil, nil
 }

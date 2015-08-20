@@ -134,7 +134,7 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(paramsPreifx + key)
 	}
 
-	if p.AuthMap != nil {
+	if false && p.AuthMap != nil {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			http.Error(rw, "403 Forbidden", http.StatusForbidden)
