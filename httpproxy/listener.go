@@ -43,8 +43,8 @@ type listener struct {
 	lane            chan racer
 	keepAlivePeriod time.Duration
 	stopped         bool
-	once            *sync.Once
-	mu              *sync.Mutex
+	once            sync.Once
+	mu              sync.Mutex
 }
 
 type ListenOptions struct {
@@ -82,11 +82,7 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 			lane:            make(chan racer, backlog),
 			stopped:         false,
 			keepAlivePeriod: keepAlivePeriod,
-			once:            new(sync.Once),
-			mu:              new(sync.Mutex),
 		}
-
-		go l.startListen()
 
 		return l, nil
 	} else {
@@ -121,11 +117,7 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 			lane:            make(chan racer, backlog),
 			stopped:         false,
 			keepAlivePeriod: keepAlivePeriod,
-			once:            new(sync.Once),
-			mu:              new(sync.Mutex),
 		}
-
-		go l.startListen()
 
 		return l, nil
 	}
@@ -161,31 +153,33 @@ func StartProcess() (*os.Process, error) {
 	})
 }
 
-func (l *listener) startListen() {
-	var tempDelay time.Duration
-	for {
-		conn, err := l.ln.Accept()
-		l.lane <- racer{conn, err}
-		if err != nil {
-			if ne, ok := err.(net.Error); ok && ne.Temporary() {
-				if tempDelay == 0 {
-					tempDelay = 5 * time.Millisecond
-				} else {
-					tempDelay *= 2
-				}
-				if max := 1 * time.Second; tempDelay > max {
-					tempDelay = max
-				}
-				glog.Infof("http: Accept error: %v; retrying in %v", err, tempDelay)
-				time.Sleep(tempDelay)
-				continue
-			}
-			return
-		}
-	}
-}
-
 func (l *listener) Accept() (c net.Conn, err error) {
+	l.once.Do(func() {
+		go func() {
+			var tempDelay time.Duration
+			for {
+				conn, err := l.ln.Accept()
+				l.lane <- racer{conn, err}
+				if err != nil {
+					if ne, ok := err.(net.Error); ok && ne.Temporary() {
+						if tempDelay == 0 {
+							tempDelay = 5 * time.Millisecond
+						} else {
+							tempDelay *= 2
+						}
+						if max := 1 * time.Second; tempDelay > max {
+							tempDelay = max
+						}
+						glog.Infof("httpproxy.Listener: Accept error: %v; retrying in %v", err, tempDelay)
+						time.Sleep(tempDelay)
+						continue
+					}
+					return
+				}
+			}
+		}()
+	})
+
 	r := <-l.lane
 	if r.err != nil {
 		return r.conn, r.err

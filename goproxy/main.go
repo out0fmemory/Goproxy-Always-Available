@@ -165,8 +165,9 @@ Pac Server         : http://%s/proxy.pac
 		s.TLSConfig = tlsConfig
 		http2.ConfigureServer(s, &http2.Server{})
 	case "h2c":
-		s.TLSConfig = tlsConfig
-		s = http2.UpgradeServer(s, &http2.Server{})
+		glog.Fatalf("Mode(%#v) is not supported", config.Http.Mode)
+		// s.TLSConfig = tlsConfig
+		// s = http2.UpgradeServer(s, &http2.Server{})
 	case "h1":
 		break
 	default:
