@@ -1,0 +1,16 @@
+[Unit]
+Description=govps
+
+[Service]
+Type=simple
+PIDFile=/var/run/govps.pid
+ExecStartPre=/bin/rm -rf /var/log/govps.*
+ExecStart=/opt/govps/govps -addr=0.0.0.0:8000 -pidfile /var/run/govps.pid -v=1 -logtostderr=0 -log_dir=/var/log/
+ExecReload=/bin/kill -HUP $MAINPID
+WorkingDirectory=/opt/govps/
+User=root
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
