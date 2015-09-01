@@ -1,7 +1,7 @@
 package vps
 
 import (
-	"fmt"
+	// "fmt"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -110,40 +110,40 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 	fetchServer := f.FetchServers[i]
 
-	if req.Method == "CONNECT" {
-		rconn, err := fetchServer.Transport.Connect(req)
-		if err != nil {
-			return ctx, nil, err
-		}
-		defer rconn.Close()
+	// if req.Method == "CONNECT" {
+	// 	rconn, err := fetchServer.Transport.Connect(req)
+	// 	if err != nil {
+	// 		return ctx, nil, err
+	// 	}
+	// 	defer rconn.Close()
 
-		rw := ctx.GetResponseWriter()
+	// 	rw := ctx.GetResponseWriter()
 
-		hijacker, ok := rw.(http.Hijacker)
-		if !ok {
-			return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Hijacker", rw)
-		}
+	// 	hijacker, ok := rw.(http.Hijacker)
+	// 	if !ok {
+	// 		return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Hijacker", rw)
+	// 	}
 
-		flusher, ok := rw.(http.Flusher)
-		if !ok {
-			return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Flusher", rw)
-		}
+	// 	flusher, ok := rw.(http.Flusher)
+	// 	if !ok {
+	// 		return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Flusher", rw)
+	// 	}
 
-		rw.WriteHeader(http.StatusOK)
-		flusher.Flush()
+	// 	rw.WriteHeader(http.StatusOK)
+	// 	flusher.Flush()
 
-		lconn, _, err := hijacker.Hijack()
-		if err != nil {
-			return ctx, nil, fmt.Errorf("%#v.Hijack() error: %v", hijacker, err)
-		}
-		defer lconn.Close()
+	// 	lconn, _, err := hijacker.Hijack()
+	// 	if err != nil {
+	// 		return ctx, nil, fmt.Errorf("%#v.Hijack() error: %v", hijacker, err)
+	// 	}
+	// 	defer lconn.Close()
 
-		go httpproxy.IoCopy(rconn, lconn)
-		httpproxy.IoCopy(lconn, rconn)
+	// 	go httpproxy.IoCopy(rconn, lconn)
+	// 	httpproxy.IoCopy(lconn, rconn)
 
-		ctx.SetHijacked(true)
-		return ctx, nil, nil
-	}
+	// 	ctx.SetHijacked(true)
+	// 	return ctx, nil, nil
+	// }
 	resp, err := fetchServer.RoundTrip(req)
 	if err != nil {
 		return ctx, nil, err
