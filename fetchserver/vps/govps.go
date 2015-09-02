@@ -17,11 +17,11 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
-	"github.com/phuslu/http2"
-	// "github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
+	"github.com/phuslu/http2"
 )
 
 const (
@@ -76,8 +76,22 @@ func genHostname() (hostname string, err error) {
 	return fmt.Sprintf("www.%s.com", buf), nil
 }
 
-func getCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	// name := clientHello.ServerName
+type RandomCertificate struct {
+	mu    sync.Mutex
+	mtime time.Time
+	cert  *tls.Certificate
+}
+
+func (rc *RandomCertificate) GetCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	if rc.mtime.IsZero() || time.Now().Sub(rc.mtime) < 2*time.Hour {
+		if rc.cert != nil {
+			return rc.cert, nil
+		}
+	}
+
+	rc.mu.Lock()
+	defer rc.mu.Unlock()
+
 	name := "www.gov.cn"
 	if name1, err := genHostname(); err == nil {
 		name = name1
@@ -112,7 +126,11 @@ func getCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) 
 	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 
 	cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-	return &cert, err
+
+	rc.mtime = time.Now()
+	rc.cert = &cert
+
+	return rc.cert, err
 }
 
 type ProxyHandler struct {
@@ -239,6 +257,8 @@ func main() {
 
 	addr := ":443"
 	auth := `test:123456 foobar:123456`
+	keyFile := "govps.key"
+	certFile := "govps.crt"
 	verbose := false
 	logToStderr := true
 	for i := 1; i < len(os.Args); i++ {
@@ -252,6 +272,8 @@ func main() {
 	}
 
 	flag.StringVar(&addr, "addr", addr, "goproxy vps listen addr")
+	flag.StringVar(&keyFile, "keyFile", keyFile, "goproxy vps keyFile")
+	flag.StringVar(&certFile, "certFile", certFile, "goproxy vps certFile")
 	flag.BoolVar(&verbose, "verbose", verbose, "goproxy vps http2 verbose mode")
 	flag.StringVar(&auth, "auth", auth, "goproxy vps auth user:pass list")
 	flag.Parse()
@@ -272,18 +294,26 @@ func main() {
 		glog.Fatalf("Listen(%s) error: %s", addr, err)
 	}
 
-	cert, err := getCertificate(nil)
-	if err != nil {
-		glog.Fatalf("getCertificate error: %s", err)
+	var certs []tls.Certificate = nil
+	if _, err := os.Stat(keyFile); err == nil {
+		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+		if err != nil {
+			glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
+		}
+		certs = []tls.Certificate{cert}
 	}
 
 	srv := &http.Server{
 		Handler: &ProxyHandler{authMap},
 		TLSConfig: &tls.Config{
-			Certificates: []tls.Certificate{*cert},
-			MinVersion:   tls.VersionTLS11,
-			// GetCertificate: getCertificate,
+			Certificates: certs,
+			MinVersion:   tls.VersionTLS12,
 		},
+	}
+
+	if srv.TLSConfig.Certificates == nil {
+		rc := &RandomCertificate{}
+		srv.TLSConfig.GetCertificate = rc.GetCertificate
 	}
 
 	if verbose {
