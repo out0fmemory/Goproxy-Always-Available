@@ -142,7 +142,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		parts := strings.Split(req.Host, ".")
 		switch len(parts) {
 		case 1, 2:
-			httpError(rw, err.Error(), http.StatusBadRequest)
+			httpError(rw, "fetchserver:"+err.Error(), http.StatusBadRequest)
 		default:
 			u := *req.URL
 			if u.Scheme == "" {
@@ -176,17 +176,17 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 			r = flate.NewReader(req1.Body)
 		case "gzip":
 			if r, err = gzip.NewReader(req1.Body); err != nil {
-				httpError(rw, err.Error(), http.StatusBadRequest)
+				httpError(rw, "fetchserver:"+err.Error(), http.StatusBadRequest)
 				return
 			}
 		default:
-			httpError(rw, fmt.Sprintf("Unsupported Content-Encoding: %#v", ce), http.StatusBadRequest)
+			httpError(rw, "fetchserver:"+fmt.Sprintf("Unsupported Content-Encoding: %#v", ce), http.StatusBadRequest)
 			return
 		}
 		data, err := ioutil.ReadAll(r)
 		if err != nil {
 			req1.Body.Close()
-			httpError(rw, err.Error(), http.StatusBadRequest)
+			httpError(rw, "fetchserver:"+err.Error(), http.StatusBadRequest)
 			return
 		}
 		req1.Body.Close()
@@ -212,7 +212,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 
 	if Password != "" {
 		if password, ok := params["password"]; !ok || password != Password {
-			httpError(rw, fmt.Sprintf("wrong password %#v", password), http.StatusForbidden)
+			httpError(rw, fmt.Sprintf("fetchserver: wrong password %#v", password), http.StatusForbidden)
 			return
 		}
 	}
@@ -240,7 +240,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 			continue
 		}
 
-		httpError(rw, err.Error(), http.StatusBadGateway)
+		httpError(rw, "fetchserver:"+err.Error(), http.StatusBadGateway)
 		return
 	}
 	defer resp.Body.Close()
