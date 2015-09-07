@@ -27,7 +27,7 @@ const (
 var (
 	secureTransport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
+			InsecureSkipVerify: false,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
 		TLSHandshakeTimeout: 30 * time.Second,
@@ -37,7 +37,7 @@ var (
 
 	insecureTransport *http.Transport = &http.Transport{
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
+			InsecureSkipVerify: true,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
 		TLSHandshakeTimeout: 30 * time.Second,
