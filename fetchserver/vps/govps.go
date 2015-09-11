@@ -224,17 +224,6 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.URL.Scheme == "" {
-		req.URL.Scheme = "http"
-	}
-
-	if req.URL.Host == "" {
-		if req.Host == "" {
-			req.Host = req.Header.Get("Host")
-		}
-		req.URL.Host = req.Host
-	}
-
 	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
 	resp, err := transport.RoundTrip(req)
