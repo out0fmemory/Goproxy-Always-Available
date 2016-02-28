@@ -75,7 +75,4 @@ $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
 	mkdir -p $(OBJECTDIR)
-	cp main.go main.go.orig
-	sed "s/@VERSION@/$(RELEASE)/g" main.go.orig > main.go
-	go build -v -o $@ . ; \
-	mv main.go.orig main.go
+	go build -v -ldflags="-X main.version=$(RELEASE)" -o $@ .

@@ -34,9 +34,7 @@ import (
 	_ "./httpproxy/filters/vps"
 )
 
-const (
-	Version = "@VERSION@"
-)
+var version = "@VERSION@"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
@@ -116,7 +114,7 @@ Listen Address     : %s
 RoundTrip Filters  : %v
 Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
-`, Version, runtime.Version(), runtime.GOOS, runtime.GOARCH,
+`, version, runtime.Version(), runtime.GOOS, runtime.GOARCH,
 		config.Addr,
 		strings.Join(config.Filters.RoundTrip, ","),
 		config.Addr)
