@@ -14,12 +14,35 @@ import (
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
+	"../../../storage"
 	"../../filters"
 )
 
 const (
 	filterName string = "iplist"
 )
+
+type Config struct {
+	Dialer struct {
+		Window    int
+		Timeout   int
+		KeepAlive int
+		DualStack bool
+	}
+	Transport struct {
+		DisableKeepAlives   bool
+		DisableCompression  bool
+		TLSHandshakeTimeout int
+		MaxIdleConnsPerHost int
+	}
+	Hosts  map[string]string
+	Iplist map[string][]string
+	DNS    struct {
+		Servers   []string
+		Expand    []string
+		Blacklist []string
+	}
+}
 
 type Filter struct {
 	filters.RoundTripFilter
@@ -29,9 +52,10 @@ type Filter struct {
 
 func init() {
 	filename := filterName + ".json"
-	config, err := NewConfig(filters.LookupConfigStoreURI(filterName), filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
-		glog.Fatalf("NewConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{

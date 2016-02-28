@@ -3,10 +3,12 @@ package storage
 import (
 	"bufio"
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"net/http"
+	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -96,4 +98,40 @@ func ReadJson(r io.Reader) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
+}
+
+func ReadJsonConfig(uri, filename string, config interface{}) error {
+	store, err := OpenURI(uri)
+	if err != nil {
+		return err
+	}
+
+	fileext := path.Ext(filename)
+	filename1 := strings.TrimSuffix(filename, fileext) + ".user" + fileext
+
+	for i, name := range []string{filename, filename1} {
+		object, err := store.GetObject(name, -1, -1)
+		if err != nil {
+			if i == 0 {
+				return err
+			} else {
+				continue
+			}
+		}
+
+		rc := object.Body()
+		defer rc.Close()
+
+		data, err := ReadJson(rc)
+		if err != nil {
+			return err
+		}
+
+		err = json.Unmarshal(data, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

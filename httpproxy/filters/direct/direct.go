@@ -13,12 +13,36 @@ import (
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
+	"../../../storage"
 	"../../filters"
 )
 
 const (
 	filterName string = "direct"
 )
+
+type Config struct {
+	Dialer struct {
+		Timeout   int
+		KeepAlive int
+		DualStack bool
+	}
+	Transport struct {
+		DisableKeepAlives   bool
+		DisableCompression  bool
+		TLSHandshakeTimeout int
+		MaxIdleConnsPerHost int
+	}
+	RateLimit struct {
+		Threshold int
+		Rate      int
+		Capacity  int
+	}
+	DNSCache struct {
+		Size    int
+		Expires int
+	}
+}
 
 type RateLimit struct {
 	Threshold int64
@@ -34,9 +58,10 @@ type Filter struct {
 
 func init() {
 	filename := filterName + ".json"
-	config, err := NewConfig(filters.LookupConfigStoreURI(filterName), filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
-		glog.Fatalf("NewConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{

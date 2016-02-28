@@ -10,6 +10,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
+	"../../../storage"
 	"../../filters"
 )
 
@@ -19,6 +20,15 @@ const (
 	bypassHeader string = filterName + "/bypass"
 )
 
+type Config struct {
+	CacheSize int
+	Basic     []struct {
+		Username string
+		Password string
+	}
+	WhiteList []string
+}
+
 type Filter struct {
 	ByPassHeaders lrucache.Cache
 	Basic         map[string]string
@@ -27,9 +37,10 @@ type Filter struct {
 
 func init() {
 	filename := filterName + ".json"
-	config, err := NewConfig(filters.LookupConfigStoreURI(filterName), filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
-		glog.Fatalf("NewConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{

@@ -12,12 +12,23 @@ import (
 	"github.com/phuslu/http2"
 
 	"../../../httpproxy"
+	"../../../storage"
 	"../../filters"
 )
 
 const (
 	filterName string = "vps"
 )
+
+type Config struct {
+	FetchServers []struct {
+		URL       string
+		Username  string
+		Password  string
+		SSLVerify bool
+	}
+	Sites []string
+}
 
 type Filter struct {
 	FetchServers []*FetchServer
@@ -26,9 +37,10 @@ type Filter struct {
 
 func init() {
 	filename := filterName + ".json"
-	config, err := NewConfig(filters.LookupConfigStoreURI(filterName), filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
-		glog.Fatalf("NewConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{

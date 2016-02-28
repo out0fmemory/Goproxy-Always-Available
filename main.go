@@ -42,13 +42,36 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 }
 
+type Config struct {
+	LogToStderr bool
+	Addr        string
+	Http        struct {
+		Mode            string
+		KeepAlivePeriod int
+		ReadTimeout     int
+		WriteTimeout    int
+		Certificate     string
+		PrivateKey      string
+	}
+	GroupCache struct {
+		Addr  string
+		Peers []string
+	}
+	Filters struct {
+		Request   []string
+		RoundTrip []string
+		Response  []string
+	}
+}
+
 func main() {
 
-	configUri := filters.LookupConfigStoreURI("main.json")
 	filename := "main.json"
-	config, err := NewConfig(configUri, filename)
+	configUri := filters.LookupConfigStoreURI(filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(configUri, filename, config)
 	if err != nil {
-		fmt.Printf("NewConfig(%#v) failed: %s", filename, err)
+		fmt.Printf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 		return
 	}
 

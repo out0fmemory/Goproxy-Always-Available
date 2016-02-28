@@ -24,6 +24,16 @@ const (
 	placeholderPath string = "/proxy.pac"
 )
 
+type Config struct {
+	Sites   []string
+	GFWList struct {
+		URL      string
+		File     string
+		Encoding string
+		Duration int
+	}
+}
+
 var (
 	onceUpdater sync.Once
 )
@@ -46,9 +56,10 @@ type Filter struct {
 
 func init() {
 	filename := filterName + ".json"
-	config, err := NewConfig(filters.LookupConfigStoreURI(filterName), filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
-		glog.Fatalf("NewConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{

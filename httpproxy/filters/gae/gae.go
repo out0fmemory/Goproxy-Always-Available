@@ -13,12 +13,31 @@ import (
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
+	"../../../storage"
 	"../../filters"
 )
 
 const (
 	filterName string = "gae"
 )
+
+type Config struct {
+	AppIds    []string
+	Scheme    string
+	Domain    string
+	Path      string
+	Password  string
+	SSLVerify bool
+	Transport string
+	Sites     []string
+	AutoRange struct {
+		Threads int
+		MaxSize int
+		BufSize int
+		Sites   []string
+		Suffixs []string
+	}
+}
 
 type Filter struct {
 	FetchServers   []*FetchServer
@@ -29,9 +48,10 @@ type Filter struct {
 
 func init() {
 	filename := filterName + ".json"
-	config, err := NewConfig(filters.LookupConfigStoreURI(filterName), filename)
+	config := new(Config)
+	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
-		glog.Fatalf("NewConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{
