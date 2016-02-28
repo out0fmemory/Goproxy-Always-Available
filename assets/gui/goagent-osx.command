@@ -1,4 +1,4 @@
-(exec /usr/bin/env python2.7 -x "$0" 2>&1 >/dev/null &);exit
+(exec /usr/bin/env python -x "$0" 2>&1 >/dev/null &);exit
 # coding:utf-8
 # Contributor:
 #      Phus Lu        <phuslu@hotmail.com>
