@@ -2,8 +2,8 @@ RELEASE = r$(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
-SOURCEDIR = $(REPO)/$(PACKAGE)
-BUILDDIR = $(SOURCEDIR)/build
+SOURCEDIR = $(REPO)/
+BUILDDIR = $(REPO)/build
 STAGEDIR = $(BUILDDIR)/stage
 OBJECTDIR = $(BUILDDIR)/obj
 DISTDIR = $(BUILDDIR)/dist
@@ -64,7 +64,7 @@ clean:
 
 .PHONY: release
 release:
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.tk sh /home/phuslu/go1.5/gopath/src/github.com/phuslu/goproxy/assets/scripts/release.sh
+	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.lu sh /home/phuslu/goproxy/assets/scripts/release.sh
 
 $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)

@@ -18,18 +18,20 @@ import (
 
 	"github.com/golang/glog"
 	"github.com/golang/groupcache"
-	"github.com/phuslu/goproxy/httpproxy"
-	"github.com/phuslu/goproxy/httpproxy/filters"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/auth"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/autoproxy"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/direct"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/gae"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/iplist"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/php"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/stripssl"
-	_ "github.com/phuslu/goproxy/httpproxy/filters/vps"
-	"github.com/phuslu/goproxy/storage"
 	"github.com/phuslu/http2"
+
+	"./httpproxy"
+	"./httpproxy/filters"
+	"./storage"
+
+	_ "./httpproxy/filters/auth"
+	_ "./httpproxy/filters/autoproxy"
+	_ "./httpproxy/filters/direct"
+	_ "./httpproxy/filters/gae"
+	_ "./httpproxy/filters/iplist"
+	_ "./httpproxy/filters/php"
+	_ "./httpproxy/filters/stripssl"
+	_ "./httpproxy/filters/vps"
 )
 
 const (

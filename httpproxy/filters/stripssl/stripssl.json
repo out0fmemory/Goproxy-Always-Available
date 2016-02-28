@@ -1,7 +1,7 @@
 {
 	"rootca": {
 		"name": "GoAgent",
-		"dirname": "certs",
+		"dirname": "certcache",
 		"duration": 31536000,
 		"rsaBits": 2048
 	},

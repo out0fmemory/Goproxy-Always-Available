@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/phuslu/goproxy/httpproxy"
+	"../../../httpproxy"
 )
 
 type xorReadCloser struct {

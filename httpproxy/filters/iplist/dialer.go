@@ -14,7 +14,8 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 	"github.com/miekg/dns"
-	"github.com/phuslu/goproxy/httpproxy"
+
+	"../../../httpproxy"
 )
 
 type Iplist struct {

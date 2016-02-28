@@ -9,7 +9,8 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
-	"github.com/phuslu/goproxy/httpproxy/filters"
+
+	"../../filters"
 )
 
 const (

@@ -13,9 +13,10 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/phuslu/goproxy/httpproxy"
-	"github.com/phuslu/goproxy/httpproxy/filters"
-	"github.com/phuslu/goproxy/storage"
+
+	"../../../httpproxy"
+	"../../../storage"
+	"../../filters"
 )
 
 const (

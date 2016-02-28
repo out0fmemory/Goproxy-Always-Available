@@ -1,9 +1,9 @@
 #!/bin/bash
 
-GOROOT=$HOME/go1.5
-GOPATH=$HOME/go1.5/gopath
+GOROOT=$HOME/go
+GOPATH=$HOME/gopath
 PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-SOURCEDIR=${GOPATH}/src/github.com/phuslu/goproxy
+SOURCEDIR=$HOME/goproxy
 DISTDIR=${SOURCEDIR}/dist
 
 cd ${SOURCEDIR}
@@ -21,10 +21,10 @@ REV=`git rev-list HEAD | wc -l | xargs`
 NOTE=`git log --oneline | head -1`
 REMOTE=`git remote -v | head -1 | awk '{print $2}'`
 
-cd ${SOURCEDIR}/fetchserver/vps
-GOOS=linux GOARCH=amd64 make && mv build/dist/govps* ${DISTDIR}/ && make clean
+# cd ${SOURCEDIR}/fetchserver/vps
+# GOOS=linux GOARCH=amd64 make && mv build/dist/govps* ${DISTDIR}/ && make clean
 
-cd ${SOURCEDIR}/goproxy
+cd ${SOURCEDIR}
 GOOS=windows GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=windows GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=linux GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean

@@ -5,7 +5,8 @@ import (
 	"net/http"
 
 	"github.com/golang/glog"
-	"github.com/phuslu/goproxy/httpproxy/filters"
+
+	"./filters"
 )
 
 type Handler struct {

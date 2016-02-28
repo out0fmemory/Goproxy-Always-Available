@@ -9,9 +9,10 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/phuslu/goproxy/httpproxy"
-	"github.com/phuslu/goproxy/httpproxy/filters"
 	"github.com/phuslu/http2"
+
+	"../../../httpproxy"
+	"../../filters"
 )
 
 const (

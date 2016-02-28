@@ -5,7 +5,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/phuslu/goproxy/storage"
+	"./storage"
 )
 
 type Config struct {

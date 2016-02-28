@@ -1,5 +1,5 @@
-goproxy
 build
+gfwlist.txt
 goagent-gtk.desktop
 goagent-gtk.py
 goagent-osx.command
@@ -9,4 +9,3 @@ goagent-logo.png
 *.crt
 *.key
 *.db
-.rnd
