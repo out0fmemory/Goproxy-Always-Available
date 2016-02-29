@@ -30,6 +30,7 @@ import (
 	_ "./httpproxy/filters/gae"
 	_ "./httpproxy/filters/iplist"
 	_ "./httpproxy/filters/php"
+	_ "./httpproxy/filters/ratelimit"
 	_ "./httpproxy/filters/stripssl"
 	_ "./httpproxy/filters/vps"
 )
