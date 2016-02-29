@@ -2,7 +2,7 @@
 	"logtostderr": true,
 	"Addr": "127.0.0.1:8000",
 	"http": {
-		"mode": "h1",
+		"ssl": false,
 		"KeepAlivePeriod": 0,
 		"ReadTimeout": 600,
 		"WriteTimeout": 3600,

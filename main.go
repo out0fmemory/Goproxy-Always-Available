@@ -45,7 +45,7 @@ type Config struct {
 	LogToStderr bool
 	Addr        string
 	Http        struct {
-		Mode            string
+		Ssl             bool
 		KeepAlivePeriod int
 		ReadTimeout     int
 		WriteTimeout    int
@@ -117,13 +117,13 @@ Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
 `, version, runtime.Version(), runtime.GOOS, runtime.GOARCH,
 		config.Addr,
-		strings.Join(config.Filters.RoundTrip, ","),
+		fmt.Sprintf("%s|%s|%s", strings.Join(config.Filters.Request, ","), strings.Join(config.Filters.RoundTrip, ","), strings.Join(config.Filters.Response, ",")),
 		config.Addr)
 
 	requestFilters, roundtripFilters, responseFilters := getFilters(config)
 
 	var tlsConfig *tls.Config
-	if config.Http.Mode == "h2" {
+	if config.Http.Ssl {
 
 		readPem := func(object string) []byte {
 			store, err := storage.OpenURI(configUri)
@@ -160,11 +160,6 @@ Pac Server         : http://%s/proxy.pac
 
 	listenOpts := &httpproxy.ListenOptions{TLSConfig: tlsConfig}
 
-	if strings.HasPrefix(config.Http.Mode, "h2") {
-		// http2.VerboseLogs = true
-		listenOpts.KeepAlivePeriod = 3 * time.Minute
-	}
-
 	ln, err := httpproxy.ListenTCP("tcp", config.Addr, listenOpts)
 	if err != nil {
 		glog.Fatalf("ListenTCP(%s, %#v) error: %s", config.Addr, listenOpts, err)
@@ -184,18 +179,9 @@ Pac Server         : http://%s/proxy.pac
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	switch config.Http.Mode {
-	case "h2":
+	if config.Http.Ssl {
 		s.TLSConfig = tlsConfig
 		http2.ConfigureServer(s, &http2.Server{})
-	case "h2c":
-		glog.Fatalf("Mode(%#v) is not supported", config.Http.Mode)
-		// s.TLSConfig = tlsConfig
-		// s = http2.UpgradeServer(s, &http2.Server{})
-	case "h1":
-		break
-	default:
-		glog.Fatalf("Unknow Http mode %s", config.Http.Mode)
 	}
 
 	glog.Infof("ListenAndServe on %s\n", h.Listener.Addr().String())
