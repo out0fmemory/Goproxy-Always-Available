@@ -30,6 +30,7 @@ GOOS=windows GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make cle
 GOOS=linux GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=linux GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=linux GOARCH=arm make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
+GOOS=linux GOARCH=arm64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=darwin GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=darwin GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 
