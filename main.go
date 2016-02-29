@@ -35,7 +35,7 @@ import (
 	_ "./httpproxy/filters/vps"
 )
 
-var version = "@VERSION@"
+var version = "r9999"
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
