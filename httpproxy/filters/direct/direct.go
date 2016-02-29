@@ -33,27 +33,15 @@ type Config struct {
 		TLSHandshakeTimeout int
 		MaxIdleConnsPerHost int
 	}
-	RateLimit struct {
-		Threshold int
-		Rate      int
-		Capacity  int
-	}
 	DNSCache struct {
 		Size    int
 		Expires int
 	}
 }
 
-type RateLimit struct {
-	Threshold int64
-	Rate      float64
-	Capacity  int64
-}
-
 type Filter struct {
 	filters.RoundTripFilter
 	transport *http.Transport
-	ratelimt  RateLimit
 }
 
 func init() {
@@ -105,11 +93,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 			MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
 			DisableCompression:  config.Transport.DisableCompression,
-		},
-		ratelimt: RateLimit{
-			Threshold: int64(config.RateLimit.Threshold),
-			Capacity:  int64(config.RateLimit.Capacity),
-			Rate:      float64(config.RateLimit.Rate),
 		},
 	}, nil
 }
@@ -184,10 +167,6 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			if req.RemoteAddr != "" {
 				glog.Infof("%s \"DIRECT %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 			}
-		}
-		if f.ratelimt.Rate > 0 && resp.ContentLength > f.ratelimt.Threshold {
-			glog.V(2).Infof("RateLimit %#v rate to %#v", req.URL.String(), f.ratelimt.Rate)
-			resp.Body = httpproxy.NewRateLimitReader(resp.Body, f.ratelimt.Rate, f.ratelimt.Capacity)
 		}
 		return ctx, resp, err
 	}
