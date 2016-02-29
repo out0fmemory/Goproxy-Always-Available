@@ -1,6 +1,6 @@
 {
 	"logtostderr": true,
-	"Addr": "127.0.0.1:8000",
+	"Addr": "127.0.0.1:8087",
 	"http": {
 		"ssl": false,
 		"KeepAlivePeriod": 0,
