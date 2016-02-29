@@ -54,7 +54,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	if config.Capacity <= 0 {
-		f.Capacity = int64(config.Rate) * 60
+		f.Capacity = int64(config.Rate) * 1024
 	}
 
 	return f, nil
