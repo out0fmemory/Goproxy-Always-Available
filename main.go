@@ -9,11 +9,9 @@ import (
 	"net"
 	"net/http"
 	"os"
-	"os/signal"
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/golang/glog"
@@ -185,46 +183,7 @@ Pac Server         : http://%s/proxy.pac
 	}
 
 	glog.Infof("ListenAndServe on %s\n", h.Listener.Addr().String())
-	go s.Serve(h.Listener)
-
-	c := make(chan os.Signal, 1)
-	signal.Notify(c, os.Interrupt, syscall.SIGTERM, syscall.SIGHUP)
-
-	for {
-		switch <-c {
-		case os.Interrupt, syscall.SIGTERM:
-			os.Exit(0)
-		case syscall.SIGHUP:
-			glog.Infof("os.StartProcess %#v", os.Args)
-
-			p, err := httpproxy.StartProcess()
-			if err != nil {
-				glog.Warningf("StartProcess() with Listeners(%#v, %#v) error: %#v, abort", ln0, h.Listener)
-				os.Exit(-1)
-			} else {
-				glog.Infof("Spawn child(pid=%d) OK, exit in %d seconds", p.Pid, config.Http.WriteTimeout)
-				if ln0 != nil {
-					ln0.Close()
-				}
-				h.Listener.Close()
-			}
-
-			done := make(chan struct{}, 1)
-			go func(c chan<- struct{}) {
-				h.Listener.Wait()
-				c <- struct{}{}
-			}(done)
-
-			select {
-			case <-done:
-				glog.Infof("All connections were closed, graceful shutdown")
-				os.Exit(0)
-			case <-time.After(s.WriteTimeout):
-				glog.Warningf("Graceful shutdown timeout, quit")
-				os.Exit(0)
-			}
-		}
-	}
+	s.Serve(h.Listener)
 }
 
 func getFilters(config *Config) ([]filters.RequestFilter, []filters.RoundTripFilter, []filters.ResponseFilter) {
