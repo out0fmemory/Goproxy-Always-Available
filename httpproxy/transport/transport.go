@@ -2,6 +2,8 @@ package fetchserver
 
 import (
 	"io"
+
+	"./direct"
 )
 
 var (

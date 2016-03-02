@@ -1,9 +1,11 @@
 package direct
 
 import (
+	"crypto/tls"
 	"errors"
 	"fmt"
 	"net"
+	"net/http"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
@@ -57,4 +59,35 @@ func (d *Dailer) Dial(network, address string) (conn net.Conn, err error) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	return conn, err
+}
+
+func NewTransport() http.RoundTripper {
+	d := &Dailer{}
+	d.Timeout = time.Duration(10) * time.Second
+	d.KeepAlive = time.Duration(60) * time.Second
+	d.DNSCache = lrucache.NewMultiLRUCache(4, 8192)
+	d.DNSCacheExpires = 1 * time.Hour
+	d.LoopbackAddrs = make(map[string]struct{})
+
+	// d.LoopbackAddrs["127.0.0.1"] = struct{}{}
+	d.LoopbackAddrs["::1"] = struct{}{}
+	if addrs, err := net.InterfaceAddrs(); err == nil {
+		for _, addr := range addrs {
+			switch addr.Network() {
+			case "ip":
+				d.LoopbackAddrs[addr.String()] = struct{}{}
+			}
+		}
+	}
+
+	return &http.Transport{
+		Dial: d.Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+		},
+		TLSHandshakeTimeout: 2 * time.Second,
+		MaxIdleConnsPerHost: 16,
+		DisableCompression:  false,
+	}
 }
