@@ -6,6 +6,7 @@ goagent-osx.command
 goagent-logo.png
 *.user.json
 *.exe
+*.exe~
 *.crt
 *.key
 *.db
