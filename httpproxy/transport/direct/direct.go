@@ -61,7 +61,7 @@ func (d *Dailer) Dial(network, address string) (conn net.Conn, err error) {
 	return conn, err
 }
 
-func NewTransport() http.RoundTripper {
+func ConfigureTransport(t *http.Transport) {
 	d := &Dailer{}
 	d.Timeout = time.Duration(10) * time.Second
 	d.KeepAlive = time.Duration(60) * time.Second
@@ -80,14 +80,12 @@ func NewTransport() http.RoundTripper {
 		}
 	}
 
-	return &http.Transport{
-		Dial: d.Dial,
-		TLSClientConfig: &tls.Config{
+	t.Dial = d.Dial
+
+	if t.TLSClientConfig == nil {
+		t.TLSClientConfig = &tls.Config{
 			InsecureSkipVerify: false,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
-		},
-		TLSHandshakeTimeout: 2 * time.Second,
-		MaxIdleConnsPerHost: 16,
-		DisableCompression:  false,
+		}
 	}
 }
