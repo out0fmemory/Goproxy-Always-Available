@@ -1,13 +1,7 @@
-package fetchserver
-
-import (
-	"net/http"
-
-	"./direct"
-)
+package transport
 
 var (
-	reqWriteExcludeHeader = map[string]bool{
+	ReqWriteExcludeHeader = map[string]bool{
 		"Vary":                true,
 		"Via":                 true,
 		"X-Forwarded-For":     true,
@@ -19,7 +13,3 @@ var (
 		"Cache-Control":       true,
 	}
 )
-
-func ConfigureTransport(t *http.Transport) {
-	direct.ConfigureTransport(t)
-}

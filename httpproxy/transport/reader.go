@@ -1,4 +1,4 @@
-package fetchserver
+package transport
 
 import (
 	"io"
