@@ -19,7 +19,7 @@ var (
 	ErrLoopbackAddr = errors.New("dial to loopback addr")
 )
 
-type Dailer struct {
+type Dialer struct {
 	net.Dialer
 	DNSCache        lrucache.Cache
 	DNSCacheExpires time.Duration
@@ -27,7 +27,7 @@ type Dailer struct {
 	once            sync.Once
 }
 
-func (d *Dailer) Dial(network, address string) (conn net.Conn, err error) {
+func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	d.once.Do(func() {
 		d.LoopbackAddrs = make(map[string]struct{})
 	})
