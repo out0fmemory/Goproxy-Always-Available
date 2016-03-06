@@ -1,119 +1,100 @@
-package fetchserver
+package gae
 
 import (
-	"bufio"
-	"bytes"
-	"compress/flate"
-	"encoding/binary"
 	"fmt"
-	"io"
-	"io/ioutil"
+	"math/rand"
 	"net/http"
-	"net/url"
+	"path"
 	"strings"
+	"sync"
+
+	"github.com/golang/glog"
 )
 
-type gaeserver struct {
-	URL       *url.URL
-	Password  string
-	SSLVerify bool
+type Tranport struct {
+	http.Transport
+	servers   []Server
+	muServers sync.Mutex
 }
 
-func (f *gaeserver) encodeRequest(req *http.Request) (*http.Request, error) {
-	var err error
-	var b bytes.Buffer
+func (t *Tranport) RoundTrip(req *http.Request) (*http.Response, error) {
+	i := 0
+	switch path.Ext(req.URL.Path) {
+	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
+		i = rand.Intn(len(t.servers))
+	case "":
+		name := path.Base(req.URL.Path)
+		if strings.Contains(name, "play") ||
+			strings.Contains(name, "video") {
+			i = rand.Intn(len(t.servers))
+		}
+	default:
+		if strings.Contains(req.URL.Host, "img.") ||
+			strings.Contains(req.URL.Host, "cache.") ||
+			strings.Contains(req.URL.Host, "video.") ||
+			strings.Contains(req.URL.Host, "static.") ||
+			strings.HasPrefix(req.URL.Host, "img") ||
+			strings.HasPrefix(req.URL.Path, "/static") ||
+			strings.HasPrefix(req.URL.Path, "/asset") ||
+			strings.Contains(req.URL.Path, "min.js") ||
+			strings.Contains(req.URL.Path, "static") ||
+			strings.Contains(req.URL.Path, "asset") ||
+			strings.Contains(req.URL.Path, "/cache/") {
+			i = rand.Intn(len(t.servers))
+		}
+	}
 
-	w, err := flate.NewWriter(&b, flate.BestCompression)
+	server := t.servers[i]
+
+	req1, err := server.encodeRequest(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("GAE encodeRequest: %s", err.Error())
 	}
 
-	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
-	req.Header.WriteSubset(w, reqWriteExcludeHeader)
-	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", f.Password)
-	w.Close()
-
-	b0 := make([]byte, 2)
-	binary.BigEndian.PutUint16(b0, uint16(b.Len()))
-
-	req1 := &http.Request{
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-		Method:     "POST",
-		URL:        f.URL,
-		Host:       f.URL.Host,
-		Header:     http.Header{},
-	}
-
-	if req.ContentLength > 0 {
-		req1.ContentLength = int64(len(b0)+b.Len()) + req.ContentLength
-		req1.Body = httpproxy.NewMultiReadCloser(bytes.NewReader(b0), &b, req.Body)
+	resp, err := t.Transport.RoundTrip(req1)
+	if err != nil || resp == nil {
+		glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
+		return resp, err
 	} else {
-		req1.ContentLength = int64(len(b0) + b.Len())
-		req1.Body = httpproxy.NewMultiReadCloser(bytes.NewReader(b0), &b)
+		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 
-	return req1, nil
-}
-
-func (f *gaeserver) decodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
-	if resp.StatusCode != 200 {
-		return resp, nil
-	}
-
-	var hdrLen uint16
-	if err = binary.Read(resp.Body, binary.BigEndian, &hdrLen); err != nil {
-		return
-	}
-
-	hdrBuf := make([]byte, hdrLen)
-	if _, err = io.ReadFull(resp.Body, hdrBuf); err != nil {
-		return
-	}
-
-	resp1, err = http.ReadResponse(bufio.NewReader(flate.NewReader(bytes.NewReader(hdrBuf))), resp.Request)
-	if err != nil {
-		return
-	}
-
-	const cookieKey string = "Set-Cookie"
-	if cookie := resp1.Header.Get(cookieKey); cookie != "" {
-		parts := strings.Split(cookie, ", ")
-
-		parts1 := make([]string, 0)
-		for i := 0; i < len(parts); i++ {
-			c := parts[i]
-			if i == 0 || strings.Contains(strings.Split(c, ";")[0], "=") {
-				parts1 = append(parts1, c)
-			} else {
-				parts1[len(parts1)-1] = parts1[len(parts1)-1] + ", " + c
-			}
-		}
-
-		resp1.Header.Del(cookieKey)
-		for i := 0; i < len(parts1); i++ {
-			resp1.Header.Add(cookieKey, parts1[i])
-		}
-	}
-
-	if resp1.StatusCode >= 400 {
-		switch {
-		case resp.Body == nil:
+	switch resp.StatusCode {
+	case 503:
+		if len(t.servers) == 1 {
 			break
-		case resp1.Body == nil:
-			resp1.Body = resp.Body
-		default:
-			b, _ := ioutil.ReadAll(resp1.Body)
-			if b != nil && len(b) > 0 {
-				resp1.Body = httpproxy.NewMultiReadCloser(bytes.NewReader(b), resp.Body)
-			} else {
-				resp1.Body = resp.Body
-			}
 		}
-	} else {
-		resp1.Body = resp.Body
+		glog.Warningf("%s over qouta, switch to next appid.", server.URL.String())
+		t.muServers.Lock()
+		if server == t.servers[0] {
+			for i := 0; i < len(t.servers)-1; i++ {
+				t.servers[i] = t.servers[i+1]
+			}
+			t.servers[len(t.servers)-1] = server
+		}
+		t.muServers.Unlock()
+		resp := &http.Response{
+			Status:     "302 Moved Temporarily",
+			StatusCode: 302,
+			Proto:      "HTTP/1.1",
+			ProtoMajor: 1,
+			ProtoMinor: 1,
+			Header: http.Header{
+				"Location": []string{req.URL.String()},
+			},
+			Request:       req,
+			Close:         false,
+			ContentLength: 0,
+		}
+		return resp, nil
+	default:
+		break
 	}
 
-	return
+	resp1, err := server.decodeResponse(resp)
+	if resp1 != nil {
+		resp1.Request = req
+	}
+
+	return resp1, err
 }
