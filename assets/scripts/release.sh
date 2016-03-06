@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ -z "$GITHUB_TOKEN" ]; then
+	GITHUB_TOKEN=`cat ~/GITHUB_TOKEN`
+fi
+export GITHUB_TOKEN=$GITHUB_TOKEN
+
 GOROOT=$HOME/go
 GOPATH=$HOME/gopath
 PATH=$PATH:$GOROOT/bin:$GOPATH/bin
@@ -33,8 +38,6 @@ GOOS=linux GOARCH=arm make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=linux GOARCH=arm64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=darwin GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
 GOOS=darwin GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-
-export GITHUB_TOKEN=`cat ~/GITHUB_TOKEN`
 
 github-release delete --user phuslu --repo goproxy --tag goproxy
 github-release release --user phuslu --repo goproxy --tag goproxy --name "goproxy r${REV}" --description "r${REV}: ${NOTE}"
