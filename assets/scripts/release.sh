@@ -30,14 +30,11 @@ REMOTE=`git remote -v | head -1 | awk '{print $2}'`
 # GOOS=linux GOARCH=amd64 make && mv build/dist/govps* ${DISTDIR}/ && make clean
 
 cd ${SOURCEDIR}
-GOOS=windows GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=windows GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=linux GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=linux GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=linux GOARCH=arm make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=linux GOARCH=arm64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=darwin GOARCH=amd64 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
-GOOS=darwin GOARCH=386 make && mv build/dist/goproxy* ${DISTDIR}/ && make clean
+for OSARCH in windows/amd64 windows/386 linux/amd64 linux/386 linux/arm darwin/amd64 darwin/386; do
+	GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/} make
+	mv build/dist/goproxy* ${DISTDIR}/
+	make clean
+done
 
 github-release delete --user phuslu --repo goproxy --tag goproxy
 github-release release --user phuslu --repo goproxy --tag goproxy --name "goproxy r${REV}" --description "r${REV}: ${NOTE}"
