@@ -1,7 +1,7 @@
 goproxy 正式版下载 [http://git.io/goproxy](https://github.com/phuslu/goproxy/releases)
 
 ## 讨论区
-* https://github.com/phuslu/goproxy/issues?q=sort%3aupdated-desc
+* https://github.com/phuslu/goproxy/issues?q=sort:updated-desc
 
 ## 文档
 * 简易教程 https://github.com/phuslu/goproxy/blob/wiki/SimpleGuide.md
@@ -13,3 +13,6 @@ goproxy 正式版下载 [http://git.io/goproxy](https://github.com/phuslu/goprox
 ## 代码
  * goproxy https://github.com/phuslu/goproxy
  * goagent.exe https://github.com/phuslu/taskbar
+
+## 许可证
+ * GPLv2 http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
