@@ -84,7 +84,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		if err != nil {
 			return nil, err
 		}
-		pem.Encode(outFile1, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
+		pem.Encode(outFile1, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
 		outFile1.Close()
 
 		outFile2, err := os.Create(certFile)
@@ -139,7 +139,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 					return nil, err
 				}
 				rootCA.ca = ca
-			} else if b.Type == "RSA PRIVATE KEY" {
+			} else if b.Type == "PRIVATE KEY" {
 				priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
 				if err != nil {
 					return nil, err
@@ -165,7 +165,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 					return nil, err
 				}
 				rootCA.ca = ca
-			} else if b.Type == "RSA PRIVATE KEY" {
+			} else if b.Type == "PRIVATE KEY" {
 				priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
 				if err != nil {
 					return nil, err
@@ -233,7 +233,7 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) e
 		return err
 	}
 	pem.Encode(outFile, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
-	pem.Encode(outFile, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+	pem.Encode(outFile, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 
 	return nil
 }
