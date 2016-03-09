@@ -11,7 +11,7 @@ import (
 )
 
 type Transport struct {
-	http.Transport
+	http.RoundTripper
 	servers []Server
 }
 
@@ -49,7 +49,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		return nil, fmt.Errorf("PHP encodeRequest: %s", err.Error())
 	}
 
-	res, err := t.Transport.RoundTrip(req1)
+	res, err := t.RoundTripper.RoundTrip(req1)
 	if err != nil {
 		return nil, err
 	} else {
