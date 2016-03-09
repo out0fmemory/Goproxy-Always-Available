@@ -64,16 +64,22 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	tr := &direct.Transport{
-		Dialer: &direct.Dialer{},
+		Transport: http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: false,
+				ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+			},
+			TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
+			MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
+			DisableCompression:  config.Transport.DisableCompression,
+		},
+		Dialer: direct.Dialer{
+			RetryTimes:      2,
+			RetryDelay:      50 * time.Millisecond,
+			DNSCacheExpires: 2 * time.Hour,
+			DNSCacheSize:    16 * 1024,
+		},
 	}
-
-	tr.TLSClientConfig = &tls.Config{
-		InsecureSkipVerify: false,
-		ClientSessionCache: tls.NewLRUClientSessionCache(1000),
-	}
-	tr.TLSHandshakeTimeout = time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second
-	tr.MaxIdleConnsPerHost = config.Transport.MaxIdleConnsPerHost
-	tr.DisableCompression = config.Transport.DisableCompression
 
 	return &Filter{
 		transport: tr,
