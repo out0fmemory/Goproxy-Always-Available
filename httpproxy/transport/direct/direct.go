@@ -7,9 +7,9 @@ import (
 
 type Transport struct {
 	http.Transport
-	dialer Dialer
+	Dialer *Dialer
 }
 
 func (t *Transport) Dial(network, address string) (conn net.Conn, err error) {
-	return t.dialer.Dial(network, address)
+	return t.Dialer.Dial(network, address)
 }

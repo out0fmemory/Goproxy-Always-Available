@@ -5,16 +5,15 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"net/http"
 	"time"
 
-	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
 	"../../../storage"
 	"../../filters"
+	"../../transport/direct"
 )
 
 const (
@@ -41,7 +40,7 @@ type Config struct {
 
 type Filter struct {
 	filters.RoundTripFilter
-	transport *http.Transport
+	transport *direct.Transport
 }
 
 func init() {
@@ -64,36 +63,20 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	d := &Dailer{}
-	d.Timeout = time.Duration(config.Dialer.Timeout) * time.Second
-	d.KeepAlive = time.Duration(config.Dialer.KeepAlive) * time.Second
-	d.DNSCache = lrucache.NewMultiLRUCache(4, uint(config.DNSCache.Size))
-	d.DNSCacheExpires = time.Duration(config.DNSCache.Expires) * time.Second
-	d.LoopbackAddrs = make(map[string]struct{})
-
-	// d.LoopbackAddrs["127.0.0.1"] = struct{}{}
-	d.LoopbackAddrs["::1"] = struct{}{}
-	if addrs, err := net.InterfaceAddrs(); err == nil {
-		for _, addr := range addrs {
-			switch addr.Network() {
-			case "ip":
-				d.LoopbackAddrs[addr.String()] = struct{}{}
-			}
-		}
+	tr := &direct.Transport{
+		Dialer: &direct.Dialer{},
 	}
-	// glog.V(2).Infof("add LoopbackAddrs=%v to direct filter", d.LoopbackAddrs)
+
+	tr.TLSClientConfig = &tls.Config{
+		InsecureSkipVerify: false,
+		ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+	}
+	tr.TLSHandshakeTimeout = time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second
+	tr.MaxIdleConnsPerHost = config.Transport.MaxIdleConnsPerHost
+	tr.DisableCompression = config.Transport.DisableCompression
 
 	return &Filter{
-		transport: &http.Transport{
-			Dial: d.Dial,
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: false,
-				ClientSessionCache: tls.NewLRUClientSessionCache(1000),
-			},
-			TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
-			MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
-			DisableCompression:  config.Transport.DisableCompression,
-		},
+		transport: tr,
 	}, nil
 }
 
@@ -141,11 +124,6 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		return ctx, nil, nil
 	default:
 		resp, err := f.transport.RoundTrip(req)
-		if err == ErrLoopbackAddr {
-			http.FileServer(http.Dir(".")).ServeHTTP(ctx.GetResponseWriter(), req)
-			ctx.SetHijacked(true)
-			return ctx, nil, nil
-		}
 
 		if err != nil {
 			glog.Errorf("%s \"DIRECT %s %s %s\" error: %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, err)
