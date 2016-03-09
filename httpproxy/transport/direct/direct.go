@@ -5,11 +5,11 @@ import (
 	"net/http"
 )
 
-type Tranport struct {
+type Transport struct {
 	http.Transport
 	dialer Dialer
 }
 
-func (t *Tranport) Dial(network, address string) (conn net.Conn, err error) {
+func (t *Transport) Dial(network, address string) (conn net.Conn, err error) {
 	return t.dialer.Dial(network, address)
 }

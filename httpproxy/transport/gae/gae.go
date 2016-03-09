@@ -11,13 +11,13 @@ import (
 	"github.com/golang/glog"
 )
 
-type Tranport struct {
+type Transport struct {
 	http.Transport
 	servers   []Server
 	muServers sync.Mutex
 }
 
-func (t *Tranport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	i := 0
 	switch path.Ext(req.URL.Path) {
 	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
