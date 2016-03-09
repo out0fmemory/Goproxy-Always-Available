@@ -1,7 +1,6 @@
 package direct
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -11,14 +10,18 @@ import (
 	"github.com/golang/glog"
 )
 
-var (
-	ErrLoopbackAddr = errors.New("dial to loopback addr")
+const (
+	DefaultRetryTimes      int           = 2
+	DefaultRetryDelay      time.Duration = 100 * time.Millisecond
+	DefaultDNSCacheExpires time.Duration = time.Hour
+	DefaultDNSCacheSize    uint          = 8 * 1024
 )
 
 type Dialer struct {
 	net.Dialer
 
 	RetryTimes      int
+	RetryDelay      time.Duration
 	DNSCacheExpires time.Duration
 	DNSCacheSize    uint
 
@@ -27,17 +30,20 @@ type Dialer struct {
 	once     sync.Once
 }
 
-func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
+func (d *Dialer) init() {
 	d.once.Do(func() {
 		if d.RetryTimes == 0 {
-			d.RetryTimes = 2
+			d.RetryTimes = DefaultRetryTimes
+		}
+		if d.RetryDelay == 0 {
+			d.RetryDelay = DefaultRetryDelay
 		}
 
 		if d.DNSCacheExpires == 0 {
-			d.DNSCacheExpires = time.Hour
+			d.DNSCacheExpires = DefaultDNSCacheExpires
 		}
 		if d.DNSCacheSize == 0 {
-			d.DNSCacheSize = 8 * 1024
+			d.DNSCacheSize = DefaultDNSCacheSize
 		}
 		d.dnsCache = lrucache.NewLRUCache(d.DNSCacheSize)
 
@@ -53,6 +59,11 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 			}
 		}
 	})
+}
+
+func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
+	d.init()
+
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if addr, ok := d.dnsCache.Get(address); ok {
@@ -81,7 +92,7 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 		if err == nil || i == d.RetryTimes-1 {
 			break
 		}
-		time.Sleep(100 * time.Millisecond)
+		time.Sleep(d.RetryDelay)
 	}
 	return conn, err
 }
