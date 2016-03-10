@@ -12,19 +12,19 @@ import (
 
 type Transport struct {
 	http.RoundTripper
-	servers []Server
+	Servers []Server
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	i := 0
 	switch path.Ext(req.URL.Path) {
 	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-		i = rand.Intn(len(t.servers))
+		i = rand.Intn(len(t.Servers))
 	case "":
 		name := path.Base(req.URL.Path)
 		if strings.Contains(name, "play") ||
 			strings.Contains(name, "video") {
-			i = rand.Intn(len(t.servers))
+			i = rand.Intn(len(t.Servers))
 		}
 	default:
 		if strings.Contains(req.URL.Host, "img.") ||
@@ -38,11 +38,11 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			strings.Contains(req.URL.Path, "static") ||
 			strings.Contains(req.URL.Path, "asset") ||
 			strings.Contains(req.URL.Path, "/cache/") {
-			i = rand.Intn(len(t.servers))
+			i = rand.Intn(len(t.Servers))
 		}
 	}
 
-	s := t.servers[i]
+	s := t.Servers[i]
 
 	req1, err := s.encodeRequest(req)
 	if err != nil {
