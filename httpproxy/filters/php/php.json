@@ -1,5 +1,5 @@
 {
-	"fetchservers": [
+	"servers": [
 		{
 			"url": "http://yourapp.com/",
 			"password": "123456",

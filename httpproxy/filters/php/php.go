@@ -1,18 +1,22 @@
 package php
 
 import (
-	"fmt"
+	"crypto/tls"
 	"math/rand"
+	"net"
 	"net/http"
 	"net/url"
 	"path"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
 	"../../../storage"
 	"../../filters"
+	"../../transport/direct"
+	"../../transport/php"
 )
 
 const (
@@ -20,7 +24,7 @@ const (
 )
 
 type Config struct {
-	FetchServers []struct {
+	Servers []struct {
 		URL       string
 		Password  string
 		SSLVerify bool
@@ -30,9 +34,8 @@ type Config struct {
 }
 
 type Filter struct {
-	FetchServers []*FetchServer
-	Transport    filters.RoundTripFilter
-	Sites        *httpproxy.HostMatcher
+	Transports []php.Transport
+	Sites      *httpproxy.HostMatcher
 }
 
 func init() {
@@ -55,36 +58,46 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	f1, err := filters.NewFilter(config.Transport)
-	if err != nil {
-		return nil, err
+	d := &direct.Dialer{
+		Dialer:          net.Dialer{},
+		RetryTimes:      2,
+		RetryDelay:      50 * time.Millisecond,
+		DNSCacheExpires: 2 * time.Hour,
+		DNSCacheSize:    16 * 1024,
 	}
 
-	f2, ok := f1.(filters.RoundTripFilter)
-	if !ok {
-		return nil, fmt.Errorf("%#v was not a filters.RoundTripFilter", f1)
+	tr := &http.Transport{
+		Dial: d.Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+		},
+		TLSHandshakeTimeout: 3 * time.Second,
+		MaxIdleConnsPerHost: 16,
 	}
 
-	fetchServers := make([]*FetchServer, 0)
-	for _, fs := range config.FetchServers {
+	transports := make([]php.Transport, 0)
+	for _, fs := range config.Servers {
 		u, err := url.Parse(fs.URL)
 		if err != nil {
 			return nil, err
 		}
 
-		fs := &FetchServer{
-			URL:       u,
-			Password:  fs.Password,
-			SSLVerify: fs.SSLVerify,
+		tr := php.Transport{
+			RoundTripper: tr,
+			Server: php.Server{
+				URL:       u,
+				Password:  fs.Password,
+				SSLVerify: fs.SSLVerify,
+			},
 		}
 
-		fetchServers = append(fetchServers, fs)
+		transports = append(transports, tr)
 	}
 
 	return &Filter{
-		FetchServers: fetchServers,
-		Transport:    f2,
-		Sites:        httpproxy.NewHostMatcher(config.Sites),
+		Transports: transports,
+		Sites:      httpproxy.NewHostMatcher(config.Sites),
 	}, nil
 }
 
@@ -100,12 +113,12 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	i := 0
 	switch path.Ext(req.URL.Path) {
 	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-		i = rand.Intn(len(f.FetchServers))
+		i = rand.Intn(len(f.Transports))
 	case "":
 		name := path.Base(req.URL.Path)
 		if strings.Contains(name, "play") ||
 			strings.Contains(name, "video") {
-			i = rand.Intn(len(f.FetchServers))
+			i = rand.Intn(len(f.Transports))
 		}
 	default:
 		if strings.Contains(req.URL.Host, "img.") ||
@@ -119,23 +132,17 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			strings.Contains(req.URL.Path, "static") ||
 			strings.Contains(req.URL.Path, "asset") ||
 			strings.Contains(req.URL.Path, "/cache/") {
-			i = rand.Intn(len(f.FetchServers))
+			i = rand.Intn(len(f.Transports))
 		}
 	}
 
-	fetchServer := f.FetchServers[i]
+	tr := f.Transports[i]
 
-	req1, err := fetchServer.encodeRequest(req)
-	if err != nil {
-		return ctx, nil, fmt.Errorf("PHP encodeRequest: %s", err.Error())
-	}
-
-	ctx, res, err := f.Transport.RoundTrip(ctx, req1)
+	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		return ctx, nil, err
 	} else {
-		glog.Infof("%s \"PHP %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, res.StatusCode, res.Header.Get("Content-Length"))
+		glog.Infof("%s \"PHP %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
-	resp, err := fetchServer.decodeResponse(res)
-	return ctx, resp, err
+	return ctx, resp, nil
 }
