@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"time"
 
@@ -40,7 +41,7 @@ type Config struct {
 
 type Filter struct {
 	filters.RoundTripFilter
-	transport *direct.Transport
+	transport *http.Transport
 }
 
 func init() {
@@ -63,22 +64,23 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	tr := &direct.Transport{
-		Transport: http.Transport{
-			TLSClientConfig: &tls.Config{
-				InsecureSkipVerify: false,
-				ClientSessionCache: tls.NewLRUClientSessionCache(1000),
-			},
-			TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
-			MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
-			DisableCompression:  config.Transport.DisableCompression,
+	d := &direct.Dialer{
+		Dialer:          net.Dialer{},
+		RetryTimes:      2,
+		RetryDelay:      50 * time.Millisecond,
+		DNSCacheExpires: 2 * time.Hour,
+		DNSCacheSize:    16 * 1024,
+	}
+
+	tr := &http.Transport{
+		Dial: d.Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
-		Dialer: direct.Dialer{
-			RetryTimes:      2,
-			RetryDelay:      50 * time.Millisecond,
-			DNSCacheExpires: 2 * time.Hour,
-			DNSCacheSize:    16 * 1024,
-		},
+		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
+		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
+		DisableCompression:  config.Transport.DisableCompression,
 	}
 
 	return &Filter{

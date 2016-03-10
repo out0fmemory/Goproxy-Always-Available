@@ -30,7 +30,7 @@ type Dialer struct {
 	once     sync.Once
 }
 
-func (d Dialer) init() {
+func (d *Dialer) init() {
 	d.once.Do(func() {
 		if d.RetryTimes == 0 {
 			d.RetryTimes = DefaultRetryTimes
@@ -61,8 +61,10 @@ func (d Dialer) init() {
 	})
 }
 
-func (d Dialer) Dial(network, address string) (conn net.Conn, err error) {
+func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	d.init()
+
+	glog.V(3).Infof("Dail(%#v, %#v)", network, address)
 
 	switch network {
 	case "tcp", "tcp4", "tcp6":
