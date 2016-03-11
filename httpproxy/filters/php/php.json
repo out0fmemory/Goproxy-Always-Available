@@ -9,5 +9,13 @@
 	"sites": [
 		"*"
 	],
-	"transport": "direct"
+	"transport": {
+		"Dialer" : {
+			"RetryTimes": 2,
+			"RetryDelay": 50,
+			"DNSCacheSize": 8192
+		},
+		"TLSHandshakeTimeout": 3000,
+		"MaxIdleConnsPerHost": 16
+	}
 }

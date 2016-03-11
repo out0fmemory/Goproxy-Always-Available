@@ -30,7 +30,15 @@ type Config struct {
 		SSLVerify bool
 	}
 	Sites     []string
-	Transport string
+	Transport struct {
+		Dialer struct {
+			RetryTimes   int
+			RetryDelay   int
+			DNSCacheSize int
+		}
+		TLSHandshakeTimeout int
+		MaxIdleConnsPerHost int
+	}
 }
 
 type Filter struct {
@@ -60,10 +68,10 @@ func init() {
 func NewFilter(config *Config) (filters.Filter, error) {
 	d := &direct.Dialer{
 		Dialer:          net.Dialer{},
-		RetryTimes:      2,
-		RetryDelay:      50 * time.Millisecond,
+		RetryTimes:      config.Transport.Dialer.RetryTimes,
+		RetryDelay:      time.Duration(config.Transport.Dialer.RetryDelay) * time.Millisecond,
 		DNSCacheExpires: 2 * time.Hour,
-		DNSCacheSize:    16 * 1024,
+		DNSCacheSize:    uint(config.Transport.Dialer.DNSCacheSize),
 	}
 
 	tr := &http.Transport{
@@ -72,8 +80,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			InsecureSkipVerify: false,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
-		TLSHandshakeTimeout: 3 * time.Second,
-		MaxIdleConnsPerHost: 16,
+		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Millisecond,
+		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
 	}
 
 	transports := make([]php.Transport, 0)
