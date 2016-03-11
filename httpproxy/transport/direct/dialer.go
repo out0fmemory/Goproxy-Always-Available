@@ -20,10 +20,11 @@ const (
 type Dialer struct {
 	net.Dialer
 
-	RetryTimes      int
-	RetryDelay      time.Duration
-	DNSCacheExpires time.Duration
-	DNSCacheSize    uint
+	RetryTimes           int
+	RetryDelay           time.Duration
+	DNSCacheExpires      time.Duration
+	DNSCacheSize         uint
+	DialConcurrentNumber int
 
 	dnsCache lrucache.Cache
 	loAddrs  map[string]struct{}
@@ -46,6 +47,10 @@ func (d *Dialer) init() {
 			d.DNSCacheSize = DefaultDNSCacheSize
 		}
 		d.dnsCache = lrucache.NewLRUCache(d.DNSCacheSize)
+
+		if d.DialConcurrentNumber == 0 {
+			d.DialConcurrentNumber = 1
+		}
 
 		d.loAddrs = make(map[string]struct{})
 		// d.LoopbackAddrs["127.0.0.1"] = struct{}{}
@@ -89,12 +94,54 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	default:
 		break
 	}
-	for i := 0; i < d.RetryTimes; i++ {
-		conn, err = d.Dialer.Dial(network, address)
-		if err == nil || i == d.RetryTimes-1 {
-			break
+
+	if d.DialConcurrentNumber <= 1 {
+		for i := 0; i < d.RetryTimes; i++ {
+			conn, err = d.Dialer.Dial(network, address)
+			if err == nil || i == d.RetryTimes-1 {
+				break
+			}
+			time.Sleep(d.RetryDelay)
 		}
-		time.Sleep(d.RetryDelay)
+		return conn, err
+	} else {
+		type racer struct {
+			c net.Conn
+			e error
+		}
+
+		lane := make(chan racer, d.DialConcurrentNumber)
+		retry := (d.RetryTimes + d.DialConcurrentNumber - 1) / d.DialConcurrentNumber
+		for i := 0; i < retry; i++ {
+			for j := 0; j < d.DialConcurrentNumber; j++ {
+				go func(addr string, c chan<- racer) {
+					conn, err := d.Dialer.Dial(network, addr)
+					lane <- racer{conn, err}
+				}(address, lane)
+			}
+
+			var r racer
+			for k := 0; k < d.DialConcurrentNumber; k++ {
+				r = <-lane
+				if r.e == nil {
+					go func(count int) {
+						var r1 racer
+						for ; count > 0; count-- {
+							r1 = <-lane
+							if r1.c != nil {
+								r1.c.Close()
+							}
+						}
+					}(d.DialConcurrentNumber - 1 - k)
+					return r.c, nil
+				}
+			}
+
+			if i == retry-1 {
+				return nil, r.e
+			}
+		}
 	}
-	return conn, err
+
+	return nil, net.UnknownNetworkError("Unkown transport/direct error")
 }
