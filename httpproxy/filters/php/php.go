@@ -67,11 +67,12 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	d := &direct.Dialer{
-		Dialer:          net.Dialer{},
-		RetryTimes:      config.Transport.Dialer.RetryTimes,
-		RetryDelay:      time.Duration(config.Transport.Dialer.RetryDelay) * time.Millisecond,
-		DNSCacheExpires: 2 * time.Hour,
-		DNSCacheSize:    uint(config.Transport.Dialer.DNSCacheSize),
+		Dialer:               net.Dialer{},
+		RetryTimes:           config.Transport.Dialer.RetryTimes,
+		RetryDelay:           time.Duration(config.Transport.Dialer.RetryDelay) * time.Millisecond,
+		DNSCacheExpires:      2 * time.Hour,
+		DNSCacheSize:         uint(config.Transport.Dialer.DNSCacheSize),
+		DialConcurrentNumber: 2,
 	}
 
 	tr := &http.Transport{
