@@ -1,5 +1,5 @@
 {
-	"sites": [
+	"Sites": [
 		"android.com",
 		"appspot.com",
 		"blogspot.com",
@@ -16,7 +16,7 @@
 		"gstatic.com",
 		"youtube.com"
 	],
-	"gfwlist": {
+	"GFWList": {
 		"url": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
 		"file": "gfwlist.txt",
 		"encoding": "base64",

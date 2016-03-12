@@ -1,15 +1,15 @@
 {
-	"servers": [
+	"Servers": [
 		{
-			"url": "http://yourapp.com/",
-			"password": "123456",
-			"sslverify": false
+			"Url": "http://yourapp.com/",
+			"Password": "123456",
+			"SSLVerify": false
 		}
 	],
-	"sites": [
+	"Sites": [
 		"*"
 	],
-	"transport": {
+	"Transport": {
 		"Dialer" : {
 			"RetryTimes": 2,
 			"RetryDelay": 50,

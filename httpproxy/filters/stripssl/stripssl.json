@@ -1,11 +1,11 @@
 {
-	"rootca": {
-		"name": "GoAgent",
-		"dirname": "certcache",
-		"duration": 31536000,
-		"rsaBits": 2048
+	"RootCA": {
+		"Name": "GoAgent",
+		"Dirname": "certcache",
+		"Duration": 31536000,
+		"RSABits": 2048
 	},
-	"sites": [
+	"Sites": [
 		"*"
 	]
 }

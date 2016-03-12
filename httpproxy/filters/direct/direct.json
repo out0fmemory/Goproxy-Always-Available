@@ -1,17 +1,17 @@
 {
-	"dialer": {
+	"Dialer": {
 		"Timeout": 10,
 		"KeepAlive": 180,
 		"DualStack": false
 	},
-	"transport": {
+	"Transport": {
 		"DisableKeepAlives": false,
 		"DisableCompression": false,
 		"TLSHandshakeTimeout": 8,
 		"MaxIdleConnsPerHost": 16
 	},
-	"dnscache": {
-		"size": 8192,
-		"expires": 900
+	"DnsCache": {
+		"Size": 8192,
+		"Expires": 900
 	}
 }

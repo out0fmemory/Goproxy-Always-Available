@@ -1,21 +1,21 @@
 {
-	"appids": [
+	"AppIDs": [
 		"goagenta"
 	],
-	"scheme": "https",
-	"domain": "appspot.com",
-	"path": "/_gh/",
-	"password": "",
-	"sslverify": false,
-	"transport": "iplist",
-	"sites": [
+	"Scheme": "https",
+	"Domain": "appspot.com",
+	"Path": "/_gh/",
+	"Password": "",
+	"SSLVerify": false,
+	"Transport": "iplist",
+	"Sites": [
 		"*"
 	],
-	"autorange": {
-		"threads": 3,
-		"maxsize": 1572864,
-		"bufsize": 8192,
-		"sites": [
+	"AutoRange": {
+		"Threads": 3,
+		"MaxSize": 1572864,
+		"BufSize": 8192,
+		"Sites": [
 			"*.atm.youku.com",
 			"*.c.docs.google.com",
 			"*.c.youtube.com",
@@ -37,7 +37,7 @@
 			"vs*.thisav.com",
 			"x*.last.fm"
 		],
-		"suffixs": [
+		"Suffixs": [
 			"*.avi",
 			"*.dmg",
 			"*.f4v",

@@ -1,26 +1,26 @@
 {
-	"logtostderr": true,
+	"LogToStderr": true,
 	"Addr": "127.0.0.1:8087",
-	"http": {
-		"ssl": false,
+	"Http": {
+		"Ssl": false,
 		"KeepAlivePeriod": 0,
 		"ReadTimeout": 600,
 		"WriteTimeout": 3600,
 		"Certificate": "goproxy.pem",
 		"PrivateKey": "goproxy.key"
 	},
-	"groupcache": {
+	"GroupCache": {
 		// "addr": "127.0.0.1:10080",
-		"peers": [
+		"Peers": [
 			"http://127.0.0.1:10080"
 		]
 	},
-	"filters": {
-		"request": [
+	"Filters": {
+		"Request": [
 			// "auth",
 			"stripssl"
 		],
-		"roundtrip": [
+		"RoundTrip": [
 			"autoproxy",
 			// "auth",
 			// "iplist",
@@ -29,7 +29,7 @@
 			// "gae",
 			"direct"
 		],
-		"response": [
+		"Response": [
 			// "ratelimit"
 		]
 	}

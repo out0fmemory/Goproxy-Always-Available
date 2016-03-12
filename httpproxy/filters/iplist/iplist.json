@@ -1,17 +1,17 @@
 {
-	"dialer": {
+	"Dialer": {
 		"Window": 6,
 		"Timeout": 8,
 		"KeepAlive": 180,
 		"DualStack": false
 	},
-	"transport": {
+	"Transport": {
 		"DisableKeepAlives": true,
 		"DisableCompression": false,
 		"TLSHandshakeTimeout": 8,
 		"MaxIdleConnsPerHost": -1
 	},
-	"hosts": {
+	"Hosts": {
 		"dl.google.com": "google_cn",
 		"talk.google.com": "google_talk",
 		"talk.l.google.com": "google_talk",
@@ -30,7 +30,7 @@
 		"*.googleusercontent.com": "google_hk",
 		"*.gstatic.com": "google_hk"
 	},
-	"iplist" : {
+	"IPList" : {
 		"google_talk": [
 			"talk.google.com",
 			"talk.l.google.com",
@@ -58,8 +58,8 @@
 			"www.google.com"
 		]
 	},
-	"dns": {
-		"servers": [
+	"DNS": {
+		"Servers": [
 			"114.114.114.114",
 			"114.114.115.115",
 			"168.95.1.1",
@@ -78,11 +78,11 @@
 			"8.8.4.4",
 			"8.8.8.8"
 		],
-		"blacklist": [
+		"BlackList": [
 			"183.207.229.*",
 			"183.207.239.*"
 		],
-		"expand": [
+		"Expand": [
 			// "google_hk"
 		]
 	}
