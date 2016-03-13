@@ -32,10 +32,16 @@ type Config struct {
 	Sites     []string
 	Transport struct {
 		Dialer struct {
-			RetryTimes   int
-			RetryDelay   int
-			DNSCacheSize int
+			Timeout         int
+			KeepAlive       int
+			DualStack       bool
+			RetryTimes      int
+			RetryDelay      float32
+			DNSCacheExpires int
+			DNSCacheSize    uint
 		}
+		DisableKeepAlives   bool
+		DisableCompression  bool
 		TLSHandshakeTimeout int
 		MaxIdleConnsPerHost int
 	}
@@ -67,11 +73,15 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	d := &direct.Dialer{
-		Dialer:               net.Dialer{},
+		Dialer: net.Dialer{
+			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
+			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
+			DualStack: config.Transport.Dialer.DualStack,
+		},
 		RetryTimes:           config.Transport.Dialer.RetryTimes,
-		RetryDelay:           time.Duration(config.Transport.Dialer.RetryDelay) * time.Millisecond,
-		DNSCacheExpires:      2 * time.Hour,
-		DNSCacheSize:         uint(config.Transport.Dialer.DNSCacheSize),
+		RetryDelay:           time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
+		DNSCacheExpires:      time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
+		DNSCacheSize:         config.Transport.Dialer.DNSCacheSize,
 		DialConcurrentNumber: 2,
 	}
 
@@ -81,7 +91,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			InsecureSkipVerify: false,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		},
-		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Millisecond,
+		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
 	}
 
