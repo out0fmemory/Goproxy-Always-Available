@@ -22,20 +22,20 @@ const (
 )
 
 type Config struct {
-	Dialer struct {
-		Timeout   int
-		KeepAlive int
-		DualStack bool
-	}
 	Transport struct {
+		Dialer struct {
+			Timeout         int
+			KeepAlive       int
+			DualStack       bool
+			RetryTimes      int
+			RetryDelay      float32
+			DNSCacheExpires int
+			DNSCacheSize    uint
+		}
 		DisableKeepAlives   bool
 		DisableCompression  bool
 		TLSHandshakeTimeout int
 		MaxIdleConnsPerHost int
-	}
-	DNSCache struct {
-		Size    int
-		Expires int
 	}
 }
 
@@ -65,11 +65,15 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	d := &direct.Dialer{
-		Dialer:          net.Dialer{},
-		RetryTimes:      2,
-		RetryDelay:      50 * time.Millisecond,
-		DNSCacheExpires: 2 * time.Hour,
-		DNSCacheSize:    16 * 1024,
+		Dialer: net.Dialer{
+			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
+			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
+			DualStack: config.Transport.Dialer.DualStack,
+		},
+		RetryTimes:      config.Transport.Dialer.RetryTimes,
+		RetryDelay:      time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
+		DNSCacheExpires: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
+		DNSCacheSize:    config.Transport.Dialer.DNSCacheSize,
 	}
 
 	tr := &http.Transport{
