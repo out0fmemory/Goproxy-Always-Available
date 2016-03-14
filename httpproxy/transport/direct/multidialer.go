@@ -22,18 +22,15 @@ type MultiDialer struct {
 	net.Dialer
 	TLSConfig            *tls.Config
 	DialConcurrentNumber int
-	Blacklist            map[string]struct{}
-	Matcher              *httpproxy.HostMatcher
-	HostMap              struct {
-		lists      map[string][]string
-		dnsservers []string
-		blacklist  *httpproxy.HostMatcher
-		dnsCache   lrucache.Cache
-		dualStack  bool
-	}
-	connTCPDuration    lrucache.Cache
-	connTLSDuration    lrucache.Cache
-	connExpireDuration time.Duration
+	SiteMatcher          *httpproxy.HostMatcher
+	HostMap              map[string][]string
+	DNSServers           []string
+	Blacklist            *httpproxy.HostMatcher
+	DNSCache             lrucache.Cache
+	DualStack            bool
+	connTCPDuration      lrucache.Cache
+	connTLSDuration      lrucache.Cache
+	connExpireDuration   time.Duration
 }
 
 func (d *MultiDialer) lookupHost(name string) (hosts []string, err error) {
@@ -44,10 +41,10 @@ func (d *MultiDialer) lookupHost(name string) (hosts []string, err error) {
 
 	hosts = make([]string, 0)
 	for _, h := range hs {
-		if !d.HostMap.dualStack && strings.Contains(h, ":") {
+		if !d.DualStack && strings.Contains(h, ":") {
 			continue
 		}
-		if !d.HostMap.blacklist.Match(h) {
+		if !d.Blacklist.Match(h) {
 			hosts = append(hosts, h)
 		}
 	}
@@ -81,7 +78,7 @@ func (d *MultiDialer) lookupHost2(name string, dnsserver string) (hosts []string
 }
 
 func (d *MultiDialer) Lookup(name string) (hosts []string, err error) {
-	list, ok := d.HostMap.lists[name]
+	list, ok := d.HostMap[name]
 	if !ok {
 		return nil, fmt.Errorf("iplist %#v not exists", name)
 	}
@@ -90,7 +87,7 @@ func (d *MultiDialer) Lookup(name string) (hosts []string, err error) {
 	expire := time.Now().Add(24 * time.Hour)
 	for _, addr := range list {
 		var hs []string
-		if hs0, ok := d.HostMap.dnsCache.Get(addr); ok {
+		if hs0, ok := d.DNSCache.Get(addr); ok {
 			hs = hs0.([]string)
 		} else {
 			hs, err = d.lookupHost(addr)
@@ -99,7 +96,7 @@ func (d *MultiDialer) Lookup(name string) (hosts []string, err error) {
 				continue
 			}
 			glog.V(2).Infof("Lookup(%#v) return %v", addr, hs)
-			d.HostMap.dnsCache.Set(addr, hs, expire)
+			d.DNSCache.Set(addr, hs, expire)
 		}
 		for _, h := range hs {
 			hostSet[h] = struct{}{}
@@ -119,7 +116,7 @@ func (d *MultiDialer) Lookup(name string) (hosts []string, err error) {
 }
 
 func (d *MultiDialer) ExpandList(name string) error {
-	list, ok := d.HostMap.lists[name]
+	list, ok := d.HostMap[name]
 	if !ok {
 		return fmt.Errorf("iplist %#v not exists", name)
 	}
@@ -131,7 +128,7 @@ func (d *MultiDialer) ExpandList(name string) error {
 		}
 
 		hostSet := make(map[string]struct{}, 0)
-		for _, ds := range d.HostMap.dnsservers {
+		for _, ds := range d.DNSServers {
 			hs, err := d.lookupHost2(addr, ds)
 			if err != nil {
 				glog.V(2).Infof("lookupHost2(%#v) error: %s", addr, err)
@@ -147,7 +144,7 @@ func (d *MultiDialer) ExpandList(name string) error {
 			continue
 		}
 
-		if hs, ok := d.HostMap.dnsCache.Get(addr); ok {
+		if hs, ok := d.DNSCache.Get(addr); ok {
 			hs1 := hs.([]string)
 			for _, h := range hs1 {
 				hostSet[h] = struct{}{}
@@ -159,7 +156,7 @@ func (d *MultiDialer) ExpandList(name string) error {
 			hosts = append(hosts, h)
 		}
 
-		d.HostMap.dnsCache.Set(addr, hosts, expire)
+		d.DNSCache.Set(addr, hosts, expire)
 	}
 
 	return nil
@@ -170,7 +167,7 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.Matcher.Lookup(host); ok {
+			if alias0, ok := d.SiteMatcher.Lookup(host); ok {
 				alias := alias0.(string)
 				if hosts, err := d.Lookup(alias); err == nil {
 					addrs := make([]string, len(hosts))
@@ -191,7 +188,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.Matcher.Lookup(host); ok {
+			if alias0, ok := d.SiteMatcher.Lookup(host); ok {
 				alias := alias0.(string)
 				if hosts, err := d.Lookup(alias); err == nil {
 					config := &tls.Config{
