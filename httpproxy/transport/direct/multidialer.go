@@ -21,7 +21,8 @@ import (
 type MultiDialer struct {
 	net.Dialer
 	TLSConfig       *tls.Config
-	SiteMatcher     *httpproxy.HostMatcher
+	Site2Alias      *httpproxy.HostMatcher
+	IPBlackList     *httpproxy.HostMatcher
 	HostMap         map[string][]string
 	DNSServers      []net.IP
 	DNSCache        lrucache.Cache
@@ -42,7 +43,9 @@ func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 		if !d.Dialer.DualStack && strings.Contains(h, ":") {
 			continue
 		}
-		addrs = append(addrs, h)
+		if !d.IPBlackList.Match(h) {
+			addrs = append(addrs, h)
+		}
 	}
 
 	return addrs, nil
@@ -163,7 +166,7 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.SiteMatcher.Lookup(host); ok {
+			if alias0, ok := d.Site2Alias.Lookup(host); ok {
 				alias := alias0.(string)
 				if hosts, err := d.LookupAlias(alias); err == nil {
 					addrs := make([]string, len(hosts))
@@ -184,7 +187,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.SiteMatcher.Lookup(host); ok {
+			if alias0, ok := d.Site2Alias.Lookup(host); ok {
 				alias := alias0.(string)
 				if hosts, err := d.LookupAlias(alias); err == nil {
 					config := &tls.Config{
