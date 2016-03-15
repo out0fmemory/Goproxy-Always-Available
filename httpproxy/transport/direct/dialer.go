@@ -20,11 +20,11 @@ const (
 type Dialer struct {
 	net.Dialer
 
-	RetryTimes           int
-	RetryDelay           time.Duration
-	DNSCacheExpires      time.Duration
-	DNSCacheSize         uint
-	DialConcurrentNumber int
+	RetryTimes      int
+	RetryDelay      time.Duration
+	DNSCacheExpires time.Duration
+	DNSCacheSize    uint
+	Level           int
 
 	dnsCache lrucache.Cache
 	loAddrs  map[string]struct{}
@@ -48,8 +48,8 @@ func (d *Dialer) init() {
 		}
 		d.dnsCache = lrucache.NewLRUCache(d.DNSCacheSize)
 
-		if d.DialConcurrentNumber == 0 {
-			d.DialConcurrentNumber = 1
+		if d.Level == 0 {
+			d.Level = 1
 		}
 
 		d.loAddrs = make(map[string]struct{})
@@ -95,7 +95,7 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 		break
 	}
 
-	if d.DialConcurrentNumber <= 1 {
+	if d.Level <= 1 {
 		for i := 0; i < d.RetryTimes; i++ {
 			conn, err = d.Dialer.Dial(network, address)
 			if err == nil || i == d.RetryTimes-1 {
@@ -110,10 +110,10 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 			e error
 		}
 
-		lane := make(chan racer, d.DialConcurrentNumber)
-		retry := (d.RetryTimes + d.DialConcurrentNumber - 1) / d.DialConcurrentNumber
+		lane := make(chan racer, d.Level)
+		retry := (d.RetryTimes + d.Level - 1) / d.Level
 		for i := 0; i < retry; i++ {
-			for j := 0; j < d.DialConcurrentNumber; j++ {
+			for j := 0; j < d.Level; j++ {
 				go func(addr string, c chan<- racer) {
 					conn, err := d.Dialer.Dial(network, addr)
 					lane <- racer{conn, err}
@@ -121,7 +121,7 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 			}
 
 			var r racer
-			for k := 0; k < d.DialConcurrentNumber; k++ {
+			for k := 0; k < d.Level; k++ {
 				r = <-lane
 				if r.e == nil {
 					go func(count int) {
@@ -132,7 +132,7 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 								r1.c.Close()
 							}
 						}
-					}(d.DialConcurrentNumber - 1 - k)
+					}(d.Level - 1 - k)
 					return r.c, nil
 				}
 			}

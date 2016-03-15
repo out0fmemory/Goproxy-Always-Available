@@ -78,11 +78,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		RetryTimes:           config.Transport.Dialer.RetryTimes,
-		RetryDelay:           time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
-		DNSCacheExpires:      time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
-		DNSCacheSize:         config.Transport.Dialer.DNSCacheSize,
-		DialConcurrentNumber: 2,
+		RetryTimes:      config.Transport.Dialer.RetryTimes,
+		RetryDelay:      time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
+		DNSCacheExpires: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
+		DNSCacheSize:    config.Transport.Dialer.DNSCacheSize,
+		Level:           2,
 	}
 
 	tr := &http.Transport{
