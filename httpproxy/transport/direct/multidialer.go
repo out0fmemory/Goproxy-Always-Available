@@ -31,24 +31,24 @@ type MultiDialer struct {
 	Level           int
 }
 
-func (d *MultiDialer) lookupHost(name string) (hosts []string, err error) {
+func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 	hs, err := net.LookupHost(name)
 	if err != nil {
 		return hs, err
 	}
 
-	hosts = make([]string, 0)
+	addrs = make([]string, 0)
 	for _, h := range hs {
 		if !d.Dialer.DualStack && strings.Contains(h, ":") {
 			continue
 		}
-		hosts = append(hosts, h)
+		addrs = append(addrs, h)
 	}
 
-	return hosts, nil
+	return addrs, nil
 }
 
-func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (hosts []string, err error) {
+func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string, err error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(name), dns.TypeA)
 
@@ -61,98 +61,98 @@ func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (hosts []string
 		return nil, errors.New("no Answer")
 	}
 
-	hosts = []string{}
+	addrs = []string{}
 
 	for _, rr := range r.Answer {
 		if a, ok := rr.(*dns.A); ok {
 			ip := a.A.String()
-			hosts = append(hosts, ip)
+			addrs = append(addrs, ip)
 		}
 	}
 
-	return hosts, nil
+	return addrs, nil
 }
 
-func (d *MultiDialer) Lookup(name string) (hosts []string, err error) {
-	list, ok := d.HostMap[name]
+func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
+	names, ok := d.HostMap[alias]
 	if !ok {
-		return nil, fmt.Errorf("iplist %#v not exists", name)
+		return nil, fmt.Errorf("alias %#v not exists", alias)
 	}
 
-	hostSet := make(map[string]struct{}, 0)
+	seen := make(map[string]struct{}, 0)
 	expire := time.Now().Add(24 * time.Hour)
-	for _, addr := range list {
-		var hs []string
-		if hs0, ok := d.DNSCache.Get(addr); ok {
-			hs = hs0.([]string)
+	for _, name := range names {
+		var addrs0 []string
+		if addrs1, ok := d.DNSCache.Get(name); ok {
+			addrs0 = addrs1.([]string)
 		} else {
-			hs, err = d.lookupHost(addr)
+			addrs0, err = d.LookupHost(name)
 			if err != nil {
-				glog.Warningf("lookupHost(%#v) error: %s", addr, err)
+				glog.Warningf("LookupHost(%#v) error: %s", name, err)
 				continue
 			}
-			glog.V(2).Infof("Lookup(%#v) return %v", addr, hs)
-			d.DNSCache.Set(addr, hs, expire)
+			glog.V(2).Infof("LookupHost(%#v) return %v", name, addrs0)
+			d.DNSCache.Set(name, addrs0, expire)
 		}
-		for _, h := range hs {
-			hostSet[h] = struct{}{}
+		for _, addr := range addrs0 {
+			seen[addr] = struct{}{}
 		}
 	}
 
-	if len(hostSet) == 0 {
+	if len(seen) == 0 {
 		return nil, err
 	}
 
-	hosts = make([]string, 0)
-	for h, _ := range hostSet {
-		hosts = append(hosts, h)
+	addrs = make([]string, 0)
+	for addr, _ := range seen {
+		addrs = append(addrs, addr)
 	}
 
-	return hosts, nil
+	return addrs, nil
 }
 
-func (d *MultiDialer) ExpandList(name string) error {
-	list, ok := d.HostMap[name]
+func (d *MultiDialer) ExpandAlias(alias string) error {
+	names, ok := d.HostMap[alias]
 	if !ok {
-		return fmt.Errorf("iplist %#v not exists", name)
+		return fmt.Errorf("alias %#v not exists", alias)
 	}
 
 	expire := time.Now().Add(24 * time.Hour)
-	for _, addr := range list {
-		if regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`).MatchString(addr) {
+	for _, name := range names {
+		if regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`).MatchString(name) {
 			continue
 		}
 
-		hostSet := make(map[string]struct{}, 0)
-		for _, ds := range d.DNSServers {
-			hs, err := d.lookupHost2(addr, ds)
+		seen := make(map[string]struct{}, 0)
+		for _, dnsserver := range d.DNSServers {
+			addrs, err := d.LookupHost2(name, dnsserver)
 			if err != nil {
-				glog.V(2).Infof("lookupHost2(%#v) error: %s", addr, err)
+				glog.V(2).Infof("LookupHost2(%#v) error: %s", name, err)
 				continue
 			}
-			glog.V(2).Infof("ExpandList(%#v) %#v return %v", addr, ds, hs)
-			for _, h := range hs {
-				hostSet[h] = struct{}{}
+			glog.V(2).Infof("ExpandList(%#v) %#v return %v", name, dnsserver, addrs)
+			for _, addr := range addrs {
+				seen[addr] = struct{}{}
 			}
 		}
 
-		if len(hostSet) == 0 {
+		if len(seen) == 0 {
 			continue
 		}
 
-		if hs, ok := d.DNSCache.Get(addr); ok {
-			hs1 := hs.([]string)
-			for _, h := range hs1 {
-				hostSet[h] = struct{}{}
+		if addrs, ok := d.DNSCache.Get(name); ok {
+			addrs1 := addrs.([]string)
+			for _, addr := range addrs1 {
+				seen[addr] = struct{}{}
 			}
 		}
 
-		hosts := make([]string, 0)
-		for h, _ := range hostSet {
-			hosts = append(hosts, h)
+		addrs := make([]string, 0)
+		for addr, _ := range seen {
+			addrs = append(addrs, addr)
 		}
 
-		d.DNSCache.Set(addr, hosts, expire)
+		d.DNSCache.Set(name, addrs, expire)
 	}
 
 	return nil
@@ -165,7 +165,7 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 		if host, port, err := net.SplitHostPort(address); err == nil {
 			if alias0, ok := d.SiteMatcher.Lookup(host); ok {
 				alias := alias0.(string)
-				if hosts, err := d.Lookup(alias); err == nil {
+				if hosts, err := d.LookupAlias(alias); err == nil {
 					addrs := make([]string, len(hosts))
 					for i, host := range hosts {
 						addrs[i] = net.JoinHostPort(host, port)
@@ -186,7 +186,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 		if host, port, err := net.SplitHostPort(address); err == nil {
 			if alias0, ok := d.SiteMatcher.Lookup(host); ok {
 				alias := alias0.(string)
-				if hosts, err := d.Lookup(alias); err == nil {
+				if hosts, err := d.LookupAlias(alias); err == nil {
 					config := &tls.Config{
 						InsecureSkipVerify: true,
 						ServerName:         address,
@@ -215,8 +215,8 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 
 func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error) {
 	type racer struct {
-		conn net.Conn
-		err  error
+		c net.Conn
+		e error
 	}
 
 	length := len(addrs)
@@ -244,26 +244,26 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 	var r racer
 	for i := 0; i < length; i++ {
 		r = <-lane
-		if r.err == nil {
+		if r.e == nil {
 			go func(count int) {
 				var r1 racer
 				for ; count > 0; count-- {
 					r1 = <-lane
-					if r1.conn != nil {
-						r1.conn.Close()
+					if r1.c != nil {
+						r1.c.Close()
 					}
 				}
 			}(length - 1 - i)
-			return r.conn, nil
+			return r.c, nil
 		}
 	}
-	return nil, r.err
+	return nil, r.e
 }
 
 func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.Config) (net.Conn, error) {
 	type racer struct {
-		conn net.Conn
-		err  error
+		c net.Conn
+		e error
 	}
 
 	length := len(addrs)
@@ -306,20 +306,20 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 	var r racer
 	for i := 0; i < length; i++ {
 		r = <-lane
-		if r.err == nil {
+		if r.e == nil {
 			go func(count int) {
 				var r1 racer
 				for ; count > 0; count-- {
 					r1 = <-lane
-					if r1.conn != nil {
-						r1.conn.Close()
+					if r1.c != nil {
+						r1.c.Close()
 					}
 				}
 			}(length - 1 - i)
-			return r.conn, nil
+			return r.c, nil
 		}
 	}
-	return nil, r.err
+	return nil, r.e
 }
 
 type racer struct {
