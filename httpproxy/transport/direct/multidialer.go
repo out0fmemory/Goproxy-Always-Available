@@ -20,17 +20,15 @@ import (
 
 type MultiDialer struct {
 	net.Dialer
-	TLSConfig            *tls.Config
-	DialConcurrentNumber int
-	SiteMatcher          *httpproxy.HostMatcher
-	HostMap              map[string][]string
-	DNSServers           []string
-	Blacklist            *httpproxy.HostMatcher
-	DNSCache             lrucache.Cache
-	DualStack            bool
-	connTCPDuration      lrucache.Cache
-	connTLSDuration      lrucache.Cache
-	connExpireDuration   time.Duration
+	TLSConfig       *tls.Config
+	SiteMatcher     *httpproxy.HostMatcher
+	HostMap         map[string][]string
+	DNSServers      []net.IP
+	DNSCache        lrucache.Cache
+	TCPConnDuration lrucache.Cache
+	TLSConnDuration lrucache.Cache
+	ConnExpires     time.Duration
+	Level           int
 }
 
 func (d *MultiDialer) lookupHost(name string) (hosts []string, err error) {
@@ -41,22 +39,20 @@ func (d *MultiDialer) lookupHost(name string) (hosts []string, err error) {
 
 	hosts = make([]string, 0)
 	for _, h := range hs {
-		if !d.DualStack && strings.Contains(h, ":") {
+		if !d.Dialer.DualStack && strings.Contains(h, ":") {
 			continue
 		}
-		if !d.Blacklist.Match(h) {
-			hosts = append(hosts, h)
-		}
+		hosts = append(hosts, h)
 	}
 
 	return hosts, nil
 }
 
-func (d *MultiDialer) lookupHost2(name string, dnsserver string) (hosts []string, err error) {
+func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (hosts []string, err error) {
 	m := &dns.Msg{}
 	m.SetQuestion(dns.Fqdn(name), dns.TypeA)
 
-	r, err := dns.Exchange(m, dnsserver+":53")
+	r, err := dns.Exchange(m, dnsserver.String()+":53")
 	if err != nil {
 		return nil, err
 	}
@@ -224,11 +220,11 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 	}
 
 	length := len(addrs)
-	if d.DialConcurrentNumber < length {
-		length = d.DialConcurrentNumber
+	if d.Level < length {
+		length = d.Level
 	}
 
-	addrs = pickupAddrs(addrs, length, d.connTCPDuration)
+	addrs = pickupAddrs(addrs, length, d.TCPConnDuration)
 	lane := make(chan racer, length)
 
 	for _, addr := range addrs {
@@ -237,9 +233,9 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 			conn, err := d.Dialer.Dial(network, addr)
 			end := time.Now()
 			if err == nil {
-				d.connTCPDuration.Set(addr, end.Sub(start), end.Add(d.connExpireDuration))
+				d.TCPConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpires))
 			} else {
-				d.connTCPDuration.Del(addr)
+				d.TCPConnDuration.Del(addr)
 			}
 			lane <- racer{conn, err}
 		}(addr, lane)
@@ -271,11 +267,11 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 	}
 
 	length := len(addrs)
-	if d.DialConcurrentNumber < length {
-		length = d.DialConcurrentNumber
+	if d.Level < length {
+		length = d.Level
 	}
 
-	addrs = pickupAddrs(addrs, length, d.connTLSDuration)
+	addrs = pickupAddrs(addrs, length, d.TLSConnDuration)
 	lane := make(chan racer, length)
 
 	for _, addr := range addrs {
@@ -298,9 +294,9 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 
 			end := time.Now()
 			if err == nil {
-				d.connTLSDuration.Set(addr, end.Sub(start), end.Add(d.connExpireDuration))
+				d.TLSConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpires))
 			} else {
-				d.connTLSDuration.Del(addr)
+				d.TLSConnDuration.Del(addr)
 			}
 
 			lane <- racer{tlsConn, err}
