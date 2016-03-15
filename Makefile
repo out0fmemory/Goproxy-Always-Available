@@ -76,4 +76,5 @@ $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 $(OBJECTDIR)/$(GOPROXY_EXE):
 	mkdir -p $(OBJECTDIR)
 	for GOPKG in $(shell gawk 'match($$1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/, a) {if (!seen[a[1]]++) print a[1]}' $(shell find . -name "*.go")); do go get -v $$GOPKG ; done
+	# gawk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/, a) {if (!seen[a[1]]++) print a[1]}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
 	go build -v -ldflags="-X main.version=$(RELEASE)" -o $@ .
