@@ -52,8 +52,10 @@ type Config struct {
 }
 
 type Filter struct {
-	Transport   *gae.Transport
-	SiteMatcher *httpproxy.HostMatcher
+	GAETransport      *gae.Transport
+	DirectTransport   *http.Transport
+	SiteMatcher       *httpproxy.HostMatcher
+	DirectSiteMatcher *httpproxy.HostMatcher
 }
 
 func init() {
@@ -123,11 +125,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	return &Filter{
-		Transport: &gae.Transport{
+		GAETransport: &gae.Transport{
 			RoundTripper: tr,
 			Servers:      servers,
 		},
-		SiteMatcher: httpproxy.NewHostMatcher(config.Sites),
+		DirectTransport:   tr,
+		SiteMatcher:       httpproxy.NewHostMatcher(config.Sites),
+		DirectSiteMatcher: httpproxy.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
 }
 
@@ -140,11 +144,20 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		return ctx, nil, nil
 	}
 
-	resp, err := f.Transport.RoundTrip(req)
+	var tr http.RoundTripper = f.GAETransport
+	prefix := "FETCH"
+
+	if f.DirectSiteMatcher.Match(req.Host) {
+		tr = f.DirectTransport
+		prefix = "DIRECT"
+	}
+
+	resp, err := tr.RoundTrip(req)
+
 	if err != nil {
 		return ctx, nil, err
 	} else {
-		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+		glog.Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 
 	return ctx, resp, nil

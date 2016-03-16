@@ -55,8 +55,6 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if err != nil || resp == nil {
 		glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
 		return resp, err
-	} else {
-		glog.Infof("%s \"GAE %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 
 	switch resp.StatusCode {
