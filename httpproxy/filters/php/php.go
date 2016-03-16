@@ -2,12 +2,9 @@ package php
 
 import (
 	"crypto/tls"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
 	"time"
 
 	"github.com/golang/glog"
@@ -48,8 +45,8 @@ type Config struct {
 }
 
 type Filter struct {
-	Transports []php.Transport
-	Sites      *httpproxy.HostMatcher
+	Transport *php.Transport
+	Sites     *httpproxy.HostMatcher
 }
 
 func init() {
@@ -95,28 +92,28 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
 	}
 
-	transports := make([]php.Transport, 0)
-	for _, fs := range config.Servers {
-		u, err := url.Parse(fs.URL)
+	servers := make([]php.Server, 0)
+	for _, s := range config.Servers {
+		u, err := url.Parse(s.URL)
 		if err != nil {
 			return nil, err
 		}
 
-		tr := php.Transport{
-			RoundTripper: tr,
-			Server: php.Server{
-				URL:       u,
-				Password:  fs.Password,
-				SSLVerify: fs.SSLVerify,
-			},
+		server := php.Server{
+			URL:       u,
+			Password:  s.Password,
+			SSLVerify: s.SSLVerify,
 		}
 
-		transports = append(transports, tr)
+		servers = append(servers, server)
 	}
 
 	return &Filter{
-		Transports: transports,
-		Sites:      httpproxy.NewHostMatcher(config.Sites),
+		Transport: &php.Transport{
+			RoundTripper: tr,
+			Servers:      servers,
+		},
+		Sites: httpproxy.NewHostMatcher(config.Sites),
 	}, nil
 }
 
@@ -129,35 +126,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		return ctx, nil, nil
 	}
 
-	i := 0
-	switch path.Ext(req.URL.Path) {
-	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-		i = rand.Intn(len(f.Transports))
-	case "":
-		name := path.Base(req.URL.Path)
-		if strings.Contains(name, "play") ||
-			strings.Contains(name, "video") {
-			i = rand.Intn(len(f.Transports))
-		}
-	default:
-		if strings.Contains(req.URL.Host, "img.") ||
-			strings.Contains(req.URL.Host, "cache.") ||
-			strings.Contains(req.URL.Host, "video.") ||
-			strings.Contains(req.URL.Host, "static.") ||
-			strings.HasPrefix(req.URL.Host, "img") ||
-			strings.HasPrefix(req.URL.Path, "/static") ||
-			strings.HasPrefix(req.URL.Path, "/asset") ||
-			strings.Contains(req.URL.Path, "min.js") ||
-			strings.Contains(req.URL.Path, "static") ||
-			strings.Contains(req.URL.Path, "asset") ||
-			strings.Contains(req.URL.Path, "/cache/") {
-			i = rand.Intn(len(f.Transports))
-		}
-	}
-
-	tr := f.Transports[i]
-
-	resp, err := tr.RoundTrip(req)
+	resp, err := f.Transport.RoundTrip(req)
 	if err != nil {
 		return ctx, nil, err
 	} else {
