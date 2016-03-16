@@ -82,14 +82,17 @@
 	],
 	"Transport": {
 		"Dialer": {
-			"Window": 6,
-			"Timeout": 8,
+			"Timeout": 10,
 			"KeepAlive": 180,
-			"DualStack": false
+			"DualStack": false,
+			"RetryTimes": 2,
+			"RetryDelay": 0.05,
+			"DNSCacheExpires": 3600,
+			"DNSCacheSize": 81920
 		},
-		"DisableKeepAlives": true,
+		"DisableKeepAlives": false,
 		"DisableCompression": false,
-		"TLSHandshakeTimeout": 8,
-		"MaxIdleConnsPerHost": -1
+		"TLSHandshakeTimeout": 4,
+		"MaxIdleConnsPerHost": 16
 	}
 }
