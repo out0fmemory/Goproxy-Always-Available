@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
@@ -84,11 +85,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		RetryTimes:      config.Transport.Dialer.RetryTimes,
-		RetryDelay:      time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
-		DNSCacheExpires: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
-		DNSCacheSize:    config.Transport.Dialer.DNSCacheSize,
-		Level:           2,
+		RetryTimes:     config.Transport.Dialer.RetryTimes,
+		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
+		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
+		LoopbackAddrs:  nil,
+		Level:          2,
 	}
 
 	tr := &http.Transport{

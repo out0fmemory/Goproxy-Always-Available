@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
 	"../../../httpproxy"
@@ -70,10 +71,23 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		RetryTimes:      config.Transport.Dialer.RetryTimes,
-		RetryDelay:      time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
-		DNSCacheExpires: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
-		DNSCacheSize:    config.Transport.Dialer.DNSCacheSize,
+		RetryTimes:     config.Transport.Dialer.RetryTimes,
+		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
+		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
+		LoopbackAddrs:  make(map[string]struct{}),
+	}
+
+	d.LoopbackAddrs = make(map[string]struct{})
+	d.LoopbackAddrs["127.0.0.1"] = struct{}{}
+	d.LoopbackAddrs["::1"] = struct{}{}
+	if addrs, err := net.InterfaceAddrs(); err == nil {
+		for _, addr := range addrs {
+			switch addr.Network() {
+			case "ip":
+				d.LoopbackAddrs[addr.String()] = struct{}{}
+			}
+		}
 	}
 
 	tr := &http.Transport{
