@@ -1,7 +1,6 @@
 package gae
 
 import (
-	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -37,17 +36,17 @@ type Config struct {
 	IPBlackList []string
 	Transport   struct {
 		Dialer struct {
-			Timeout         int
-			KeepAlive       int
-			DualStack       bool
-			RetryTimes      int
-			RetryDelay      float32
-			DNSCacheExpires int
-			DNSCacheSize    uint
+			Timeout        int
+			KeepAlive      int
+			DualStack      bool
+			RetryTimes     int
+			RetryDelay     float32
+			DNSCacheExpiry int
+			DNSCacheSize   uint
+			Level          int
 		}
 		DisableKeepAlives   bool
 		DisableCompression  bool
-		TLSHandshakeTimeout int
 		MaxIdleConnsPerHost int
 	}
 }
@@ -79,27 +78,35 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	d := &direct.Dialer{
+	dnsServers := make([]net.IP, 0)
+	for _, s := range config.DNSServers {
+		if ip := net.ParseIP(s); ip != nil {
+			dnsServers = append(dnsServers, ip)
+		}
+	}
+
+	d := &direct.MultiDialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		RetryTimes:     config.Transport.Dialer.RetryTimes,
-		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
-		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
-		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
-		LoopbackAddrs:  nil,
-		Level:          2,
+		TLSConfig:       nil,
+		Site2Alias:      httpproxy.NewHostMatcherWithString(config.Site2Alias),
+		IPBlackList:     httpproxy.NewHostMatcher(config.IPBlackList),
+		HostMap:         config.HostMap,
+		DNSServers:      dnsServers,
+		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+		DNSCacheExpiry:  time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
+		TCPConnDuration: lrucache.NewLRUCache(8192),
+		TLSConnDuration: lrucache.NewLRUCache(8192),
+		ConnExpiry:      5 * time.Minute,
+		Level:           config.Transport.Dialer.Level,
 	}
 
 	tr := &http.Transport{
-		Dial: d.Dial,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
-		},
-		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
+		Dial:                d.Dial,
+		DialTLS:             d.DialTLS,
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
 	}
 

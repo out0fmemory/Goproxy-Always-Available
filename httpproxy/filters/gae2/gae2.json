@@ -87,12 +87,12 @@
 			"DualStack": false,
 			"RetryTimes": 2,
 			"RetryDelay": 0.05,
-			"DNSCacheExpires": 3600,
-			"DNSCacheSize": 81920
+			"DNSCacheExpiry": 3600,
+			"DNSCacheSize": 81920,
+			"Level": 4
 		},
 		"DisableKeepAlives": false,
 		"DisableCompression": false,
-		"TLSHandshakeTimeout": 4,
 		"MaxIdleConnsPerHost": 16
 	}
 }
