@@ -25,7 +25,7 @@
 			// "auth",
 			// "vps",
 			"php",
-			// "gae2",
+			// "gae",
 			"direct"
 		],
 		"Response": [

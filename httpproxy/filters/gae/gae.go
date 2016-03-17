@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	filterName string = "gae2"
+	filterName string = "gae"
 )
 
 type Config struct {

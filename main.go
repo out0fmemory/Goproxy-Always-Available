@@ -25,7 +25,7 @@ import (
 	_ "./httpproxy/filters/auth"
 	_ "./httpproxy/filters/autoproxy"
 	_ "./httpproxy/filters/direct"
-	_ "./httpproxy/filters/gae2"
+	_ "./httpproxy/filters/gae"
 	_ "./httpproxy/filters/php"
 	_ "./httpproxy/filters/ratelimit"
 	_ "./httpproxy/filters/stripssl"
