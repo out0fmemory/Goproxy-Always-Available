@@ -26,9 +26,10 @@ type MultiDialer struct {
 	HostMap         map[string][]string
 	DNSServers      []net.IP
 	DNSCache        lrucache.Cache
+	DNSCacheExpiry  time.Duration
 	TCPConnDuration lrucache.Cache
 	TLSConnDuration lrucache.Cache
-	ConnExpires     time.Duration
+	ConnExpiry      time.Duration
 	Level           int
 }
 
@@ -83,7 +84,7 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	}
 
 	seen := make(map[string]struct{}, 0)
-	expire := time.Now().Add(24 * time.Hour)
+	expiry := time.Now().Add(d.DNSCacheExpiry)
 	for _, name := range names {
 		var addrs0 []string
 		if addrs1, ok := d.DNSCache.Get(name); ok {
@@ -95,7 +96,7 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 				continue
 			}
 			glog.V(2).Infof("LookupHost(%#v) return %v", name, addrs0)
-			d.DNSCache.Set(name, addrs0, expire)
+			d.DNSCache.Set(name, addrs0, expiry)
 		}
 		for _, addr := range addrs0 {
 			seen[addr] = struct{}{}
@@ -236,7 +237,7 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 			conn, err := d.Dialer.Dial(network, addr)
 			end := time.Now()
 			if err == nil {
-				d.TCPConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpires))
+				d.TCPConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
 			} else {
 				d.TCPConnDuration.Del(addr)
 			}
@@ -297,7 +298,7 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 
 			end := time.Now()
 			if err == nil {
-				d.TLSConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpires))
+				d.TLSConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
 			} else {
 				d.TLSConnDuration.Del(addr)
 			}

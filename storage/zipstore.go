@@ -26,7 +26,7 @@ func (o *zipObject) convertHeaderTime(name string) (time.Time, error) {
 	return time.Parse(DateFormat, value)
 }
 
-func (o *zipObject) Expires() (time.Time, error) {
+func (o *zipObject) Expiry() (time.Time, error) {
 	return time.Now().Add(1 * time.Hour), nil
 }
 

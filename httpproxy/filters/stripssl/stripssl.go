@@ -36,7 +36,7 @@ type Config struct {
 
 type Filter struct {
 	CA             *RootCA
-	CAExpires      time.Duration
+	CAExpiry       time.Duration
 	TLSConfigCache lrucache.Cache
 	SiteLists1     map[string]struct{}
 	SiteLists2     []string
@@ -77,7 +77,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 	f := &Filter{
 		CA:             ca,
-		CAExpires:      time.Duration(config.RootCA.Duration) * time.Second,
+		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
 		SiteLists1:     make(map[string]struct{}),
 		SiteLists2:     make([]string, 0),
@@ -181,14 +181,14 @@ func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 	var config interface{}
 	var ok bool
 	if config, ok = f.TLSConfigCache.Get(name); !ok {
-		cert, err := f.CA.Issue(name, f.CAExpires, f.CA.RsaBits())
+		cert, err := f.CA.Issue(name, f.CAExpiry, f.CA.RsaBits())
 		if err != nil {
 			return nil, err
 		}
 		config = &tls.Config{
 			Certificates: []tls.Certificate{*cert},
 		}
-		f.TLSConfigCache.Set(name, config, time.Now().Add(f.CAExpires))
+		f.TLSConfigCache.Set(name, config, time.Now().Add(f.CAExpiry))
 	}
 	return config.(*tls.Config), nil
 }

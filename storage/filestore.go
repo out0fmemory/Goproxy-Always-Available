@@ -31,7 +31,7 @@ func (o *fileObject) convertHeaderTime(name string) (time.Time, error) {
 	return time.Parse(DateFormat, value)
 }
 
-func (o *fileObject) Expires() (time.Time, error) {
+func (o *fileObject) Expiry() (time.Time, error) {
 	return time.Now().Add(1 * time.Hour), nil
 }
 

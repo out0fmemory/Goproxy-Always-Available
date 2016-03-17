@@ -25,13 +25,13 @@ const (
 type Config struct {
 	Transport struct {
 		Dialer struct {
-			Timeout         int
-			KeepAlive       int
-			DualStack       bool
-			RetryTimes      int
-			RetryDelay      float32
-			DNSCacheExpires int
-			DNSCacheSize    uint
+			Timeout        int
+			KeepAlive      int
+			DualStack      bool
+			RetryTimes     int
+			RetryDelay     float32
+			DNSCacheExpiry int
+			DNSCacheSize   uint
 		}
 		DisableKeepAlives   bool
 		DisableCompression  bool
@@ -74,7 +74,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		RetryTimes:     config.Transport.Dialer.RetryTimes,
 		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
 		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
-		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpires) * time.Second,
+		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
 		LoopbackAddrs:  make(map[string]struct{}),
 	}
 

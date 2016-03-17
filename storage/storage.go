@@ -22,14 +22,14 @@ const (
 var (
 	ErrNotImplemented error = errors.New("Not Implemented")
 	ErrNotExists      error = errors.New("Not Exists")
-	ErrNoExpires      error = errors.New("No Expires Field")
+	ErrNoExpiry       error = errors.New("No Expiry Field")
 	ErrNoLastModified error = errors.New("No LastModified Field")
 )
 
 type Object interface {
 	LastModified() (time.Time, error)
 	ETag() string
-	Expires() (time.Time, error)
+	Expiry() (time.Time, error)
 	ContentMD5() string
 	ContentLength() int64
 	ContentType() string
