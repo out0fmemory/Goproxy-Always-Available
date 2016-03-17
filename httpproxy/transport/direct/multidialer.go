@@ -163,7 +163,7 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 }
 
 func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
-	glog.V(2).Infof("Dail(%#v, %#v)...", network, address)
+	glog.V(3).Infof("Dail(%#v, %#v)...", network, address)
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
@@ -185,6 +185,7 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 }
 
 func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
+	glog.V(3).Infof("DialTLS(%#v, %#v)...", network, address)
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
