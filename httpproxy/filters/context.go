@@ -135,7 +135,7 @@ func (c *Context) GetRoundTripFilter() RoundTripFilter {
 	return c.filter
 }
 
-func (c *Context) SetHijacked(hijacked bool) {
+func (c *Context) Hijack(hijacked bool) {
 	c.hijacked = hijacked
 }
 

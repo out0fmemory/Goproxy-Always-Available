@@ -143,7 +143,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		go httpproxy.IoCopy(rconn, lconn)
 		httpproxy.IoCopy(lconn, rconn)
 
-		ctx.SetHijacked(true)
+		ctx.Hijack(true)
 		return ctx, nil, nil
 	case "PRI":
 		//TODO: fix for http2

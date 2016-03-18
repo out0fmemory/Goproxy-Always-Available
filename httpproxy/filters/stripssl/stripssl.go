@@ -155,7 +155,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 	if ln1, ok := ctx.GetListener().(httpproxy.Listener); ok {
 		ln1.Add(tlsConn)
-		ctx.SetHijacked(true)
+		ctx.Hijack(true)
 		return ctx, nil, nil
 	}
 
@@ -167,7 +167,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	go httpproxy.IoCopy(loConn, tlsConn)
 	go httpproxy.IoCopy(tlsConn, loConn)
 
-	ctx.SetHijacked(true)
+	ctx.Hijack(true)
 	return ctx, nil, nil
 }
 
