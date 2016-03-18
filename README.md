@@ -1,4 +1,4 @@
-goproxy 正式版下载 [http://git.io/goproxy](https://github.com/phuslu/goproxy/releases)
+goproxy 正式版下载 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases)
 
 ## 讨论区
 * https://github.com/phuslu/goproxy/issues?q=sort:updated-desc
