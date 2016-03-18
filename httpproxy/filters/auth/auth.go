@@ -92,7 +92,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 	}
 
-	if auth, err := ctx.GetString(authHeader); err == nil {
+	if auth, ok := ctx.GetString(authHeader); ok {
 		if _, ok := f.ByPassHeaders.Get(auth); ok {
 			glog.V(3).Infof("auth filter hit bypass cache %#v", auth)
 			return ctx, nil, nil

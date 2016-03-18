@@ -1,7 +1,6 @@
 package filters
 
 import (
-	"fmt"
 	"net"
 	"net/http"
 	"strings"
@@ -66,52 +65,52 @@ func (c *Context) set(name string, value interface{}) {
 	c.values[name] = value
 }
 
-func (c *Context) GetString(name string) (string, error) {
+func (c *Context) GetString(name string) (string, bool) {
 	v, ok := c.values[name]
 	if !ok {
-		return "", fmt.Errorf("Context(%#v) cannot GetString(%#v)", c, name)
+		return "", false
 	}
 	s, ok := v.(string)
 	if !ok {
-		return "", fmt.Errorf("Context(%#v) cannot convert %#v to string", c, v)
+		return "", false
 	}
-	return s, nil
+	return s, true
 }
 
-func (c *Context) GetBool(name string) (bool, error) {
+func (c *Context) GetBool(name string) (bool, bool) {
 	v, ok := c.values[name]
 	if !ok {
-		return false, fmt.Errorf("Context(%#v) cannot GetInt(%#v)", c, name)
+		return false, false
 	}
 	s, ok := v.(bool)
 	if !ok {
-		return false, fmt.Errorf("Context(%#v) cannot convert %#v to bool", c, v)
+		return false, false
 	}
-	return s, nil
+	return s, true
 }
 
-func (c *Context) GetInt(name string) (int, error) {
+func (c *Context) GetInt(name string) (int, bool) {
 	v, ok := c.values[name]
 	if !ok {
-		return 0, fmt.Errorf("Context(%#v) cannot GetInt(%#v)", c, name)
+		return 0, false
 	}
 	s, ok := v.(int)
 	if !ok {
-		return 0, fmt.Errorf("Context(%#v) cannot convert %#v to int", c, v)
+		return 0, false
 	}
-	return s, nil
+	return s, true
 }
 
-func (c *Context) GetStringMap(name string) (map[string]string, error) {
+func (c *Context) GetStringMap(name string) (map[string]string, bool) {
 	v, ok := c.values[name]
 	if !ok {
-		return nil, fmt.Errorf("Context(%#v) cannot GetStringMap(%#v)", c, name)
+		return nil, false
 	}
 	s, ok := v.(map[string]string)
 	if !ok {
-		return nil, fmt.Errorf("Context(%#v) cannot convert %#v to map[string]string", c, v)
+		return nil, false
 	}
-	return s, nil
+	return s, true
 }
 
 func (c *Context) GetListener() net.Listener {
