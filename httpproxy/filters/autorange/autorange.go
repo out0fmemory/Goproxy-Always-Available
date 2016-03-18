@@ -63,16 +63,16 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.Context, *http.Response, error) {
 	if !f.SiteMatcher.Match(resp.Request.Host) {
-		return ctx, nil, nil
+		return ctx, resp, nil
 	}
 
 	if resp.StatusCode != http.StatusPartialContent {
-		return ctx, nil, nil
+		return ctx, resp, nil
 	}
 
 	f1 := ctx.GetRoundTripFilter()
 	if f1 == nil {
-		return ctx, nil, nil
+		return ctx, resp, nil
 	}
 
 	glog.V(2).Infof("AUTORANGE")
