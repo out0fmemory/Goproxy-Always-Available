@@ -24,6 +24,7 @@ import (
 
 	_ "./httpproxy/filters/auth"
 	_ "./httpproxy/filters/autoproxy"
+	_ "./httpproxy/filters/autorange"
 	_ "./httpproxy/filters/direct"
 	_ "./httpproxy/filters/gae"
 	_ "./httpproxy/filters/php"
