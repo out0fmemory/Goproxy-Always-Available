@@ -19,6 +19,7 @@ func (v VenderKey) String() string {
 type Context struct {
 	ln           net.Listener
 	rw           http.ResponseWriter
+	filter       RoundTripFilter
 	venderString string
 	venderValues map[VenderKey]string
 	values       map[string]interface{}
@@ -29,6 +30,7 @@ func NewContext(ln net.Listener, rw http.ResponseWriter, req *http.Request) *Con
 	var c Context
 	c.ln = ln
 	c.rw = rw
+	c.filter = nil
 	c.values = make(map[string]interface{})
 	c.venderString = req.Header.Get(VenderHeader)
 	c.venderValues = make(map[VenderKey]string)
@@ -43,6 +45,10 @@ func NewContext(ln net.Listener, rw http.ResponseWriter, req *http.Request) *Con
 		}
 	}
 	return &c
+}
+
+func (c *Context) SetRoundTripFilter(filter RoundTripFilter) {
+	c.filter = filter
 }
 
 func (c *Context) SetString(name string, value string) {
@@ -123,6 +129,10 @@ func (c *Context) GetResponseWriter() http.ResponseWriter {
 
 func (c *Context) GetVenderString() string {
 	return c.venderString
+}
+
+func (c *Context) GetRoundTripFilter() RoundTripFilter {
+	return c.filter
 }
 
 func (c *Context) SetHijacked(hijacked bool) {
