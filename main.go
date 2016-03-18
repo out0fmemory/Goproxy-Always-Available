@@ -110,7 +110,7 @@ func main() {
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
 GoProxy Version    : %s (go/%s %s/%s)
 Listen Address     : %s
-RoundTrip Filters  : %v
+Enabled Filters    : %v
 Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
 `, version, runtime.Version(), runtime.GOOS, runtime.GOARCH,
