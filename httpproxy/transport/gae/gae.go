@@ -29,7 +29,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			i = rand.Intn(len(t.Servers))
 		}
 	default:
-		if strings.Contains(req.URL.Host, "img.") ||
+		if req.Header.Get("Range") != "" ||
+			strings.Contains(req.URL.Host, "img.") ||
 			strings.Contains(req.URL.Host, "cache.") ||
 			strings.Contains(req.URL.Host, "video.") ||
 			strings.Contains(req.URL.Host, "static.") ||
