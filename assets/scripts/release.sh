@@ -12,23 +12,14 @@ SOURCEDIR=$HOME/goproxy
 DISTDIR=${SOURCEDIR}/dist
 
 cd ${SOURCEDIR}
-git clean -df
-git reset --hard
-mkdir -p ${DISTDIR}
-
-git branch -D bak
-git checkout -b bak
-git branch -D master
 git fetch origin
-git checkout master
+git reset --hard origin/master
+git clean -dfx
 
 RELEASE=`git rev-list HEAD | wc -l | xargs`
 NOTE=`git log --oneline | head -1`
-REMOTE=`git remote -v | head -1 | awk '{print $2}'`
 
-# cd ${SOURCEDIR}/fetchserver/vps
-# GOOS=linux GOARCH=amd64 make && mv build/dist/govps* ${DISTDIR}/ && make clean
-
+mkdir -p ${DISTDIR}
 cd ${SOURCEDIR}
 for OSARCH in windows/amd64 windows/386 linux/amd64 linux/386 linux/arm darwin/amd64 darwin/386; do
 	GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/} make
