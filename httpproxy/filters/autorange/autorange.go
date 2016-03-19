@@ -2,7 +2,9 @@ package autorange
 
 import (
 	"fmt"
+	"io"
 	"net/http"
+	"path"
 	"strconv"
 	"strings"
 
@@ -11,6 +13,7 @@ import (
 	"../../../httpproxy"
 	"../../../storage"
 	"../../filters"
+	"../../transport"
 )
 
 const (
@@ -74,12 +77,11 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	}
 
 	if r := req.Header.Get("Range"); r == "" {
-		if f.SiteMatcher.Match(req.Host) {
+		switch {
+		case f.SiteMatcher.Match(req.Host):
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
 			glog.V(2).Infof("AUTORANGE Sites rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
-		}
-		parts := strings.Split(req.URL.Path, "/")
-		if f.PathMatcher.Match(parts[len(parts)-1]) {
+		case f.PathMatcher.Match(path.Base(req.URL.Path)):
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
 			glog.V(2).Infof("AUTORANGE Paths rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
 		}
@@ -101,11 +103,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 }
 
 func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.Context, *http.Response, error) {
-	if !f.SiteMatcher.Match(resp.Request.Host) {
-		return ctx, resp, nil
-	}
-
-	if resp.StatusCode != http.StatusPartialContent {
+	if resp.StatusCode != http.StatusPartialContent || resp.Header.Get("Content-Length") == "" {
 		return ctx, resp, nil
 	}
 
@@ -114,7 +112,16 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 		return ctx, resp, nil
 	}
 
-	glog.V(2).Infof("AUTORANGE")
+	glog.V(2).Infof("AUTORANGE respone matched, start rangefetch")
+
+	r, w := io.Pipe()
+
+	go func(w io.WriteCloser, req *http.Request, filter filters.RoundTripFilter) {
+		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req.URL.String(), filter.FilterName())
+		w.Close()
+	}(w, resp.Request, f1)
+
+	resp.Body = transport.NewMultiReadCloser(resp.Body, r)
 
 	return ctx, resp, nil
 }
