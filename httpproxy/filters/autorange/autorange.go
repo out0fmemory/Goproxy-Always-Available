@@ -112,14 +112,42 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 		return ctx, resp, nil
 	}
 
-	glog.V(2).Infof("AUTORANGE respone matched, start rangefetch")
+	parts := strings.Split(resp.Header.Get("Content-Range"), " ")
+	if len(parts) != 2 || parts[0] != "bytes" {
+		return ctx, resp, nil
+	}
+
+	parts1 := strings.Split(parts[1], "/")
+	parts2 := strings.Split(parts1[0], "-")
+	if len(parts1) != 2 || len(parts2) != 2 {
+		return ctx, resp, nil
+	}
+
+	var end, length int64
+	var err error
+
+	end, err = strconv.ParseInt(parts2[1], 10, 64)
+	if err != nil {
+		return ctx, resp, nil
+	}
+
+	length, err = strconv.ParseInt(parts1[1], 10, 64)
+	if err != nil {
+		return ctx, resp, nil
+	}
+
+	glog.V(2).Infof("AUTORANGE respone matched, start rangefetch for %#v", resp.Header.Get("Content-Range"))
+
+	resp.ContentLength = length
+	resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+	resp.Header.Del("Content-Range")
 
 	r, w := io.Pipe()
 
-	go func(w io.WriteCloser, req *http.Request, filter filters.RoundTripFilter) {
+	go func(w io.WriteCloser, filter filters.RoundTripFilter, req *http.Request, start, length int64) {
 		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req.URL.String(), filter.FilterName())
 		w.Close()
-	}(w, resp.Request, f1)
+	}(w, f1, resp.Request, end+1, length)
 
 	resp.Body = transport.NewMultiReadCloser(resp.Body, r)
 
