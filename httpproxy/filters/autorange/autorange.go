@@ -2,7 +2,6 @@ package autorange
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"path"
 	"strconv"
@@ -142,9 +141,9 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 	resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	resp.Header.Del("Content-Range")
 
-	r, w := io.Pipe()
+	r, w := httpproxy.IoPipe()
 
-	go func(w io.WriteCloser, filter filters.RoundTripFilter, req *http.Request, start, length int64) {
+	go func(w *httpproxy.PipeWriter, filter filters.RoundTripFilter, req *http.Request, start, length int64) {
 		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req.URL.String(), filter.FilterName())
 		w.Close()
 	}(w, f1, resp.Request, end+1, length)
