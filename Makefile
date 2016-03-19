@@ -57,6 +57,7 @@ endif
 
 .PHONY: build
 build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
+	ls -lht $<
 
 .PHONY: clean
 clean:
