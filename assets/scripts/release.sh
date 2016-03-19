@@ -22,7 +22,7 @@ git branch -D master
 git fetch origin
 git checkout master
 
-REV=`git rev-list HEAD | wc -l | xargs`
+RELEASE=`git rev-list HEAD | wc -l | xargs`
 NOTE=`git log --oneline | head -1`
 REMOTE=`git remote -v | head -1 | awk '{print $2}'`
 
@@ -37,7 +37,7 @@ for OSARCH in windows/amd64 windows/386 linux/amd64 linux/386 linux/arm darwin/a
 done
 
 github-release delete --user phuslu --repo goproxy --tag goproxy
-github-release release --user phuslu --repo goproxy --tag goproxy --name "goproxy r${REV}" --description "r${REV}: ${NOTE}"
+github-release release --user phuslu --repo goproxy --tag goproxy --name "goproxy r${RELEASE}" --description "r${RELEASE}: ${NOTE}"
 for f in `ls ${DISTDIR}`; do
     github-release -v upload --user phuslu --repo goproxy --tag goproxy --name $f --file ${DISTDIR}/$f
 done
