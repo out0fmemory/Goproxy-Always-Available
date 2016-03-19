@@ -21,7 +21,7 @@
 		"vs*.thisav.com",
 		"x*.last.fm"
 	],
-	"Suffixs": [
+	"Paths": [
 		"*.avi",
 		"*.dmg",
 		"*.f4v",

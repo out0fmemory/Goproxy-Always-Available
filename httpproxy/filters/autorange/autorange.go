@@ -1,7 +1,10 @@
 package autorange
 
 import (
+	"fmt"
 	"net/http"
+	"strconv"
+	"strings"
 
 	"github.com/golang/glog"
 
@@ -16,7 +19,7 @@ const (
 
 type Config struct {
 	Sites   []string
-	Suffixs []string
+	Paths   []string
 	MaxSize int
 	BufSize int
 	Threads int
@@ -24,6 +27,10 @@ type Config struct {
 
 type Filter struct {
 	SiteMatcher *httpproxy.HostMatcher
+	PathMatcher *httpproxy.HostMatcher
+	MaxSize     int
+	BufSize     int
+	Threads     int
 }
 
 func init() {
@@ -48,6 +55,10 @@ func init() {
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
 		SiteMatcher: httpproxy.NewHostMatcher(config.Sites),
+		PathMatcher: httpproxy.NewHostMatcher(config.Paths),
+		MaxSize:     config.MaxSize,
+		BufSize:     config.BufSize,
+		Threads:     config.Threads,
 	}
 
 	return f, nil
@@ -58,6 +69,34 @@ func (f *Filter) FilterName() string {
 }
 
 func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Request, error) {
+	if req.Method != http.MethodGet || strings.Contains(req.URL.RawQuery, "range=") {
+		return ctx, req, nil
+	}
+
+	if r := req.Header.Get("Range"); r == "" {
+		if f.SiteMatcher.Match(req.Host) {
+			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
+			glog.V(2).Infof("AUTORANGE Sites rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
+		}
+		parts := strings.Split(req.URL.Path, "/")
+		if f.PathMatcher.Match(parts[len(parts)-1]) {
+			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
+			glog.V(2).Infof("AUTORANGE Paths rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
+		}
+	} else {
+		parts := strings.Split(r, " ")
+		switch parts[0] {
+		case "bytes":
+			parts1 := strings.Split(parts[1], "-")
+			if start, err := strconv.Atoi(parts1[0]); err == nil {
+				req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, start+f.MaxSize))
+				glog.V(2).Infof("AUTORANGE Default rule matched, change %s to %s for\"%s\"", r, req.Header.Get("Range"), req.URL.String())
+			}
+		default:
+			glog.Warningf("AUTORANGE Default rule matched, but cannot support %#v range for \"%s\"", r, req.URL.String())
+		}
+	}
+
 	return ctx, req, nil
 }
 
