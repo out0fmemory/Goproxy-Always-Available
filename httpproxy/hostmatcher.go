@@ -6,13 +6,12 @@ import (
 )
 
 type HostMatcher struct {
-	all0       interface{}
-	list1_keys []string
-	list1_map  map[string]interface{}
-	list2_keys []string
-	list2_map  map[string]interface{}
-	list3_keys []string
-	list3_map  map[string]interface{}
+	starValue    interface{}
+	strictMap    map[string]interface{}
+	prefixList   []string
+	prefixMap    map[string]interface{}
+	wildcardList []string
+	wildcardMap  map[string]interface{}
 }
 
 func NewHostMatcher(hosts []string) *HostMatcher {
@@ -33,28 +32,26 @@ func NewHostMatcherWithString(hosts map[string]string) *HostMatcher {
 
 func NewHostMatcherWithValue(values map[string]interface{}) *HostMatcher {
 	hm := &HostMatcher{
-		all0:       nil,
-		list1_keys: make([]string, 0),
-		list1_map:  make(map[string]interface{}),
-		list2_keys: make([]string, 0),
-		list2_map:  make(map[string]interface{}),
-		list3_keys: make([]string, 0),
-		list3_map:  make(map[string]interface{}),
+		starValue:    nil,
+		strictMap:    make(map[string]interface{}),
+		prefixList:   make([]string, 0),
+		prefixMap:    make(map[string]interface{}),
+		wildcardList: make([]string, 0),
+		wildcardMap:  make(map[string]interface{}),
 	}
 
 	for key, value := range values {
 		switch {
 		case key == "*":
-			hm.all0 = value
+			hm.starValue = value
 		case !strings.Contains(key, "*"):
-			hm.list1_keys = append(hm.list1_keys, key)
-			hm.list1_map[key] = value
+			hm.strictMap[key] = value
 		case strings.HasPrefix(key, "*") && !strings.Contains(key[1:], "*"):
-			hm.list2_keys = append(hm.list2_keys, key[1:])
-			hm.list2_map[key[1:]] = value
+			hm.prefixList = append(hm.prefixList, key[1:])
+			hm.prefixMap[key[1:]] = value
 		default:
-			hm.list3_keys = append(hm.list3_keys, key)
-			hm.list3_map[key] = value
+			hm.wildcardList = append(hm.wildcardList, key)
+			hm.wildcardMap[key] = value
 		}
 	}
 
@@ -67,23 +64,23 @@ func (hm *HostMatcher) Match(host string) bool {
 }
 
 func (hm *HostMatcher) Lookup(host string) (interface{}, bool) {
-	if hm.all0 != nil {
-		return hm.all0, true
+	if hm.starValue != nil {
+		return hm.starValue, true
 	}
 
-	if value, ok := hm.list1_map[host]; ok {
+	if value, ok := hm.strictMap[host]; ok {
 		return value, true
 	}
 
-	for _, key := range hm.list2_keys {
+	for _, key := range hm.prefixList {
 		if strings.HasSuffix(host, key) {
-			return hm.list2_map[key], true
+			return hm.prefixMap[key], true
 		}
 	}
 
-	for _, key := range hm.list3_keys {
+	for _, key := range hm.wildcardList {
 		if matched, _ := path.Match(key, host); matched {
-			return hm.list3_map[key], true
+			return hm.wildcardMap[key], true
 		}
 	}
 
