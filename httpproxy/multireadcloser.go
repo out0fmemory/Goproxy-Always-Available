@@ -10,10 +10,10 @@ type multiReadCloser struct {
 }
 
 func NewMultiReadCloser(readers ...io.Reader) io.ReadCloser {
-	r := new(multiReadCloser)
-	r.readers = readers
-	r.multiReader = io.MultiReader(readers...)
-	return r
+	return &multiReadCloser{
+		readers:     readers,
+		multiReader: io.MultiReader(readers...),
+	}
 }
 
 func (r *multiReadCloser) Read(p []byte) (n int, err error) {
