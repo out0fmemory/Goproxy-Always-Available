@@ -6,6 +6,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/golang/glog"
 
@@ -143,8 +144,50 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 
 	r, w := httpproxy.IoPipe()
 
-	go func(w *httpproxy.PipeWriter, filter filters.RoundTripFilter, req *http.Request, start, length int64) {
-		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req.URL.String(), filter.FilterName())
+	go func(w *httpproxy.PipeWriter, filter filters.RoundTripFilter, req0 *http.Request, start, length int64) {
+		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req0.URL.String(), filter.FilterName())
+
+		req, err := http.NewRequest(req0.Method, req0.URL.String(), nil)
+		if err != nil {
+			glog.Warningf("AUTORANGE http.NewRequest(%#v) error: %#v", req, err)
+			return
+		}
+
+		for key, values := range req0.Header {
+			for _, value := range values {
+				req.Header.Add(key, value)
+			}
+		}
+
+		for start < length-1 {
+			//FIXME: make this configurable!
+			if w.Len() > 128*1024*1024 {
+				time.Sleep(100 * time.Millisecond)
+				continue
+			}
+
+			end := start + int64(f.BufSize)
+			if end > length-1 {
+				end = length - 1
+			}
+			req.Header.Set("Range", fmt.Sprintf("bytes %d-%d", start, end))
+
+			_, resp, err := filter.RoundTrip(nil, req)
+			if err != nil {
+				glog.Warningf("AUTORANGE %#v.RoundTrip(%v) error: %#v", filter, req, err)
+				time.Sleep(1 * time.Second)
+				continue
+			}
+
+			n, err := httpproxy.IoCopy(w, resp.Body)
+			if err != nil {
+				glog.Warningf("AUTORANGE httpproxy.IoCopy(%#v) error: %#v", resp.Body, err)
+			}
+			if n > 0 {
+				start += n
+			}
+		}
+
 		w.Close()
 	}(w, f1, resp.Request, end+1, length)
 
