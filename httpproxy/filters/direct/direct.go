@@ -33,6 +33,10 @@ type Config struct {
 			DNSCacheExpiry int
 			DNSCacheSize   uint
 		}
+		TLSClientConfig struct {
+			InsecureSkipVerify     bool
+			ClientSessionCacheSize int
+		}
 		DisableKeepAlives   bool
 		DisableCompression  bool
 		TLSHandshakeTimeout int
@@ -93,8 +97,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	tr := &http.Transport{
 		Dial: d.Dial,
 		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: false,
-			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+			InsecureSkipVerify: config.Transport.TLSClientConfig.InsecureSkipVerify,
+			ClientSessionCache: tls.NewLRUClientSessionCache(config.Transport.TLSClientConfig.ClientSessionCacheSize),
 		},
 		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,

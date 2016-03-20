@@ -9,6 +9,10 @@
 			"DNSCacheExpiry": 3600,
 			"DNSCacheSize": 81920
 		},
+		"TLSClientConfig": {
+			"InsecureSkipVerify": false,
+			"ClientSessionCacheSize": 1000
+		},
 		"DisableKeepAlives": false,
 		"DisableCompression": false,
 		"TLSHandshakeTimeout": 8,
