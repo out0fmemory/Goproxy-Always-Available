@@ -3,8 +3,8 @@ goproxy 正式版下载 [https://git.io/goproxy](https://github.com/phuslu/gopro
 ## 讨论区
 * https://github.com/phuslu/goproxy/issues?q=sort:updated-desc
 
-## 每次构建
-* https://github.com/phuslu/goproxy-releases/releases
+## 持续集成
+* https://github.com/phuslu/goproxy-ci/releases
 
 ## 文档
 * 简易教程 https://github.com/phuslu/goproxy/blob/wiki/SimpleGuide.md
