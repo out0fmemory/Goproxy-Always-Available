@@ -20,10 +20,12 @@ import (
 
 var (
 	defaultTLSConfigForGoogle *tls.Config = &tls.Config{
-		MinVersion: tls.VersionTLS12,
-		ServerName: "www.bing.com",
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
+		ServerName:         "www.bing.com",
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
 		},
 	}
 )
