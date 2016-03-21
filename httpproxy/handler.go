@@ -75,6 +75,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		// Unexcepted errors
 		if err != nil {
 			glog.Errorf("%s Filter RoundTrip %T(%v) error: %v", remoteAddr, f, f, err)
+			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
 		}
 		// A roundtrip filter give a response
