@@ -3,6 +3,7 @@ export GITHUB_PASS=${GITHUB_PASS}
 export GITHUB_TOKEN=${GITHUB_TOKEN}
 export GITHUB_REPO=${GITHUB_REPO}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO}
+export GITHUB_COMMIT_ID=${COMMIT_ID}
 export GOROOT=~/go
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz -C ~/
@@ -10,6 +11,7 @@ cat /etc/issue && uname -a && echo && go version && echo && go env && echo && en
 git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ~/${GITHUB_REPO}
 git clone --branch "master" https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ~/${GITHUB_CI_REPO}
 cd ~/${GITHUB_REPO}
+git checkout -qf ${GITHUB_COMMIT_ID}
 export RELEASE=`git rev-list HEAD|wc -l|xargs`
 export NOTE=`git log --oneline | head -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}'`
 mkdir ~/${GITHUB_CI_REPO}/r${RELEASE}
