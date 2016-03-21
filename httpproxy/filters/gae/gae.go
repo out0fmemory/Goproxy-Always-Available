@@ -156,7 +156,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	var tr http.RoundTripper = f.GAETransport
 	prefix := "FETCH"
 
-	if f.DirectSiteMatcher.Match(req.Host) {
+	if f.DirectSiteMatcher.Match(req.Host) && req.URL.Scheme != "http" {
 		tr = f.DirectTransport
 		prefix = "DIRECT"
 	}
