@@ -18,6 +18,16 @@ import (
 	"../../../httpproxy"
 )
 
+var (
+	defaultTLSConfigForGoogle *tls.Config = &tls.Config{
+		MinVersion: tls.VersionTLS12,
+		ServerName: "www.bing.com",
+		CipherSuites: []uint16{
+			tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+		},
+	}
+)
+
 type MultiDialer struct {
 	net.Dialer
 	TLSConfig       *tls.Config
@@ -200,8 +210,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 						strings.Contains(address, ".google") ||
 						strings.Contains(address, ".gstatic.com") ||
 						strings.Contains(address, ".ggpht.com") {
-						config.ServerName = "www.bing.com"
-						config.CipherSuites = []uint16{tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA}
+						config = defaultTLSConfigForGoogle
 					}
 
 					addrs := make([]string, len(hosts))
