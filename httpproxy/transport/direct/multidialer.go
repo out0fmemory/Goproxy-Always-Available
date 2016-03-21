@@ -18,16 +18,45 @@ import (
 	"../../../httpproxy"
 )
 
+// A list of strong cipher suite IDs that are not defined by the crypto/tls
+// package in the current stable version of Go. Values taken from
+// http://www.iana.org/assignments/tls-parameters/tls-parameters.xml
+//
+// Note that the reason they are not defined by the crypto/tls package is
+// because they are not (yet?) supported by Go. Defining them here allows us
+// to immediately start using them, should Go support them in the future.
+// or we can compile with https://github.com/phuslu/go
+const (
+	TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA       uint16 = 0x0016
+	TLS_DHE_RSA_WITH_AES_128_CBC_SHA        uint16 = 0x0033
+	TLS_DHE_RSA_WITH_AES_256_CBC_SHA        uint16 = 0x0039
+	TLS_RSA_WITH_AES_128_CBC_SHA256         uint16 = 0x003c
+	TLS_RSA_WITH_AES_256_CBC_SHA256         uint16 = 0x003d
+	TLS_DHE_RSA_WITH_AES_128_CBC_SHA256     uint16 = 0x0067
+	TLS_DHE_RSA_WITH_AES_256_CBC_SHA256     uint16 = 0x006b
+	TLS_RSA_WITH_AES_128_GCM_SHA256         uint16 = 0x009c
+	TLS_RSA_WITH_AES_256_GCM_SHA384         uint16 = 0x009d
+	TLS_DHE_RSA_WITH_AES_128_GCM_SHA256     uint16 = 0x009e
+	TLS_DHE_RSA_WITH_AES_256_GCM_SHA384     uint16 = 0x009f
+	TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA   uint16 = 0xc008
+	TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256 uint16 = 0xc023
+	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384 uint16 = 0xc024
+	TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256   uint16 = 0xc027
+	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384   uint16 = 0xc028
+	TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 uint16 = 0xc02c
+	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384   uint16 = 0xc030
+)
+
 var (
 	defaultTLSConfigForGoogle *tls.Config = &tls.Config{
 		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: true,
 		ServerName:         "www.bing.com",
 		CipherSuites: []uint16{
+			// TLS_RSA_WITH_AES_128_CBC_SHA256,
 			tls.TLS_RSA_WITH_AES_128_CBC_SHA,
 			tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
-			// tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-			// tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+			// TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256,
 		},
 	}
 )
