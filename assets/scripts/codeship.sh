@@ -4,9 +4,14 @@ export GITHUB_TOKEN=${GITHUB_TOKEN}
 export GITHUB_REPO=${GITHUB_REPO}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO}
 export GITHUB_COMMIT_ID=${COMMIT_ID}
+export GOROOT_BOOTSTRAP=~/go1.6
 export GOROOT=~/go
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz -C ~/
+mv ~/go ~/go1.6
+curl -L https://github.com/phuslu/go/archive/release-branch.go1.6.tar.gz | tar xz -C ~/
+mv ~/go-release-branch.go1.6 ~/go
+(cd ~/go/src/ && bash ./make.bash)
 cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env
 git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ~/${GITHUB_REPO}
 git clone --branch "master" https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ~/${GITHUB_CI_REPO}
