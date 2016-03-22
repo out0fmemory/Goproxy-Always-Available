@@ -218,6 +218,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 }
 
 func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error) {
+	glog.V(3).Infof("dialMulti(%v, %v)", network, addrs)
 	type racer struct {
 		c net.Conn
 		e error
@@ -265,6 +266,7 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 }
 
 func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.Config) (net.Conn, error) {
+	glog.V(3).Infof("dialMultiTLS(%v, %v, %#v)", network, addrs, config)
 	type racer struct {
 		c net.Conn
 		e error
