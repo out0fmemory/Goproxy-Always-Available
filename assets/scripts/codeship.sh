@@ -17,6 +17,7 @@ git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ~/$
 git clone --branch "master" https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ~/${GITHUB_CI_REPO}
 cd ~/${GITHUB_REPO}
 git checkout -qf ${GITHUB_COMMIT_ID}
+awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
 export RELEASE=`git rev-list HEAD|wc -l|xargs`
 export NOTE=`git log --oneline | head -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}'`
 mkdir ~/${GITHUB_CI_REPO}/r${RELEASE}
