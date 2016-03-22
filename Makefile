@@ -10,6 +10,12 @@ DISTDIR = $(BUILDDIR)/dist
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
+GOVENDOR ?= $(shell go env GOVENDOR)
+
+GOTAGS :=
+ifeq ($(GOVENDOR), github.com/phuslu/go)
+	GOTAGS += tlsex
+endif
 
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
@@ -76,6 +82,5 @@ $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
 	mkdir -p $(OBJECTDIR)
-	for GOPKG in $(shell awk 'match($$1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$$1]++) {gsub("\"", "", $$1); print $$1}}' $(shell find . -name "*.go")); do go get -v $$GOPKG ; done
 	# awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
-	go build -v -ldflags="-X main.version=$(RELEASE)" -o $@ .
+	go build -v -tags $(GOTAGS) -ldflags="-X main.version=$(RELEASE)" -o $@ .
