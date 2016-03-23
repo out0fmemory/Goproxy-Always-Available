@@ -21,19 +21,6 @@
 		"vs*.thisav.com",
 		"x*.last.fm"
 	],
-	"Paths": [
-		"*.avi",
-		"*.dmg",
-		"*.f4v",
-		"*.flv",
-		"*.hlv",
-		"*.iso",
-		"*.m4v",
-		"*.mp3",
-		"*.mp4",
-		"*.ogg",
-		"*play*"
-	],
 	"MaxSize": 1572864,
 	"BufSize": 8192,
 	"Threads": 3

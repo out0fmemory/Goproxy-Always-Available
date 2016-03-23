@@ -3,7 +3,6 @@ package autorange
 import (
 	"fmt"
 	"net/http"
-	"path"
 	"strconv"
 	"strings"
 	"time"
@@ -22,7 +21,6 @@ const (
 
 type Config struct {
 	Sites   []string
-	Paths   []string
 	MaxSize int
 	BufSize int
 	Threads int
@@ -30,7 +28,6 @@ type Config struct {
 
 type Filter struct {
 	SiteMatcher *httpproxy.HostMatcher
-	PathMatcher *httpproxy.HostMatcher
 	MaxSize     int
 	BufSize     int
 	Threads     int
@@ -58,7 +55,6 @@ func init() {
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
 		SiteMatcher: httpproxy.NewHostMatcher(config.Sites),
-		PathMatcher: httpproxy.NewHostMatcher(config.Paths),
 		MaxSize:     config.MaxSize,
 		BufSize:     config.BufSize,
 		Threads:     config.Threads,
@@ -81,9 +77,8 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		case f.SiteMatcher.Match(req.Host):
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
 			glog.V(2).Infof("AUTORANGE Sites rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
-		case f.PathMatcher.Match(path.Base(req.URL.Path)):
-			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
-			glog.V(2).Infof("AUTORANGE Paths rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
+		default:
+			glog.V(2).Infof("AUTORANGE ignore preserved range=%v", r)
 		}
 	} else {
 		parts := strings.Split(r, " ")
