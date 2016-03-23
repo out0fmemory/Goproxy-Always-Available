@@ -71,7 +71,8 @@ clean:
 
 .PHONY: release
 release:
-	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.lu sh /home/phuslu/goproxy/assets/scripts/release.sh
+	# make release GITHUB_TAG=r256
+	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.lu GITHUB_TAG=$(GITHUB_TAG) bash -s <assets/scripts/release.sh
 
 $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)
