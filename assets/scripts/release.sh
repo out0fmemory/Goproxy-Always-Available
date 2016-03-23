@@ -1,34 +1,45 @@
 #!/bin/bash
 
+set -x
+
+export GITHUB_USER=phuslu
+export GITHUB_REPO=goproxy
+export GITHUB_CI_REPO=goproxy-ci
+export GITHUB_TAG=${GITHUB_TAG}
+export GITHUB_TOKEN=${GITHUB_TOKEN}
+export GITHUB_CI_REPO_RELEASE_INFO_TXT=github-${GITHUB_USER}-${GITHUB_CI_REPO}-${GITHUB_TAG}-release-info.txt
 if [ -z "$GITHUB_TOKEN" ]; then
-	GITHUB_TOKEN=`cat ~/GITHUB_TOKEN`
+	export GITHUB_TOKEN=`cat ~/GITHUB_TOKEN`
+	if [ -z "$GITHUB_TOKEN" ]; then
+		echo Please set GITHUB_TOKEN envar
+		exit 1
+	fi
 fi
-export GITHUB_TOKEN=$GITHUB_TOKEN
+if [ -z "$GITHUB_TAG" ]; then
+	echo Please set GITHUB_TAG envar
+	exit 1
+fi
 
-GOROOT=$HOME/go
-GOPATH=$HOME/gopath
-PATH=$PATH:$GOROOT/bin:$GOPATH/bin
-SOURCEDIR=$HOME/goproxy
-DISTDIR=${SOURCEDIR}/dist
+export WORKING_DIR=`mktemp -d`
+pushd ${WORKING_DIR}
 
-cd ${SOURCEDIR}
-git fetch origin
-git reset --hard origin/master
-git clean -dfx
+curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjp -C .
+export PATH=${WORKING_DIR}/bin/linux/amd64:$PATH
 
-RELEASE=`git rev-list HEAD | wc -l | xargs`
-NOTE=`git log --oneline | head -1`
+github-release info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} -t ${GITHUB_TAG} > ${GITHUB_CI_REPO_RELEASE_INFO_TXT}
+export RELEASE_NAME=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "name: '\K.+?'," | sed 's/..$//'`
+export RELEASE_NOTE=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "description: '\K.+?'," | sed 's/..$//'`
+export RELEASE_FILES=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP 'goproxy_.+\.(7z|zip|gz|bz2|tar)'`
 
-mkdir -p ${DISTDIR}
-cd ${SOURCEDIR}
-for OSARCH in windows/amd64 windows/386 linux/amd64 linux/386 linux/arm darwin/amd64 darwin/386; do
-	GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/} make
-	mv build/dist/goproxy* ${DISTDIR}/
-	make clean
+for FILE in ${RELEASE_FILES}; do
+    github-release download --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag ${GITHUB_TAG} --name "$FILE"
 done
 
-github-release delete --user phuslu --repo goproxy --tag goproxy
-github-release release --user phuslu --repo goproxy --tag goproxy --name "goproxy r${RELEASE}" --description "r${RELEASE}: ${NOTE}"
-for f in `ls ${DISTDIR}`; do
-    github-release -v upload --user phuslu --repo goproxy --tag goproxy --name $f --file ${DISTDIR}/$f
+github-release delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO}
+github-release release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
+for FILE in ${RELEASE_FILES}; do
+    github-release upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "$(basename $FILE)" --file $FILE
 done
+
+popd
+rm -rf ${WORKING_DIR}
