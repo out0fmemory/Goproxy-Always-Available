@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: p2UeUdkEogr1j+4ghfNLhA
+! Checksum: hyLk/pGPV2LcqcRKYisJNg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 22 Feb 2016 09:36:38 +0800
+! Last Modified: Tue, 22 Mar 2016 12:05:39 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -203,6 +203,7 @@ china-mmm.jp.net
 ||youtube.com
 ||youtube-nocookie.com
 ||ytimg.com
+||zynamics.com
 
 !!---NaughtyAmerica---
 ||naughtyamerica.com
@@ -667,6 +668,7 @@ brucewang.net
 |http://btdigg.org
 .btku.me
 ||btku.me
+||btku.org
 .btspread.com
 .budaedu.org
 ||budaedu.org
@@ -905,6 +907,8 @@ chuizi.net
 ||christiantimes.org.hk
 .chrlawyers.hk
 |http://chrlawyers.hk
+.churchinhongkong.org/b5/index.php
+|http://churchinhongkong.org/b5/index.php
 .cipfg.org
 ||circlethebayfortibet.org
 |http://citizenlab.org
@@ -1278,6 +1282,8 @@ etvonline.hk
 eeas.europa.eu/delegations/china/press_corner/all_news/news/2015/20150716_zh
 eeas.europa.eu/statements-eeas/2015/151022
 eventful.com
+.evschool.net
+|http://evschool.net
 ||exblog.jp
 ||blog.exblog.co.jp
 @@||www.exblog.jp
@@ -1389,6 +1395,8 @@ feer.com
 ||feministteacher.com
 .fengzhenghu.com
 ||fengzhenghu.com
+.fengzhenghu.net
+||fengzhenghu.net
 |http://ff.im
 fflick.com
 fgmtv.net
@@ -1517,6 +1525,7 @@ friends-of-tibet.org
 freechina.net
 |http://www.zensur.freerk.com/
 freevpn.nl
+hk.frienddy.com/hk
 |http://adult.friendfinder.com/
 .fring.com
 ||fring.com
@@ -2074,6 +2083,7 @@ hkbc.net
 .hkbookcity.com
 ||hkbookcity.com
 .hkchurch.org
+.hkcmi.edu
 hkday.net
 .hkdailynews.com.hk/china.php
 hkdf.org
@@ -2254,7 +2264,10 @@ info-graf.fr
 .inmediahk.net
 ||inmediahk.net
 ||innermongolia.org
+|http://blog.inoreader.com
 .inote.tw
+.insecam.org
+|http://insecam.org
 .instagram.com
 ||instagram.com
 ||interfaceaddiction.com
@@ -2270,6 +2283,7 @@ ipalter.com
 ||ipcf.org.tw
 ||iphone4hongkong.com
 ||iphonehacks.com
+||iphonetaiwan.org
 ||iphonix.fr
 ||ipicture.ru
 !--ipobar.com
@@ -2278,8 +2292,6 @@ ipalter.com
 ||ippotv.com
 .ipredator.se
 ||ipredator.se
-|https://*.iptorrents.com
-|https://iptorrents.com
 ||ipvanish.com
 iredmail.org
 chinese.irib.ir
@@ -2782,6 +2794,7 @@ mymediarom.com/files/box
 ||mypopescu.com
 .my-private-network.co.uk
 ||my-private-network.co.uk
+myradio.hk/podcast
 mysinablog.com
 .myspace.com
 !--.blogs.myspace.com
@@ -2803,7 +2816,6 @@ nanyang.com
 ||jpl.nasa.gov
 ||pds.nasa.gov
 /^https?:\/\/[^\/]+line\.naver\.jp/
-||navicat.com
 .nakido.com
 ||nakido.com
 .naol.ca
@@ -2893,6 +2905,7 @@ nordvpn.com
 ||nordvpn.com
 ||novelasia.com
 |http://news.now.com/home*
+news.now.com%2Fhome
 ||nownews.com
 .nowtorrents.com
 .noypf.com
@@ -3076,6 +3089,7 @@ peacehall.com
 .pekingduck.org
 ||pekingduck.org
 .pemulihan.or.id
+|http://pemulihan.or.id
 ||pen.io
 penchinese.com
 ||penchinese.net
@@ -3083,6 +3097,8 @@ penchinese.com
 pengyulong.com
 ||blog.pentalogic.net
 .penthouse.com
+.pentoy.hk/%E4%B8%AD%E5%9C%8B
+.pentoy.hk/%E6%99%82%E4%BA%8B
 .peoplenews.tw
 ||peoplenews.tw
 .peopo.org
@@ -3234,6 +3250,8 @@ proxy.org
 ||proxypy.net
 proxyroad.com
 .proxytunnel.net
+!--403 maybe
+||proyectoclubes.com
 prozz.net
 psblog.name
 ||psblog.name
@@ -3241,6 +3259,7 @@ psblog.name
 .ptt.cc
 .puffstore.com
 ||pullfolio.com
+.punyu.com/puny
 ||pureconcepts.net
 ||pureinsight.org
 ||purepdf.com
@@ -3367,8 +3386,7 @@ riku.me/
 ||rlwlw.com
 .rmjdw.com
 .rmjdw132.info
-chinese.rnw.nl
-.rnw.nl
+|https://rnw*.global.ssl.fastly.net/
 .roadshow.hk
 robtex.com
 ||robustnessiskey.com
@@ -3420,7 +3438,6 @@ sacom.hk
 ||salvation.org.hk
 .samair.ru/proxy/type-01
 .sambhota.org
-||sankaizok.com
 .sanmin.com.tw
 sapikachu.net
 savemedia.com
@@ -3656,6 +3673,7 @@ spem.at
 .spike.com
 spinejs.com
 .spring4u.info
+|http://spring4u.info
 ||sproutcore.com
 ||sproxy.info
 squarespace.com
@@ -4019,6 +4037,7 @@ trendsmap.com
 ||tripod.com
 @@||www.tripod.com
 .trouw.nl
+|http://trouw.nl
 .trt.net.tr
 trtc.com.tw
 .truebuddha-md.org
@@ -4222,6 +4241,7 @@ twtrland.com
 twurl.nl
 .twyac.org
 ||twyac.org
+.txxx.com
 .tycool.com
 ||tycool.com
 ||tzangms.com
