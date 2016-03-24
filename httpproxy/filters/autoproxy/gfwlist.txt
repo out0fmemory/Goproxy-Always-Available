@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: hyLk/pGPV2LcqcRKYisJNg
+! Checksum: 1Ui7+t8PjvuyzBPccb0Thg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 22 Mar 2016 12:05:39 +0800
+! Last Modified: Thu, 24 Mar 2016 09:45:04 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -387,6 +387,7 @@ ameblo.jp
 www1.american.edu/ted/ice/tibet
 ||americangreencard.com
 ||amiblockedornot.com
+.amigobbs.net
 .amnesty.org
 ||amnesty.org
 .amnesty.tw
@@ -522,6 +523,7 @@ newsforums.bbc.co.uk
 .bbsdigest.com/thread
 ||bbsfeed.com
 bbsland.com
+.bbsmo.com
 .bbsone.com
 .bcc.com.tw/board
 .bcchinese.net
@@ -1270,6 +1272,7 @@ erabaru.net
 ||ernestmandel.org
 ||erodoujinworld.com
 .eslite.com/product
+.eslite.com/Search_BW.aspx?q
 wiki.esu.im/%E8%9B%A4%E8%9B%A4%E8%AF%AD%E5%BD%95
 .etaa.org.au
 etaiwannews.com
@@ -1325,7 +1328,7 @@ eyevio.jp
 .fakku.net
 falun-co.org
 falunart.org
-||falunasia.info
+|falunasia.info
 falundafa.org
 falundafa-dc.org
 ||falundafa-florida.org
@@ -1368,6 +1371,7 @@ fangeming.com
 en.favotter.net
 ||rnw.global.ssl.fastly.net
 
+||fastssh.com
 ||faststone.org
 favstar.fm
 ||favstar.fm
@@ -1397,6 +1401,7 @@ feer.com
 ||fengzhenghu.com
 .fengzhenghu.net
 ||fengzhenghu.net
+.fevernet.com
 |http://ff.im
 fflick.com
 fgmtv.net
@@ -1434,6 +1439,7 @@ fleshbot.com
 ||staticflickr.com
 
 flickrhivemind.net
+||flipkart.com
 yuming.flnet.org
 |http://cn.fmnnow.com
 fofldfradio.org
@@ -1691,8 +1697,10 @@ greatfirewall.biz
 ||greatfirewallofchina.net
 .greatfirewallofchina.org
 ||greatfirewallofchina.org
+||greenfieldbookstore.com.hk
 .greenparty.org.tw
 ||greenpeace.org
+.greenreadings.com/forum
 great-firewall.com
 great-roc.org
 greatroc.org
@@ -2084,6 +2092,7 @@ hkbc.net
 ||hkbookcity.com
 .hkchurch.org
 .hkcmi.edu
+||hkcoc.com
 hkday.net
 .hkdailynews.com.hk/china.php
 hkdf.org
@@ -2091,6 +2100,7 @@ hkdf.org
 .hkepc.com/forum/viewthread.php?tid=1153322
 global.hkepc.com*forum
 china.hket.com
+hkfreezone.com
 hkfront.org
 hkgolden.com
 .hkgreenradio.org/home
@@ -2182,8 +2192,9 @@ hxwq.org
 .i-cable.com
 .i-part.com.tw
 ||i1.hk
-||i2p2.de/
+||i2p2.de
 ||i2runner.com
+||i818hk.com
 iask.ca
 ||iask.ca
 iask.bz
@@ -2703,12 +2714,14 @@ mingjingnews.com
 .mingpao.com
 .mingpaocanada.com
 .mingpaomonthly.com
+|http://mingpaomonthly.com
 mingpaonews.com
 .mingpaony.com
 .mingpaosf.com
 .mingpaotor.com
 .mingpaovan.com
 .mingshengbao.com
+.miniforum.org
 .ministrybooks.org
 .minzhuhua.net
 ||minzhuhua.net
@@ -2806,6 +2819,7 @@ mysinablog.com
 ||naacoalition.org
 old.nabble.com
 ||naitik.net
+.nakuz.com/bbs
 ||namsisi.com
 nanyang.com
 ||nanyang.com
@@ -2877,6 +2891,7 @@ nexttv.com.tw
 ||nga.mil
 ngensis.com
 .nhentai.net
+|http://nhentai.net
 .nicovideo.jp/watch
 !--||nicovideo.jp
 ||nighost.org
@@ -3678,6 +3693,8 @@ spinejs.com
 ||sproxy.info
 squarespace.com
 ||ssh91.com
+.sspro.ml
+|http://sspro.ml
 !--|http://cdn.sstatic.net/
 www.stackfile.com/freedur
 |http://stackoverflow.com/users/895245
@@ -3726,13 +3743,14 @@ summify.com
 sun1911.com
 .sunporno.com
 ||sunporno.com
+.sunskyforum.com
 .sunvpn.net
 .suprememastertv.com
 |http://suprememastertv.com
 .surfeasy.com
 ||surfeasy.com
 .suyangg.com
-|http://suyangg.com/
+|http://suyangg.com
 .suoluo.org
 api.supertweet.net
 www.supertweet.net
@@ -3779,8 +3797,8 @@ tahr.org.tw
 ||taipeisociety.org
 .taiwanbible.com
 .taiwandaily.net
-||taiwantt.org.tw
 ||taiwandaily.net
+.taiwandc.org
 .taiwanjustice.com
 taiwankiss.com
 taiwannation.com
@@ -3789,6 +3807,7 @@ taiwannation.com.tw
 |http://www.taiwanonline.cc/
 ||taiwantoday.tw
 taiwantp.net
+||taiwantt.org.tw
 taiwanus.net
 taiwanyes.com
 taiwan-sex.com
@@ -3838,6 +3857,7 @@ tchrd.org
 teensinasia.com
 .telecomspace.com
 ||telegram.org
+.telegramdownload.com
 ||telegraph.co.uk
 .tenacy.com
 .tew.org
@@ -4074,7 +4094,8 @@ tuidang.net
 tuidang.org
 .tuidang.se
 bbs.tuitui.info
-||tumutanzi.com
+.tumutanzi.com
+|http://tumutanzi.com
 .tunein.com
 |http://tunein.com
 ||tunnelbear.com
@@ -4494,6 +4515,7 @@ washeng.net
 .wdf5.com
 .wearn.com
 ||wearn.com
+|http://hkcoc.weather.com.hk
 ||hudatoriq.web.id
 ||web2project.net
 webbang.net
