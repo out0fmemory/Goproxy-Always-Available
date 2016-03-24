@@ -156,9 +156,30 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	var tr http.RoundTripper = f.GAETransport
 	prefix := "FETCH"
 
-	if f.DirectSiteMatcher.Match(req.Host) && req.URL.Scheme != "http" {
-		tr = f.DirectTransport
-		prefix = "DIRECT"
+	if f.DirectSiteMatcher.Match(req.Host) {
+		if req.URL.Path == "/url" {
+			if u := req.URL.Query().Get("url"); u != "" {
+				glog.V(2).Infof("GAE REDIRECT get raw url=%v, redirect to %v", req.URL.String(), u)
+				return ctx, &http.Response{
+					Status:     "302 Found",
+					StatusCode: http.StatusFound,
+					Proto:      "HTTP/1.1",
+					ProtoMajor: 1,
+					ProtoMinor: 1,
+					Header: http.Header{
+						"Location": []string{u},
+					},
+					Request:       req,
+					Close:         true,
+					ContentLength: -1,
+				}, nil
+			}
+		}
+
+		if req.URL.Scheme != "http" {
+			tr = f.DirectTransport
+			prefix = "DIRECT"
+		}
 	}
 
 	resp, err := tr.RoundTrip(req)
