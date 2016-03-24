@@ -1,4 +1,4 @@
-// +build !tlsex
+// +build !phuslugo
 
 package direct
 
