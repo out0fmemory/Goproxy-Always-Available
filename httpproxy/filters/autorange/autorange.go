@@ -165,7 +165,7 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 			if end > length-1 {
 				end = length - 1
 			}
-			req.Header.Set("Range", fmt.Sprintf("bytes %d-%d", start, end))
+			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, end))
 
 			_, resp, err := filter.RoundTrip(nil, req)
 			if err != nil {
