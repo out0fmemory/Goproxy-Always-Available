@@ -15,13 +15,13 @@ GOVENDOR ?= $(shell go env GOVENDOR)
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
 	GOPROXY_STAGEDIR = $(STAGEDIR)
-	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9
+	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9 -m0=lzma -mfb=64 -md=32m -ms=on
 	GOPROXY_DISTEXT = .7z
 else ifeq ($(GOOS), darwin)
 	GOPROXY_EXE = $(PACKAGE)
 	GOPROXY_STAGEDIR = $(STAGEDIR)
-	GOPROXY_DISTCMD = zip -9 -r
-	GOPROXY_DISTEXT = .zip
+	GOPROXY_DISTCMD = BZIP=-9 tar cvjpf
+	GOPROXY_DISTEXT = .tar.bz2
 else
 	GOPROXY_EXE = $(PACKAGE)
 	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
