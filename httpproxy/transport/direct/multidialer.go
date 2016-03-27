@@ -106,11 +106,16 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 		if addrs1, ok := d.DNSCache.Get(name); ok {
 			addrs0 = addrs1.([]string)
 		} else {
-			addrs0, err = d.LookupHost2(name, d.DNSServers[0])
-			if err != nil {
-				glog.Warningf("LookupHost(%#v) error: %s", name, err)
-				continue
+			if regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`).MatchString(name) || strings.Contains(name, ":") {
+				addrs0 = []string{name}
+			} else {
+				addrs0, err = d.LookupHost2(name, d.DNSServers[0])
+				if err != nil {
+					glog.Warningf("LookupHost(%#v) error: %s", name, err)
+					continue
+				}
 			}
+
 			glog.V(2).Infof("LookupHost(%#v) return %v", name, addrs0)
 			d.DNSCache.Set(name, addrs0, expiry)
 		}
