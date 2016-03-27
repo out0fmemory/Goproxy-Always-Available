@@ -29,6 +29,7 @@ type Config struct {
 	Path        string
 	Password    string
 	SSLVerify   bool
+	IPv6Only    bool
 	Sites       []string
 	Site2Alias  map[string]string
 	HostMap     map[string][]string
@@ -91,6 +92,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
+		IPv6Only:        config.IPv6Only,
 		TLSConfig:       nil,
 		Site2Alias:      httpproxy.NewHostMatcherWithString(config.Site2Alias),
 		IPBlackList:     httpproxy.NewHostMatcher(config.IPBlackList),

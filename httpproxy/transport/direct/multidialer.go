@@ -20,6 +20,7 @@ import (
 
 type MultiDialer struct {
 	net.Dialer
+	IPv6Only        bool
 	TLSConfig       *tls.Config
 	Site2Alias      *httpproxy.HostMatcher
 	IPBlackList     *httpproxy.HostMatcher
@@ -41,10 +42,15 @@ func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 
 	addrs = make([]string, 0)
 	for _, h := range hs {
-		if !d.Dialer.DualStack && strings.Contains(h, ":") {
+		if d.IPBlackList.Match(h) {
 			continue
 		}
-		if !d.IPBlackList.Match(h) {
+
+		if strings.Contains(h, ":") {
+			if d.IPv6Only {
+				addrs = append(addrs, h)
+			}
+		} else {
 			addrs = append(addrs, h)
 		}
 	}
@@ -54,7 +60,12 @@ func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 
 func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string, err error) {
 	m := &dns.Msg{}
-	m.SetQuestion(dns.Fqdn(name), dns.TypeA)
+
+	if d.IPv6Only {
+		m.SetQuestion(dns.Fqdn(name), dns.TypeAAAA)
+	} else {
+		m.SetQuestion(dns.Fqdn(name), dns.TypeANY)
+	}
 
 	r, err := dns.Exchange(m, dnsserver.String()+":53")
 	if err != nil {
@@ -68,9 +79,14 @@ func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string
 	addrs = []string{}
 
 	for _, rr := range r.Answer {
-		if a, ok := rr.(*dns.A); ok {
-			ip := a.A.String()
-			addrs = append(addrs, ip)
+		if d.IPv6Only {
+			if aaaa, ok := rr.(*dns.AAAA); ok {
+				addrs = append(addrs, aaaa.AAAA.String())
+			}
+		} else {
+			if a, ok := rr.(*dns.A); ok {
+				addrs = append(addrs, a.A.String())
+			}
 		}
 	}
 
@@ -90,7 +106,7 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 		if addrs1, ok := d.DNSCache.Get(name); ok {
 			addrs0 = addrs1.([]string)
 		} else {
-			addrs0, err = d.LookupHost(name)
+			addrs0, err = d.LookupHost2(name, d.DNSServers[0])
 			if err != nil {
 				glog.Warningf("LookupHost(%#v) error: %s", name, err)
 				continue
@@ -174,6 +190,9 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 					for i, host := range hosts {
 						addrs[i] = net.JoinHostPort(host, port)
 					}
+					if d.IPv6Only {
+						network = "tcp6"
+					}
 					return d.dialMulti(network, addrs)
 				}
 			}
@@ -206,6 +225,9 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 					addrs := make([]string, len(hosts))
 					for i, host := range hosts {
 						addrs[i] = net.JoinHostPort(host, port)
+					}
+					if d.IPv6Only {
+						network = "tcp6"
 					}
 					return d.dialMultiTLS(network, addrs, config)
 				}
