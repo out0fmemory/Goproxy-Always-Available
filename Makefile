@@ -25,8 +25,8 @@ else ifeq ($(GOOS), darwin)
 else
 	GOPROXY_EXE = $(PACKAGE)
 	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
-	GOPROXY_DISTCMD = BZIP=-9 tar cvjpf
-	GOPROXY_DISTEXT = .tar.bz2
+	GOPROXY_DISTCMD = XZ_OPT=-9 tar cvJpf
+	GOPROXY_DISTEXT = .tar.xz
 endif
 
 OBJECTS :=
