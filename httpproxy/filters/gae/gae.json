@@ -58,6 +58,10 @@
 		"*.googleusercontent.com": "google_hk",
 		"*.gstatic.com": "google_hk"
 	},
+	"ForceHTTPS": [
+		"books.google.com",
+		"scholar.google.com"
+	],
 	"DNSServers": [
 		"114.114.114.114",
 		"114.114.115.115",

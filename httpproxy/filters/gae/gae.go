@@ -33,6 +33,7 @@ type Config struct {
 	Sites       []string
 	Site2Alias  map[string]string
 	HostMap     map[string][]string
+	ForceHTTPS  []string
 	DNSServers  []string
 	IPBlackList []string
 	Transport   struct {
@@ -55,6 +56,7 @@ type Config struct {
 type Filter struct {
 	GAETransport      *gae.Transport
 	DirectTransport   *http.Transport
+	ForceHTTPSMatcher *httpproxy.HostMatcher
 	SiteMatcher       *httpproxy.HostMatcher
 	DirectSiteMatcher *httpproxy.HostMatcher
 }
@@ -141,6 +143,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Servers:      servers,
 		},
 		DirectTransport:   tr,
+		ForceHTTPSMatcher: httpproxy.NewHostMatcher(config.ForceHTTPS),
 		SiteMatcher:       httpproxy.NewHostMatcher(config.Sites),
 		DirectSiteMatcher: httpproxy.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
@@ -157,6 +160,26 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 	var tr http.RoundTripper = f.GAETransport
 	prefix := "FETCH"
+
+	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) {
+		if !strings.HasPrefix(req.Header.Get("Referer"), "https://") {
+			u := strings.Replace(req.URL.String(), "http://", "https://", 1)
+			glog.V(2).Infof("GAE FORCEHTTPS get raw url=%v, redirect to %v", req.URL.String(), u)
+			return ctx, &http.Response{
+				Status:     "301 Moved Permanently",
+				StatusCode: http.StatusMovedPermanently,
+				Proto:      "HTTP/1.1",
+				ProtoMajor: 1,
+				ProtoMinor: 1,
+				Header: http.Header{
+					"Location": []string{u},
+				},
+				Request:       req,
+				Close:         true,
+				ContentLength: -1,
+			}, nil
+		}
+	}
 
 	if f.DirectSiteMatcher.Match(req.Host) {
 		if req.URL.Path == "/url" {
