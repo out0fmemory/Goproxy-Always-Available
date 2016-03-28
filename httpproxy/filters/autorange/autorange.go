@@ -137,9 +137,9 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 	resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	resp.Header.Del("Content-Range")
 
-	r, w := httpproxy.IoPipe()
+	ap := NewAutoPipe(f.Threads)
 
-	go func(w *httpproxy.PipeWriter, filter filters.RoundTripFilter, req0 *http.Request, start, length int64) {
+	go func(ap *autoPipe, filter filters.RoundTripFilter, req0 *http.Request, start, length int64) {
 		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req0.URL.String(), filter.FilterName())
 
 		req, err := http.NewRequest(req0.Method, req0.URL.String(), nil)
@@ -154,14 +154,23 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 			}
 		}
 
-		for start < length-1 {
+		var index uint32
+		for {
+			if ap.GetEIndex() != -1 {
+				break
+			}
+			if start > length-1 {
+				ap.WClose()
+				break
+			}
 			//FIXME: make this configurable!
-			if w.Len() > 128*1024*1024 {
+			if ap.Len() > 128*1024*1024 {
 				time.Sleep(100 * time.Millisecond)
 				continue
 			}
 
-			end := start + int64(f.BufSize)
+			//end := start + int64(f.BufSize-1)
+			end := start + int64(1024<<10-1)
 			if end > length-1 {
 				end = length - 1
 			}
@@ -173,20 +182,29 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 				time.Sleep(1 * time.Second)
 				continue
 			}
+			if resp.StatusCode != http.StatusPartialContent {
+				continue // TODO: rewise, retry times
+			}
 
-			n, err := httpproxy.IoCopy(w, resp.Body)
-			if err != nil {
-				glog.Warningf("AUTORANGE httpproxy.IoCopy(%#v) error: %#v", resp.Body, err)
-			}
-			if n > 0 {
-				start += n
-			}
+			ap.Threads <- true
+			go func(index uint32, resp *http.Response) {
+				piper := ap.NewPiper(index)
+				_, err := httpproxy.IoCopy(piper, resp.Body)
+				if err != nil {
+					glog.Warningf("AUTORANGE httpproxy.IoCopy(%#v) error: %#v", resp.Body, err)
+					piper.EIndex()
+				}
+				piper.WClose()
+				<-ap.Threads
+				resp.Body.Close()
+			}(index, resp)
+
+			start = end + 1
+			index++
 		}
+	}(ap, f1, resp.Request, end+1, length)
 
-		w.Close()
-	}(w, f1, resp.Request, end+1, length)
-
-	resp.Body = transport.NewMultiReadCloser(resp.Body, r)
+	resp.Body = transport.NewMultiReadCloser(resp.Body, ap)
 
 	return ctx, resp, nil
 }
