@@ -64,6 +64,10 @@ build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
 clean:
 	$(RM) -rf $(BUILDDIR)
 
+.PHONY: ci
+ci:
+	ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no phuslu@vps.phus.lu bash -s <assets/scripts/ci.sh
+
 .PHONY: release
 release:
 	# make release GITHUB_TAG=r256

@@ -45,4 +45,4 @@ github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RE
 sleep 1
 github-release release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "r${RELEASE}: ${NOTE}"
 for FILE in *; do github-release upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE}; done
-cd && rm -rf ${WORKING_DIR}
+ls -lht && cd && rm -rf ${WORKING_DIR}
