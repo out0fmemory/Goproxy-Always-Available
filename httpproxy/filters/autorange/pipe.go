@@ -14,15 +14,15 @@ var (
 
 type autoPipe struct {
 	ReadBegin readBegin
-	Threads chan bool
-	len     int64
-	pipers  []*piper
-	eindex  int32 // 如果某个 "range" 出错了，应改写这个值。用以告诉 read 端不要读 eindex 之后的 piper 上的数据。以及通知 eindex 之后 piper 申请停止被 write
-	l       sync.Mutex
-	rwait   sync.Cond
-	rindex  uint32 // 正在被 read 的 piper 序号
-	rerr    error  // 当 read 端失败后应被触发以通知内存中 piper 申请停止被 write
-	werr    error  // 这里的 werr 只在 write 端最后的 range 被发起后被引发
+	Threads   chan bool
+	len       int64
+	pipers    []*piper
+	piperr    piperr // 如果某个 "range" 出错了，应改写这个值。用以告诉 read 端不要读 eindex 之后的 piper 上的数据。以及通知 eindex 之后 piper 申请停止被 write
+	l         sync.Mutex
+	rwait     sync.Cond
+	rindex    uint32 // 正在被 read 的 piper 序号
+	rerr      error  // 当 read 端失败后应被触发以通知内存中 piper 申请停止被 write
+	werr      error  // 这里的 werr 只在 write 端最后的 range 被发起后被引发
 }
 
 type piper struct {
@@ -33,7 +33,12 @@ type piper struct {
 
 type readBegin struct {
 	yep bool
-	c sync.Cond
+	c   sync.Cond
+}
+
+type piperr struct {
+	yep    bool
+	eindex uint32
 }
 
 func (p *autoPipe) Read(b []byte) (n int, err error) {
@@ -45,7 +50,7 @@ func (p *autoPipe) Read(b []byte) (n int, err error) {
 	}
 	for {
 		p.l.Lock()
-		if p.eindex != -1 && int32(p.rindex) > p.eindex {
+		if p.piperr.yep && p.rindex > p.piperr.eindex {
 			p.l.Unlock()
 			return 0, ErrFailedPipe
 		}
@@ -78,7 +83,7 @@ func (p *piper) Write(b []byte) (n int, err error) {
 		p = nil
 		return
 	}
-	if p.parent.eindex != -1 && int32(p.index) > p.parent.eindex {
+	if p.parent.piperr.yep && p.index > p.parent.piperr.eindex {
 		p.parent.l.Unlock()
 		p = nil
 		err = ErrFailedPipe
@@ -105,7 +110,7 @@ func (p *piper) Write(b []byte) (n int, err error) {
 			p = nil
 			return lenb, err
 		}
-		if p.parent.eindex != -1 && int32(p.index) > p.parent.eindex {
+		if p.parent.piperr.yep && p.index > p.parent.piperr.eindex {
 			p.parent.l.Unlock()
 			p = nil
 			err = ErrFailedPipe
@@ -124,7 +129,7 @@ func (p *piper) Write(b []byte) (n int, err error) {
 			n = lenb - len(p.data)
 			return
 		}
-		if p.parent.eindex != -1 && int32(p.index) > p.parent.eindex {
+		if p.parent.piperr.yep && p.index > p.parent.piperr.eindex {
 			p.parent.l.Unlock()
 			p = nil
 			err = ErrFailedPipe
@@ -204,11 +209,12 @@ func (p *piper) WClose() {
 func (p *piper) EIndex() {
 	p.parent.l.Lock()
 	defer p.parent.l.Unlock()
-	if p.parent.eindex == -1 {
-		p.parent.eindex = int32(p.index)
+	if !p.parent.piperr.yep {
+		p.parent.piperr.eindex = p.index
+		p.parent.piperr.yep = true
 	} else {
-		if int32(p.index) < p.parent.eindex {
-			p.parent.eindex = int32(p.index)
+		if p.index < p.parent.piperr.eindex {
+			p.parent.piperr.eindex = p.index
 		}
 	}
 }
@@ -216,7 +222,6 @@ func (p *piper) EIndex() {
 func NewAutoPipe(threads int) (r *autoPipe) {
 	r = new(autoPipe)
 	r.Threads = make(chan bool, threads)
-	r.eindex = -1
 	r.rwait.L = &r.l
 	r.ReadBegin.c.L = &sync.Mutex{}
 	return
@@ -245,10 +250,10 @@ func newPipe() *pipe {
 	return p
 }
 
-func (ap *autoPipe) GetEIndex() int32 {
+func (ap *autoPipe) PiperErr() bool {
 	ap.l.Lock()
 	defer ap.l.Unlock()
-	return ap.eindex
+	return ap.piperr.yep
 }
 
 func (ap *autoPipe) Len() int64 {
