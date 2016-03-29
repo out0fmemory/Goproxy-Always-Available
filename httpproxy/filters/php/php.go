@@ -46,6 +46,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	Transport *php.Transport
 	Sites     *httpproxy.HostMatcher
 }
@@ -111,6 +112,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	return &Filter{
+		Config: *config,
 		Transport: &php.Transport{
 			RoundTripper: tr,
 			Servers:      servers,

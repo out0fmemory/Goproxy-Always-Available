@@ -54,6 +54,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	GAETransport      *gae.Transport
 	DirectTransport   *http.Transport
 	ForceHTTPSMatcher *httpproxy.HostMatcher
@@ -138,6 +139,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	return &Filter{
+		Config: *config,
 		GAETransport: &gae.Transport{
 			RoundTripper: tr,
 			Servers:      servers,

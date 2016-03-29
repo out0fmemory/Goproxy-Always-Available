@@ -30,6 +30,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	ByPassHeaders lrucache.Cache
 	Basic         map[string]string
 	WhiteList     map[string]struct{}
@@ -56,6 +57,7 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
+		Config:        *config,
 		ByPassHeaders: lrucache.NewMultiLRUCache(4, uint(config.CacheSize)),
 		Basic:         make(map[string]string),
 		WhiteList:     make(map[string]struct{}),

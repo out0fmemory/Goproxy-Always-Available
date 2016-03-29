@@ -35,6 +35,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	CA             *RootCA
 	CAExpiry       time.Duration
 	TLSConfigCache lrucache.Cache
@@ -76,6 +77,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	f := &Filter{
+		Config:         *config,
 		CA:             ca,
 		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),

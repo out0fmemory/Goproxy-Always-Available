@@ -27,6 +27,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	SiteMatcher *httpproxy.HostMatcher
 	MaxSize     int
 	BufSize     int
@@ -54,6 +55,7 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
+		Config:      *config,
 		SiteMatcher: httpproxy.NewHostMatcher(config.Sites),
 		MaxSize:     config.MaxSize,
 		BufSize:     config.BufSize,

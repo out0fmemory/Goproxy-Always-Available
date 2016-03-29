@@ -46,6 +46,7 @@ type GFWList struct {
 }
 
 type Filter struct {
+	Config
 	Store         storage.Store
 	Sites         *httpproxy.HostMatcher
 	GFWList       *GFWList
@@ -125,6 +126,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	f := &Filter{
+		Config:        *config,
 		Store:         store,
 		Sites:         httpproxy.NewHostMatcher(config.Sites),
 		GFWList:       &gfwlist,

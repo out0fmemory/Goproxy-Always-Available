@@ -45,6 +45,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	filters.RoundTripFilter
 	transport *http.Transport
 }
@@ -106,6 +107,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	return &Filter{
+		Config:    *config,
 		transport: tr,
 	}, nil
 }

@@ -22,6 +22,7 @@ type Config struct {
 }
 
 type Filter struct {
+	Config
 	Threshold int64
 	Rate      float64
 	Capacity  int64
@@ -48,6 +49,7 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
+		Config:    *config,
 		Threshold: int64(config.Threshold),
 		Capacity:  int64(config.Capacity),
 		Rate:      float64(config.Rate),
