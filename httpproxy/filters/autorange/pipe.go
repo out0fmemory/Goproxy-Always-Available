@@ -13,6 +13,7 @@ var (
 )
 
 type autoPipe struct {
+	ReadBegin readBegin
 	Threads chan bool
 	len     int64
 	pipers  []*piper
@@ -30,7 +31,18 @@ type piper struct {
 	parent *autoPipe
 }
 
+type readBegin struct {
+	yep bool
+	c sync.Cond
+}
+
 func (p *autoPipe) Read(b []byte) (n int, err error) {
+	if !p.ReadBegin.yep {
+		p.ReadBegin.c.L.Lock()
+		p.ReadBegin.yep = true
+		p.ReadBegin.c.Signal()
+		p.ReadBegin.c.L.Unlock()
+	}
 	for {
 		p.l.Lock()
 		if p.eindex != -1 && int32(p.rindex) > p.eindex {
@@ -206,6 +218,7 @@ func NewAutoPipe(threads int) (r *autoPipe) {
 	r.Threads = make(chan bool, threads)
 	r.eindex = -1
 	r.rwait.L = &r.l
+	r.ReadBegin.c.L = &sync.Mutex{}
 	return
 }
 
@@ -240,4 +253,14 @@ func (ap *autoPipe) GetEIndex() int32 {
 
 func (ap *autoPipe) Len() int64 {
 	return atomic.LoadInt64(&ap.len)
+}
+
+func (ap *autoPipe) WaitForReading() {
+	ap.ReadBegin.c.L.Lock()
+	defer ap.ReadBegin.c.L.Unlock()
+
+	for !ap.ReadBegin.yep {
+		ap.ReadBegin.c.Wait()
+	}
+	return
 }

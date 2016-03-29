@@ -154,6 +154,7 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 			}
 		}
 
+		ap.WaitForReading()
 		var index uint32
 		for {
 			if ap.GetEIndex() != -1 {
