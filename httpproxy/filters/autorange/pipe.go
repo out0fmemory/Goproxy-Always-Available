@@ -250,10 +250,13 @@ func newPipe() *pipe {
 	return p
 }
 
-func (ap *autoPipe) PiperErr() bool {
+func (ap *autoPipe) FatalErr() bool {
 	ap.l.Lock()
 	defer ap.l.Unlock()
-	return ap.piperr.yep
+	if ap.piperr.yep || ap.rerr != nil {
+		return true
+	}
+	return false
 }
 
 func (ap *autoPipe) Len() int64 {
