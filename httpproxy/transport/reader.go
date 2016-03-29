@@ -5,13 +5,13 @@ import (
 )
 
 type multiReadCloser struct {
-	readers     []io.Reader
+	Readers     []io.Reader
 	multiReader io.Reader
 }
 
 func NewMultiReadCloser(readers ...io.Reader) io.ReadCloser {
 	return &multiReadCloser{
-		readers:     readers,
+		Readers:     readers,
 		multiReader: io.MultiReader(readers...),
 	}
 }
@@ -21,7 +21,7 @@ func (r *multiReadCloser) Read(p []byte) (n int, err error) {
 }
 
 func (r *multiReadCloser) Close() (err error) {
-	for _, r := range r.readers {
+	for _, r := range r.Readers {
 		if c, ok := r.(io.Closer); ok {
 			if e := c.Close(); e != nil {
 				err = e
