@@ -188,8 +188,10 @@ func (p *autoPipe) RClose(err error) {
 	p.l.Lock()
 	defer p.l.Unlock()
 	p.rerr = err
-	rindex := atomic.LoadUint32(&p.rindex)
-	p.pipers[rindex].wwait.Signal()
+	if p.pipers != nil {
+		rindex := atomic.LoadUint32(&p.rindex)
+		p.pipers[rindex].wwait.Signal()
+	}
 }
 
 func (p *autoPipe) WClose() {
