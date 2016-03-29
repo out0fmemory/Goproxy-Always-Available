@@ -125,15 +125,15 @@ func (p *piper) Write(b []byte) (n int, err error) {
 		if p.parent.rerr != nil {
 			err = p.parent.rerr
 			p.parent.l.Unlock()
-			p = nil
 			n = lenb - len(p.data)
+			p = nil
 			return
 		}
 		if p.parent.piperr.yep && p.index > p.parent.piperr.eindex {
 			p.parent.l.Unlock()
+			n = lenb - len(p.data)
 			p = nil
 			err = ErrFailedPipe
-			n = lenb - len(p.data)
 			return
 		}
 		p.parent.l.Unlock()
