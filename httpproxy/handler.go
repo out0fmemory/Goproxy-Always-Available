@@ -3,7 +3,6 @@ package httpproxy
 import (
 	"io"
 	"net/http"
-	"reflect"
 
 	"github.com/golang/glog"
 
@@ -114,17 +113,6 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		n, err := IoCopy(rw, resp.Body)
 		if err != nil {
 			glog.Errorf("IoCopy %#v return %#v %s", resp.Body, n, err)
-			// if autorange, call method "RClose" to tell writers to stop
-			if v := reflect.ValueOf(resp.Body); v.Type().String() == "*transport.multiReadCloser" {
-				v = v.Elem().FieldByName("Readers")
-				for i := 0; i < v.Len(); i++ {
-					if ret := v.Index(i).Elem(); ret.Type().String() == "*autorange.autoPipe" {
-						m := ret.MethodByName("RClose")
-						er := []reflect.Value{reflect.ValueOf(err)}
-						m.Call(er)
-					}
-				}
-			}
 		}
 	}
 }
