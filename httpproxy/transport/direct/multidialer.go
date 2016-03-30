@@ -34,10 +34,6 @@ type MultiDialer struct {
 }
 
 func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
-	if net.ParseIP(name) != nil {
-		return []string{name}, nil
-	}
-
 	hs, err := net.LookupHost(name)
 	if err != nil {
 		return hs, err
@@ -62,10 +58,6 @@ func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 }
 
 func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string, err error) {
-	if net.ParseIP(name) != nil {
-		return []string{name}, nil
-	}
-
 	m := &dns.Msg{}
 
 	if d.IPv6Only {
@@ -110,7 +102,10 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	expiry := time.Now().Add(d.DNSCacheExpiry)
 	for _, name := range names {
 		var addrs0 []string
-		if addrs1, ok := d.DNSCache.Get(name); ok {
+		if net.ParseIP(name) != nil {
+			addrs0 = []string{name}
+			expiry = time.Time{}
+		} else if addrs1, ok := d.DNSCache.Get(name); ok {
 			addrs0 = addrs1.([]string)
 		} else {
 			if d.IPv6Only {
@@ -157,8 +152,12 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 	for _, name := range names {
 		seen := make(map[string]struct{}, 0)
 		for _, dnsserver := range d.DNSServers {
-			addrs, err := d.LookupHost2(name, dnsserver)
-			if err != nil {
+			var addrs []string
+			var err error
+			if net.ParseIP(name) != nil {
+				addrs = []string{name}
+				expire = time.Time{}
+			} else if addrs, err = d.LookupHost2(name, dnsserver); err != nil {
 				glog.V(2).Infof("LookupHost2(%#v) error: %s", name, err)
 				continue
 			}
