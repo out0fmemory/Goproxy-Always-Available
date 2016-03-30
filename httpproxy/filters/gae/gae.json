@@ -101,7 +101,7 @@
 			"DualStack": false,
 			"RetryTimes": 2,
 			"RetryDelay": 0.05,
-			"DNSCacheExpiry": 3600,
+			"DNSCacheExpiry": 864000,
 			"DNSCacheSize": 81920,
 			"Level": 4
 		},

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net"
-	"regexp"
 	"sort"
 	"strings"
 	"time"
@@ -35,10 +34,6 @@ type MultiDialer struct {
 }
 
 func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
-	if net.ParseIP(name) != nil {
-		return []string{name}, nil
-	}
-
 	hs, err := net.LookupHost(name)
 	if err != nil {
 		return hs, err
@@ -63,10 +58,6 @@ func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 }
 
 func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string, err error) {
-	if net.ParseIP(name) != nil {
-		return []string{name}, nil
-	}
-
 	m := &dns.Msg{}
 
 	if d.IPv6Only {
@@ -111,16 +102,23 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	expiry := time.Now().Add(d.DNSCacheExpiry)
 	for _, name := range names {
 		var addrs0 []string
-		if addrs1, ok := d.DNSCache.Get(name); ok {
+		if net.ParseIP(name) != nil {
+			addrs0 = []string{name}
+			expiry = time.Time{}
+		} else if addrs1, ok := d.DNSCache.Get(name); ok {
 			addrs0 = addrs1.([]string)
 		} else {
-			if regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`).MatchString(name) || strings.Contains(name, ":") {
-				addrs0 = []string{name}
-			} else {
+			if d.IPv6Only {
 				addrs0, err = d.LookupHost2(name, d.DNSServers[0])
 				if err != nil {
+					glog.Warningf("LookupHost2(%#v, %#v) error: %s", name, d.DNSServers[0], err)
+					addrs0 = []string{}
+				}
+			} else {
+				addrs0, err = d.LookupHost(name)
+				if err != nil {
 					glog.Warningf("LookupHost(%#v) error: %s", name, err)
-					continue
+					addrs0 = []string{}
 				}
 			}
 
@@ -152,14 +150,14 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 
 	expire := time.Now().Add(24 * time.Hour)
 	for _, name := range names {
-		if regexp.MustCompile(`\d+\.\d+\.\d+\.\d+`).MatchString(name) {
-			continue
-		}
-
 		seen := make(map[string]struct{}, 0)
 		for _, dnsserver := range d.DNSServers {
-			addrs, err := d.LookupHost2(name, dnsserver)
-			if err != nil {
+			var addrs []string
+			var err error
+			if net.ParseIP(name) != nil {
+				addrs = []string{name}
+				expire = time.Time{}
+			} else if addrs, err = d.LookupHost2(name, dnsserver); err != nil {
 				glog.V(2).Infof("LookupHost2(%#v) error: %s", name, err)
 				continue
 			}
@@ -224,16 +222,18 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 			if alias0, ok := d.Site2Alias.Lookup(host); ok {
 				alias := alias0.(string)
 				if hosts, err := d.LookupAlias(alias); err == nil {
-					config := &tls.Config{
-						InsecureSkipVerify: true,
-						ServerName:         address,
-					}
-					if strings.Contains(address, ".appspot.com") ||
-						strings.Contains(address, ".google") ||
-						strings.Contains(address, ".gstatic.com") ||
-						strings.Contains(address, ".ggpht.com") {
+					var config *tls.Config
+
+					switch {
+					case strings.HasPrefix(alias, "google_"):
 						config = defaultTLSConfigForGoogle
+					default:
+						config = &tls.Config{
+							InsecureSkipVerify: true,
+							ServerName:         address,
+						}
 					}
+					glog.V(3).Infof("DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
 
 					addrs := make([]string, len(hosts))
 					for i, host := range hosts {
