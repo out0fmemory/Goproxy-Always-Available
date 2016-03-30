@@ -13,16 +13,16 @@ var (
 )
 
 type autoPipe struct {
-	ReadBegin readBegin
-	Threads   chan bool
-	len       int64
-	pipers    []*piper
-	piperr    piperr // 如果某个 "range" 出错了，应改写这个值。用以告诉 read 端不要读 eindex 之后的 piper 上的数据。以及通知 eindex 之后 piper 申请停止被 write
-	l         sync.Mutex
-	rwait     sync.Cond
-	rindex    uint32 // 正在被 read 的 piper 序号
-	rerr      error  // 当 read 端失败后应被触发以通知内存中 piper 申请停止被 write
-	werr      error  // 这里的 werr 只在 write 端最后的 range 被发起后被引发
+	rb      readBegin
+	threads chan bool
+	len     int64
+	pipers  []*piper
+	piperr  piperr // 如果某个 "range" 出错了，应改写这个值。用以告诉 read 端不要读 eindex 之后的 piper 上的数据。以及通知 eindex 之后 piper 申请停止被 write
+	l       sync.Mutex
+	rwait   sync.Cond
+	rindex  uint32 // 正在被 read 的 piper 序号
+	rerr    error  // 当 read 端失败后应被触发以通知内存中 piper 申请停止被 write
+	werr    error  // 这里的 werr 只在 write 端最后的 range 被发起后被引发
 }
 
 type piper struct {
@@ -32,8 +32,8 @@ type piper struct {
 }
 
 type readBegin struct {
-	yep bool
-	c   sync.Cond
+	yep  bool
+	cond sync.Cond
 }
 
 type piperr struct {
@@ -41,12 +41,12 @@ type piperr struct {
 	eindex uint32
 }
 
-func (p *autoPipe) Read(b []byte) (n int, err error) {
-	if !p.ReadBegin.yep {
-		p.ReadBegin.c.L.Lock()
-		p.ReadBegin.yep = true
-		p.ReadBegin.c.Signal()
-		p.ReadBegin.c.L.Unlock()
+func (p *autoPipe) read(b []byte) (n int, err error) {
+	if !p.rb.yep {
+		p.rb.cond.L.Lock()
+		p.rb.yep = true
+		p.rb.cond.Signal()
+		p.rb.cond.L.Unlock()
 	}
 	for {
 		p.l.Lock()
@@ -181,7 +181,7 @@ func (p *piper) read(b []byte) (n int, err error) {
 
 var zero [0]byte
 
-func (p *autoPipe) RClose(err error) {
+func (p *autoPipe) rclose(err error) {
 	if err == nil {
 		err = ErrClosedPipe
 	}
@@ -194,11 +194,53 @@ func (p *autoPipe) RClose(err error) {
 	}
 }
 
-func (p *autoPipe) WClose() {
+func (p *autoPipe) wclose() {
 	p.l.Lock()
 	defer p.l.Unlock()
 	p.werr = io.EOF
 	p.rwait.Signal()
+}
+
+func (p *autoPipe) newPiper(index uint32) (r *piper) {
+	r = &piper{
+		pipe:   newPipe(),
+		index:  index,
+		parent: p,
+	}
+	p.l.Lock()
+	defer p.l.Unlock()
+	if length := len(p.pipers); length <= int(index) {
+		p.pipers = append(p.pipers, make([]*piper, int(index)+1-length)...)
+	}
+	p.pipers[index] = r
+	p.rwait.Signal()
+	return
+}
+
+func (p *autoPipe) fatalErr() bool {
+	p.l.Lock()
+	defer p.l.Unlock()
+	if p.piperr.yep || p.rerr != nil {
+		return true
+	}
+	return false
+}
+
+func (p *autoPipe) waitForReading() {
+	p.rb.cond.L.Lock()
+	defer p.rb.cond.L.Unlock()
+
+	for !p.rb.yep {
+		p.rb.cond.Wait()
+	}
+}
+
+func (p *autoPipe) threadHello() {
+	p.threads <- true
+}
+
+func (p *autoPipe) threadBye() {
+	<-p.threads
 }
 
 func (p *piper) WClose() {
@@ -221,28 +263,50 @@ func (p *piper) EIndex() {
 	}
 }
 
-func NewAutoPipe(threads int) (r *autoPipe) {
-	r = new(autoPipe)
-	r.Threads = make(chan bool, threads)
-	r.rwait.L = &r.l
-	r.ReadBegin.c.L = &sync.Mutex{}
-	return
+type autoPipeReader struct {
+	p *autoPipe
 }
 
-func (parent *autoPipe) NewPiper(index uint32) (r *piper) {
-	r = &piper{
-		pipe:   newPipe(),
-		index:  index,
-		parent: parent,
-	}
-	parent.l.Lock()
-	defer parent.l.Unlock()
-	if length := len(parent.pipers); length <= int(index) {
-		parent.pipers = append(parent.pipers, make([]*piper, int(index)+1-length)...)
-	}
-	parent.pipers[index] = r
-	parent.rwait.Signal()
-	return
+func (r *autoPipeReader) Read(data []byte) (n int, err error) {
+	return r.p.read(data)
+}
+
+func (r *autoPipeReader) Close() error {
+	r.p.rclose(nil)
+	return nil
+}
+
+type autoPipeWriter struct {
+	p *autoPipe
+}
+
+func (w *autoPipeWriter) WaitForReading() {
+	w.p.waitForReading()
+}
+
+func (w *autoPipeWriter) NewPiper(index uint32) (r *piper) {
+	return w.p.newPiper(index)
+}
+
+func (w *autoPipeWriter) Close() error {
+	w.p.wclose()
+	return nil
+}
+
+func (w *autoPipeWriter) FatalErr() bool {
+	return w.p.fatalErr()
+}
+
+func (w *autoPipeWriter) ThreadHello() {
+	w.p.threadHello()
+}
+
+func (w *autoPipeWriter) ThreadBye() {
+	w.p.threadBye()
+}
+
+func (w *autoPipeWriter) Len() int64 {
+	return atomic.LoadInt64(&w.p.len)
 }
 
 func newPipe() *pipe {
@@ -252,25 +316,13 @@ func newPipe() *pipe {
 	return p
 }
 
-func (ap *autoPipe) FatalErr() bool {
-	ap.l.Lock()
-	defer ap.l.Unlock()
-	if ap.piperr.yep || ap.rerr != nil {
-		return true
-	}
-	return false
-}
+func AutoPipe(threads int) (r *autoPipeReader, w *autoPipeWriter) {
+	ap := new(autoPipe)
+	ap.threads = make(chan bool, threads)
+	ap.rwait.L = &ap.l
+	ap.rb.cond.L = &sync.Mutex{}
 
-func (ap *autoPipe) Len() int64 {
-	return atomic.LoadInt64(&ap.len)
-}
-
-func (ap *autoPipe) WaitForReading() {
-	ap.ReadBegin.c.L.Lock()
-	defer ap.ReadBegin.c.L.Unlock()
-
-	for !ap.ReadBegin.yep {
-		ap.ReadBegin.c.Wait()
-	}
+	r = &autoPipeReader{ap}
+	w = &autoPipeWriter{ap}
 	return
 }

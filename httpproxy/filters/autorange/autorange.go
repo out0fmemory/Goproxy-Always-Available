@@ -139,9 +139,9 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 	resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	resp.Header.Del("Content-Range")
 
-	ap := NewAutoPipe(f.Threads)
+	r, w := AutoPipe(f.Threads)
 
-	go func(ap *autoPipe, filter filters.RoundTripFilter, req0 *http.Request, start, length int64) {
+	go func(w *autoPipeWriter, filter filters.RoundTripFilter, req0 *http.Request, start, length int64) {
 		glog.V(2).Infof("AUTORANGE begin rangefetch for %#v by using %#v", req0.URL.String(), filter.FilterName())
 
 		req, err := http.NewRequest(req0.Method, req0.URL.String(), nil)
@@ -156,18 +156,19 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 			}
 		}
 
-		ap.WaitForReading()
+		w.WaitForReading()
 		var index uint32
 		for {
-			if ap.FatalErr() {
+			if w.FatalErr() {
 				break
 			}
 			if start > length-1 {
-				ap.WClose()
+				// tell reader io.EOF
+				w.Close()
 				break
 			}
 			//FIXME: make this configurable!
-			if ap.Len() > 128*1024*1024 {
+			if w.Len() > 128*1024*1024 {
 				time.Sleep(100 * time.Millisecond)
 				continue
 			}
@@ -189,25 +190,26 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 				continue // TODO: rewise, retry times
 			}
 
-			ap.Threads <- true
+			w.ThreadHello()
 			go func(index uint32, resp *http.Response) {
-				piper := ap.NewPiper(index)
+				defer resp.Body.Close()
+				defer w.ThreadBye() // TODO: launch it as soon as iocopy over?
+
+				piper := w.NewPiper(index)
 				_, err := httpproxy.IoCopy(piper, resp.Body)
 				if err != nil {
 					glog.Warningf("AUTORANGE httpproxy.IoCopy(%#v) error: %#v", resp.Body, err)
 					piper.EIndex()
 				}
 				piper.WClose()
-				<-ap.Threads
-				resp.Body.Close()
 			}(index, resp)
 
 			start = end + 1
 			index++
 		}
-	}(ap, f1, resp.Request, end+1, length)
+	}(w, f1, resp.Request, end+1, length)
 
-	resp.Body = transport.NewMultiReadCloser(resp.Body, ap)
+	resp.Body = transport.NewMultiReadCloser(resp.Body, r)
 
 	return ctx, resp, nil
 }
