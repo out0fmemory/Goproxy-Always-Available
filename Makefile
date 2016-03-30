@@ -24,7 +24,7 @@ else ifeq ($(GOOS), darwin)
 	GOPROXY_DISTEXT = .tar.bz2
 else
 	GOPROXY_EXE = $(PACKAGE)
-	GOPROXY_STAGEDIR = $(STAGEDIR)/opt/goproxy
+	GOPROXY_STAGEDIR = $(STAGEDIR)/goproxy
 	GOPROXY_DISTCMD = XZ_OPT=-9 tar cvJpf
 	GOPROXY_DISTEXT = .tar.xz
 endif
@@ -57,8 +57,12 @@ else
 endif
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
-	ls -lht $<
+build: normname
+	ls -lht $(DISTDIR)
+
+.PHONY: normname
+normname: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
+	mv $< $(shell echo $< | sed 's/_darwin_/_macosx_/') || true
 
 .PHONY: clean
 clean:
