@@ -106,7 +106,6 @@ func (p *piper) Write(b []byte) (n int, err error) {
 
 	p.parent.l.Lock()
 	if p.index != p.parent.rindex {
-		p.parent.l.Lock()
 		if p.parent.rerr != nil {
 			err = p.parent.rerr
 			p.parent.l.Unlock()
