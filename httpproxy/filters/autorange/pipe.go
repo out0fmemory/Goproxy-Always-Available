@@ -15,7 +15,7 @@ var (
 type autoPipe struct {
 	rb      readBegin
 	threads chan bool
-	len     int64
+	len     uint32
 	pipers  []*piper
 	piperr  piperr // 如果某个 "range" 出错了，应改写这个值。用以告诉 read 端不要读 eindex 之后的 piper 上的数据。以及通知 eindex 之后 piper 申请停止被 write
 	l       sync.Mutex
@@ -54,7 +54,7 @@ func (p *autoPipe) read(b []byte) (n int, err error) {
 			p.l.Unlock()
 			return 0, ErrFailedPipe
 		}
-		if uint32(len(p.pipers)) > p.rindex {
+		if p.rindex < uint32(len(p.pipers)) {
 			p.l.Unlock()
 			break
 		}
@@ -69,8 +69,10 @@ func (p *autoPipe) read(b []byte) (n int, err error) {
 	}
 	n, err = p.pipers[p.rindex].read(b)
 	if err == io.EOF {
+		p.l.Lock()
 		p.pipers[p.rindex] = nil
-		atomic.AddUint32(&p.rindex, 1)
+		p.rindex++
+		p.l.Unlock()
 	}
 	return n, nil
 }
@@ -100,9 +102,10 @@ func (p *piper) Write(b []byte) (n int, err error) {
 
 	p.data = append(p.data, b...)
 	lenb := len(b)
-	atomic.AddInt64(&p.parent.len, int64(lenb))
+	atomic.AddUint32(&p.parent.len, uint32(lenb))
 
-	if p.index != atomic.LoadUint32(&p.parent.rindex) {
+	p.parent.l.Lock()
+	if p.index != p.parent.rindex {
 		p.parent.l.Lock()
 		if p.parent.rerr != nil {
 			err = p.parent.rerr
@@ -119,6 +122,8 @@ func (p *piper) Write(b []byte) (n int, err error) {
 		p.parent.l.Unlock()
 		return lenb, nil
 	}
+	p.parent.l.Unlock()
+
 	p.rwait.Signal()
 	for {
 		p.parent.l.Lock()
@@ -171,7 +176,7 @@ func (p *piper) read(b []byte) (n int, err error) {
 
 	n = copy(b, p.data)
 	p.data = p.data[n:]
-	atomic.AddInt64(&p.parent.len, -int64(n))
+	atomic.AddUint32(&p.parent.len, -uint32(n))
 	if len(p.data) == 0 {
 		p.data = nil
 		p.wwait.Signal()
@@ -189,8 +194,9 @@ func (p *autoPipe) rclose(err error) {
 	defer p.l.Unlock()
 	p.rerr = err
 	if p.pipers != nil {
-		rindex := atomic.LoadUint32(&p.rindex)
-		p.pipers[rindex].wwait.Signal()
+		if p.rindex < uint32(len(p.pipers)) && p.pipers[p.rindex] != nil {
+			p.pipers[p.rindex].wwait.Signal()
+		}
 	}
 }
 
@@ -305,8 +311,8 @@ func (w *autoPipeWriter) ThreadBye() {
 	w.p.threadBye()
 }
 
-func (w *autoPipeWriter) Len() int64 {
-	return atomic.LoadInt64(&w.p.len)
+func (w *autoPipeWriter) Len() uint32 {
+	return atomic.LoadUint32(&w.p.len)
 }
 
 func newPipe() *pipe {
