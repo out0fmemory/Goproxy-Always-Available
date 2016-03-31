@@ -54,7 +54,7 @@ func (p *autoPipe) read(b []byte) (n int, err error) {
 			p.l.Unlock()
 			return 0, ErrFailedPipe
 		}
-		if uint32(len(p.pipers)) > p.rindex {
+		if p.rindex < uint32(len(p.pipers)) {
 			p.l.Unlock()
 			break
 		}
@@ -69,8 +69,10 @@ func (p *autoPipe) read(b []byte) (n int, err error) {
 	}
 	n, err = p.pipers[p.rindex].read(b)
 	if err == io.EOF {
+		p.l.Lock()
 		p.pipers[p.rindex] = nil
-		atomic.AddUint32(&p.rindex, 1)
+		p.rindex++
+		p.l.Unlock()
 	}
 	return n, nil
 }
@@ -102,7 +104,8 @@ func (p *piper) Write(b []byte) (n int, err error) {
 	lenb := len(b)
 	atomic.AddInt64(&p.parent.len, int64(lenb))
 
-	if p.index != atomic.LoadUint32(&p.parent.rindex) {
+	p.parent.l.Lock()
+	if p.index != p.parent.rindex {
 		p.parent.l.Lock()
 		if p.parent.rerr != nil {
 			err = p.parent.rerr
@@ -119,6 +122,8 @@ func (p *piper) Write(b []byte) (n int, err error) {
 		p.parent.l.Unlock()
 		return lenb, nil
 	}
+	p.parent.l.Unlock()
+
 	p.rwait.Signal()
 	for {
 		p.parent.l.Lock()
@@ -189,8 +194,9 @@ func (p *autoPipe) rclose(err error) {
 	defer p.l.Unlock()
 	p.rerr = err
 	if p.pipers != nil {
-		rindex := atomic.LoadUint32(&p.rindex)
-		p.pipers[rindex].wwait.Signal()
+		if p.rindex < uint32(len(p.pipers)) && p.pipers[p.rindex] != nil {
+			p.pipers[p.rindex].wwait.Signal()
+		}
 	}
 }
 
