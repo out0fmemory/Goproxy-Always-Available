@@ -83,7 +83,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 			glog.V(2).Infof("AUTORANGE ignore preserved range=%v", r)
 		}
 	} else {
-		parts := strings.Split(r, " ")
+		parts := strings.Split(r, "=")
 		switch parts[0] {
 		case "bytes":
 			parts1 := strings.Split(parts[1], "-")
