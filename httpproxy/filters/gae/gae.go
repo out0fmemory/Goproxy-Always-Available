@@ -212,6 +212,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	resp, err := tr.RoundTrip(req)
 
 	if err != nil {
+		f.DirectTransport.CloseIdleConnections()
 		return ctx, nil, err
 	} else {
 		glog.Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
