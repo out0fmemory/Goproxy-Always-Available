@@ -189,7 +189,10 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 				continue
 			}
 			if resp.StatusCode != http.StatusPartialContent {
-				continue // TODO: rewise, retry times
+				if resp.StatusCode >= 400 {
+					time.Sleep(1 * time.Second)
+				}
+				continue
 			}
 
 			w.ThreadHello()
