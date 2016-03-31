@@ -43,10 +43,10 @@ type piperr struct {
 
 func (p *autoPipe) read(b []byte) (n int, err error) {
 	if !p.rb.yep {
-		p.rb.cond.L.Lock()
+		p.l.Lock()
 		p.rb.yep = true
 		p.rb.cond.Signal()
-		p.rb.cond.L.Unlock()
+		p.l.Unlock()
 	}
 	for {
 		p.l.Lock()
@@ -192,7 +192,9 @@ func (p *autoPipe) rclose(err error) {
 	p.l.Lock()
 	defer p.l.Unlock()
 	p.rerr = err
-	if p.pipers != nil {
+	if p.pipers == nil {
+		p.rb.cond.Signal()
+	} else {
 		if p.rindex < uint32(len(p.pipers)) && p.pipers[p.rindex] != nil {
 			p.pipers[p.rindex].wwait.Signal()
 		}
@@ -231,13 +233,21 @@ func (p *autoPipe) fatalErr() bool {
 	return false
 }
 
-func (p *autoPipe) waitForReading() {
-	p.rb.cond.L.Lock()
-	defer p.rb.cond.L.Unlock()
+func (p *autoPipe) waitForReading() (err error) {
+	p.l.Lock()
+	defer p.l.Unlock()
 
-	for !p.rb.yep {
+	for {
+		if p.rerr != nil {
+			err = p.rerr
+			break
+		}
+		if p.rb.yep {
+			break
+		}
 		p.rb.cond.Wait()
 	}
+	return
 }
 
 func (p *autoPipe) threadHello() {
@@ -285,8 +295,8 @@ type autoPipeWriter struct {
 	p *autoPipe
 }
 
-func (w *autoPipeWriter) WaitForReading() {
-	w.p.waitForReading()
+func (w *autoPipeWriter) WaitForReading() (err error) {
+	return w.p.waitForReading()
 }
 
 func (w *autoPipeWriter) NewPiper(index uint32) (r *piper) {
@@ -325,7 +335,7 @@ func AutoPipe(threads int) (r *autoPipeReader, w *autoPipeWriter) {
 	ap := new(autoPipe)
 	ap.threads = make(chan bool, threads)
 	ap.rwait.L = &ap.l
-	ap.rb.cond.L = &sync.Mutex{}
+	ap.rb.cond.L = &ap.l
 
 	r = &autoPipeReader{ap}
 	w = &autoPipeWriter{ap}
