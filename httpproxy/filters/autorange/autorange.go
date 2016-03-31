@@ -156,7 +156,9 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 			}
 		}
 
-		w.WaitForReading()
+		if err := w.WaitForReading(); err != nil {
+			return
+		}
 		var index uint32
 		for {
 			if w.FatalErr() {
