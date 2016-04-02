@@ -22,9 +22,9 @@ go get -v github.com/aktau/github-release
 cd ${GITHUB_REPO}
 git checkout -f ${GITHUB_COMMIT_ID}
 export RELEASE=`git rev-list HEAD|wc -l|xargs`
-export LATEST_RELEASE=`github-release info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | head -5 | grep -oP "\- r\K\d+" | head -1`
-export NCOMMITS=$([[ $((${RELEASE} - ${LATEST_RELEASE})) -gt 1 ]] && echo $((${RELEASE} - ${LATEST_RELEASE})) || echo 1)
-export NOTE=`git log --oneline | head -${NCOMMITS} | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}'`
+#export LATEST_RELEASE=`github-release info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | head -5 | grep -oP "\- r\K\d+" | head -1`
+#export NCOMMITS=$([[ $((${RELEASE} - ${LATEST_RELEASE})) -gt 1 ]] && echo $((${RELEASE} - ${LATEST_RELEASE})) || echo 1)
+export NOTE=`git log --oneline -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}'`
 mkdir ${WORKING_DIR}/r${RELEASE}
 awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
 make clean && make GOOS=linux GOARCH=amd64 && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}

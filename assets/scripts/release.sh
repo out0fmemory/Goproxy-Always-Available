@@ -17,7 +17,7 @@ if [ -z "$GITHUB_TAG" ]; then
 	exit 1
 fi
 
-trap 'rm $HOME/tmp.*.${GITHUB_REPO}; exit' SIGNHUP SIGINT SIGQUIT SIGTERM
+trap 'rm -rf $HOME/tmp.*.${GITHUB_REPO}; exit' SIGNHUP SIGINT SIGQUIT SIGTERM
 
 export WORKING_DIR=`mktemp -d -p $HOME --suffix=.${GITHUB_REPO}`
 pushd ${WORKING_DIR}
