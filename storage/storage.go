@@ -1,12 +1,12 @@
 package storage
 
 import (
-	"bufio"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"path"
 	"path/filepath"
@@ -84,17 +84,31 @@ func Open(driver, sourceString string) (Store, error) {
 }
 
 func ReadJson(r io.Reader) ([]byte, error) {
-	var b bytes.Buffer
-	s := bufio.NewScanner(r)
 
-	for s.Scan() {
-		if !strings.HasPrefix(strings.TrimSpace(s.Text()), "//") {
-			b.Write(s.Bytes())
-		}
+	s, err := ioutil.ReadAll(r)
+	if err != nil {
+		return s, err
 	}
 
-	if err := s.Err(); err != nil {
-		return nil, err
+	lines := strings.Split(string(s), "\r\n")
+
+	var b bytes.Buffer
+	for i, line := range lines {
+		if strings.HasPrefix(strings.TrimSpace(line), "//") {
+			continue
+		}
+		if i < len(lines)-1 {
+			nextLine := strings.TrimSpace(lines[i+1])
+			if nextLine == "]" ||
+				nextLine == "]," ||
+				nextLine == "}" ||
+				nextLine == "}," {
+				if strings.HasSuffix(line, ",") {
+					line = strings.TrimSuffix(line, ",")
+				}
+			}
+		}
+		b.WriteString(line)
 	}
 
 	return b.Bytes(), nil
