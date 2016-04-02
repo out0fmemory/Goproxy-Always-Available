@@ -1,7 +1,7 @@
 {
 	"RootCA": {
-		"Name": "GoAgent",
-		"Dirname": "certcache",
+		"Name": "GoProxy",
+		"Dirname": "Cache",
 		"Duration": 31536000,
 		"RSABits": 2048
 	},
