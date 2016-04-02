@@ -17,7 +17,9 @@ if [ -z "$GITHUB_TAG" ]; then
 	exit 1
 fi
 
-export WORKING_DIR=`mktemp -d`
+trap 'rm $HOME/tmp.*.${GITHUB_REPO}; exit' SIGNHUP SIGINT SIGQUIT SIGTERM
+
+export WORKING_DIR=`mktemp -d -p $HOME --suffix=.${GITHUB_REPO}`
 pushd ${WORKING_DIR}
 
 curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjp -C .
