@@ -104,7 +104,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry:  time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
 		TCPConnDuration: lrucache.NewLRUCache(8192),
+		TCPConnError:    lrucache.NewLRUCache(8192),
 		TLSConnDuration: lrucache.NewLRUCache(8192),
+		TLSConnError:    lrucache.NewLRUCache(8192),
 		ConnExpiry:      5 * time.Minute,
 		Level:           config.Transport.Dialer.Level,
 	}
