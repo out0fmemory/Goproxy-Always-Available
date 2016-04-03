@@ -10,7 +10,6 @@ DISTDIR = $(BUILDDIR)/dist
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
-GOVENDOR ?= $(shell go env GOVENDOR)
 
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
@@ -33,11 +32,10 @@ OBJECTS :=
 OBJECTS += $(OBJECTDIR)/$(GOPROXY_EXE)
 
 SOURCES :=
-#SOURCES += $(SOURCEDIR)/goproxy.key
-#SOURCES += $(SOURCEDIR)/goproxy.pem
 SOURCES += $(REPO)/README.md
 SOURCES += $(SOURCEDIR)/main.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
+SOURCES += $(SOURCEDIR)/goproxy.pem
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(GOOS), windows)

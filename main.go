@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"net"
 	"net/http"
 	"os"
 	"runtime"
@@ -15,7 +14,6 @@ import (
 	"time"
 
 	"github.com/golang/glog"
-	"github.com/golang/groupcache"
 	"github.com/phuslu/http2"
 
 	"./httpproxy"
@@ -43,16 +41,11 @@ type Config struct {
 	LogToStderr bool
 	Addr        string
 	Http        struct {
-		Ssl             bool
+		SSL             bool
 		KeepAlivePeriod int
 		ReadTimeout     int
 		WriteTimeout    int
-		Certificate     string
-		PrivateKey      string
-	}
-	GroupCache struct {
-		Addr  string
-		Peers []string
+		KeyFile         string
 	}
 	Filters struct {
 		Request   []string
@@ -75,7 +68,6 @@ func main() {
 	pidfile := ""
 	flag.StringVar(&pidfile, "pidfile", "", "goproxy pidfile")
 	flag.StringVar(&config.Addr, "addr", config.Addr, "goproxy listen address")
-	flag.StringVar(&config.GroupCache.Addr, "groupcache-addr", config.GroupCache.Addr, "groupcache listen address")
 	if config.LogToStderr || runtime.GOOS == "windows" {
 		logToStderr := true
 		for i := 1; i < len(os.Args); i++ {
@@ -96,17 +88,6 @@ func main() {
 		}
 	}
 
-	var ln0 net.Listener
-	if config.GroupCache.Addr != "" {
-		peers := groupcache.NewHTTPPool("http://" + config.GroupCache.Addr)
-		peers.Set(config.GroupCache.Peers...)
-		ln0, err = net.Listen("tcp", config.GroupCache.Addr)
-		if err != nil {
-			glog.Fatalf("ListenTCP(%s) error: %s", config.GroupCache.Addr, err)
-		}
-		go http.Serve(ln0, peers)
-	}
-
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
 GoProxy Version    : %s (%s %s/%s)
 Listen Address     : %s
@@ -121,7 +102,7 @@ Pac Server         : http://%s/proxy.pac
 	requestFilters, roundtripFilters, responseFilters := getFilters(config)
 
 	var tlsConfig *tls.Config
-	if config.Http.Ssl {
+	if config.Http.SSL {
 
 		readPem := func(object string) []byte {
 			store, err := storage.OpenURI(configUri)
@@ -144,9 +125,8 @@ Pac Server         : http://%s/proxy.pac
 			return b
 		}
 
-		certPem := readPem(config.Http.Certificate)
-		keyPem := readPem(config.Http.Certificate)
-		tlsCert, err := tls.X509KeyPair(certPem, keyPem)
+		tlsPem := readPem(config.Http.KeyFile)
+		tlsCert, err := tls.X509KeyPair(tlsPem, tlsPem)
 		if err != nil {
 			glog.Fatalf("tls.X509KeyPair error: %s", err)
 		}
@@ -177,7 +157,7 @@ Pac Server         : http://%s/proxy.pac
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	if config.Http.Ssl {
+	if config.Http.SSL {
 		s.TLSConfig = tlsConfig
 		http2.ConfigureServer(s, &http2.Server{})
 	}

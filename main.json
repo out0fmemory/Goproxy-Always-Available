@@ -2,18 +2,11 @@
 	"LogToStderr": true,
 	"Addr": "127.0.0.1:8087",
 	"Http": {
-		"Ssl": false,
+		"SSL": false,
 		"KeepAlivePeriod": 0,
 		"ReadTimeout": 600,
 		"WriteTimeout": 3600,
-		"Certificate": "goproxy.pem",
-		"PrivateKey": "goproxy.key"
-	},
-	"GroupCache": {
-		// "addr": "127.0.0.1:10080",
-		"Peers": [
-			"http://127.0.0.1:10080"
-		]
+		"KeyFile": "goproxy.pem",
 	},
 	"Filters": {
 		"Request": [
