@@ -47,9 +47,10 @@ type Config struct {
 			DNSCacheSize   uint
 			Level          int
 		}
-		DisableKeepAlives   bool
-		DisableCompression  bool
-		MaxIdleConnsPerHost int
+		DisableKeepAlives     bool
+		DisableCompression    bool
+		ResponseHeaderTimeout int
+		MaxIdleConnsPerHost   int
 	}
 }
 
@@ -112,9 +113,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	tr := &http.Transport{
-		Dial:                d.Dial,
-		DialTLS:             d.DialTLS,
-		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
+		Dial:                  d.Dial,
+		DialTLS:               d.DialTLS,
+		DisableKeepAlives:     config.Transport.DisableKeepAlives,
+		DisableCompression:    config.Transport.DisableCompression,
+		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
+		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
 	}
 
 	servers := make([]gae.Server, 0)

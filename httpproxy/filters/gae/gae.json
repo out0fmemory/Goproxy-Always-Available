@@ -107,6 +107,7 @@
 		},
 		"DisableKeepAlives": false,
 		"DisableCompression": false,
+		"ResponseHeaderTimeout": 0,
 		"MaxIdleConnsPerHost": 16
 	}
 }
