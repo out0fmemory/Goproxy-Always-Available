@@ -14,6 +14,21 @@ type HostMatcher struct {
 	wildcardMap  map[string]interface{}
 }
 
+func (hm *HostMatcher) add(host string, value interface{}) {
+	switch {
+	case host == "*":
+		hm.starValue = value
+	case !strings.Contains(host, "*"):
+		hm.strictMap[host] = value
+	case strings.HasPrefix(host, "*") && !strings.Contains(host[1:], "*"):
+		hm.prefixList = append(hm.prefixList, host[1:])
+		hm.prefixMap[host[1:]] = value
+	default:
+		hm.wildcardList = append(hm.wildcardList, host)
+		hm.wildcardMap[host] = value
+	}
+}
+
 func NewHostMatcher(hosts []string) *HostMatcher {
 	values := make(map[string]interface{}, len(hosts))
 	for _, host := range hosts {
@@ -40,22 +55,19 @@ func NewHostMatcherWithValue(values map[string]interface{}) *HostMatcher {
 		wildcardMap:  make(map[string]interface{}),
 	}
 
-	for key, value := range values {
-		switch {
-		case key == "*":
-			hm.starValue = value
-		case !strings.Contains(key, "*"):
-			hm.strictMap[key] = value
-		case strings.HasPrefix(key, "*") && !strings.Contains(key[1:], "*"):
-			hm.prefixList = append(hm.prefixList, key[1:])
-			hm.prefixMap[key[1:]] = value
-		default:
-			hm.wildcardList = append(hm.wildcardList, key)
-			hm.wildcardMap[key] = value
-		}
+	for host, value := range values {
+		hm.add(host, value)
 	}
 
 	return hm
+}
+
+func (hm *HostMatcher) AddHost(host string) {
+	hm.AddHostWithValue(host, struct{}{})
+}
+
+func (hm *HostMatcher) AddHostWithValue(host string, value interface{}) {
+	hm.add(host, value)
 }
 
 func (hm *HostMatcher) Match(host string) bool {
