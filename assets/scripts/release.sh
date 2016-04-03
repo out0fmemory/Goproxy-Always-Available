@@ -1,6 +1,7 @@
 #!/bin/bash
 
 set -x
+set -e
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
 export GITHUB_REPO=goproxy
@@ -17,9 +18,10 @@ if [ -z "$GITHUB_TAG" ]; then
 	exit 1
 fi
 
-trap 'rm -rf $HOME/tmp.*.${GITHUB_REPO}; exit' SIGNHUP SIGINT SIGQUIT SIGTERM
+trap 'rm -rf $HOME/tmp.*.${GITHUB_REPO}; exit' SIGINT SIGQUIT SIGTERM
 
-export WORKING_DIR=`mktemp -d -p $HOME --suffix=.${GITHUB_REPO}`
+export WORKING_DIR=${HOME}/tmp.$$.${GITHUB_REPO}
+mkdir -p $WORKING_DIR
 pushd ${WORKING_DIR}
 
 curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjp -C .
