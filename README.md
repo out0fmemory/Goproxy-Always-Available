@@ -12,7 +12,7 @@ goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/rel
 
 ## 代码
  * goproxy https://github.com/phuslu/goproxy
- * goagent.exe https://github.com/phuslu/taskbar
+ * goproxy-gui.exe https://github.com/phuslu/taskbar
 
 ## 许可证
  * GPLv2 http://www.gnu.org/licenses/old-licenses/gpl-2.0.html

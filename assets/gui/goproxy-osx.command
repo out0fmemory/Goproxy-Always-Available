@@ -5,8 +5,8 @@
 
 __version__ = '1.6'
 
-GOAGENT_TITLE = "GoAgent OS X"
-GOAGENT_ICON_DATA = """\
+GOPROXY_TITLE = "GoProxy OS X"
+GOPROXY_ICON_DATA = """\
 iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAABGdBTUEAALGPC/xhBQAAAAFzUkdC
 AK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAArtQTFRF
 AAAAeHh4e3t7aWlpODg4gICAYmJifX19UVFRd3d3b29vT09PExMTdnZ2dXV10tLScHBwFRUVx8fH
@@ -49,18 +49,18 @@ from AppKit import *
 ColorSet=[NSColor.blackColor(), NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
 
 
-class GoAgentOSX(NSObject):
+class GoProxyOSX(NSObject):
 
     console_color=ColorSet[0]
 
     def applicationDidFinishLaunching_(self, notification):
         self.setupUI()
-        self.startGoAgent()
+        self.startGoProxy()
         self.notify()
         self.registerObserver()
 
     def windowWillClose_(self, notification):
-        self.stopGoAgent()
+        self.stopGoProxy()
         NSApp.terminate_(self)
 
     def setupUI(self):
@@ -68,14 +68,14 @@ class GoAgentOSX(NSObject):
         # Create the statusbar item
         self.statusitem = self.statusbar.statusItemWithLength_(NSVariableStatusItemLength)
         # Set initial image
-        raw_data = base64.b64decode(''.join(GOAGENT_ICON_DATA.strip().splitlines()))
+        raw_data = base64.b64decode(''.join(GOPROXY_ICON_DATA.strip().splitlines()))
         self.image_data = NSData.dataWithBytes_length_(raw_data, len(raw_data))
         self.image = NSImage.alloc().initWithData_(self.image_data)
         self.statusitem.setImage_(self.image)
         # Let it highlight upon clicking
         self.statusitem.setHighlightMode_(1)
         # Set a tooltip
-        self.statusitem.setToolTip_(GOAGENT_TITLE)
+        self.statusitem.setToolTip_(GOPROXY_TITLE)
 
         # Build a very simple menu
         self.menu = NSMenu.alloc().init()
@@ -97,7 +97,7 @@ class GoAgentOSX(NSObject):
         # Console window
         frame = NSMakeRect(0, 0, 550, 350)
         self.console_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(frame, NSClosableWindowMask | NSTitledWindowMask, NSBackingStoreBuffered, False)
-        self.console_window.setTitle_(GOAGENT_TITLE)
+        self.console_window.setTitle_(GOPROXY_TITLE)
         self.console_window.setDelegate_(self)
 
         # Console view inside a scrollview
@@ -125,7 +125,7 @@ class GoAgentOSX(NSObject):
         nc = NSWorkspace.sharedWorkspace().notificationCenter()
         nc.addObserver_selector_name_object_(self, 'exit:', NSWorkspaceWillPowerOffNotification, None)
 
-    def startGoAgent(self):
+    def startGoProxy(self):
         cmd = '%s/goproxy -v=2' % os.path.dirname(os.path.abspath(__file__))
         self.master, self.slave = pty.openpty()
         self.pipe = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=self.slave, stderr=self.slave, close_fds=True)
@@ -135,14 +135,14 @@ class GoAgentOSX(NSObject):
     def notify(self):
         from Foundation import NSUserNotification, NSUserNotificationCenter
         notification = NSUserNotification.alloc().init()
-        notification.setTitle_("GoAgent OSX Started.")
+        notification.setTitle_("GoProxy OSX Started.")
         notification.setSubtitle_("")
         notification.setInformativeText_("")
         notification.setSoundName_("NSUserNotificationDefaultSoundName")
         notification.setContentImage_(self.image)
         NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
 
-    def stopGoAgent(self):
+    def stopGoProxy(self):
         self.pipe.terminate()
 
     def parseLine(self, line):
@@ -183,12 +183,12 @@ class GoAgentOSX(NSObject):
 
     def reset_(self, notification):
         self.show_(True)
-        self.stopGoAgent()
+        self.stopGoProxy()
         self.console_view.setString_('')
-        self.startGoAgent()
+        self.startGoProxy()
 
     def exit_(self, notification):
-        self.stopGoAgent()
+        self.stopGoProxy()
         NSApp.terminate_(self)
 
 
@@ -200,7 +200,7 @@ def main():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     app = NSApplication.sharedApplication()
-    delegate = GoAgentOSX.alloc().init()
+    delegate = GoProxyOSX.alloc().init()
     app.setDelegate_(delegate)
 
     AppHelper.runEventLoop()

@@ -1,9 +1,9 @@
 build
 gfwlist.txt
-goagent-gtk.desktop
-goagent-gtk.py
-goagent-osx.command
-goagent-logo.png
+goproxy-gtk.desktop
+goproxy-gtk.py
+goproxy-osx.command
+goproxy-logo.png
 *.user.json
 *.exe
 *.exe~

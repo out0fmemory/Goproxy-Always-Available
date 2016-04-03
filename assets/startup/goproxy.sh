@@ -1,25 +1,25 @@
 #!/bin/sh
 #
-# goagent init script
+# goproxy init script
 #
 
 ### BEGIN INIT INFO
-# Provides:          goagent
+# Provides:          goproxy
 # Required-Start:    $syslog
 # Required-Stop:     $syslog
 # Should-Start:      $local_fs
 # Should-Stop:       $local_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Monitor for goagent activity
-# Description:       goagent is a gae proxy forked from gappproxy/wallproxy.
+# Short-Description: Monitor for goproxy activity
+# Description:       goproxy is a gae proxy forked from gappproxy/wallproxy.
 ### END INIT INFO
 
 # **NOTE** bash will exit immediately if any command exits with non-zero.
 set -e
 
-PACKAGE_NAME=goagent
-PACKAGE_DESC="goagent proxy server"
+PACKAGE_NAME=goproxy
+PACKAGE_DESC="goproxy proxy server"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 
 start() {

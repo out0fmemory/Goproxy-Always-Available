@@ -5,7 +5,7 @@
 
 __version__ = '1.6'
 
-GOAGENT_LOGO_DATA = """\
+GOPROXY_LOGO_DATA = """\
 iVBORw0KGgoAAAANSUhEUgAAADcAAAA3CAYAAACo29JGAAAABHNCSVQICAgIfAhkiAAADVdJREFU
 aIHtmnuMXPV1xz/ndx8z4/UT8bKTEscOBa1FAt2kSYvAECxegTZRu6uGJDQJld0ofShNpJZSOlnU
 KFWhSUorWlMpoaIq6q4gECANwcQ4SkkpXqVJ8DQpsBGPUgUoxsa787j39/v2j3tndmcfthmbVK1y
@@ -77,7 +77,7 @@ import base64
 import platform
 
 if platform.mac_ver()[0] > '10.':
-    sys.exit(os.system('osascript -e \'display dialog "Please run goagent-osx.command instead." buttons {"OK"} default button 1 with icon caution with title "GoAgent GTK"\''))
+    sys.exit(os.system('osascript -e \'display dialog "Please run goproxy-osx.command instead." buttons {"OK"} default button 1 with icon caution with title "GoProxy GTK"\''))
 
 try:
     import pygtk
@@ -85,10 +85,10 @@ try:
     import gtk
     # gtk.gdk.threads_init()
 except Exception:
-    sys.exit(os.system('gdialog --title "GoAgent GTK" --msgbox "Please install python-gtk2" 15 60'))
+    sys.exit(os.system('gdialog --title "GoProxy GTK" --msgbox "Please install python-gtk2" 15 60'))
 try:
     import pynotify
-    pynotify.init('GoAgent Notify')
+    pynotify.init('GoProxy Notify')
 except ImportError:
     pynotify = None
 try:
@@ -116,15 +116,15 @@ def drop_desktop():
 #!/usr/bin/env xdg-open
 [Desktop Entry]
 Type=Application
-Name=GoAgent GTK
-Comment=GoAgent GTK Launcher
+Name=GoProxy GTK
+Comment=GoProxy GTK Launcher
 Categories=Network;Proxy;
 Exec=/usr/bin/env python2 "%s"
-Icon=%s/goagent-logo.png
+Icon=%s/goproxy-logo.png
 Terminal=false
 StartupNotify=true
 ''' % (filename, dirname)
-    filename1 = os.path.join(dirname, 'goagent-gtk.desktop')
+    filename1 = os.path.join(dirname, 'goproxy-gtk.desktop')
     with open(filename1, 'w') as fp:
         fp.write(DESKTOP_FILE)
         os.chmod(filename1, 0755)
@@ -137,11 +137,11 @@ def should_visible():
 #appindicator = None
 
 
-class GoAgentGTK:
+class GoProxyGTK:
 
     command = [os.path.join(os.path.dirname(os.path.abspath(__file__)), 'goproxy'), '-v=2']
-    message = u'GoAgent already started.'
-    fail_message = u'GoAgent start failed, refer to terminal for details'
+    message = u'GoProxy already started.'
+    fail_message = u'GoProxy start failed, refer to terminal for details'
 
     def __init__(self, window, terminal):
         self.window = window
@@ -163,14 +163,14 @@ class GoAgentGTK:
         if should_visible():
             self.window.show_all()
 
-        logo_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'goagent-logo.png')
+        logo_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'goproxy-logo.png')
         if not os.path.isfile(logo_filename):
             with open(logo_filename, 'wb') as fp:
-                fp.write(base64.b64decode(GOAGENT_LOGO_DATA))
+                fp.write(base64.b64decode(GOPROXY_LOGO_DATA))
         self.window.set_icon_from_file(logo_filename)
 
         if appindicator:
-            self.trayicon = appindicator.Indicator('GoAgent', 'indicator-messages', appindicator.CATEGORY_APPLICATION_STATUS)
+            self.trayicon = appindicator.Indicator('GoProxy', 'indicator-messages', appindicator.CATEGORY_APPLICATION_STATUS)
             self.trayicon.set_status(appindicator.STATUS_ACTIVE)
             self.trayicon.set_attention_icon('indicator-messages-new')
             self.trayicon.set_icon(logo_filename)
@@ -180,7 +180,7 @@ class GoAgentGTK:
             self.trayicon.set_from_file(logo_filename)
             self.trayicon.connect('popup-menu', lambda i, b, t: self.make_menu().popup(None, None, gtk.status_icon_position_menu, b, t, self.trayicon))
             self.trayicon.connect('activate', self.show_hide_toggle)
-            self.trayicon.set_tooltip('GoAgent')
+            self.trayicon.set_tooltip('GoProxy')
             self.trayicon.set_visible(True)
 
     def make_menu(self):
@@ -200,7 +200,7 @@ class GoAgentGTK:
 
     def show_notify(self, message=None, timeout=None):
         if pynotify and message:
-            notification = pynotify.Notification('GoAgent Notify', message)
+            notification = pynotify.Notification('GoProxy Notify', message)
             notification.set_hint('x', 200)
             notification.set_hint('y', 400)
             if timeout:
@@ -268,13 +268,13 @@ def main():
         __file__ = getattr(os, 'readlink', lambda x: x)(__file__)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    if not os.path.exists('goagent-logo.png'):
+    if not os.path.exists('goproxy-logo.png'):
         # first run and drop shortcut to desktop
         drop_desktop()
 
     window = gtk.Window()
     terminal = vte.Terminal()
-    GoAgentGTK(window, terminal)
+    GoProxyGTK(window, terminal)
     gtk.main()
 
 if __name__ == '__main__':
