@@ -8,13 +8,16 @@ import (
 	"strings"
 	"sync"
 
+	"../direct"
+
 	"github.com/golang/glog"
 )
 
 type Transport struct {
 	http.RoundTripper
-	Servers   []Server
-	muServers sync.Mutex
+	MultiDialer *direct.MultiDialer
+	Servers     []Server
+	muServers   sync.Mutex
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -59,6 +62,12 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	switch resp.StatusCode {
+	case http.StatusBadGateway:
+		if strings.Contains(resp.Header.Get("Via"), "Chrome-Compression-Proxy") {
+			if t.MultiDialer != nil {
+				//FIXME: we need ban the server in MultiDialer, but how?
+			}
+		}
 	case 503:
 		if len(t.Servers) == 1 {
 			break

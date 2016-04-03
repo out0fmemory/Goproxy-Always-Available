@@ -148,6 +148,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		Config: *config,
 		GAETransport: &gae.Transport{
 			RoundTripper: tr,
+			MultiDialer:  d,
 			Servers:      servers,
 		},
 		DirectTransport:   tr,
