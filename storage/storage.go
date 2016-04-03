@@ -90,13 +90,16 @@ func ReadJson(r io.Reader) ([]byte, error) {
 		return s, err
 	}
 
-	lines := strings.Split(string(s), "\r\n")
-
-	var b bytes.Buffer
-	for i, line := range lines {
+	lines := make([]string, 0)
+	for _, line := range strings.Split(string(s), "\r\n") {
 		if strings.HasPrefix(strings.TrimSpace(line), "//") {
 			continue
 		}
+		lines = append(lines, line)
+	}
+
+	var b bytes.Buffer
+	for i, line := range lines {
 		if i < len(lines)-1 {
 			nextLine := strings.TrimSpace(lines[i+1])
 			if nextLine == "]" ||
