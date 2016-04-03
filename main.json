@@ -18,8 +18,8 @@
 	"Filters": {
 		"Request": [
 			// "auth",
-			"stripssl"
-			// "autorange"
+			"stripssl",
+			// "autorange",
 		],
 		"RoundTrip": [
 			"autoproxy",
@@ -27,11 +27,11 @@
 			// "vps",
 			"php",
 			// "gae",
-			"direct"
+			"direct",
 		],
 		"Response": [
-			// "autorange"
-			// "ratelimit"
+			// "autorange",
+			// "ratelimit",
 		]
 	}
 }
