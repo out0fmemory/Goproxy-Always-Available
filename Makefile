@@ -35,7 +35,7 @@ SOURCES :=
 SOURCES += $(REPO)/README.md
 SOURCES += $(SOURCEDIR)/main.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
-SOURCES += $(SOURCEDIR)/goproxy.pem
+#SOURCES += $(SOURCEDIR)/goproxy.pem
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(GOOS), windows)

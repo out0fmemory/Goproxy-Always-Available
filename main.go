@@ -11,13 +11,12 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
-	"unsafe"
 
 	"github.com/golang/glog"
 	"github.com/phuslu/http2"
 
+	"./console"
 	"./httpproxy"
 	"./httpproxy/filters"
 	"./storage"
@@ -91,8 +90,7 @@ func main() {
 	}
 
 	if runtime.GOOS == "windows" {
-		SetConsoleTitleW := syscall.NewLazyDLL("kernel32.dll").NewProc("SetConsoleTitleW")
-		SetConsoleTitleW.Call(uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(fmt.Sprintf("GoProxy %s", version)))))
+		console.SetWindowTitle(fmt.Sprintf("GoProxy %s", version))
 	}
 
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
