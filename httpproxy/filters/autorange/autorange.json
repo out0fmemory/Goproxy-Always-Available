@@ -21,6 +21,12 @@
 		"vs*.thisav.com",
 		"x*.last.fm"
 	],
+	"SupportFilters": [
+		"gae",
+		"php",
+		"vps",
+		"direct"
+	],
 	"MaxSize": 1572864,
 	"BufSize": 8192,
 	"Threads": 3

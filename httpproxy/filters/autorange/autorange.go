@@ -20,18 +20,20 @@ const (
 )
 
 type Config struct {
-	Sites   []string
-	MaxSize int
-	BufSize int
-	Threads int
+	Sites          []string
+	SupportFilters []string
+	MaxSize        int
+	BufSize        int
+	Threads        int
 }
 
 type Filter struct {
 	Config
-	SiteMatcher *httpproxy.HostMatcher
-	MaxSize     int
-	BufSize     int
-	Threads     int
+	SiteMatcher    *httpproxy.HostMatcher
+	SupportFilters map[string]struct{}
+	MaxSize        int
+	BufSize        int
+	Threads        int
 }
 
 func init() {
@@ -55,11 +57,16 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
-		Config:      *config,
-		SiteMatcher: httpproxy.NewHostMatcher(config.Sites),
-		MaxSize:     config.MaxSize,
-		BufSize:     config.BufSize,
-		Threads:     config.Threads,
+		Config:         *config,
+		SiteMatcher:    httpproxy.NewHostMatcher(config.Sites),
+		SupportFilters: make(map[string]struct{}),
+		MaxSize:        config.MaxSize,
+		BufSize:        config.BufSize,
+		Threads:        config.Threads,
+	}
+
+	for _, name := range config.SupportFilters {
+		f.SupportFilters[name] = struct{}{}
 	}
 
 	return f, nil
@@ -106,6 +113,10 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 
 	f1 := ctx.GetRoundTripFilter()
 	if f1 == nil {
+		return ctx, resp, nil
+	}
+	if _, ok := f.SupportFilters[f1.FilterName()]; !ok {
+		glog.V(2).Infof("AUTORANGE hit a unsupported filter=%#v", f1)
 		return ctx, resp, nil
 	}
 
