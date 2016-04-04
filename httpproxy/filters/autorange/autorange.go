@@ -86,10 +86,12 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		case f.SiteMatcher.Match(req.Host):
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
 			glog.V(2).Infof("AUTORANGE Sites rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
+			ctx.SetBool("autorange.site", true)
 		default:
 			glog.V(2).Infof("AUTORANGE ignore preserved range=%v", r)
 		}
 	} else {
+		ctx.SetBool("autorange.default", true)
 		parts := strings.Split(r, "=")
 		switch parts[0] {
 		case "bytes":
@@ -108,6 +110,10 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 
 func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.Context, *http.Response, error) {
 	if resp.StatusCode != http.StatusPartialContent || resp.Header.Get("Content-Length") == "" {
+		return ctx, resp, nil
+	}
+
+	if ok1, ok := ctx.GetBool("autorange.default"); ok && ok1 {
 		return ctx, resp, nil
 	}
 
