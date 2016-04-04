@@ -1,4 +1,4 @@
-goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases) 每日构建版 [ ![Codeship Status for phuslu/goproxy](https://codeship.com/projects/9b9911e0-c127-0133-ac2e-2ad0c68f5cf1/status?branch=master)](https://github.com/phuslu/goproxy-ci/releases)
+goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases) [ ![Codeship Status for phuslu/goproxy](https://codeship.com/projects/9b9911e0-c127-0133-ac2e-2ad0c68f5cf1/status?branch=master)](https://github.com/phuslu/goproxy-ci/releases)
 
 ## 讨论区
 * https://github.com/phuslu/goproxy/issues?q=sort:updated-desc
@@ -8,7 +8,6 @@ goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/rel
 * 图文教程 https://github.com/phuslu/goproxy/blob/wiki/InstallGuide.md
 * 常见问题 https://github.com/phuslu/goproxy/blob/wiki/FAQ.md
 * 配置介绍 https://github.com/phuslu/goproxy/blob/wiki/ConfigIntroduce.md
-* 更新历史 https://github.com/phuslu/goproxy/blob/wiki/History.md
 
 ## 代码
  * goproxy https://github.com/phuslu/goproxy
