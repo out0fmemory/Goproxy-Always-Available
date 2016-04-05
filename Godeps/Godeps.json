@@ -1,5 +1,5 @@
 {
-	"ImportPath": "github.com/phuslu/fetchserver",
+	"ImportPath": "github.com/phuslu/goproxy",
 	"GoVersion": "go1.6",
 	"Packages": [
 		"./..."
