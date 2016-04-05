@@ -94,12 +94,12 @@ func main() {
 	}
 
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
-GoProxy Version    : %s (%s %s/%s)
+GoProxy Version    : %s (go/%s %s/%s)
 Listen Address     : %s
 Enabled Filters    : %v
 Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
-`, version, runtime.Version(), runtime.GOOS, runtime.GOARCH,
+`, version, strings.Split(runtime.Version(), " ")[0], runtime.GOOS, runtime.GOARCH,
 		config.Addr,
 		fmt.Sprintf("%s|%s|%s", strings.Join(config.Filters.Request, ","), strings.Join(config.Filters.RoundTrip, ","), strings.Join(config.Filters.Response, ",")),
 		config.Addr)
