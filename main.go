@@ -99,7 +99,7 @@ Listen Address     : %s
 Enabled Filters    : %v
 Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
-`, version, strings.Split(runtime.Version(), " ")[0], runtime.GOOS, runtime.GOARCH,
+`, version, strings.Split(strings.Replace(runtime.Version(), "devel +", "devel+", 1), " ")[0], runtime.GOOS, runtime.GOARCH,
 		config.Addr,
 		fmt.Sprintf("%s|%s|%s", strings.Join(config.Filters.Request, ","), strings.Join(config.Filters.RoundTrip, ","), strings.Join(config.Filters.Response, ",")),
 		config.Addr)
