@@ -1,0 +1,7 @@
+{
+  "name": "goproxy fetchserver",
+  "description": "a golang fetchserver for goproxy",
+  "repository": "https://github.com/phuslu/fetchserver.git",
+  "logo": "https://avatars3.githubusercontent.com/u/195836?s=60",
+  "keywords": ["golang", "fetchserver", "golang"]
+}
