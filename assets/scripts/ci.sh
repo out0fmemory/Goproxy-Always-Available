@@ -4,21 +4,22 @@ export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_PASS=${GITHUB_PASS:-$(cat ~/GITHUB_PASS)}
 export GITHUB_TOKEN=${GITHUB_TOKEN:-$(cat ~/GITHUB_TOKEN)}
 export GITHUB_COMMIT_ID=${COMMIT_ID:-master}
-export WORKING_DIR=$(mktemp -d -p $HOME --suffix=.${GITHUB_REPO})
+export WORKING_DIR=$HOME/tmp.${RANDOM:-$$}.${GITHUB_REPO}
 export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+mkdir -p ${WORKING_DIR}
 cd ${WORKING_DIR}
 curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
 mv go go1.6
-curl -L https://github.com/phuslu/go/archive/release-branch.go1.6.tar.gz | tar xz
-mv go-release-branch.go1.6 go
+git clone https://github.com/phuslu/go
+(cd go && git remote add -f upstream https://github.com/golang/go && git rebase upstream/master)
 (cd go/src/ && bash ./make.bash)
 cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env
 git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
 git clone --branch "master" https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
-go get -v github.com/aktau/github-release
+curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjpv | xargs -n1 -i mv -f {} $GOROOT/bin/
 cd ${GITHUB_REPO}
 git checkout -f ${GITHUB_COMMIT_ID}
 export RELEASE=`git rev-list HEAD|wc -l|xargs`
