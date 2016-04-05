@@ -9,6 +9,8 @@ export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+git config --global user.name ${GITHUB_USER}
+git config --global user.email "${GITHUB_USER}@noreply.github.com"
 mkdir -p ${WORKING_DIR}
 cd ${WORKING_DIR}
 curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
@@ -37,8 +39,6 @@ make clean && make GOOS=darwin GOARCH=386  && cp -r build/dist/* ${WORKING_DIR}/
 make clean && make GOOS=darwin GOARCH=amd64  && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
 ls -lht ${WORKING_DIR}/r${RELEASE}/*
 cd ${WORKING_DIR}/${GITHUB_CI_REPO}/
-git config user.name ${GITHUB_USER}
-git config user.email "${GITHUB_USER}@noreply.github.com"
 git commit --allow-empty -m "release"
 git tag -d r${RELEASE} || true
 git tag r${RELEASE}
