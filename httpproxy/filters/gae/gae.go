@@ -34,6 +34,7 @@ type Config struct {
 	Site2Alias  map[string]string
 	HostMap     map[string][]string
 	ForceHTTPS  []string
+	ForceGAE    []string
 	DNSServers  []string
 	IPBlackList []string
 	Transport   struct {
@@ -59,6 +60,7 @@ type Filter struct {
 	GAETransport      *gae.Transport
 	DirectTransport   *http.Transport
 	ForceHTTPSMatcher *httpproxy.HostMatcher
+	ForceGAEMatcher   *httpproxy.HostMatcher
 	SiteMatcher       *httpproxy.HostMatcher
 	DirectSiteMatcher *httpproxy.HostMatcher
 }
@@ -153,6 +155,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 		DirectTransport:   tr,
 		ForceHTTPSMatcher: httpproxy.NewHostMatcher(config.ForceHTTPS),
+		ForceGAEMatcher:   httpproxy.NewHostMatcher(config.ForceGAE),
 		SiteMatcher:       httpproxy.NewHostMatcher(config.Sites),
 		DirectSiteMatcher: httpproxy.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
@@ -210,7 +213,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			}
 		}
 
-		if req.URL.Scheme != "http" {
+		if req.URL.Scheme != "http" && !f.ForceGAEMatcher.Match(req.Host) {
 			tr = f.DirectTransport
 			prefix = "DIRECT"
 		}
