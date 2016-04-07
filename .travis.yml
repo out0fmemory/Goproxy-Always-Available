@@ -1,0 +1,38 @@
+sudo: false
+
+language: bash
+
+install:
+  - wget https://github.com/phuslu/goproxy/raw/master/assets/scripts/ci.sh
+
+script:
+  - bash -e ci.sh
+
+env:
+  global:
+    - GITHUB_USER=phuslu
+    - GITHUB_REPO=goproxy
+    - GITHUB_CI_REPO=goproxy-ci
+
+addons:
+  apt:
+    packages:
+    - p7zip-full
+
+branches:
+  only:
+  - master
+
+notifications:
+  email:
+    recipients:
+    - phuslu@hotmail.com
+    on_success: change
+    on_failure: change
+  webhooks:
+    urls:
+      # This URL can be obtained by going to the Gitter chat room
+      # and clicking Settings > Integrations.
+      - https://webhooks.gitter.im/e/3bdae0b20a866e2b09f1
+    on_success: never
+    on_failure: always
