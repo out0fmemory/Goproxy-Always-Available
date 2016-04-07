@@ -89,20 +89,21 @@ func main() {
 		}
 	}
 
-	if runtime.GOOS == "windows" {
-		console.SetWindowTitle(fmt.Sprintf("GoProxy %s", version))
-	}
-
+	gover := strings.Split(strings.Replace(runtime.Version(), "devel +", "devel+", 1), " ")[0]
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
 GoProxy Version    : %s (go/%s %s/%s)
 Listen Address     : %s
 Enabled Filters    : %v
 Pac Server         : http://%s/proxy.pac
 ------------------------------------------------------
-`, version, strings.Split(strings.Replace(runtime.Version(), "devel +", "devel+", 1), " ")[0], runtime.GOOS, runtime.GOARCH,
+`, version, gover, runtime.GOOS, runtime.GOARCH,
 		config.Addr,
 		fmt.Sprintf("%s|%s|%s", strings.Join(config.Filters.Request, ","), strings.Join(config.Filters.RoundTrip, ","), strings.Join(config.Filters.Response, ",")),
 		config.Addr)
+
+	if runtime.GOOS == "windows" {
+		console.SetWindowTitle(fmt.Sprintf("GoProxy %s (go/%s)", version, gover))
+	}
 
 	requestFilters, roundtripFilters, responseFilters := getFilters(config)
 
