@@ -5,7 +5,7 @@ export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_PASS=${GITHUB_PASS:-$(cat ~/GITHUB_PASS)}
 export GITHUB_TOKEN=${GITHUB_TOKEN:-$(cat ~/GITHUB_TOKEN)}
-export GITHUB_COMMIT_ID=${COMMIT_ID:-master}
+export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
 export WORKING_DIR=$HOME/tmp.${RANDOM:-$$}.${GITHUB_REPO}
 export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
@@ -25,7 +25,7 @@ git clone https://github.com/phuslu/go
 (cd go && git remote add -f upstream https://github.com/golang/go && git rebase upstream/master)
 (cd go/src/ && BUILD_GO_TAG_BACK_STEPS=~3 && bash ./make.bash)
 
-cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env
+cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env | grep -v GITHUB_
 
 git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
 git clone --branch "master" https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
