@@ -43,13 +43,12 @@ export NOTE=`git log --oneline -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_
 mkdir ${WORKING_DIR}/r${RELEASE}
 
 awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
-make clean && make GOOS=linux GOARCH=amd64 && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
-make clean && make GOOS=linux GOARCH=386 && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
-make clean && make GOOS=linux GOARCH=arm && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
-make clean && make GOOS=windows GOARCH=386  && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
-make clean && make GOOS=windows GOARCH=amd64  && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
-make clean && make GOOS=darwin GOARCH=386  && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
-make clean && make GOOS=darwin GOARCH=amd64  && cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
+
+for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 darwin/amd64 darwin/386 windows/amd64 windows/386; do
+	make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
+	cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
+	make clean
+done
 
 ls -lht ${WORKING_DIR}/r${RELEASE}/*
 
