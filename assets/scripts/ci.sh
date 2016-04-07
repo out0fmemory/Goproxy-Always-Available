@@ -28,7 +28,7 @@ git clone https://github.com/phuslu/go
 cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env | grep -v GITHUB_
 
 git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
-git clone --branch "master" https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
+git clone --branch "master" "https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}" ${GITHUB_CI_REPO}
 
 curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjpv | xargs -n1 -i mv -f {} $GOROOT/bin/
 
@@ -56,7 +56,7 @@ cd ${WORKING_DIR}/${GITHUB_CI_REPO}/
 git commit --allow-empty -m "release"
 git tag -d r${RELEASE} || true
 git tag r${RELEASE}
-git push -f origin r${RELEASE}
+git push -qf origin r${RELEASE}
 
 cd ${WORKING_DIR}/r${RELEASE}/
 github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} || true
