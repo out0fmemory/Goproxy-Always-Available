@@ -1,4 +1,4 @@
-goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases) [ ![Codeship Status for phuslu/goproxy](https://codeship.com/projects/9b9911e0-c127-0133-ac2e-2ad0c68f5cf1/status?branch=master)](https://github.com/phuslu/goproxy-ci/releases)
+goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases) [ ![CI Status for phuslu/goproxy](https://travis-ci.org/phuslu/goproxy.svg?branch=master)](https://github.com/phuslu/goproxy-ci/releases)
 
 ## 讨论区
 * https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
