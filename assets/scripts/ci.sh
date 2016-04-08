@@ -35,14 +35,12 @@ curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-a
 cd ${GITHUB_REPO}
 git checkout -f ${GITHUB_COMMIT_ID}
 
-export RELEASE=`git rev-list HEAD|wc -l|xargs`
-#export LATEST_RELEASE=`github-release info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | head -5 | grep -oP "\- r\K\d+" | head -1`
-#export NCOMMITS=$([[ $((${RELEASE} - ${LATEST_RELEASE})) -gt 1 ]] && echo $((${RELEASE} - ${LATEST_RELEASE})) || echo 1)
-export NOTE=`git log --oneline -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}'`
+export RELEASE=$(git rev-list HEAD| wc -l |xargs)
+export NOTE=$(git log --oneline -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}')
 
 mkdir ${WORKING_DIR}/r${RELEASE}
 
-awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
+awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v {}
 
 for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 darwin/amd64 darwin/386 windows/amd64 windows/386; do
 	make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
@@ -59,7 +57,7 @@ git tag r${RELEASE}
 git push -qf origin r${RELEASE}
 
 cd ${WORKING_DIR}/r${RELEASE}/
-github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} || true
+github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} 2>/dev/null || true
 sleep 1
 github-release release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "r${RELEASE}: ${NOTE}"
 
