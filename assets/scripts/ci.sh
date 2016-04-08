@@ -3,8 +3,6 @@
 export GITHUB_USER=${GITHUB_USER:-phuslu}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
-export GITHUB_PASS=${GITHUB_PASS:-$(cat ~/GITHUB_PASS)}
-export GITHUB_TOKEN=${GITHUB_TOKEN:-$(cat ~/GITHUB_TOKEN)}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
 export WORKING_DIR=$HOME/tmp.${RANDOM:-$$}.${GITHUB_REPO}
 export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
@@ -12,8 +10,15 @@ export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 
+if [ ${#GITHUB_TOKEN} -eq 0 ]; then
+	echo "\$GITHUB_TOKEN is not set, abort"
+	exit 1
+fi
+
 git config --global user.name ${GITHUB_USER}
 git config --global user.email "${GITHUB_USER}@noreply.github.com"
+
+grep -q 'machine github.com' ~/.netrc || echo "machine github.com login $GITHUB_USER password $GITHUB_TOKEN" >>~/.netrc
 
 mkdir -p ${WORKING_DIR}
 cd ${WORKING_DIR}
@@ -23,12 +28,12 @@ mv go go1.6
 
 git clone https://github.com/phuslu/go
 (cd go && git remote add -f upstream https://github.com/golang/go && git rebase upstream/master)
-(cd go/src/ && BUILD_GO_TAG_BACK_STEPS=~3 && bash ./make.bash)
+(cd go/src/ && BUILD_GO_TAG_BACK_STEPS=~3 bash ./make.bash)
 
-cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env | grep -v GITHUB_
+echo && cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env | grep -v GITHUB_TOKEN
 
 git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
-git clone --branch "master" "https://${GITHUB_USER}:${GITHUB_PASS}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}" ${GITHUB_CI_REPO}
+git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
 
 curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjpv | xargs -n1 -i mv -f {} $GOROOT/bin/
 
@@ -36,7 +41,7 @@ cd ${GITHUB_REPO}
 git checkout -f ${GITHUB_COMMIT_ID}
 
 export RELEASE=$(git rev-list HEAD| wc -l |xargs)
-export NOTE=$(git log --oneline -1 | awk -v GITHUB_USER=${GITHUB_USER} -v GITHUB_REPO=${GITHUB_REPO} '{$1="[\`"$1"\`](https://github.com/"GITHUB_USER"/"GITHUB_REPO"/commit/"$1")";print}')
+export NOTE=$(git log -1 --oneline --format="[\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
 
 mkdir ${WORKING_DIR}/r${RELEASE}
 
@@ -54,10 +59,10 @@ cd ${WORKING_DIR}/${GITHUB_CI_REPO}/
 git commit --allow-empty -m "release"
 git tag -d r${RELEASE} || true
 git tag r${RELEASE}
-git push -qf origin r${RELEASE}
+git push -f origin r${RELEASE}
 
 cd ${WORKING_DIR}/r${RELEASE}/
-github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} 2>/dev/null || true
+github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
 sleep 1
 github-release release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "r${RELEASE}: ${NOTE}"
 
