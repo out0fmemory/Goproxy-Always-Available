@@ -42,6 +42,9 @@ git checkout -f ${GITHUB_COMMIT_ID}
 
 export RELEASE=$(git rev-list HEAD| wc -l |xargs)
 export NOTE=$(git log -1 --oneline --format="[\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
+if [ -n "${TRAVIS_BUILD_ID}" ]; then
+	export NOTE="${NOTE} [\`${TRAVIS_BUILD_ID}\`](https://travis-ci.org/phuslu/goproxy/builds/${TRAVIS_BUILD_ID})"
+fi
 
 mkdir ${WORKING_DIR}/r${RELEASE}
 
