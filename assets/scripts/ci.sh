@@ -47,7 +47,7 @@ mkdir ${WORKING_DIR}/r${RELEASE}
 
 awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v {}
 
-for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 darwin/amd64 darwin/386 windows/amd64 windows/386; do
+for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 linux/mips64 linux/mips64le darwin/amd64 darwin/386 windows/amd64 windows/386; do
 	make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
 	cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
 	make clean
