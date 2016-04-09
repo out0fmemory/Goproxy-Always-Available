@@ -80,8 +80,8 @@ func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 	}
 
 	const cookieKey string = "Set-Cookie"
-	if cookie := resp1.Header.Get(cookieKey); cookie != "" {
-		parts := strings.Split(cookie, ", ")
+	if cookies, ok := resp1.Header[cookieKey]; ok && len(cookies) == 1 {
+		parts := strings.Split(cookies[0], ", ")
 
 		parts1 := make([]string, 0)
 		for i := 0; i < len(parts); i++ {
@@ -93,9 +93,11 @@ func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 			}
 		}
 
-		resp1.Header.Del(cookieKey)
-		for i := 0; i < len(parts1); i++ {
-			resp1.Header.Add(cookieKey, parts1[i])
+		if len(parts1) > 1 {
+			resp1.Header.Del(cookieKey)
+			for i := 0; i < len(parts1); i++ {
+				resp1.Header.Add(cookieKey, parts1[i])
+			}
 		}
 	}
 
