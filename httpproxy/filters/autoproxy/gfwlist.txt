@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 1Ui7+t8PjvuyzBPccb0Thg
+! Checksum: 2hLCK4oyYGomptq9unULFg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 24 Mar 2016 09:45:04 +0800
+! Last Modified: Mon, 04 Apr 2016 21:38:44 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -30,7 +30,7 @@
 ||boysmaster.com
 ||carfax.com
 ||centauro.com.br
-||daftpunk.com
+||crossfire.co.kr
 ||darpa.mil
 ||desipro.de
 |http://img.dlsite.jp/
@@ -70,6 +70,8 @@
 |http://www.m-sport.co.uk
 ||macgamestore.com
 ||madonna-av.com
+||mangafox.com
+||mangafox.me
 ||metarthunter.com
 ||mfxmedia.com
 ||monster.com
@@ -106,6 +108,7 @@
 ||toshiba.com
 ||turntable.fm
 ||twerkingbutt.com
+||vegasred.com
 ||vevo.com
 |http://ecsm.vs.com/
 ||wanz-factory.com
@@ -204,6 +207,10 @@ china-mmm.jp.net
 ||youtube-nocookie.com
 ||ytimg.com
 ||zynamics.com
+
+!!---KickASS---
+!--OFFICIAL URL list at: https://kastatus.com
+.kat.cr
 
 !!---NaughtyAmerica---
 ||naughtyamerica.com
@@ -527,6 +534,7 @@ bbsland.com
 .bbsone.com
 .bcc.com.tw/board
 .bcchinese.net
+.bcmorning.com
 .bebo.com
 ||bebo.com
 .beevpn.com
@@ -954,6 +962,9 @@ wiki.cnitter.com
 .cnn.com/video
 .cnpolitics.org
 ||cnpolitics.org
+.cn-proxy.com
+|http://cn-proxy.com
+.cnproxy.com
 blog.cnyes.com
 news.cnyes.com
 ||cochina.co
@@ -1237,6 +1248,8 @@ emilylau.org.hk
 .empfil.com
 .emule-ed2k.com
 |http://emule-ed2k.com
+.emulefans.com
+|http://emulefans.com
 .emuparadise.me
 ||enewstree.com
 chinese.engadget.com
@@ -1306,6 +1319,7 @@ eyevio.jp
 .ezpeer.com
 
 !--------------------FF-------------------------
+||facebook.br
 .facebook.com
 ||facebook.com
 /^https?:\/\/[^\/]+facebook\.com/
@@ -1621,6 +1635,8 @@ gfbv.de
 .gfsale.com
 ||gfsale.com
 gfw.org.ua
+.gfw.press
+|http://gfw.press
 .ggssl.com
 ||ggssl.com
 ||ghost.org
@@ -2165,6 +2181,7 @@ hrweb.org
 huaglad.com
 .huanghuagang.org
 ||huanghuagang.org
+.huangyiyu.com
 .huaren.us
 ||huaren.us
 huaxia-news.com
@@ -2897,6 +2914,7 @@ ngensis.com
 ||nighost.org
 av.nightlife141.com
 ninecommentaries.com
+.ninjacloak.com
 nintendium.com
 taiwanyes.ning.com
 usmgtcg.ning.com/forum
@@ -2926,6 +2944,8 @@ news.now.com%2Fhome
 .noypf.com
 ||noypf.com
 ||npa.go.jp
+.npnt.me
+|http://npnt.me
 .nps.gov
 .nrk.no
 ||nrk.no
@@ -5162,7 +5182,7 @@ taipei.gov.tw
 @@||chinaso.com
 @@|http://nrch.culture.tw/
 !--@@||dl.google.com
-@@||fonts.googleapis.com
+!--@@||fonts.googleapis.com
 @@||cn.gravatar.com
 @@||csi.gstatic.com
 @@||fonts.gstatic.com
