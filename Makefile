@@ -54,6 +54,12 @@ else
 	SOURCES += $(REPO)/assets/startup/goproxy.sh
 endif
 
+LDFLAGS = -X main.version=$(RELEASE)
+
+ifneq (,$(findstring mips,$(GOARCH)))
+	LDFLAGS += -s
+endif
+
 .PHONY: build
 build: normname
 	ls -lht $(DISTDIR)
@@ -81,4 +87,4 @@ $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 $(OBJECTDIR)/$(GOPROXY_EXE):
 	mkdir -p $(OBJECTDIR)
 	# awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' `find . -name "*.go"` | xargs -n1 -i go get -v {}
-	go build -v -ldflags="-X main.version=$(RELEASE)" -o $@ .
+	go build -v -ldflags="$(LDFLAGS)" -o $@ .
