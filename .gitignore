@@ -4,6 +4,7 @@ goproxy-gtk.desktop
 goproxy-gtk.py
 goproxy-osx.command
 goproxy-logo.png
+addto-startup.vbs
 *.user.json
 *.exe
 *.exe~
