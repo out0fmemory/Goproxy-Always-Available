@@ -64,6 +64,7 @@
 	],
 	"ForceGAE": [
 		"translate.googleapis.com",
+		"domains.google.com",
 	],
 	"DNSServers": [
 		"114.114.114.114",
