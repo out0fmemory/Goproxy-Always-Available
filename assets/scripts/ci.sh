@@ -27,7 +27,7 @@ curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
 mv go go1.6
 
 git clone https://github.com/phuslu/go
-(cd go && git remote add -f upstream https://github.com/golang/go && git rebase upstream/master)
+(cd go && git remote add -f upstream https://github.com/golang/go && git rebase upstream/master && git push -f origin master)
 (cd go/src/ && BUILD_GO_TAG_BACK_STEPS=~3 bash ./make.bash)
 
 echo && cat /etc/issue && uname -a && echo && go version && echo && go env && echo && env | grep -v GITHUB_TOKEN
@@ -41,9 +41,9 @@ cd ${GITHUB_REPO}
 git checkout -f ${GITHUB_COMMIT_ID}
 
 export RELEASE=$(git rev-list HEAD| wc -l |xargs)
-export NOTE=$(git log -1 --oneline --format="[\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
+export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
 if [ -n "${TRAVIS_BUILD_ID}" ]; then
-	export NOTE="${NOTE} [\`${TRAVIS_BUILD_ID}\`](https://travis-ci.org/phuslu/goproxy/builds/${TRAVIS_BUILD_ID})"
+	export RELEASE_DESCRIPTION=$(echo ${RELEASE_DESCRIPTION} | sed -E "s#^(r[0-9]+)#[\1](https://travis-ci.org/${GITHUB_USER}/${GITHUB_REPO}/builds/${TRAVIS_BUILD_ID})#g")
 fi
 
 mkdir ${WORKING_DIR}/r${RELEASE}
@@ -67,7 +67,7 @@ git push -f origin r${RELEASE}
 cd ${WORKING_DIR}/r${RELEASE}/
 github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
 sleep 1
-github-release release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "r${RELEASE}: ${NOTE}"
+github-release release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}"
 
 for FILE in *; do github-release upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE}; done
 ls -lht && cd && rm -rf $HOME/tmp.*.${GITHUB_REPO}

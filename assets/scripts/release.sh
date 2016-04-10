@@ -13,10 +13,6 @@ if [ -z "$GITHUB_TOKEN" ]; then
 	echo Please set GITHUB_TOKEN envar
 	exit 1
 fi
-if [ -z "$GITHUB_TAG" ]; then
-	echo Please set GITHUB_TAG envar
-	exit 1
-fi
 
 trap 'rm -rf $HOME/tmp.*.${GITHUB_REPO}; exit' SIGINT SIGQUIT SIGTERM
 
@@ -26,6 +22,10 @@ pushd ${WORKING_DIR}
 
 curl -L https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2 | tar xjp -C .
 export PATH=${WORKING_DIR}/bin/linux/amd64:$PATH
+
+if [ -z "${GITHUB_TAG}" ]; then
+export GITHUB_TAG=$(github-release info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | head | grep -oP '\- \Kr\d+' | head -1)
+fi
 
 github-release info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} -t ${GITHUB_TAG} > ${GITHUB_CI_REPO_RELEASE_INFO_TXT}
 export RELEASE_NAME=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "name: '\K.+?'," | sed 's/..$//'`
@@ -39,7 +39,7 @@ done
 github-release delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO}
 github-release release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 for FILE in ${RELEASE_FILES}; do
-    github-release upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "$(basename $FILE)" --file $FILE
+    github-release upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${FILE}" --file "${FILE}"
 done
 
 popd
