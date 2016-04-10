@@ -48,6 +48,8 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 		Header:     http.Header{},
 	}
 
+	req1.Header.Set("User-Agent", "a")
+
 	if req.ContentLength > 0 {
 		req1.ContentLength = int64(len(b0)+b.Len()) + req.ContentLength
 		req1.Body = transport.NewMultiReadCloser(bytes.NewReader(b0), &b, req.Body)
