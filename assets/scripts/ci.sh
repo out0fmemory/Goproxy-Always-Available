@@ -20,7 +20,10 @@ function init_github() {
 
 	git config --global user.name ${GITHUB_USER}
 	git config --global user.email "${GITHUB_USER}@noreply.github.com"
-	# grep -q 'machine github.com' ~/.netrc || echo "machine github.com login $GITHUB_USER password $GITHUB_TOKEN" >>~/.netrc
+
+	if ! grep -q 'machine github.com' ~/.netrc; then
+		(set +x; echo "machine github.com login $GITHUB_USER password $GITHUB_TOKEN" >>~/.netrc)
+	fi
 
 	local GITHUB_RELEASE_BINARY_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
 	local GITHUB_RELEASE_BINARY_PATH=$(pwd)/$(curl -L ${GITHUB_RELEASE_BINARY_URL} | tar xjpv | head -1)
@@ -43,15 +46,17 @@ function build_go() {
 		BUILD_GO_TAG_BACK_STEPS=~3 bash ./make.bash \
 	)
 
-	echo '======================================'
-	cat /etc/issue
-	uname -a
-	echo
-	go version
-	go env
-	echo
-	env | grep -v GITHUB_TOKEN
-	echo '======================================'
+	(set +x; \
+		echo '======================================' ;\
+		cat /etc/issue ;\
+		uname -a ;\
+		echo ;\
+		go version ;\
+		go env ;\
+		echo ;\
+		env | grep -v GITHUB_TOKEN ;\
+		echo '======================================' ;\
+	)
 }
 
 function build_goproxy() {
