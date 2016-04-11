@@ -57,7 +57,9 @@ func (s *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 		Header:     http.Header{},
 	}
 
-	req1.Header.Set("User-Agent", "a")
+	if req1.URL.Scheme == "https" {
+		req1.Header.Set("User-Agent", "a")
+	}
 
 	if s.URL.Scheme == "http" {
 		for _, key := range []string{"User-Agent", "Accept", "Accept-Encoding", "Accept-Language"} {
