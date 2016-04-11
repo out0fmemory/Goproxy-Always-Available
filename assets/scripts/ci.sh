@@ -84,6 +84,10 @@ function build_goproxy() {
 function release_goproxy_ci() {
 	mkdir -p ${WORKING_DIR} && cd ${WORKING_DIR}
 
+	if [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
+		return
+	fi
+
 	git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
 	cd ${GITHUB_CI_REPO}
 
