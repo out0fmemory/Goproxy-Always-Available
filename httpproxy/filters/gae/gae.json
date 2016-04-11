@@ -2,9 +2,6 @@
 	"AppIDs": [
 		"goagenta"
 	],
-	"Scheme": "https",
-	"Domain": "appspot.com",
-	"Path": "/_gh/",
 	"Password": "",
 	"SSLVerify": false,
 	"IPv6Only": false,

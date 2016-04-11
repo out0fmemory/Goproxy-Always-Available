@@ -22,6 +22,12 @@ const (
 	filterName string = "gae"
 )
 
+const (
+	DefaultGAEScheme string = "https"
+	DefaultGAEDomain string = "appspot.com"
+	DefaultGAEPath   string = "/_gh/"
+)
+
 type Config struct {
 	AppIDs      []string
 	Scheme      string
@@ -71,6 +77,18 @@ func init() {
 	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
+	}
+
+	if config.Scheme == "" {
+		config.Scheme = DefaultGAEScheme
+	}
+
+	if config.Domain == "" {
+		config.Domain = DefaultGAEDomain
+	}
+
+	if config.Path == "" {
+		config.Path = DefaultGAEPath
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{
