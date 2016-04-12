@@ -15,8 +15,10 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	exit 1
 fi
 
+mkdir -p ${WORKING_DIR}
+
 function init_github() {
-	mkdir -p ${WORKING_DIR} && cd ${WORKING_DIR}
+	pushd ${WORKING_DIR}
 
 	git config --global user.name ${GITHUB_USER}
 	git config --global user.email "${GITHUB_USER}@noreply.github.com"
@@ -25,13 +27,11 @@ function init_github() {
 		(set +x; echo "machine github.com login $GITHUB_USER password $GITHUB_TOKEN" >>~/.netrc)
 	fi
 
-	local GITHUB_RELEASE_BINARY_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
-	local GITHUB_RELEASE_BINARY_PATH=$(pwd)/$(curl -L ${GITHUB_RELEASE_BINARY_URL} | tar xjpv | head -1)
-	export PATH=$PATH:${GITHUB_RELEASE_BINARY_PATH%/*}
+	popd
 }
 
 function build_go() {
-	mkdir -p ${WORKING_DIR} && cd ${WORKING_DIR}
+	pushd ${WORKING_DIR}
 
 	curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
 	mv go go1.6
@@ -47,7 +47,7 @@ function build_go() {
 	)
 
 	(set +x; \
-		echo '======================================' ;\
+		echo '================================================================================' ;\
 		cat /etc/issue ;\
 		uname -a ;\
 		echo ;\
@@ -55,43 +55,46 @@ function build_go() {
 		go env ;\
 		echo ;\
 		env | grep -v GITHUB_TOKEN ;\
-		echo '======================================' ;\
+		echo '================================================================================' ;\
 	)
+
+	popd
 }
 
 function build_goproxy() {
-	mkdir -p ${WORKING_DIR} && cd ${WORKING_DIR}
+	pushd ${WORKING_DIR}
 
 	git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
 
 	cd ${GITHUB_REPO}
 	git checkout -f ${GITHUB_COMMIT_ID}
 
-	export RELEASE=$(git rev-list HEAD| wc -l |xargs)
+	export RELEASE=$(git rev-list HEAD| wc -l | xargs)
 	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
 	if [ -n "${TRAVIS_BUILD_ID}" ]; then
 		export RELEASE_DESCRIPTION=$(echo ${RELEASE_DESCRIPTION} | sed -E "s#^(r[0-9]+)#[\1](https://travis-ci.org/${GITHUB_USER}/${GITHUB_REPO}/builds/${TRAVIS_BUILD_ID})#g")
 	fi
 
-	mkdir ${WORKING_DIR}/r${RELEASE}
-
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v {}
 
 	for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 linux/mips64 linux/mips64le darwin/amd64 darwin/386 windows/amd64 windows/386; do
 		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
+		mkdir -p ${WORKING_DIR}/r${RELEASE}
 		cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
 		make clean
 	done
 
-	ls -lht ${WORKING_DIR}/r${RELEASE}/*
+	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht)
+
+	popd
 }
 
 function release_goproxy_ci() {
-	mkdir -p ${WORKING_DIR} && cd ${WORKING_DIR}
-
 	if [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
 		return
 	fi
+
+	pushd ${WORKING_DIR}
 
 	git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
 	cd ${GITHUB_CI_REPO}
@@ -101,20 +104,24 @@ function release_goproxy_ci() {
 	git tag r${RELEASE}
 	git push -f origin r${RELEASE}
 
+	cd ${WORKING_DIR}
+	local GITHUB_RELEASE_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
+	local GITHUB_RELEASE_BIN=$(pwd)/$(curl -L ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
+
 	cd ${WORKING_DIR}/r${RELEASE}/
-	github-release delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
+	${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
 	sleep 1
-	github-release release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}"
+	${GITHUB_RELEASE_BIN} release --pre-release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}"
 
 	for FILE in *; do
-		github-release upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE}
+		${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE}
 	done
+
+	popd
 }
 
 function clean() {
-	cd ${WORKING_DIR}/r${RELEASE}/
-	ls -lht
-	cd
+	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht)
 	rm -rf $HOME/tmp.*.${GITHUB_REPO}
 }
 
