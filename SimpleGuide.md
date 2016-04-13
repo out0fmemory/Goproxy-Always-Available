@@ -4,8 +4,7 @@
 
   1. 申请 [Google Appengine](https://appengine.google.com) 并创建 appid。
   1. 下载 goproxy 服务端 [https://github.com/phuslu/goproxy/archive/server.gae.zip](https://nodeload.github.com/phuslu/goproxy/legacy.zip/server.gae)
-  1. 检查 谷歌账号 [不够安全的应用的访问权限](https://www.google.com/settings/security/lesssecureapps) 选项，确保处于启用状态。
-  1. 运行 uploader.bat 或 uploader.py 开始上传, 成功后即可使用了。
+  1. 运行 uploader.bat 或 uploader.py 开始上传, 期间需要放问指定的 google 主页并输入授权码， 上传完成后即可使用了。
 
 - 使用
 
