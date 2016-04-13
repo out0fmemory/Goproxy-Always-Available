@@ -3,6 +3,7 @@
 		"*.atm.youku.com",
 		"*.c.docs.google.com",
 		"*.c.youtube.com",
+		"*.cdn.xvideos.com",
 		"*.d.rncdn3.com",
 		"*.edgecastcdn.net",
 		"*.googlevideo.com",
@@ -10,6 +11,7 @@
 		"*.x.xvideos.com",
 		"*av.vimeo.com",
 		"archive.rthk.hk",
+		"av.voanews.com",
 		"cdn*.public.extremetube.phncdn.com",
 		"cdn*.public.tube8.com",
 		"cdn*.video.pornhub.phncdn.com",
@@ -19,15 +21,15 @@
 		"video.*.fbcdn.net",
 		"videos.flv*.redtubefiles.com",
 		"vs*.thisav.com",
-		"x*.last.fm"
+		"x*.last.fm",
 	],
 	"SupportFilters": [
 		"gae",
 		"php",
 		"vps",
-		"direct"
+		"direct",
 	],
 	"MaxSize": 1572864,
 	"BufSize": 8192,
-	"Threads": 3
+	"Threads": 3,
 }
