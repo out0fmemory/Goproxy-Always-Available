@@ -8,7 +8,7 @@
 		"RequestFilters": [
 			// "auth",
 			"stripssl",
-			// "autorange",
+			"autorange",
 		],
 		"RoundTripFilters": [
 			"autoproxy",
@@ -19,7 +19,7 @@
 			"direct",
 		],
 		"ResponseFilters": [
-			// "autorange",
+			"autorange",
 			// "ratelimit",
 		]
 	},

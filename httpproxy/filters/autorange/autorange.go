@@ -88,7 +88,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 			glog.V(2).Infof("AUTORANGE Sites rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
 			ctx.SetBool("autorange.site", true)
 		default:
-			glog.V(2).Infof("AUTORANGE ignore preserved range=%v", r)
+			glog.V(3).Infof("AUTORANGE ignore preserved empty range for %#v", req.URL)
 		}
 	} else {
 		ctx.SetBool("autorange.default", true)
