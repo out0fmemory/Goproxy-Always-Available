@@ -1,17 +1,19 @@
 package httpproxy
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/golang/glog"
 
+	"../helpers"
 	"./filters"
 )
 
 type Handler struct {
 	http.Handler
-	Listener         Listener
+	Listener         helpers.Listener
 	RequestFilters   []filters.RequestFilter
 	RoundTripFilters []filters.RoundTripFilter
 	ResponseFilters  []filters.ResponseFilter
@@ -93,12 +95,17 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		ctx, resp, err = f.Response(ctx, resp)
 		if err != nil {
-			glog.Errorf("%s Filter Response %T(%v) error: %v", remoteAddr, f, f, err)
+			msg := fmt.Sprintf("%s Filter %T(%v) Response error: %v", remoteAddr, f, f, err)
+			glog.Errorln(msg)
+			http.Error(rw, msg, http.StatusBadGateway)
 			return
 		}
 	}
 
 	if resp == nil {
+		msg := fmt.Sprintf("%s Handler %T(%v) Response empty response", remoteAddr, h, h)
+		glog.Errorln(msg)
+		http.Error(rw, msg, http.StatusBadGateway)
 		return
 	}
 
@@ -110,7 +117,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(resp.StatusCode)
 	if resp.Body != nil {
 		defer resp.Body.Close()
-		n, err := IoCopy(rw, resp.Body)
+		n, err := helpers.IoCopy(rw, resp.Body)
 		if err != nil {
 			glog.Errorf("IoCopy %#v return %#v %s", resp.Body, n, err)
 		}

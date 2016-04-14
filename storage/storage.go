@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"sort"
@@ -91,7 +92,7 @@ func ReadJson(r io.Reader) ([]byte, error) {
 	}
 
 	lines := make([]string, 0)
-	for _, line := range strings.Split(string(s), "\r\n") {
+	for _, line := range strings.Split(strings.Replace(string(s), "\r\n", "\n", -1), "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" || strings.HasPrefix(line, "//") {
 			continue
@@ -152,4 +153,28 @@ func ReadJsonConfig(uri, filename string, config interface{}) error {
 	}
 
 	return nil
+}
+
+const (
+	EnvConfigStoreURI = "CONFIG_STORE_URI"
+	ConfigZip         = "config.zip"
+)
+
+// Lookup config uri by filename
+func LookupConfigStoreURI(filterName string) string {
+	if env := os.Getenv(EnvConfigStoreURI); env != "" {
+		return env
+	}
+
+	if fi, err := os.Stat(ConfigZip); err == nil && !fi.IsDir() {
+		return "zip://" + ConfigZip
+	}
+
+	for _, dirname := range []string{".", "httpproxy", "httpproxy/filters/" + filterName} {
+		filename := dirname + "/" + filterName + ".json"
+		if _, err := os.Stat(filename); err == nil {
+			return "file://" + dirname
+		}
+	}
+	return "file://."
 }

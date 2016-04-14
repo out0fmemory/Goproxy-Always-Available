@@ -9,7 +9,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"../../../httpproxy"
+	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 	"../../transport"
@@ -29,7 +29,7 @@ type Config struct {
 
 type Filter struct {
 	Config
-	SiteMatcher    *httpproxy.HostMatcher
+	SiteMatcher    *helpers.HostMatcher
 	SupportFilters map[string]struct{}
 	MaxSize        int
 	BufSize        int
@@ -39,7 +39,7 @@ type Filter struct {
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
@@ -58,7 +58,7 @@ func init() {
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
 		Config:         *config,
-		SiteMatcher:    httpproxy.NewHostMatcher(config.Sites),
+		SiteMatcher:    helpers.NewHostMatcher(config.Sites),
 		SupportFilters: make(map[string]struct{}),
 		MaxSize:        config.MaxSize,
 		BufSize:        config.BufSize,
@@ -218,9 +218,9 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 				defer w.ThreadBye() // TODO: launch it as soon as iocopy over?
 
 				piper := w.NewPiper(index)
-				_, err := httpproxy.IoCopy(piper, resp.Body)
+				_, err := helpers.IoCopy(piper, resp.Body)
 				if err != nil {
-					glog.Warningf("AUTORANGE httpproxy.IoCopy(%#v) error: %#v", resp.Body, err)
+					glog.Warningf("AUTORANGE helpers.IoCopy(%#v) error: %#v", resp.Body, err)
 					piper.EIndex()
 				}
 				piper.WClose()

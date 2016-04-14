@@ -33,7 +33,7 @@ OBJECTS += $(OBJECTDIR)/$(GOPROXY_EXE)
 
 SOURCES :=
 SOURCES += $(REPO)/README.md
-SOURCES += $(SOURCEDIR)/main.json
+SOURCES += $(SOURCEDIR)/httpproxy/httpproxy.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 #SOURCES += $(SOURCEDIR)/goproxy.pem
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt

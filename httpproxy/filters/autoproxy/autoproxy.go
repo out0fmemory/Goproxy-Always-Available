@@ -14,7 +14,7 @@ import (
 
 	"github.com/golang/glog"
 
-	"../../../httpproxy"
+	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 )
@@ -48,7 +48,7 @@ type GFWList struct {
 type Filter struct {
 	Config
 	Store         storage.Store
-	Sites         *httpproxy.HostMatcher
+	Sites         *helpers.HostMatcher
 	GFWList       *GFWList
 	AutoProxy2Pac *AutoProxy2Pac
 	Transport     *http.Transport
@@ -58,7 +58,7 @@ type Filter struct {
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
@@ -85,7 +85,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		return nil, err
 	}
 
-	store, err := storage.OpenURI(filters.LookupConfigStoreURI(filterName))
+	store, err := storage.OpenURI(storage.LookupConfigStoreURI(filterName))
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	f := &Filter{
 		Config:        *config,
 		Store:         store,
-		Sites:         httpproxy.NewHostMatcher(config.Sites),
+		Sites:         helpers.NewHostMatcher(config.Sites),
 		GFWList:       &gfwlist,
 		AutoProxy2Pac: autoproxy2pac,
 		Transport:     transport,

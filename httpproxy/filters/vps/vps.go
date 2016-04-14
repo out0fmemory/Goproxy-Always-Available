@@ -11,7 +11,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/phuslu/http2"
 
-	"../../../httpproxy"
+	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 )
@@ -32,13 +32,13 @@ type Config struct {
 
 type Filter struct {
 	FetchServers []*FetchServer
-	Sites        *httpproxy.HostMatcher
+	Sites        *helpers.HostMatcher
 }
 
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
@@ -82,7 +82,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	return &Filter{
 		FetchServers: fetchServers,
-		Sites:        httpproxy.NewHostMatcher(config.Sites),
+		Sites:        helpers.NewHostMatcher(config.Sites),
 	}, nil
 }
 
@@ -151,8 +151,8 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	// 	}
 	// 	defer lconn.Close()
 
-	// 	go httpproxy.IoCopy(rconn, lconn)
-	// 	httpproxy.IoCopy(lconn, rconn)
+	// 	go helpers.IoCopy(rconn, lconn)
+	// 	helpers.IoCopy(lconn, rconn)
 
 	// 	ctx.Hijack(true)
 	// 	return ctx, nil, nil

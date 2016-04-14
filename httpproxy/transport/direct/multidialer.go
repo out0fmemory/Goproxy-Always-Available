@@ -14,15 +14,15 @@ import (
 	"github.com/golang/glog"
 	"github.com/miekg/dns"
 
-	"../../../httpproxy"
+	"../../../helpers"
 )
 
 type MultiDialer struct {
 	net.Dialer
 	IPv6Only        bool
 	TLSConfig       *tls.Config
-	Site2Alias      *httpproxy.HostMatcher
-	IPBlackList     *httpproxy.HostMatcher
+	Site2Alias      *helpers.HostMatcher
+	IPBlackList     *helpers.HostMatcher
 	HostMap         map[string][]string
 	DNSServers      []net.IP
 	DNSCache        lrucache.Cache

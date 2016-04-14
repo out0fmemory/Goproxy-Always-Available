@@ -12,7 +12,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
-	"../../../httpproxy"
+	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 	"../../transport/direct"
@@ -53,7 +53,7 @@ type Filter struct {
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
@@ -146,8 +146,8 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 		defer lconn.Close()
 
-		go httpproxy.IoCopy(rconn, lconn)
-		httpproxy.IoCopy(lconn, rconn)
+		go helpers.IoCopy(rconn, lconn)
+		helpers.IoCopy(lconn, rconn)
 
 		ctx.Hijack(true)
 		return ctx, nil, nil

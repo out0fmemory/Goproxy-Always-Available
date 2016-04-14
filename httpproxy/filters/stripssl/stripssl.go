@@ -13,7 +13,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
-	"../../../httpproxy"
+	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 )
@@ -40,13 +40,13 @@ type Filter struct {
 	CAExpiry       time.Duration
 	TLSConfigCache lrucache.Cache
 	Ports          map[string]struct{}
-	Sites          *httpproxy.HostMatcher
+	Sites          *helpers.HostMatcher
 }
 
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
@@ -82,7 +82,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
 		Ports:          make(map[string]struct{}),
-		Sites:          httpproxy.NewHostMatcher(config.Sites),
+		Sites:          helpers.NewHostMatcher(config.Sites),
 	}
 
 	for _, port := range config.Ports {
@@ -152,7 +152,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		c = tlsConn
 	}
 
-	if ln1, ok := ctx.GetListener().(httpproxy.Listener); ok {
+	if ln1, ok := ctx.GetListener().(helpers.Listener); ok {
 		ln1.Add(c)
 		ctx.Hijack(true)
 		return ctx, nil, nil
@@ -163,8 +163,8 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		return ctx, nil, err
 	}
 
-	go httpproxy.IoCopy(loConn, c)
-	go httpproxy.IoCopy(c, loConn)
+	go helpers.IoCopy(loConn, c)
+	go helpers.IoCopy(c, loConn)
 
 	ctx.Hijack(true)
 	return ctx, nil, nil

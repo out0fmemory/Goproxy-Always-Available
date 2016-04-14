@@ -11,7 +11,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
 
-	"../../../httpproxy"
+	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 	"../../transport/direct"
@@ -65,16 +65,16 @@ type Filter struct {
 	Config
 	GAETransport      *gae.Transport
 	DirectTransport   *http.Transport
-	ForceHTTPSMatcher *httpproxy.HostMatcher
-	ForceGAEMatcher   *httpproxy.HostMatcher
-	SiteMatcher       *httpproxy.HostMatcher
-	DirectSiteMatcher *httpproxy.HostMatcher
+	ForceHTTPSMatcher *helpers.HostMatcher
+	ForceGAEMatcher   *helpers.HostMatcher
+	SiteMatcher       *helpers.HostMatcher
+	DirectSiteMatcher *helpers.HostMatcher
 }
 
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(filters.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
 	}
@@ -118,8 +118,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 		IPv6Only:        config.IPv6Only,
 		TLSConfig:       nil,
-		Site2Alias:      httpproxy.NewHostMatcherWithString(config.Site2Alias),
-		IPBlackList:     httpproxy.NewHostMatcher(config.IPBlackList),
+		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
+		IPBlackList:     helpers.NewHostMatcher(config.IPBlackList),
 		HostMap:         config.HostMap,
 		DNSServers:      dnsServers,
 		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
@@ -172,10 +172,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Servers:      servers,
 		},
 		DirectTransport:   tr,
-		ForceHTTPSMatcher: httpproxy.NewHostMatcher(config.ForceHTTPS),
-		ForceGAEMatcher:   httpproxy.NewHostMatcher(config.ForceGAE),
-		SiteMatcher:       httpproxy.NewHostMatcher(config.Sites),
-		DirectSiteMatcher: httpproxy.NewHostMatcherWithString(config.Site2Alias),
+		ForceHTTPSMatcher: helpers.NewHostMatcher(config.ForceHTTPS),
+		ForceGAEMatcher:   helpers.NewHostMatcher(config.ForceGAE),
+		SiteMatcher:       helpers.NewHostMatcher(config.Sites),
+		DirectSiteMatcher: helpers.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
 }
 

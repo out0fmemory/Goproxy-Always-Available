@@ -3,13 +3,6 @@ package filters
 import (
 	"fmt"
 	"net/http"
-	"os"
-)
-
-const (
-	PackageName       = "httpproxy/filters"
-	EnvConfigStoreURI = "CONFIG_STORE_URI"
-	ConfigZip         = "config.zip"
 )
 
 type Filter interface {
@@ -52,24 +45,6 @@ func Register(name string, registeredFilter *RegisteredFilter) error {
 
 	registeredFilters[name] = registeredFilter
 	return nil
-}
-
-// Lookup config uri by filename
-func LookupConfigStoreURI(filterName string) string {
-	if env := os.Getenv(EnvConfigStoreURI); env != "" {
-		return env
-	}
-
-	if fi, err := os.Stat(ConfigZip); err == nil && !fi.IsDir() {
-		return "zip://" + ConfigZip
-	}
-
-	for _, dirname := range []string{".", PackageName + "/" + filterName, "../" + filterName} {
-		if _, err := os.Stat(dirname + "/" + filterName + ".json"); err == nil {
-			return "file://" + dirname
-		}
-	}
-	return "file://."
 }
 
 // NewFilter creates a new Filter of type "name"

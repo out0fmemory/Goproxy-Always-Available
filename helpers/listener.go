@@ -1,4 +1,4 @@
-package httpproxy
+package helpers
 
 import (
 	"crypto/tls"

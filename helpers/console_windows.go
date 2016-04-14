@@ -1,6 +1,6 @@
 // +build windows
 
-package console
+package helpers
 
 import (
 	"syscall"
@@ -12,6 +12,6 @@ var (
 	pSetConsoleTitleW = kernel32.NewProc("SetConsoleTitleW")
 )
 
-func SetWindowTitle(name string) {
+func SetConsoleTitle(name string) {
 	pSetConsoleTitleW.Call(uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr(name))))
 }
