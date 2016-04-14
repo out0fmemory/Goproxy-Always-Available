@@ -56,7 +56,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		if err != nil {
 			if err != io.EOF {
-				glog.Errorf("%s Filter Request %T(%v) error: %v", remoteAddr, f, f, err)
+				glog.Errorf("%s Filter Request %T(%#v) error: %#v", remoteAddr, f, f, err)
 			}
 			return
 		}
@@ -103,7 +103,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if resp == nil {
-		msg := fmt.Sprintf("%s Handler %T(%v) Response empty response", remoteAddr, h, h)
+		msg := fmt.Sprintf("%s Handler %#v Response empty response", remoteAddr, h)
 		glog.Errorln(msg)
 		http.Error(rw, msg, http.StatusBadGateway)
 		return

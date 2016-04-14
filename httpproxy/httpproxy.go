@@ -78,7 +78,7 @@ func ServeProfile(profile string) error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	glog.Infof("ListenAndServe on %s\n", h.Listener.Addr().String())
+	glog.Infof("ListenAndServe(%#v) on %s\n", profile, h.Listener.Addr().String())
 	return s.Serve(h.Listener)
 }
 

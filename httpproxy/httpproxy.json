@@ -25,7 +25,7 @@
 	},
 	"PHP": {
 		"Enabled": false,
-		"Addr": "127.0.0.1:8088",
+		"Address": "127.0.0.1:8088",
 		"KeepAlivePeriod": 0,
 		"ReadTimeout": 600,
 		"WriteTimeout": 3600,
