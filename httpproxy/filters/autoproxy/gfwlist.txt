@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 2hLCK4oyYGomptq9unULFg
+! Checksum: zHIHCbYHs5M9bLZUyMYxww
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 04 Apr 2016 21:38:44 +0800
+! Last Modified: Thu, 14 Apr 2016 11:41:58 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -18,6 +18,7 @@
 !---------403 Forbidden & URL Redirects---------
 !--ehentai
 |http://85.17.73.31/
+||adorama.com
 ||agnesb.fr
 ||akiba-web.com
 ||alien-ufos.com
@@ -37,6 +38,7 @@
 ||share.dmhy.org
 ||dmm.co.jp
 !--||dmm.com
+||fakku.net
 ||fastpic.ru
 ||financetwitter.com
 ||flipboard.com
@@ -150,6 +152,7 @@ china-mmm.jp.net
 .appspot.com
 ||appspot.com
 /^https?:\/\/[^\/]+blogspot\.(.*)/
+||certificate-transparency.org
 ||chrome.com
 ||chromecast.com
 ||chromeexperiments.com
@@ -157,6 +160,7 @@ china-mmm.jp.net
 ||data-vocabulary.org
 ||deja.com
 ||g.co
+||get.how
 ||getmdl.io
 ||ggpht.com
 ||gmail.com
@@ -451,6 +455,7 @@ archive.is
 ||arlingtoncemetery.mil
 ||army.mil
 artsy.net
+||asacp.org
 .asahichinese.com
 ||asahichinese.com
 asdfg.jp/dabr
@@ -1112,6 +1117,7 @@ static.digg.com
 ||directcreative.com
 ||discogs.com
 @@||cdn.discogs.com
+|https://search.disconnect.me
 .discuss.com.hk
 ||discuss.com.hk
 disp.cc
@@ -1152,6 +1158,7 @@ dowei.org
 dphk.org
 dpp.org.tw
 ||dpp.org.tw
+||dpr.info
 ||dreammask.org
 .drepung.org
 ||drgan.net
@@ -1222,6 +1229,8 @@ eastern-ark.com
 ebookbrowse.com
 ebookee.com
 ecministry.net
+!--Panama Papers
+.economist.com
 bbs.ecstart.com
 ||edgecastcdn.net
 /twimg\.edgesuite\.net\/\/?appledaily/
@@ -1290,6 +1299,7 @@ wiki.esu.im/%E8%9B%A4%E8%9B%A4%E8%AF%AD%E5%BD%95
 .etaa.org.au
 etaiwannews.com
 ||etizer.org
+||etokki.com
 .ettoday.net
 etvonline.hk
 .eu.org
@@ -1556,6 +1566,7 @@ hk.frienddy.com/hk
 .ftchinese.com/story/001054103
 .ftchinese.com/*video
 .ftchinese.com/comments
+fucd.com
 .fuckcnnic.net
 ||fuckcnnic.net
 fuckgfw.org
@@ -2224,6 +2235,7 @@ ibros.org
 ||ibvpn.com
 blogs.icerocket.com/tag
 .icij.org
+||icij.org
 ||icl-fi.org
 .icoco.com
 ||icoco.com
@@ -2283,7 +2295,9 @@ imageshack.us
 .imlive.com
 impp.mn
 |http://tech2.in.com/video/
+in99.org
 ||incredibox.fr
+||indiandefensenews.in
 timesofindia.indiatimes.com*dalai
 .indiemerch.com
 ||indiemerch.com
@@ -2443,11 +2457,13 @@ juziyue.com
 ||kagyuoffice.org.tw
 .kaiyuan.de
 ||kakao.com
+.kannewyork.com
 .kanshifang.com
 kanzhongguo.com
 kanzhongguo.eu
 ||karayou.com
 karkhung.com
+.karmapa.org
 .karmapa-teachings.org
 .kba-tx.org
 ||kcsoftwares.com
@@ -2489,6 +2505,7 @@ killwall.com
 ||koolsolutions.com
 .koornk.com
 ||koornk.com
+|http://gojet.krtco.com.tw
 .ksnews.com.tw
 .kui.name/event
 .kuliwang.com
@@ -2508,6 +2525,8 @@ ladbrokes.com
 ||labiennale.org
 lagranepoca.com
 .lalulalu.com
+.lamayeshe.com
+|http://lamayeshe.com
 |http://www.lamenhu.com
 .lamnia.co.uk
 ||lamnia.co.uk
@@ -2678,6 +2697,8 @@ mcreasite.com
 .mediafire.com/download
 .mediafreakcity.com
 ||mediafreakcity.com
+.medium.com
+||medium.com
 ||meetup.com
 mefeedia.com
 .megaporn.com
@@ -2837,6 +2858,8 @@ mysinablog.com
 old.nabble.com
 ||naitik.net
 .nakuz.com/bbs
+||nalandabodhi.org
+||nalandawest.org
 ||namsisi.com
 nanyang.com
 ||nanyang.com
@@ -2909,7 +2932,7 @@ nexttv.com.tw
 ngensis.com
 .nhentai.net
 |http://nhentai.net
-.nicovideo.jp/watch
+!--.nicovideo.jp/watch
 !--||nicovideo.jp
 ||nighost.org
 av.nightlife141.com
@@ -3205,6 +3228,7 @@ popyard.com
 .pornstarclub.com
 ||pornstarclub.com
 .porntube.com
+.porntubenews.com
 .porntvblog.com
 ||porntvblog.com
 .pornvisit.com
@@ -3414,6 +3438,7 @@ rfaweb.org
 .rhcloud.com
 !--Edgecast
 |http://vds.rightster.com/
+.rigpa.org
 .rileyguide.com
 riku.me/
 .ritouki.jp
@@ -3442,6 +3467,7 @@ robtex.com
 .rsgamen.org
 .rssmeme.com
 ||rssmeme.com
+||rtalabel.org
 .rthk.hk
 |http://rthk.hk
 .rthk.org.hk
@@ -3469,6 +3495,7 @@ sacom.hk
 .saiq.me
 ||saiq.me
 ||sakuralive.com
+.sakya.org
 .salvation.org.hk
 ||salvation.org.hk
 .samair.ru/proxy/type-01
@@ -3553,6 +3580,7 @@ shenyunperformingarts.org
 ||shenyunperformingarts.org
 shenzhoufilm.com
 ||shenzhoufilm.com
+||sherabgyaltsen.com
 .shicheng.org
 shinychan.com
 .shitaotv.org
@@ -3756,6 +3784,7 @@ tw.streetvoice.com
 ||studentsforafreetibet.org
 ||stumbleupon.com
 stupidvideos.com
+panamapapers.sueddeutsche.de
 .sugarsync.com
 ||sugarsync.com
 ||suissl.com
@@ -3980,6 +4009,7 @@ tibetcharity.in
 |http://tibetexpress.net
 tibetfocus.com
 tibetfund.org
+.tibethaus.com
 tibethouse.jp
 tibethouse.org
 ||tibethouse.us
@@ -3999,6 +4029,7 @@ tibetonline.com
 ||tibetonline.tv
 .tibetonline.tv
 .tibetoralhistory.org
+|http://tibetoralhistory.org
 .tibetpolicy.eu
 .tibetrelieffund.co.uk
 tibetsites.com
@@ -4007,9 +4038,12 @@ tibetsites.com
 .tibetsun.com
 ||tibetwrites.org
 .ticket.com.tw
-.time.com/time/time100/leaders/profile/rebel
-.time.com/time/specials/packages/article/0,28804
-.time.com/time/magazine
+!--Panama Papers
+.time.com
+|http://time.com
+!--.time.com/time/time100/leaders/profile/rebel
+!--.time.com/time/specials/packages/article/0,28804
+!--.time.com/time/magazine
 ||blog.tiney.com
 .tiny.cc
 |http://tiny.cc
@@ -4901,6 +4935,8 @@ topic.youthwant.com.tw
 ||youporn.com
 .youporngay.com
 ||youporngay.com
+.yourlisten.com
+|http://yourlisten.com
 .youtubecn.com
 youversion.com
 ||youversion.com
