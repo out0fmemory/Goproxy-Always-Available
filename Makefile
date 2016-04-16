@@ -1,4 +1,4 @@
-RELEASE = r$(shell git rev-list HEAD | wc -l | xargs)
+RELEASE = $(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
@@ -53,14 +53,14 @@ else
 	SOURCES += $(REPO)/assets/startup/goproxy.sh
 endif
 
-LDFLAGS = -X main.version=$(RELEASE)
+LDFLAGS = -X main.version=r$(RELEASE)
 
 ifneq (,$(findstring mips,$(GOARCH)))
 	LDFLAGS += -s
 endif
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
+build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(RELEASE)$(GOPROXY_DISTEXT)
 	mv $< $(shell echo $< | sed 's/_darwin_/_macosx_/') || true
 	ls -lht $(DISTDIR)
 
@@ -68,7 +68,7 @@ build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT)
 clean:
 	$(RM) -rf $(BUILDDIR)
 
-$(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
+$(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(RELEASE)$(GOPROXY_DISTEXT): $(OBJECTS)
 	mkdir -p $(DISTDIR)
 	mkdir -p $(GOPROXY_STAGEDIR)/ && \
 	cp $(OBJECTDIR)/$(GOPROXY_EXE) $(GOPROXY_STAGEDIR)/$(GOPROXY_EXE)
