@@ -61,6 +61,19 @@ function build_go() {
 	popd
 }
 
+function build_http2() {
+	pushd ${WORKING_DIR}
+
+	git clone https://github.com/phuslu/net $GOPATH/src/github.com/phuslu/net
+	cd $GOPATH/src/github.com/phuslu/net/http2
+	git remote add -f upstream https://github.com/golang/net
+	git rebase upstream/master
+	go build -v
+	git push -f origin master
+
+	popd
+}
+
 function build_goproxy() {
 	pushd ${WORKING_DIR}
 
@@ -127,6 +140,7 @@ function clean() {
 
 init_github
 build_go
+build_http2
 build_goproxy
 release_goproxy_ci
 clean
