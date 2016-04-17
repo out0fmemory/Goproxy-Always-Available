@@ -9,6 +9,7 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
+	"github.com/phuslu/net/http2"
 
 	"../../../helpers"
 	"../../../storage"
@@ -93,6 +94,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
+	}
+
+	if tr.TLSClientConfig != nil {
+		err := http2.ConfigureTransport(tr)
+		if err != nil {
+			glog.Warningf("PHP: Error enabling Transport HTTP/2 support: %v", err)
+		}
 	}
 
 	servers := make([]php.Server, 0)
