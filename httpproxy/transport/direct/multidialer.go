@@ -228,12 +228,47 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 
 					switch {
 					case strings.HasPrefix(alias, "google_"):
-						config = defaultTLSConfigForGoogle
+						config = DefaultTLSConfigForGoogle
 					default:
 						config = &tls.Config{
 							InsecureSkipVerify: true,
 							ServerName:         address,
 						}
+					}
+					glog.V(3).Infof("DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
+
+					addrs := make([]string, len(hosts))
+					for i, host := range hosts {
+						addrs[i] = net.JoinHostPort(host, port)
+					}
+					if d.IPv6Only {
+						network = "tcp6"
+					}
+					return d.dialMultiTLS(network, addrs, config)
+				}
+			}
+		}
+	default:
+		break
+	}
+	return tls.DialWithDialer(&d.Dialer, network, address, d.TLSConfig)
+}
+
+func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Conn, error) {
+	glog.V(2).Infof("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	switch network {
+	case "tcp", "tcp4", "tcp6":
+		if host, port, err := net.SplitHostPort(address); err == nil {
+			if alias0, ok := d.Site2Alias.Lookup(host); ok {
+				alias := alias0.(string)
+				if hosts, err := d.LookupAlias(alias); err == nil {
+					var config *tls.Config
+
+					switch {
+					case strings.HasPrefix(alias, "google_"):
+						config = DefaultTLSConfigForGoogle
+					default:
+						config = cfg
 					}
 					glog.V(3).Infof("DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
 

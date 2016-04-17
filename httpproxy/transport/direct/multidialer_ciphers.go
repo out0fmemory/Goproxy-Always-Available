@@ -7,7 +7,7 @@ import (
 )
 
 var (
-	defaultTLSConfigForGoogle *tls.Config = &tls.Config{
+	DefaultTLSConfigForGoogle *tls.Config = &tls.Config{
 		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: true,
 		ServerName:         "www.bing.com",

@@ -65,7 +65,7 @@ type Config struct {
 type Filter struct {
 	Config
 	GAETransport      *gae.Transport
-	DirectTransport   *http.Transport
+	DirectTransport   http.RoundTripper
 	ForceHTTPSMatcher *helpers.HostMatcher
 	ForceGAEMatcher   *helpers.HostMatcher
 	SiteMatcher       *helpers.HostMatcher
@@ -133,18 +133,19 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		Level:           config.Transport.Dialer.Level,
 	}
 
-	tr := &http.Transport{
-		Dial:                  d.Dial,
-		DialTLS:               d.DialTLS,
-		DisableKeepAlives:     config.Transport.DisableKeepAlives,
-		DisableCompression:    config.Transport.DisableCompression,
-		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
-		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
-	}
+	// tr := &http.Transport{
+	// 	Dial:                  d.Dial,
+	// 	DialTLS:               d.DialTLS,
+	// 	DisableKeepAlives:     config.Transport.DisableKeepAlives,
+	// 	DisableCompression:    config.Transport.DisableCompression,
+	// 	ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
+	// 	MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
+	// }
 
-	err := http2.ConfigureTransport(tr)
-	if err != nil {
-		glog.Infof("GAE: Error enabling Transport HTTP/2 support: %v", err)
+	tr2 := &http2.Transport{
+		DialTLS:            d.DialTLS2,
+		TLSClientConfig:    direct.DefaultTLSConfigForGoogle,
+		DisableCompression: config.Transport.DisableCompression,
 	}
 
 	servers := make([]gae.Server, 0)
@@ -173,11 +174,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	return &Filter{
 		Config: *config,
 		GAETransport: &gae.Transport{
-			RoundTripper: tr,
+			RoundTripper: tr2,
 			MultiDialer:  d,
 			Servers:      servers,
 		},
-		DirectTransport:   tr,
+		DirectTransport:   tr2,
 		ForceHTTPSMatcher: helpers.NewHostMatcher(config.ForceHTTPS),
 		ForceGAEMatcher:   helpers.NewHostMatcher(config.ForceGAE),
 		SiteMatcher:       helpers.NewHostMatcher(config.Sites),
@@ -247,7 +248,11 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 	if err != nil {
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			f.DirectTransport.CloseIdleConnections()
+			if tr, ok := f.DirectTransport.(interface {
+				CloseIdleConnections()
+			}); ok {
+				tr.CloseIdleConnections()
+			}
 		}
 		return ctx, nil, err
 	} else {
