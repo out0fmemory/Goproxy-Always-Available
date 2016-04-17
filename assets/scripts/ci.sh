@@ -37,14 +37,11 @@ function build_go() {
 	mv go go1.6
 
 	git clone https://github.com/phuslu/go
-	(cd go &&\
-		git remote add -f upstream https://github.com/golang/go &&\
-		git rebase upstream/master &&\
-		git push -f origin master \
-	)
-	(cd go/src/ &&\
-		BUILD_GO_TAG_BACK_STEPS=~3 bash ./make.bash \
-	)
+	cd go/src
+	git remote add -f upstream https://github.com/golang/go
+	git rebase upstream/master
+	BUILD_GO_TAG_BACK_STEPS=~3 bash ./make.bash
+	git push -f origin master
 
 	(set +x; \
 		echo '================================================================================' ;\
