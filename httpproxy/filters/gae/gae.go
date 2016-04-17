@@ -10,7 +10,7 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
-	"golang.org/x/net/http2"
+	"github.com/phuslu/net/http2"
 
 	"../../../helpers"
 	"../../../storage"
@@ -37,6 +37,7 @@ type Config struct {
 	Password    string
 	SSLVerify   bool
 	IPv6Only    bool
+	EnableHTTP2 bool
 	Sites       []string
 	Site2Alias  map[string]string
 	HostMap     map[string][]string
@@ -133,19 +134,26 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		Level:           config.Transport.Dialer.Level,
 	}
 
-	// tr := &http.Transport{
-	// 	Dial:                  d.Dial,
-	// 	DialTLS:               d.DialTLS,
-	// 	DisableKeepAlives:     config.Transport.DisableKeepAlives,
-	// 	DisableCompression:    config.Transport.DisableCompression,
-	// 	ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
-	// 	MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
-	// }
+	var tr http.RoundTripper
 
-	tr2 := &http2.Transport{
-		DialTLS:            d.DialTLS2,
-		TLSClientConfig:    direct.DefaultTLSConfigForGoogle,
-		DisableCompression: config.Transport.DisableCompression,
+	t1 := &http.Transport{
+		Dial:                  d.Dial,
+		DialTLS:               d.DialTLS,
+		DisableKeepAlives:     config.Transport.DisableKeepAlives,
+		DisableCompression:    config.Transport.DisableCompression,
+		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
+		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
+	}
+
+	if config.EnableHTTP2 {
+		tr = &http2.Transport{
+			DialTLS:            d.DialTLS2,
+			TLSClientConfig:    direct.DefaultTLSConfigForGoogle,
+			DisableCompression: config.Transport.DisableCompression,
+			Transport:          t1,
+		}
+	} else {
+		tr = t1
 	}
 
 	servers := make([]gae.Server, 0)
@@ -174,11 +182,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	return &Filter{
 		Config: *config,
 		GAETransport: &gae.Transport{
-			RoundTripper: tr2,
+			RoundTripper: tr,
 			MultiDialer:  d,
 			Servers:      servers,
 		},
-		DirectTransport:   tr2,
+		DirectTransport:   tr,
 		ForceHTTPSMatcher: helpers.NewHostMatcher(config.ForceHTTPS),
 		ForceGAEMatcher:   helpers.NewHostMatcher(config.ForceGAE),
 		SiteMatcher:       helpers.NewHostMatcher(config.Sites),

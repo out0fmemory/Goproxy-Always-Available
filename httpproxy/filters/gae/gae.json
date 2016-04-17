@@ -5,6 +5,7 @@
 	"Password": "",
 	"SSLVerify": false,
 	"IPv6Only": false,
+	"EnableHTTP2": false,
 	"Sites": [
 		"*"
 	],
