@@ -10,6 +10,7 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/golang/glog"
+	"golang.org/x/net/http2"
 
 	"../../../helpers"
 	"../../../storage"
@@ -139,6 +140,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DisableCompression:    config.Transport.DisableCompression,
 		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
+	}
+
+	err := http2.ConfigureTransport(tr)
+	if err != nil {
+		glog.Infof("GAE: Error enabling Transport HTTP/2 support: %v", err)
 	}
 
 	servers := make([]gae.Server, 0)

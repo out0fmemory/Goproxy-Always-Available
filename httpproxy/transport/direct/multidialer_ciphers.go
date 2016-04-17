@@ -18,5 +18,6 @@ var (
 			tls.TLS_RSA_WITH_AES_128_CBC_SHA,
 			// tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
 		},
+		NextProtos: []string{"h2", "h2-14", "http/1.1"},
 	}
 )
