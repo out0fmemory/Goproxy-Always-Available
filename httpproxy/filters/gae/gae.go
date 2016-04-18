@@ -150,6 +150,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.ForceHTTP2:
+		t1.DisableKeepAlives = true
 		tr = &http2.Transport{
 			DialTLS:            d.DialTLS2,
 			TLSClientConfig:    direct.DefaultTLSConfigForGoogle,
@@ -159,6 +160,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.DisableHTTP2:
 		tr = t1
 	default:
+		t1.DisableKeepAlives = true
 		err := http2.ConfigureTransport(t1)
 		if err != nil {
 			glog.Warningf("GAE: Error enabling Transport HTTP/2 support: %v", err)
