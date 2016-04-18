@@ -266,10 +266,11 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 	if err != nil {
 		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			if tr, ok := f.DirectTransport.(interface {
+			if t, ok := f.DirectTransport.(interface {
 				CloseIdleConnections()
 			}); ok {
-				tr.CloseIdleConnections()
+				glog.V(2).Infof("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", err, tr)
+				t.CloseIdleConnections()
 			}
 		}
 		return ctx, nil, err
