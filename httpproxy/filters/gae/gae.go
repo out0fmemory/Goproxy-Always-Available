@@ -30,22 +30,23 @@ const (
 )
 
 type Config struct {
-	AppIDs      []string
-	Scheme      string
-	Domain      string
-	Path        string
-	Password    string
-	SSLVerify   bool
-	IPv6Only    bool
-	EnableHTTP2 bool
-	Sites       []string
-	Site2Alias  map[string]string
-	HostMap     map[string][]string
-	ForceHTTPS  []string
-	ForceGAE    []string
-	DNSServers  []string
-	IPBlackList []string
-	Transport   struct {
+	AppIDs       []string
+	Scheme       string
+	Domain       string
+	Path         string
+	Password     string
+	SSLVerify    bool
+	IPv6Only     bool
+	DisableHTTP2 bool
+	ForceHTTP2   bool
+	Sites        []string
+	Site2Alias   map[string]string
+	HostMap      map[string][]string
+	ForceHTTPS   []string
+	ForceGAE     []string
+	DNSServers   []string
+	IPBlackList  []string
+	Transport    struct {
 		Dialer struct {
 			Timeout        int
 			KeepAlive      int
@@ -145,14 +146,23 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
 	}
 
-	if config.EnableHTTP2 {
+	switch {
+	case config.DisableHTTP2 && config.ForceHTTP2:
+		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
+	case config.ForceHTTP2:
 		tr = &http2.Transport{
 			DialTLS:            d.DialTLS2,
 			TLSClientConfig:    direct.DefaultTLSConfigForGoogle,
 			DisableCompression: config.Transport.DisableCompression,
 			Transport:          t1,
 		}
-	} else {
+	case config.DisableHTTP2:
+		tr = t1
+	default:
+		err := http2.ConfigureTransport(t1)
+		if err != nil {
+			glog.Warningf("GAE: Error enabling Transport HTTP/2 support: %v", err)
+		}
 		tr = t1
 	}
 
