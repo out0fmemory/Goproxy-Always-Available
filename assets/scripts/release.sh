@@ -1,7 +1,4 @@
-#!/bin/bash
-
-set -x
-set -e
+#!/bin/bash -xe
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
 export GITHUB_REPO=goproxy
