@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: zHIHCbYHs5M9bLZUyMYxww
+! Checksum: yZtPblQLq8NczE/xEW7y+A
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 14 Apr 2016 11:41:58 +0800
+! Last Modified: Mon, 18 Apr 2016 10:02:08 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -28,6 +28,7 @@
 ||azubu.tv
 ||barracuda.com
 ||beeg.com
+||bloombergview.com
 ||boysmaster.com
 ||carfax.com
 ||centauro.com.br
@@ -204,6 +205,7 @@ china-mmm.jp.net
 ||registry.google
 |http://sipml5.org/
 !--||www.google
+||webmproject.org
 ||withgoogle.com
 ||youtu.be
 .youtube.com
@@ -582,6 +584,8 @@ bigfools.com
 |http://billypan.com/wiki
 ||billywr.com
 bipic.net
+.bit.do
+|http://bit.do
 .bit.ly
 |http://bit.ly
 !--||bitbucket.org
@@ -1514,6 +1518,7 @@ whitebear.freebearblog.org
 ||freedomhouse.org
 .freedomsherald.org
 ||freedomsherald.org
+.freefq.com
 .freefuckvids.com
 .freegao.com
 ||freegao.com
@@ -2029,6 +2034,8 @@ have8.com
 @@||haygo.com
 ||hdtvb.net
 ||heartyit.com
+.hec.su
+|http://hec.su
 .hecaitou.net
 ||hecaitou.net
 .hechaji.com
@@ -2184,6 +2191,7 @@ hotpot.hk
 hrweb.org
 ||hsjp.net
 ||hsselite.com
+|http://hst.net.tw
 .hstt.net
 .htkou.net
 ||htkou.net
@@ -2673,6 +2681,7 @@ mail-archive.com
 ||marines.mil
 markmail.org*message
 ||martau.com
+|http://blog.martinoei.com
 .martsangkagyuofficial.org
 |http://martsangkagyuofficial.org
 maruta.be/forget
@@ -4573,8 +4582,8 @@ washeng.net
 ||hudatoriq.web.id
 ||web2project.net
 webbang.net
+.webfreer.com
 weblagu.com
-||webmproject.org
 webs-tv.net
 !--webshots.com
 websitepulse.com/help/testtools.china-test.html
@@ -4995,7 +5004,8 @@ zinio.com
 ||ziplib.com
 .zkaip.com
 ||zkaip.com
-||zlib.net/
+realforum.zkiz.com
+!--||zlib.net/
 zmw.cn
 zomobo.net
 .zonaeuropa.com
