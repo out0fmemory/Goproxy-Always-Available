@@ -44,6 +44,7 @@ type Config struct {
 	HostMap      map[string][]string
 	ForceHTTPS   []string
 	ForceGAE     []string
+	FakeOptions  map[string][]string
 	DNSServers   []string
 	IPBlackList  []string
 	Transport    struct {
@@ -66,12 +67,13 @@ type Config struct {
 
 type Filter struct {
 	Config
-	GAETransport      *gae.Transport
-	DirectTransport   http.RoundTripper
-	ForceHTTPSMatcher *helpers.HostMatcher
-	ForceGAEMatcher   *helpers.HostMatcher
-	SiteMatcher       *helpers.HostMatcher
-	DirectSiteMatcher *helpers.HostMatcher
+	GAETransport       *gae.Transport
+	DirectTransport    http.RoundTripper
+	ForceHTTPSMatcher  *helpers.HostMatcher
+	ForceGAEMatcher    *helpers.HostMatcher
+	FakeOptionsMatcher *helpers.HostMatcher
+	SiteMatcher        *helpers.HostMatcher
+	DirectSiteMatcher  *helpers.HostMatcher
 }
 
 func init() {
@@ -196,11 +198,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			MultiDialer:  d,
 			Servers:      servers,
 		},
-		DirectTransport:   tr,
-		ForceHTTPSMatcher: helpers.NewHostMatcher(config.ForceHTTPS),
-		ForceGAEMatcher:   helpers.NewHostMatcher(config.ForceGAE),
-		SiteMatcher:       helpers.NewHostMatcher(config.Sites),
-		DirectSiteMatcher: helpers.NewHostMatcherWithString(config.Site2Alias),
+		DirectTransport:    tr,
+		ForceHTTPSMatcher:  helpers.NewHostMatcher(config.ForceHTTPS),
+		ForceGAEMatcher:    helpers.NewHostMatcher(config.ForceGAE),
+		FakeOptionsMatcher: helpers.NewHostMatcherWithStrings(config.FakeOptions),
+		SiteMatcher:        helpers.NewHostMatcher(config.Sites),
+		DirectSiteMatcher:  helpers.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
 }
 
@@ -213,6 +216,33 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		return ctx, nil, nil
 	}
 
+	if req.Method == http.MethodOptions {
+		if v, ok := f.FakeOptionsMatcher.Lookup(req.Host); ok {
+			resp := &http.Response{
+				Status:        "200 OK",
+				StatusCode:    http.StatusOK,
+				Proto:         "HTTP/1.1",
+				ProtoMajor:    1,
+				ProtoMinor:    1,
+				Header:        http.Header{},
+				Request:       req,
+				Close:         false,
+				ContentLength: -1,
+			}
+			for _, s := range v.([]string) {
+				parts := strings.SplitN(s, ":", 2)
+				if len(parts) == 2 {
+					resp.Header.Add(parts[0], strings.TrimSpace(parts[1]))
+				}
+			}
+			if origin := req.Header.Get("Origin"); origin != "" {
+				resp.Header.Set("Access-Control-Allow-Origin", origin)
+			}
+			glog.Infof("%s \"GAE FAKEOPTIONS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			return ctx, resp, nil
+		}
+	}
+
 	var tr http.RoundTripper = f.GAETransport
 	prefix := "FETCH"
 
@@ -220,7 +250,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		if !strings.HasPrefix(req.Header.Get("Referer"), "https://") {
 			u := strings.Replace(req.URL.String(), "http://", "https://", 1)
 			glog.V(2).Infof("GAE FORCEHTTPS get raw url=%v, redirect to %v", req.URL.String(), u)
-			return ctx, &http.Response{
+			resp := &http.Response{
 				Status:     "301 Moved Permanently",
 				StatusCode: http.StatusMovedPermanently,
 				Proto:      "HTTP/1.1",
@@ -232,7 +262,9 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 				Request:       req,
 				Close:         true,
 				ContentLength: -1,
-			}, nil
+			}
+			glog.Infof("%s \"GAE FORCEHTTPS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			return ctx, resp, nil
 		}
 	}
 

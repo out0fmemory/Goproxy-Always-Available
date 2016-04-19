@@ -65,6 +65,16 @@
 		"translate.googleapis.com",
 		"domains.google.com",
 	],
+	"FakeOptions": {
+		"*.twitter.com": [
+			"Access-Control-Allow-Credentials: true",
+			"Access-Control-Allow-Headers: Authorization, Content-Type, If-Modified-Since, X-Act-As-User-Id, X-B3-Flags, X-Contribute-To-User-Id, X-CSRF-Token, X-Guest-Token, X-TD-Iff-Mtime, X-TD-Mtime-Check, X-Twitter-Auth-Type, X-Twitter-Client, X-Twitter-Client-Version, X-Twitter-Polling, X-Twitter-UTCOffset",
+			"Access-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE",
+			"Access-Control-Allow-Origin: *",
+			"Access-Control-Max-Age: 1728000",
+			"X-Connection-Hash: dfc38d09241e573d311289998bd7e169",
+		],
+	},
 	"DNSServers": [
 		"114.114.114.114",
 		"114.114.115.115",

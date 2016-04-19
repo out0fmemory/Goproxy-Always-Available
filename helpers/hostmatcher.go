@@ -45,6 +45,14 @@ func NewHostMatcherWithString(hosts map[string]string) *HostMatcher {
 	return NewHostMatcherWithValue(values)
 }
 
+func NewHostMatcherWithStrings(hosts map[string][]string) *HostMatcher {
+	values := make(map[string]interface{}, len(hosts))
+	for host, value := range hosts {
+		values[host] = value
+	}
+	return NewHostMatcherWithValue(values)
+}
+
 func NewHostMatcherWithValue(values map[string]interface{}) *HostMatcher {
 	hm := &HostMatcher{
 		starValue:    nil,
