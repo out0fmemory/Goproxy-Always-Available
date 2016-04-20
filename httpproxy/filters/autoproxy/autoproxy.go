@@ -244,7 +244,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		body := obj.Body()
 		defer body.Close()
 		if b, err := ioutil.ReadAll(body); err == nil {
-			data += strings.Replace(string(b), "function FindProxyForURL(url, host)", "function MyFindProxyForURL(url, host)", 1)
+			data += strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
 		}
 	}
 	data += f.AutoProxy2Pac.GeneratePac(req)
