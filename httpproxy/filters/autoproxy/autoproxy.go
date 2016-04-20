@@ -14,7 +14,6 @@ import (
 
 	"github.com/golang/glog"
 
-	"../../../helpers"
 	"../../../storage"
 	"../../filters"
 )
@@ -25,8 +24,8 @@ const (
 )
 
 type Config struct {
-	Sites   []string
-	GFWList struct {
+	MyProxyPAC string
+	GFWList    struct {
 		URL      string
 		File     string
 		Encoding string
@@ -48,7 +47,7 @@ type GFWList struct {
 type Filter struct {
 	Config
 	Store         storage.Store
-	Sites         *helpers.HostMatcher
+	MyProxyPAC    string
 	GFWList       *GFWList
 	AutoProxy2Pac *AutoProxy2Pac
 	Transport     *http.Transport
@@ -95,7 +94,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	autoproxy2pac := &AutoProxy2Pac{
-		Sites: config.Sites,
+		Sites: []string{},
 	}
 
 	object, err := store.GetObject(gfwlist.Filename, -1, -1)
@@ -128,7 +127,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	f := &Filter{
 		Config:        *config,
 		Store:         store,
-		Sites:         helpers.NewHostMatcher(config.Sites),
+		MyProxyPAC:    config.MyProxyPAC,
 		GFWList:       &gfwlist,
 		AutoProxy2Pac: autoproxy2pac,
 		Transport:     transport,
@@ -240,7 +239,15 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		f.UpdateChan <- struct{}{}
 	}
 
-	data := f.AutoProxy2Pac.GeneratePac(req)
+	data := ""
+	if obj, err := f.Store.GetObject(f.MyProxyPAC, -1, -1); err == nil {
+		body := obj.Body()
+		defer body.Close()
+		if b, err := ioutil.ReadAll(body); err == nil {
+			data += strings.Replace(string(b), "function FindProxyForURL(url, host)", "function MyFindProxyForURL(url, host)", 1)
+		}
+	}
+	data += f.AutoProxy2Pac.GeneratePac(req)
 
 	resp := &http.Response{
 		Status:        "200 OK",

@@ -93,6 +93,19 @@ func (a *AutoProxy2Pac) Read(r io.Reader) error {
 };
 
 function FindProxyForURL(url, host) {
+    if (isPlainHostName(host) ||
+        host.indexOf('127.') == 0 ||
+        host.indexOf('192.168.') == 0 ||
+        host.indexOf('10.') == 0 ||
+        shExpMatch(host, 'localhost.*')) {
+        return 'DIRECT';
+    }
+
+    proxy = MyFindProxyForURL(url, host)
+    if (proxy != "DIRECT") {
+    	return proxy
+    }
+
     var lastPos;
     do {
         if (sites.hasOwnProperty(host)) {

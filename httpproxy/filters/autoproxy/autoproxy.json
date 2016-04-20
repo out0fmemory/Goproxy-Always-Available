@@ -1,21 +1,5 @@
 {
-	"Sites": [
-		"android.com",
-		"appspot.com",
-		"blogspot.com",
-		"ggpht.com",
-		"google-analytics.com",
-		"google.com",
-		"google.com.hk",
-		"googleapis.com",
-		"googlecode.com",
-		"googlegroups.com",
-		"googletagmanager.com",
-		"googletagservices.com",
-		"googleusercontent.com",
-		"gstatic.com",
-		"youtube.com"
-	],
+	"MyProxyPAC": "proxy.pac",
 	"GFWList": {
 		"url": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
 		"file": "gfwlist.txt",

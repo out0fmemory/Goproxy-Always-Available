@@ -38,6 +38,7 @@ SOURCES += $(SOURCEDIR)/httpproxy/httpproxy.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 #SOURCES += $(SOURCEDIR)/goproxy.pem
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
+SOURCES += $(REPO)/httpproxy/filters/autoproxy/proxy.pac
 
 ifeq ($(GOOS), windows)
 	SOURCES += $(REPO)/assets/gui/goproxy-gui.exe
