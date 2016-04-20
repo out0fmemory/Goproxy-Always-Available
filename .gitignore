@@ -1,5 +1,6 @@
 build
 gfwlist.txt
+proxy.pac
 goproxy-gtk.desktop
 goproxy-gtk.py
 goproxy-osx.command

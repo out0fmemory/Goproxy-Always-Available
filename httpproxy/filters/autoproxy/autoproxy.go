@@ -4,10 +4,12 @@ import (
 	"bufio"
 	"bytes"
 	"encoding/base64"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -240,6 +242,27 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	}
 
 	data := ""
+
+	obj, err := f.Store.GetObject(f.MyProxyPAC, -1, -1)
+	if os.IsNotExist(err) {
+		s := fmt.Sprintf(`
+function FindProxyForURL(url, host) {
+    if (shExpMatch(host, '*.google*.*') ||
+       dnsDomainIs(host, '.ggpht.com') ||
+       dnsDomainIs(host, '.gstatic.com') ||
+       host == 'goo.gl') {
+        return 'PROXY %s';
+    }
+    return 'DIRECT';
+}
+`, req.URL.Host)
+		f.Store.PutObject(f.MyProxyPAC, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
+	} else {
+		if body := obj.Body(); body != nil {
+			body.Close()
+		}
+	}
+
 	if obj, err := f.Store.GetObject(f.MyProxyPAC, -1, -1); err == nil {
 		body := obj.Body()
 		defer body.Close()
@@ -247,6 +270,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			data += strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
 		}
 	}
+
 	data += f.AutoProxy2Pac.GeneratePac(req)
 
 	resp := &http.Response{
