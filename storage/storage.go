@@ -128,6 +128,7 @@ func ReadJsonConfig(uri, filename string, config interface{}) error {
 	fileext := path.Ext(filename)
 	filename1 := strings.TrimSuffix(filename, fileext) + ".user" + fileext
 
+	cm := make(map[string]interface{})
 	for i, name := range []string{filename, filename1} {
 		object, err := store.GetObject(name, -1, -1)
 		if err != nil {
@@ -146,13 +147,29 @@ func ReadJsonConfig(uri, filename string, config interface{}) error {
 			return err
 		}
 
-		err = json.Unmarshal(data, config)
-		if err != nil {
+		cm1 := make(map[string]interface{})
+
+		d := json.NewDecoder(bytes.NewReader(data))
+		d.UseNumber()
+
+		if err = d.Decode(&cm1); err != nil {
 			return err
+		}
+
+		for key, value := range cm1 {
+			cm[key] = value
 		}
 	}
 
-	return nil
+	data, err := json.Marshal(cm)
+	if err != nil {
+		return err
+	}
+
+	d := json.NewDecoder(bytes.NewReader(data))
+	d.UseNumber()
+
+	return d.Decode(config)
 }
 
 const (
