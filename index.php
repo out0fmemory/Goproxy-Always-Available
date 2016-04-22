@@ -211,7 +211,7 @@ function post() {
         echo_content($GLOBALS['__content__']);
     } else if ($errno) {
         if (!headers_sent()) {
-            header('Content-Type: ' . $__content_type__);
+            header('Content-Type: ' . $GLOBALS['__content_type__']);
         }
         $content = "HTTP/1.0 502\r\n\r\n" . message_html('502 Urlfetch Error', "PHP Urlfetch Error curl($errno)",  curl_error($ch));
         echo_content($content);
