@@ -1,15 +1,11 @@
 package storage
 
 import (
-	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
-	"path"
 	"path/filepath"
 	"sort"
 	"strings"
@@ -82,94 +78,6 @@ func Open(driver, sourceString string) (Store, error) {
 	default:
 		return nil, fmt.Errorf("Invaild Storage dirver: %#v", driver)
 	}
-}
-
-func ReadJson(r io.Reader) ([]byte, error) {
-
-	s, err := ioutil.ReadAll(r)
-	if err != nil {
-		return s, err
-	}
-
-	lines := make([]string, 0)
-	for _, line := range strings.Split(strings.Replace(string(s), "\r\n", "\n", -1), "\n") {
-		line = strings.TrimSpace(line)
-		if line == "" || strings.HasPrefix(line, "//") {
-			continue
-		}
-		lines = append(lines, line)
-	}
-
-	var b bytes.Buffer
-	for i, line := range lines {
-		if i < len(lines)-1 {
-			nextLine := strings.TrimSpace(lines[i+1])
-			if nextLine == "]" ||
-				nextLine == "]," ||
-				nextLine == "}" ||
-				nextLine == "}," {
-				if strings.HasSuffix(line, ",") {
-					line = strings.TrimSuffix(line, ",")
-				}
-			}
-		}
-		b.WriteString(line)
-	}
-
-	return b.Bytes(), nil
-}
-
-func ReadJsonConfig(uri, filename string, config interface{}) error {
-	store, err := OpenURI(uri)
-	if err != nil {
-		return err
-	}
-
-	fileext := path.Ext(filename)
-	filename1 := strings.TrimSuffix(filename, fileext) + ".user" + fileext
-
-	cm := make(map[string]interface{})
-	for i, name := range []string{filename, filename1} {
-		object, err := store.GetObject(name, -1, -1)
-		if err != nil {
-			if i == 0 {
-				return err
-			} else {
-				continue
-			}
-		}
-
-		rc := object.Body()
-		defer rc.Close()
-
-		data, err := ReadJson(rc)
-		if err != nil {
-			return err
-		}
-
-		cm1 := make(map[string]interface{})
-
-		d := json.NewDecoder(bytes.NewReader(data))
-		d.UseNumber()
-
-		if err = d.Decode(&cm1); err != nil {
-			return err
-		}
-
-		for key, value := range cm1 {
-			cm[key] = value
-		}
-	}
-
-	data, err := json.Marshal(cm)
-	if err != nil {
-		return err
-	}
-
-	d := json.NewDecoder(bytes.NewReader(data))
-	d.UseNumber()
-
-	return d.Decode(config)
 }
 
 const (
