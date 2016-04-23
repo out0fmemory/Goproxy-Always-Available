@@ -53,7 +53,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 			Subject: pkix.Name{
 				Organization: []string{name},
 			},
-			NotBefore: time.Now().Add(-time.Duration(5 * time.Minute)),
+			NotBefore: time.Now().Add(-time.Duration(30 * 24 * time.Hour)),
 			NotAfter:  time.Now().Add(vaildFor),
 
 			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
