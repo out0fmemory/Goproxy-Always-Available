@@ -106,9 +106,7 @@ func mergeMap(m1 map[string]interface{}, m2 map[string]interface{}) error {
 		m1v1, m1v_is_map := m1v.(map[string]interface{})
 
 		switch {
-		case !m1_has_key:
-			m1[key] = value
-		case !m2v_is_map:
+		case !m1_has_key, !m2v_is_map:
 			m1[key] = value
 		case !m1v_is_map:
 			return fmt.Errorf("m1v=%#v is not a map, but m2v=%#v is a map", m1v, m2v)
