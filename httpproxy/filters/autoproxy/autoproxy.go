@@ -97,7 +97,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	autoproxy2pac := &AutoProxy2Pac{
-		Sites: []string{},
+		Sites: []string{"google.com"},
 	}
 
 	object, err := store.GetObject(gfwlist.Filename, -1, -1)

@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -72,12 +73,18 @@ func (a *AutoProxy2Pac) Read(r io.Reader) error {
 		return err
 	}
 
+	sites1 := make([]string, 0)
+	for s, _ := range sites {
+		sites1 = append(sites1, s)
+	}
+	sort.Strings(sites1)
+
 	var b bytes.Buffer
 	var w io.Writer = &b
 
 	io.WriteString(w, "var sites = {\n")
 
-	for s, _ := range sites {
+	for _, s := range sites1 {
 		fmt.Fprintf(w, "'%s': 1,\n", s)
 	}
 
