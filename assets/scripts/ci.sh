@@ -131,7 +131,7 @@ function release_goproxy_ci() {
 }
 
 function clean() {
-	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht)
+	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht && md5sum *)
 	rm -rf $HOME/tmp.*.${GITHUB_REPO}
 }
 
