@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"net/url"
 	"os"
@@ -267,7 +268,13 @@ function FindProxyForURL(url, host) {
 		body := obj.Body()
 		defer body.Close()
 		if b, err := ioutil.ReadAll(body); err == nil {
-			data += strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
+			s := strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
+			if _, port, err := net.SplitHostPort(req.URL.Host); err == nil {
+				for _, localaddr := range []string{"127.0.0.1", "::1", "localhost"} {
+					s = strings.Replace(s, net.JoinHostPort(localaddr, port), req.URL.Host, -1)
+				}
+			}
+			data += s
 		}
 	}
 
