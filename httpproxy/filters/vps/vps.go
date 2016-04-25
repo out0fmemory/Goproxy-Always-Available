@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/golang/glog"
-	"github.com/phuslu/http2"
+	"github.com/phuslu/net/http2"
 
 	"../../../helpers"
 	"../../../storage"
@@ -62,12 +62,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			return nil, err
 		}
 
-		transport := &http2.Transport{
-			InsecureTLSDial: true,
-			Proxy: func(req *http.Request) (*url.URL, error) {
-				return u, nil
-			},
-		}
+		transport := &http2.Transport{}
 
 		fs := &FetchServer{
 			URL:       u,
