@@ -1,1 +1,1 @@
-web: fetchserver
+web: goproxy
