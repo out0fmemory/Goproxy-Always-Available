@@ -8,6 +8,7 @@ import (
 	"net"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
@@ -16,6 +17,36 @@ import (
 
 	"../../../helpers"
 )
+
+var (
+	onceDefaultTLSConfigForGoogle sync.Once
+	fakeSNINamesForGoogle         []string = []string{
+		"appleid.apple.com",
+		"assets-cdn.github.com",
+		"download.windowsupdate.com",
+		"github.com",
+		"www.apple.com",
+		"www.bing.com",
+		"www.microsoft.com",
+	}
+)
+
+func GetDefaultTLSConfigForGoogle() *tls.Config {
+	onceDefaultTLSConfigForGoogle.Do(func() {
+		ciphers := defaultTLSConfigForGoogle.CipherSuites[:]
+		length := len(defaultTLSConfigForGoogle.CipherSuites)
+		n := rand.Intn(length)
+		for i := n + 1; i < length; i++ {
+			j := rand.Intn(i)
+			ciphers[i], ciphers[j] = ciphers[j], ciphers[i]
+		}
+		defaultTLSConfigForGoogle.CipherSuites = ciphers[:n+1]
+
+		defaultTLSConfigForGoogle.ServerName = fakeSNINamesForGoogle[rand.Intn(len(fakeSNINamesForGoogle))]
+	})
+
+	return defaultTLSConfigForGoogle
+}
 
 type MultiDialer struct {
 	net.Dialer
@@ -228,7 +259,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 
 					switch {
 					case strings.HasPrefix(alias, "google_"):
-						config = DefaultTLSConfigForGoogle
+						config = GetDefaultTLSConfigForGoogle()
 					default:
 						config = &tls.Config{
 							InsecureSkipVerify: true,
@@ -266,7 +297,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 
 					switch {
 					case strings.HasPrefix(alias, "google_"):
-						config = DefaultTLSConfigForGoogle
+						config = GetDefaultTLSConfigForGoogle()
 					default:
 						config = cfg
 					}

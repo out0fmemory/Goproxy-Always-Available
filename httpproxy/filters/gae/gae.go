@@ -154,7 +154,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.ForceHTTP2:
 		tr = &http2.Transport{
 			DialTLS:            d.DialTLS2,
-			TLSClientConfig:    direct.DefaultTLSConfigForGoogle,
+			TLSClientConfig:    direct.GetDefaultTLSConfigForGoogle(),
 			DisableCompression: config.Transport.DisableCompression,
 		}
 	case config.DisableHTTP2:

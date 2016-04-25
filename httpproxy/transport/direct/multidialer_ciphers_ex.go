@@ -7,10 +7,10 @@ import (
 )
 
 var (
-	DefaultTLSConfigForGoogle *tls.Config = &tls.Config{
+	defaultTLSConfigForGoogle *tls.Config = &tls.Config{
 		MinVersion:         tls.VersionTLS12,
 		InsecureSkipVerify: true,
-		ServerName:         "www.bing.com",
+		ServerName:         "www.microsoft.com",
 		ClientSessionCache: tls.NewLRUClientSessionCache(1000),
 		CipherSuites: []uint16{
 			tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
