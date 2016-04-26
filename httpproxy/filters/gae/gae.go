@@ -289,6 +289,11 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 		if req.URL.Scheme != "http" && !f.ForceGAEMatcher.Match(req.Host) {
 			tr = f.DirectTransport
+			if s := req.Header.Get("Connection"); s != "" {
+				if s1 := strings.ToLower(s); s != s1 {
+					req.Header.Set("Connection", s1)
+				}
+			}
 			prefix = "DIRECT"
 		}
 	}
