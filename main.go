@@ -15,17 +15,15 @@ var version = "r9999"
 
 func main() {
 
-	if runtime.GOOS == "windows" {
-		logToStderr := true
-		for i := 1; i < len(os.Args); i++ {
-			if strings.HasPrefix(os.Args[i], "-logtostderr=") {
-				logToStderr = false
-				break
-			}
+	logToStderr := true
+	for i := 1; i < len(os.Args); i++ {
+		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
+			logToStderr = false
+			break
 		}
-		if logToStderr {
-			flag.Set("logtostderr", "true")
-		}
+	}
+	if logToStderr {
+		flag.Set("logtostderr", "true")
 	}
 	flag.Parse()
 
