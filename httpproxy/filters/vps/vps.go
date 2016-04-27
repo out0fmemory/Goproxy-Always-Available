@@ -8,7 +8,7 @@ import (
 	"path"
 	"strings"
 
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
 
 	"../../../helpers"

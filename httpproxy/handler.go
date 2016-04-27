@@ -5,7 +5,7 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 
 	"../helpers"
 	"./filters"

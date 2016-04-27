@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 
 	"../../../helpers"
 	"../../../storage"

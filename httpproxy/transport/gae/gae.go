@@ -10,7 +10,7 @@ import (
 
 	"../direct"
 
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 )
 
 type Transport struct {

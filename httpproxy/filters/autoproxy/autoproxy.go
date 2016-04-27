@@ -15,7 +15,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 
 	"../../../storage"
 	"../../filters"

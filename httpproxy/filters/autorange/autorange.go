@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 
 	"../../../helpers"
 	"../../../storage"

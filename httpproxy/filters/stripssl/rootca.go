@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
+	"github.com/phuslu/glog"
 )
 
 type RootCA struct {

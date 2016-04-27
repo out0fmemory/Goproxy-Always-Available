@@ -4,8 +4,8 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/golang/glog"
 	"github.com/juju/ratelimit"
+	"github.com/phuslu/glog"
 
 	"../../../storage"
 	"../../filters"
