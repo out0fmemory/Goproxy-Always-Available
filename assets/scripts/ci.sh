@@ -58,6 +58,19 @@ function build_go() {
 	popd
 }
 
+function build_glog() {
+	pushd ${WORKING_DIR}
+
+	git clone https://github.com/phuslu/glog $GOPATH/src/github.com/phuslu/glog
+	cd $GOPATH/src/github.com/phuslu/glog
+	git remote add -f upstream https://github.com/golang/glog
+	git rebase upstream/master
+	go build -v
+	git push -f origin master
+
+	popd
+}
+
 function build_http2() {
 	pushd ${WORKING_DIR}
 
@@ -71,7 +84,7 @@ function build_http2() {
 	popd
 }
 
-function build_goproxy() {
+function build_repo() {
 	pushd ${WORKING_DIR}
 
 	git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
@@ -99,7 +112,7 @@ function build_goproxy() {
 	popd
 }
 
-function release_goproxy_ci() {
+function release_repo_ci() {
 	if [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
 		return
 	fi
@@ -137,7 +150,8 @@ function clean() {
 
 init_github
 build_go
+build_glog
 build_http2
-build_goproxy
-release_goproxy_ci
+build_repo
+release_repo_ci
 clean
