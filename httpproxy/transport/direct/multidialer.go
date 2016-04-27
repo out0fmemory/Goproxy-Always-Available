@@ -223,7 +223,7 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 }
 
 func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
-	glog.V(2).Infof("MULTIDIALER Dial(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TCPConnDuration.Len(), d.TCPConnError.Len())
+	glog.Warningf("MULTIDIALER Dial(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TCPConnDuration.Len(), d.TCPConnError.Len())
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
@@ -248,7 +248,7 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 }
 
 func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
-	glog.V(2).Infof("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	glog.Warningf("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
