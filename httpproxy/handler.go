@@ -119,7 +119,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		defer resp.Body.Close()
 		n, err := helpers.IoCopy(rw, resp.Body)
 		if err != nil {
-			glog.Errorf("IoCopy %#v return %#v %s", resp.Body, n, err)
+			glog.Warningf("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
 		}
 	}
 }
