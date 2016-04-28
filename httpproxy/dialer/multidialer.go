@@ -31,17 +31,22 @@ var (
 	}
 )
 
+func pickupCiphers(ciphers []uint16) []uint16 {
+	ciphers = ciphers[:]
+	length := len(ciphers)
+	n := rand.Intn(length)
+	for i := n + 1; i < length; i++ {
+		j := rand.Intn(i)
+		ciphers[i], ciphers[j] = ciphers[j], ciphers[i]
+	}
+	return ciphers[:n+1]
+}
+
 func GetDefaultTLSConfigForGoogle() *tls.Config {
 	onceDefaultTLSConfigForGoogle.Do(func() {
-		ciphers := defaultTLSConfigForGoogle.CipherSuites[:]
-		length := len(defaultTLSConfigForGoogle.CipherSuites)
-		n := rand.Intn(length)
-		for i := n + 1; i < length; i++ {
-			j := rand.Intn(i)
-			ciphers[i], ciphers[j] = ciphers[j], ciphers[i]
-		}
-		defaultTLSConfigForGoogle.CipherSuites = ciphers[:n+1]
-
+		ciphers := pickupCiphers(defaultTLSConfigForGoogle.CipherSuites)
+		ciphers = append(ciphers, pickupCiphers(mixinCiphersForGoogle)...)
+		defaultTLSConfigForGoogle.CipherSuites = ciphers
 		defaultTLSConfigForGoogle.ServerName = fakeSNINamesForGoogle[rand.Intn(len(fakeSNINamesForGoogle))]
 	})
 

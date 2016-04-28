@@ -18,4 +18,8 @@ var (
 		},
 		NextProtos: []string{"h2", "h2-14", "http/1.1"},
 	}
+
+	mixinCiphersForGoogle []uint16 = []uint16{
+		tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+	}
 )
