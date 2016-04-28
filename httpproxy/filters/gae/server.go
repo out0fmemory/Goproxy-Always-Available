@@ -12,7 +12,7 @@ import (
 	"net/url"
 	"strings"
 
-	"../../transport"
+	"../../../helpers"
 )
 
 type Server struct {
@@ -31,7 +31,7 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 	}
 
 	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
-	req.Header.WriteSubset(w, transport.ReqWriteExcludeHeader)
+	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
 	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", f.Password)
 	w.Close()
 
@@ -54,10 +54,10 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 
 	if req.ContentLength > 0 {
 		req1.ContentLength = int64(len(b0)+b.Len()) + req.ContentLength
-		req1.Body = transport.NewMultiReadCloser(bytes.NewReader(b0), &b, req.Body)
+		req1.Body = helpers.NewMultiReadCloser(bytes.NewReader(b0), &b, req.Body)
 	} else {
 		req1.ContentLength = int64(len(b0) + b.Len())
-		req1.Body = transport.NewMultiReadCloser(bytes.NewReader(b0), &b)
+		req1.Body = helpers.NewMultiReadCloser(bytes.NewReader(b0), &b)
 	}
 
 	return req1, nil
@@ -114,7 +114,7 @@ func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 		default:
 			b, _ := ioutil.ReadAll(resp1.Body)
 			if b != nil && len(b) > 0 {
-				resp1.Body = transport.NewMultiReadCloser(bytes.NewReader(b), resp.Body)
+				resp1.Body = helpers.NewMultiReadCloser(bytes.NewReader(b), resp.Body)
 			} else {
 				resp1.Body = resp.Body
 			}

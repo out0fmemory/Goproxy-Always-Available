@@ -13,9 +13,8 @@ import (
 
 	"../../../helpers"
 	"../../../storage"
+	"../../dialer"
 	"../../filters"
-	"../../transport/direct"
-	"../../transport/php"
 )
 
 const (
@@ -48,7 +47,7 @@ type Config struct {
 
 type Filter struct {
 	Config
-	Transport *php.Transport
+	Transport *Transport
 	Sites     *helpers.HostMatcher
 }
 
@@ -72,7 +71,7 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	d := &direct.Dialer{
+	d := &dialer.Dialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
@@ -103,14 +102,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
-	servers := make([]php.Server, 0)
+	servers := make([]Server, 0)
 	for _, s := range config.Servers {
 		u, err := url.Parse(s.URL)
 		if err != nil {
 			return nil, err
 		}
 
-		server := php.Server{
+		server := Server{
 			URL:       u,
 			Password:  s.Password,
 			SSLVerify: s.SSLVerify,
@@ -121,7 +120,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	return &Filter{
 		Config: *config,
-		Transport: &php.Transport{
+		Transport: &Transport{
 			RoundTripper: tr,
 			Servers:      servers,
 		},

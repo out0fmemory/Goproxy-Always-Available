@@ -14,9 +14,8 @@ import (
 
 	"../../../helpers"
 	"../../../storage"
+	"../../dialer"
 	"../../filters"
-	"../../transport/direct"
-	"../../transport/gae"
 )
 
 const (
@@ -67,7 +66,7 @@ type Config struct {
 
 type Filter struct {
 	Config
-	GAETransport       *gae.Transport
+	GAETransport       *Transport
 	DirectTransport    http.RoundTripper
 	ForceHTTPSMatcher  *helpers.HostMatcher
 	ForceGAEMatcher    *helpers.HostMatcher
@@ -115,7 +114,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
-	d := &direct.MultiDialer{
+	d := &dialer.MultiDialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
@@ -154,7 +153,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.ForceHTTP2:
 		tr = &http2.Transport{
 			DialTLS:            d.DialTLS2,
-			TLSClientConfig:    direct.GetDefaultTLSConfigForGoogle(),
+			TLSClientConfig:    dialer.GetDefaultTLSConfigForGoogle(),
 			DisableCompression: config.Transport.DisableCompression,
 		}
 	case config.DisableHTTP2:
@@ -167,7 +166,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		tr = t1
 	}
 
-	servers := make([]gae.Server, 0)
+	servers := make([]Server, 0)
 	for _, appid := range config.AppIDs {
 		var rawurl string
 		switch strings.Count(appid, ".") {
@@ -181,7 +180,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			return nil, err
 		}
 
-		server := gae.Server{
+		server := Server{
 			URL:       u,
 			Password:  config.Password,
 			SSLVerify: config.SSLVerify,
@@ -192,7 +191,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	return &Filter{
 		Config: *config,
-		GAETransport: &gae.Transport{
+		GAETransport: &Transport{
 			RoundTripper: tr,
 			MultiDialer:  d,
 			Servers:      servers,

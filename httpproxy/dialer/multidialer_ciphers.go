@@ -1,6 +1,6 @@
 // +build !phuslugo
 
-package direct
+package dialer
 
 import (
 	"crypto/tls"

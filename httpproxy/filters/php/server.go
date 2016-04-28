@@ -11,7 +11,6 @@ import (
 	"net/url"
 
 	"../../../helpers"
-	"../../transport"
 )
 
 type Server struct {
@@ -30,7 +29,7 @@ func (s *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 	}
 
 	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
-	req.Header.WriteSubset(w, transport.ReqWriteExcludeHeader)
+	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
 	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", s.Password)
 	if s.URL.Scheme == "https" {
 		io.WriteString(w, "X-Urlfetch-Https: 1\r\n")
@@ -86,7 +85,7 @@ func (s *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 	}
 
 	if s.Password != "" && resp.Header.Get("Content-Type") == "image/gif" && resp.Body != nil {
-		resp.Body = transport.NewXorReadCloser(resp.Body, []byte(s.Password))
+		resp.Body = helpers.NewXorReadCloser(resp.Body, []byte(s.Password))
 	}
 
 	resp, err = http.ReadResponse(bufio.NewReader(resp.Body), resp.Request)

@@ -8,14 +8,14 @@ import (
 	"strings"
 	"sync"
 
-	"../direct"
+	"../../dialer"
 
 	"github.com/phuslu/glog"
 )
 
 type Transport struct {
 	http.RoundTripper
-	MultiDialer *direct.MultiDialer
+	MultiDialer *dialer.MultiDialer
 	Servers     []Server
 	muServers   sync.Mutex
 }

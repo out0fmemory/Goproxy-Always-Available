@@ -12,7 +12,6 @@ import (
 	"../../../helpers"
 	"../../../storage"
 	"../../filters"
-	"../../transport"
 )
 
 const (
@@ -231,7 +230,7 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 		}
 	}(w, f1, resp.Request, end+1, length)
 
-	resp.Body = transport.NewMultiReadCloser(resp.Body, r)
+	resp.Body = helpers.NewMultiReadCloser(resp.Body, r)
 
 	return ctx, resp, nil
 }

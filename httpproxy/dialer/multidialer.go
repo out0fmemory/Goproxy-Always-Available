@@ -1,4 +1,4 @@
-package direct
+package dialer
 
 import (
 	"crypto/tls"
@@ -15,7 +15,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/phuslu/glog"
 
-	"../../../helpers"
+	"../../helpers"
 )
 
 var (
@@ -64,6 +64,14 @@ type MultiDialer struct {
 	TLSConnError    lrucache.Cache
 	ConnExpiry      time.Duration
 	Level           int
+}
+
+func (d *MultiDialer) ClearCache() {
+	// d.DNSCache.Clear()
+	d.TCPConnDuration.Clear()
+	d.TCPConnError.Clear()
+	d.TLSConnDuration.Clear()
+	d.TLSConnError.Clear()
 }
 
 func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {

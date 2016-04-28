@@ -31,3 +31,29 @@ func (r *multiReadCloser) Close() (err error) {
 
 	return err
 }
+
+type xorReadCloser struct {
+	rc  io.ReadCloser
+	key []byte
+}
+
+func NewXorReadCloser(rc io.ReadCloser, key []byte) io.ReadCloser {
+	return &xorReadCloser{
+		rc:  rc,
+		key: key,
+	}
+}
+
+func (x *xorReadCloser) Read(p []byte) (n int, err error) {
+	n, err = x.rc.Read(p)
+	c := x.key[0]
+	for i := 0; i < n; i++ {
+		p[i] ^= c
+	}
+
+	return n, err
+}
+
+func (x *xorReadCloser) Close() error {
+	return x.rc.Close()
+}

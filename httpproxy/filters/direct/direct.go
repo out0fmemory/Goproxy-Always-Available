@@ -14,8 +14,8 @@ import (
 
 	"../../../helpers"
 	"../../../storage"
+	"../../dialer"
 	"../../filters"
-	"../../transport/direct"
 )
 
 const (
@@ -70,7 +70,7 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	d := &direct.Dialer{
+	d := &dialer.Dialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,

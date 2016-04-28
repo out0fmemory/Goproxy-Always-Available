@@ -1,4 +1,4 @@
-package direct
+package dialer
 
 import (
 	"fmt"
