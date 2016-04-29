@@ -96,8 +96,10 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		case "bytes":
 			parts1 := strings.Split(parts[1], "-")
 			if start, err := strconv.Atoi(parts1[0]); err == nil {
-				req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, start+f.MaxSize))
-				glog.V(2).Infof("AUTORANGE Default rule matched, change %s to %s for\"%s\"", r, req.Header.Get("Range"), req.URL.String())
+				if end, err := strconv.Atoi(parts1[1]); err != nil || end-start > f.MaxSize {
+					req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", start, start+f.MaxSize))
+					glog.V(2).Infof("AUTORANGE Default rule matched, change %s to %s for\"%s\"", r, req.Header.Get("Range"), req.URL.String())
+				}
 			}
 		default:
 			glog.Warningf("AUTORANGE Default rule matched, but cannot support %#v range for \"%s\"", r, req.URL.String())
