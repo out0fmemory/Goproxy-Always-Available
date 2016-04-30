@@ -1,4 +1,4 @@
-goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases) [ ![CI Status for phuslu/goproxy](https://travis-ci.org/phuslu/goproxy.svg?branch=master)](https://github.com/phuslu/goproxy-ci/releases)
+goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases) [ ![CI Status for phuslu/goproxy](https://travis-ci.org/phuslu/goproxy.svg?branch=master)](https://github.com/phuslu/goproxy-ci/releases) [ ![Translate](https://cloud.githubusercontent.com/assets/195836/14933991/117c2604-0ed4-11e6-921c-0631afa02dfb.png)](https://translate.google.com/translate?hl=en&sl=zh-CN&tl=en&u=https%3A%2F%2Fgithub.com%2Fphuslu%2Fgoproxy)
 
 ## 讨论区
 * https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
