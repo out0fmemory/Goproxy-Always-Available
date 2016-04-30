@@ -1,9 +1,10 @@
 {
 	"MyProxyPAC": "proxy.pac",
 	"GFWList": {
-		"url": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
-		"file": "gfwlist.txt",
-		"encoding": "base64",
-		"duration": 86400
+		"Enabled": true,
+		"URL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
+		"File": "gfwlist.txt",
+		"Encoding": "base64",
+		"Duration": 86400
 	}
 }

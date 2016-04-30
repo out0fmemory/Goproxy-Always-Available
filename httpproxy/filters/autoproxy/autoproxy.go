@@ -29,6 +29,7 @@ const (
 type Config struct {
 	MyProxyPAC string
 	GFWList    struct {
+		Enabled  bool
 		URL      string
 		File     string
 		Encoding string
@@ -49,12 +50,13 @@ type GFWList struct {
 
 type Filter struct {
 	Config
-	Store         storage.Store
-	MyProxyPAC    string
-	GFWList       *GFWList
-	AutoProxy2Pac *AutoProxy2Pac
-	Transport     *http.Transport
-	UpdateChan    chan struct{}
+	Store          storage.Store
+	MyProxyPAC     string
+	GFWListEnabled bool
+	GFWList        *GFWList
+	AutoProxy2Pac  *AutoProxy2Pac
+	Transport      *http.Transport
+	UpdateChan     chan struct{}
 }
 
 func init() {
@@ -128,16 +130,19 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	f := &Filter{
-		Config:        *config,
-		Store:         store,
-		MyProxyPAC:    config.MyProxyPAC,
-		GFWList:       &gfwlist,
-		AutoProxy2Pac: autoproxy2pac,
-		Transport:     transport,
-		UpdateChan:    make(chan struct{}),
+		Config:         *config,
+		Store:          store,
+		MyProxyPAC:     config.MyProxyPAC,
+		GFWListEnabled: config.GFWList.Enabled,
+		GFWList:        &gfwlist,
+		AutoProxy2Pac:  autoproxy2pac,
+		Transport:      transport,
+		UpdateChan:     make(chan struct{}),
 	}
 
-	go onceUpdater.Do(f.updater)
+	if f.GFWListEnabled {
+		go onceUpdater.Do(f.updater)
+	}
 
 	return f, nil
 }
@@ -278,7 +283,22 @@ function FindProxyForURL(url, host) {
 		}
 	}
 
-	data += f.AutoProxy2Pac.GeneratePac(req)
+	if f.GFWListEnabled {
+		data += f.AutoProxy2Pac.GeneratePac(req)
+	} else {
+		data += `
+function FindProxyForURL(url, host) {
+    if (isPlainHostName(host) ||
+        host.indexOf('127.') == 0 ||
+        host.indexOf('192.168.') == 0 ||
+        host.indexOf('10.') == 0 ||
+        shExpMatch(host, 'localhost.*')) {
+        return 'DIRECT';
+    }
+
+    return MyFindProxyForURL(url, host);
+}`
+	}
 
 	resp := &http.Response{
 		Status:        "200 OK",

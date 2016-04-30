@@ -110,7 +110,7 @@ function FindProxyForURL(url, host) {
 
     proxy = MyFindProxyForURL(url, host)
     if (proxy != "DIRECT") {
-    	return proxy
+        return proxy
     }
 
     var lastPos;
