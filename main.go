@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"strings"
 
-	"./helpers"
 	"./httpproxy"
+	"./httpproxy/helpers"
 )
 
 var version = "r9999"

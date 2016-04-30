@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"../../../helpers"
+	"../../helpers"
 )
 
 type Server struct {

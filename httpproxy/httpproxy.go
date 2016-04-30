@@ -8,9 +8,9 @@ import (
 
 	"github.com/phuslu/glog"
 
-	"../helpers"
-	"../storage"
 	"./filters"
+	"./helpers"
+	"./storage"
 
 	_ "./filters/auth"
 	_ "./filters/autoproxy"

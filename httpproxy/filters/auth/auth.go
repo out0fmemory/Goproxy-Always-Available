@@ -10,8 +10,8 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 
-	"../../../storage"
 	"../../filters"
+	"../../storage"
 )
 
 const (

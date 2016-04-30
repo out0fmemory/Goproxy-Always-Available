@@ -7,8 +7,8 @@ import (
 	"github.com/juju/ratelimit"
 	"github.com/phuslu/glog"
 
-	"../../../storage"
 	"../../filters"
+	"../../storage"
 )
 
 const (

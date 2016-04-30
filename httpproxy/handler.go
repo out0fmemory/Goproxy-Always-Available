@@ -7,8 +7,8 @@ import (
 
 	"github.com/phuslu/glog"
 
-	"../helpers"
 	"./filters"
+	"./helpers"
 )
 
 type Handler struct {

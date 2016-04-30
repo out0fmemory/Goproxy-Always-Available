@@ -15,7 +15,7 @@ import (
 	"github.com/miekg/dns"
 	"github.com/phuslu/glog"
 
-	"../../helpers"
+	"../helpers"
 )
 
 var (
