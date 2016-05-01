@@ -310,7 +310,10 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 					CloseIdleConnections()
 				}); ok {
 					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
-					t.CloseIdleConnections()
+					go func() {
+						defer func() { recover() }()
+						t.CloseIdleConnections()
+					}()
 				}
 			}
 
