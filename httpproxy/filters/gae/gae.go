@@ -309,7 +309,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 				if t, ok := f.DirectTransport.(interface {
 					CloseIdleConnections()
 				}); ok {
-					glog.V(2).Infof("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
+					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
 					t.CloseIdleConnections()
 				}
 			}
