@@ -131,7 +131,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		return ctx, nil, err
 	}
 
-	glog.Infof("%s \"STRIP %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
+	glog.V(2).Infof("%s \"STRIP %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
 
 	var c net.Conn = conn
 	if needStripSSL {

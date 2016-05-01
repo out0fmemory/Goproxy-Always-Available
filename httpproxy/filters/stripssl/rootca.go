@@ -271,7 +271,7 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (
 	certFile := c.toFilename(commonName, ".crt")
 
 	if _, err := os.Stat(certFile); os.IsNotExist(err) {
-		glog.Infof("Issue %s certificate for %#v...", c.name, commonName)
+		glog.V(2).Infof("Issue %s certificate for %#v...", c.name, commonName)
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		if _, err := os.Stat(certFile); os.IsNotExist(err) {

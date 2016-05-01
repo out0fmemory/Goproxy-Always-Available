@@ -119,7 +119,7 @@ func (f *Filter) FilterName() string {
 func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
 	switch req.Method {
 	case "CONNECT":
-		glog.Infof("%s \"DIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
+		glog.V(2).Infof("%s \"DIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
 		rconn, err := f.transport.Dial("tcp", req.Host)
 		if err != nil {
 			return ctx, nil, err
@@ -172,7 +172,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			err = nil
 		} else {
 			if req.RemoteAddr != "" {
-				glog.Infof("%s \"DIRECT %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+				glog.V(2).Infof("%s \"DIRECT %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 			}
 		}
 		return ctx, resp, err

@@ -236,7 +236,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			if origin := req.Header.Get("Origin"); origin != "" {
 				resp.Header.Set("Access-Control-Allow-Origin", origin)
 			}
-			glog.Infof("%s \"GAE FAKEOPTIONS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			glog.V(2).Infof("%s \"GAE FAKEOPTIONS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 			return ctx, resp, nil
 		}
 	}
@@ -261,7 +261,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 				Close:         true,
 				ContentLength: -1,
 			}
-			glog.Infof("%s \"GAE FORCEHTTPS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			glog.V(2).Infof("%s \"GAE FORCEHTTPS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 			return ctx, resp, nil
 		}
 	}
@@ -310,7 +310,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 		return ctx, nil, err
 	} else {
-		glog.Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+		glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 
 	return ctx, resp, nil

@@ -141,7 +141,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	if err != nil {
 		return ctx, nil, err
 	} else {
-		glog.Infof("%s \"PHP %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+		glog.V(2).Infof("%s \"PHP %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 	return ctx, resp, nil
 }

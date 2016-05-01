@@ -161,7 +161,7 @@ func (f *Filter) updater() {
 
 		select {
 		case <-f.UpdateChan:
-			glog.Infof("Begin manual gfwlist(%#v) update...", f.GFWList.URL.String())
+			glog.V(2).Infof("Begin manual gfwlist(%#v) update...", f.GFWList.URL.String())
 			needUpdate = true
 		case <-ticker:
 			break
@@ -313,7 +313,7 @@ function FindProxyForURL(url, host) {
 		Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
 	}
 
-	glog.Infof("%s \"AUTOPROXY %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.RequestURI, req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+	glog.V(2).Infof("%s \"AUTOPROXY %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.RequestURI, req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 
 	return ctx, resp, nil
 }

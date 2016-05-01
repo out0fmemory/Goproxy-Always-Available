@@ -96,7 +96,7 @@ func (l *listener) Accept() (c net.Conn, err error) {
 						if max := 1 * time.Second; tempDelay > max {
 							tempDelay = max
 						}
-						glog.Infof("httpproxy.Listener: Accept error: %v; retrying in %v", err, tempDelay)
+						glog.Warningf("httpproxy.Listener: Accept error: %v; retrying in %v", err, tempDelay)
 						time.Sleep(tempDelay)
 						continue
 					}
