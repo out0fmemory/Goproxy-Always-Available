@@ -63,6 +63,8 @@
 		"books.google.com.hk",
 		"scholar.google.com",
 		"scholar.google.com.hk",
+		"translate.google.com",
+		"translate.google.com.hk",
 	],
 	"ForceGAE": [
 		"translate.googleapis.com",
