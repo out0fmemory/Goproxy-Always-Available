@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: igZywAQmCxPiMLUK2L6fCw
+! Checksum: QuJGfjnsSFgNwKdXCgHsLg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 26 Apr 2016 14:26:12 +0800
+! Last Modified: Fri, 29 Apr 2016 11:05:38 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -161,6 +161,7 @@ t2.etowns.org
 ||abc.xyz
 ||admob.com
 ||agoogleaday.com
+||android.com
 ||androidify.com
 .appspot.com
 ||appspot.com
@@ -239,6 +240,18 @@ t2.etowns.org
 !!---NaughtyAmerica---
 ||naughtyamerica.com
 
+!!---V2EX---
+.v2ex.com
+!--Included in above rule: dns.v2ex.com
+@@|http://v2ex.com
+@@|http://cdn.v2ex.com
+@@|http://cn.v2ex.com
+@@|http://hk.v2ex.com
+@@|http://i.v2ex.com
+@@|http://lax.v2ex.com
+@@|http://pagespeed.v2ex.com
+@@|http://static.v2ex.com
+@@|http://www.v2ex.com
 
 !------------------Numerics---------------------
 .0rz.tw
@@ -391,6 +404,8 @@ a248.e.akamai.net
 ||a248.e.akamai.net
 voa-11.akacast.akamaistream.net
 
+.akademiye.org/ug
+|http://akademiye.org/ug
 ||akiba-online.com
 ||al-qimmah.net
 ||alabout.com
@@ -429,12 +444,10 @@ www1.american.edu/ted/ice/tibet
 ||amnestyusa.org
 .amnyemachen.org
 .amoiist.com
-analyze-v.com
 ||anchorfree.com
-!--Google
+!--GHS
 ||ancsconf.org
 ||andfaraway.net
-||android.com
 ||android-x86.org
 ||angularjs.org
 animecrazy.net
@@ -619,8 +632,9 @@ bipic.net
 .bitshare.com
 ||bitshare.com
 bitsnoop.com
+||bl-doujinsouko.com
 bjzc.org
-||bjzc.org/
+||bjzc.org
 .blacklogic.com
 .blackvpn.com
 ||blackvpn.com
@@ -1146,6 +1160,7 @@ static.digg.com
 ||digitalnomadsproject.org
 .diigo.com
 ||diigo.com
+||dilber.se
 ||furl.net
 .dipity.com
 ||directcreative.com
@@ -1187,6 +1202,7 @@ dongtaiwang.com
 ||dotplane.com
 ||dotsub.com
 ||dougscripts.com
+||doujincafe.com
 dowei.org
 !--||doxygen.org
 dphk.org
@@ -1325,9 +1341,13 @@ epochtimestr.com
 erabaru.net
 .erepublik.com
 ||erights.net
+.erktv.com
 |http://erktv.com
 ||ernestmandel.org
+||erodaizensyu.com
 ||erodoujinworld.com
+||eromanga-kingdom.com
+||eromangadouzin.com
 .eslite.com/product
 .eslite.com/Search_BW.aspx?q
 wiki.esu.im/%E8%9B%A4%E8%9B%A4%E8%AF%AD%E5%BD%95
@@ -1513,6 +1533,8 @@ video.foxbusiness.com
 |http://foxgay.com
 ||fringenetwork.com
 ||flecheinthepeche.fr
+.fochk.org
+|http://fochk.org
 ||focustaiwan.tw
 .focusvpn.com
 ||fofg.org
@@ -1562,6 +1584,7 @@ freeman2.com
 .freeopenvpn.com
 freemoren.com
 freemorenews.com
+freemuse.org/archives/789
 freenet-china.org
 freenewscn.com
 cn.freeones.com
@@ -1662,6 +1685,7 @@ gati.org.tw
 gdzf.org
 ||geek-art.net
 geekerhome.com/2010/03/xixiang-project-cross-gfw
+||geekheart.info
 ||geekmanuals.com
 !--||genuitec.com
 .geocities.co.jp
@@ -1699,13 +1723,16 @@ gfw.org.ua
 gigporno.ru
 ||girlbanker.com
 |http://softwaredownload.gitbooks.io
+
 .github.com
 |https://gist.github.com
 |http://cthlo.github.io/hktv
 |http://onionhacker.github.io
 |http://wsgzao.github.io/post/gfw-break
+
 .gizlen.net
 ||gizlen.net
+.gjczz.com
 ||glennhilton.com
 globaljihad.net
 globalmuseumoncommunism.org
@@ -1722,6 +1749,7 @@ gmbd.cn
 go-pki.com
 ||goagent.biz
 ||goagentplus.com
+gobet.cc
 godfootsteps.org
 ||godfootsteps.org
 .godsdirectcontact.org
@@ -1731,7 +1759,6 @@ godsdirectcontact.org.tw
 ||goldbetsports.com
 .goldenfrog.com
 ||goldenfrog.com
-|http://www.goldenmelody.com.tw
 .goldstep.net
 ||goldwave.com
 gongmeng.info
@@ -1797,21 +1824,17 @@ guancha.org
 !-||github.danmarner.com
 !-||design-seeds.com
 !-||designers-artists.com
-!-||feeds.digg.com
-!-||app.diu.li
 !-||mail.diyang.org
 !-||blog.doughellmann.com
 !-||downforeveryoneorjustme.com
 !-||droidsecurity.com
 !-||www.dropmocks.com
 !-||dumblittleman.com
-!-||feeds.dzone.com
 !-E
 echofon.com
 !-||echofon.com
 !-||epc-jav.com
 !-||everdark.info
-!-||s.evernote.com
 !-||evhead.com
 !-F
 !-||facilelogin.com
@@ -2036,6 +2059,8 @@ guruonline.hk
 
 !--------------------HH-------------------------
 ||h-china.org
+.h-moe.com
+|http://h-moe.com
 h1n1china.org
 .hacken.cc/bbs
 ||hackthatphone.net
@@ -2347,6 +2372,7 @@ timesofindia.indiatimes.com*dalai
 .indiemerch.com
 ||indiemerch.com
 info-graf.fr
+website.informer.com
 .initiativesforchina.org
 .inmediahk.net
 ||inmediahk.net
@@ -2400,6 +2426,8 @@ forum.iset.com.tw
 ||ismprofessional.net
 isohunt.com
 ||israbox.com
+oversea.istarshine.com
+||oversea.istarshine.com
 blog.istef.info/2007/10/21/myentunnel
 .istockphoto.com
 isunaffairs.com
@@ -2527,6 +2555,7 @@ karkhung.com
 wiki.keso.cn/Home
 .khabdha.org
 .khmusic.com.tw
+||kichiku-doujinko.com
 bbs.kimy.com.tw
 .kindleren.com
 |http://kindleren.com
@@ -2674,6 +2703,8 @@ secure.logmein.com
 .lotuslight.org.hk
 .lotuslight.org.tw
 hkreporter.loved.hk
+!--403?
+||lpsg.com
 ||lrfz.com
 .lrip.org
 ||lrip.org
@@ -2761,13 +2792,14 @@ megavideo.com
 ||megurineluka.com
 meirixiaochao.com
 ||melon-peach.com
-memedia.cn
 .memehk.com
 ||memehk.com
 memorybbs.com
 .memrijttm.org
 .mercyprophet.org
 |http://mercyprophet.org
+.meripet.com
+|http://meripet.com
 merit-times.com.tw
 meshrep.com
 .mesotw.com/bbs
@@ -2838,6 +2870,7 @@ plurktop.mmdays.com
 .mobypicture.com
 |http://moby.to
 ||mrdoob.com
+||moeerolibrary.com
 wiki.moegirl.org
 ||mog.com
 molihua.org
@@ -2930,6 +2963,7 @@ old.nabble.com
 .nakido.com
 ||nakido.com
 .naol.ca
+uighur.narod.ru
 cyberghost.natado.com
 ||national-lottery.co.uk
 .nationsonline.org/oneworld/tibet
@@ -3044,6 +3078,7 @@ ntdtv.ru
 nuzcom.com
 .nvquan.org
 .nwtca.org
+||nyaa.eu
 ||nyaa.se
 .nydus.ca
 ||nyt.com
@@ -3137,6 +3172,7 @@ share.ovi.com/media
 www.owind.com
 |http://www.oxid.it
 oyax.com
+oyghan.com/wps
 .ozchinese.com/bbs
 ||ow.ly
 bbs.ozchinese.com
@@ -4485,10 +4521,6 @@ uygur.org
 |http://uymaarip.com/
 
 !--------------------VV-------------------------
-!--|http://cdn.v2ex.com
-!--|http://v2ex.com
-!--|http://www.v2ex.com
-dns.v2ex.com
 .v2ray.com
 |http://v2ray.com
 .van001.com
@@ -5009,6 +5041,7 @@ blog.youxu.info/2010/03/14/west-chamber
 ytht.net
 yuanming.net
 .yuanzhengtang.org
+.yulghun.com
 ||yunchao.net
 ||yvesgeleyn.com
 .ywpw.com/forums/history/post/A0/p0/html/227
@@ -5297,6 +5330,7 @@ taipei.gov.tw
 @@|http://translate.google.cn
 @@|http://www.google.cn/maps
 @@||http2.golang.org
+@@||gov.cn
 @@||bt.neu6.edu.cn
 @@||qq.com
 @@||sina.cn
