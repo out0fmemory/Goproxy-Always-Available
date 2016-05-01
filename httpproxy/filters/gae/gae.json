@@ -115,18 +115,19 @@
 	],
 	"Transport": {
 		"Dialer": {
-			"Timeout": 10,
-			"KeepAlive": 180,
-			"DualStack": false,
-			"RetryTimes": 2,
-			"RetryDelay": 0.05,
 			"DNSCacheExpiry": 864000,
 			"DNSCacheSize": 81920,
-			"Level": 4
+			"DualStack": false,
+			"KeepAlive": 180,
+			"Level": 4,
+			"RetryDelay": 0.05,
+			"RetryTimes": 2,
+			"Timeout": 8,
 		},
-		"DisableKeepAlives": false,
 		"DisableCompression": false,
-		"ResponseHeaderTimeout": 0,
-		"MaxIdleConnsPerHost": 16
+		"DisableKeepAlives": false,
+		"IdleConnTimeout": 180,
+		"MaxIdleConnsPerHost": 16,
+		"ResponseHeaderTimeout": 4,
 	}
 }

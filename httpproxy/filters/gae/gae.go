@@ -48,19 +48,20 @@ type Config struct {
 	IPBlackList  []string
 	Transport    struct {
 		Dialer struct {
-			Timeout        int
-			KeepAlive      int
-			DualStack      bool
-			RetryTimes     int
-			RetryDelay     float32
 			DNSCacheExpiry int
 			DNSCacheSize   uint
+			DualStack      bool
+			KeepAlive      int
 			Level          int
+			RetryDelay     float32
+			RetryTimes     int
+			Timeout        int
 		}
-		DisableKeepAlives     bool
 		DisableCompression    bool
-		ResponseHeaderTimeout int
+		DisableKeepAlives     bool
+		IdleConnTimeout       int
 		MaxIdleConnsPerHost   int
+		ResponseHeaderTimeout int
 	}
 }
 
@@ -144,6 +145,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DisableKeepAlives:     config.Transport.DisableKeepAlives,
 		DisableCompression:    config.Transport.DisableCompression,
 		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
+		IdleConnTimeout:       time.Duration(config.Transport.IdleConnTimeout) * time.Second,
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
 	}
 
@@ -304,7 +306,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			if t, ok := f.DirectTransport.(interface {
 				CloseIdleConnections()
 			}); ok {
-				glog.V(2).Infof("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", err, tr)
+				glog.V(2).Infof("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
 				t.CloseIdleConnections()
 			}
 		}
