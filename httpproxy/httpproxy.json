@@ -7,6 +7,7 @@
 		"WriteTimeout": 3600,
 		"RequestFilters": [
 			// "auth",
+			// "rewrite",
 			"stripssl",
 			"autorange",
 		],
@@ -20,6 +21,7 @@
 		],
 		"ResponseFilters": [
 			"autorange",
+			// "rewrite",
 			// "ratelimit",
 		]
 	},

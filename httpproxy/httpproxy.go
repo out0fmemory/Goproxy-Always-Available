@@ -19,6 +19,7 @@ import (
 	_ "./filters/gae"
 	_ "./filters/php"
 	_ "./filters/ratelimit"
+	_ "./filters/rewrite"
 	_ "./filters/stripssl"
 	_ "./filters/vps"
 )
