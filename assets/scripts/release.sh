@@ -45,6 +45,8 @@ git tag ${GITHUB_TAG} c0e230ab18e1c9b8f097e34b2675056037367e3c
 git push origin ${GITHUB_TAG}
 popd
 
+sleep 3
+
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_TAG} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 for FILE in ${RELEASE_FILES}; do
     ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_TAG} --name "${FILE}" --file "${FILE}"
