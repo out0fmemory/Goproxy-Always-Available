@@ -299,20 +299,30 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 	}
 
-	resp, err := tr.RoundTrip(req)
+	var resp *http.Response
+	var err error
+	for i := 0; i < f.Transport.Dialer.RetryTimes; i++ {
+		resp, err = tr.RoundTrip(req)
 
-	if err != nil {
-		if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-			if t, ok := f.DirectTransport.(interface {
-				CloseIdleConnections()
-			}); ok {
-				glog.V(2).Infof("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
-				t.CloseIdleConnections()
+		if err != nil {
+			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+				if t, ok := f.DirectTransport.(interface {
+					CloseIdleConnections()
+				}); ok {
+					glog.V(2).Infof("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
+					t.CloseIdleConnections()
+				}
+			}
+
+			if i == f.Transport.Dialer.RetryTimes-1 {
+				return ctx, nil, err
+			} else {
+				continue
 			}
 		}
-		return ctx, nil, err
-	} else {
+
 		glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+		break
 	}
 
 	return ctx, resp, nil
