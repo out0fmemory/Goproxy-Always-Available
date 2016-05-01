@@ -59,6 +59,7 @@
 		// "*.youtube.com": "google_hk",
 	},
 	"ForceHTTPS": [
+		"www.google.com",
 		"books.google.com",
 		"books.google.com.hk",
 		"scholar.google.com",
