@@ -15,6 +15,13 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	exit 1
 fi
 
+for CMD in curl awk git tar bzip2 xz 7za; do
+	if ! $(which ${CMD} >/dev/null 2>&1); then
+		echo "tool ${CMD} is not installed, abort."
+		exit 1
+	fi
+done
+
 mkdir -p ${WORKING_DIR}
 
 function init_github() {
