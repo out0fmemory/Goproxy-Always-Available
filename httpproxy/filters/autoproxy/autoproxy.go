@@ -251,7 +251,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 
 	obj, err := f.Store.GetObject(f.MyProxyPAC, -1, -1)
 	if os.IsNotExist(err) {
-		s := fmt.Sprintf(`
+		s := fmt.Sprintf(`// User-defined FindProxyForURL
 function FindProxyForURL(url, host) {
     if (shExpMatch(host, '*.google*.*') ||
        dnsDomainIs(host, '.ggpht.com') ||
