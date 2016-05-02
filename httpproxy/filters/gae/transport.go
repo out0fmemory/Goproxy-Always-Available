@@ -57,7 +57,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	resp, err := t.RoundTripper.RoundTrip(req1)
 	if err != nil || resp == nil {
-		glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
+		// glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
 		return resp, err
 	}
 

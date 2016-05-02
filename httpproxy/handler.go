@@ -56,7 +56,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		if err != nil {
 			if err != io.EOF {
-				glog.Errorf("%s Filter Request %T(%#v) error: %#v", remoteAddr, f, f, err)
+				glog.Errorf("%s Filter Request %T error: %#v", remoteAddr, f, err)
 			}
 			return
 		}
@@ -76,7 +76,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		// Unexcepted errors
 		if err != nil {
-			glog.Errorf("%s Filter RoundTrip %T(%v) error: %v", remoteAddr, f, f, err)
+			glog.Errorf("%s Filter RoundTrip %T error: %v", remoteAddr, f, err)
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
 		}
@@ -95,7 +95,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		ctx, resp, err = f.Response(ctx, resp)
 		if err != nil {
-			msg := fmt.Sprintf("%s Filter %T(%v) Response error: %v", remoteAddr, f, f, err)
+			msg := fmt.Sprintf("%s Filter %T Response error: %v", remoteAddr, f, err)
 			glog.Errorln(msg)
 			http.Error(rw, msg, http.StatusBadGateway)
 			return
