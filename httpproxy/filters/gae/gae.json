@@ -39,10 +39,6 @@
 		]
 	},
 	"Site2Alias": {
-		"dl.google.com": "google_cn",
-		"talk.google.com": "google_talk",
-		"talk.l.google.com": "google_talk",
-		"talkx.l.google.com": "google_talk",
 		"*.appspot.com": "google_hk",
 		"*.ggpht.com": "google_hk",
 		"*.google-analytics.com": "google_cn",
@@ -57,6 +53,11 @@
 		"*.googleusercontent.com": "google_hk",
 		"*.gstatic.com": "google_hk",
 		// "*.youtube.com": "google_hk",
+		"*.ytimg.com": "google_hk",
+		"dl.google.com": "google_cn",
+		"talk.google.com": "google_talk",
+		"talk.l.google.com": "google_talk",
+		"talkx.l.google.com": "google_talk",
 	},
 	"ForceHTTPS": [
 		"www.google.com",
