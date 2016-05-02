@@ -320,6 +320,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			if i == f.Transport.Dialer.RetryTimes-1 {
 				return ctx, nil, err
 			} else {
+				time.Sleep(750 * time.Millisecond)
 				continue
 			}
 		}
