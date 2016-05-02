@@ -3,6 +3,7 @@ package httpproxy
 import (
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 
 	"github.com/phuslu/glog"
@@ -119,7 +120,11 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		defer resp.Body.Close()
 		n, err := helpers.IoCopy(rw, resp.Body)
 		if err != nil {
-			glog.Warningf("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
+			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
+				glog.Infof("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
+			} else {
+				glog.Warningf("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
+			}
 		}
 	}
 }
