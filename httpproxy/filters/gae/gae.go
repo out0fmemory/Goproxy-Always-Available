@@ -53,8 +53,6 @@ type Config struct {
 			DualStack      bool
 			KeepAlive      int
 			Level          int
-			RetryDelay     float32
-			RetryTimes     int
 			Timeout        int
 		}
 		DisableCompression    bool
@@ -62,6 +60,8 @@ type Config struct {
 		IdleConnTimeout       int
 		MaxIdleConnsPerHost   int
 		ResponseHeaderTimeout int
+		RetryDelay            float32
+		RetryTimes            int
 	}
 }
 
@@ -197,6 +197,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			RoundTripper: tr,
 			MultiDialer:  d,
 			Servers:      servers,
+			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Second,
+			RetryTimes:   config.Transport.RetryTimes,
 		},
 		DirectTransport:    tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(config.ForceHTTPS),
@@ -299,34 +301,11 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 	}
 
-	var resp *http.Response
-	var err error
-	for i := 0; i < f.Transport.Dialer.RetryTimes; i++ {
-		resp, err = tr.RoundTrip(req)
-
-		if err != nil {
-			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
-				if t, ok := f.DirectTransport.(interface {
-					CloseIdleConnections()
-				}); ok {
-					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, tr)
-					go func() {
-						defer func() { recover() }()
-						t.CloseIdleConnections()
-					}()
-				}
-			}
-
-			if i == f.Transport.Dialer.RetryTimes-1 {
-				return ctx, nil, err
-			} else {
-				time.Sleep(750 * time.Millisecond)
-				continue
-			}
-		}
-
+	resp, err := tr.RoundTrip(req)
+	if err != nil {
+		glog.Warningf("%s \"GAE %s %s %s %s\" error: %T(%v)", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, err, err)
+	} else {
 		glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
-		break
 	}
 
 	return ctx, resp, nil

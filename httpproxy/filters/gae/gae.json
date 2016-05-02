@@ -121,8 +121,6 @@
 			"DualStack": false,
 			"KeepAlive": 180,
 			"Level": 4,
-			"RetryDelay": 0.05,
-			"RetryTimes": 2,
 			"Timeout": 8,
 		},
 		"DisableCompression": false,
@@ -130,5 +128,7 @@
 		"IdleConnTimeout": 0,
 		"MaxIdleConnsPerHost": 16,
 		"ResponseHeaderTimeout": 30,
+		"RetryDelay": 0.5,
+		"RetryTimes": 2,
 	}
 }

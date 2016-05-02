@@ -3,10 +3,12 @@ package gae
 import (
 	"fmt"
 	"math/rand"
+	"net"
 	"net/http"
 	"path"
 	"strings"
 	"sync"
+	"time"
 
 	"../../dialer"
 
@@ -18,91 +20,126 @@ type Transport struct {
 	MultiDialer *dialer.MultiDialer
 	Servers     []Server
 	muServers   sync.Mutex
+	RetryDelay  time.Duration
+	RetryTimes  int
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
-	i := 0
-	switch path.Ext(req.URL.Path) {
-	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-		i = rand.Intn(len(t.Servers))
-	case "":
-		name := path.Base(req.URL.Path)
-		if strings.Contains(name, "play") ||
-			strings.Contains(name, "video") {
-			i = rand.Intn(len(t.Servers))
+	for i := 0; i < t.RetryTimes; i++ {
+		server := t.pickServer(req, i)
+
+		req1, err := server.encodeRequest(req)
+		if err != nil {
+			return nil, fmt.Errorf("GAE encodeRequest: %s", err.Error())
 		}
-	default:
-		if req.Header.Get("Range") != "" ||
-			strings.Contains(req.URL.Host, "img.") ||
-			strings.Contains(req.URL.Host, "cache.") ||
-			strings.Contains(req.URL.Host, "video.") ||
-			strings.Contains(req.URL.Host, "static.") ||
-			strings.HasPrefix(req.URL.Host, "img") ||
-			strings.HasPrefix(req.URL.Path, "/static") ||
-			strings.HasPrefix(req.URL.Path, "/asset") ||
-			strings.Contains(req.URL.Path, "min.js") ||
-			strings.Contains(req.URL.Path, "static") ||
-			strings.Contains(req.URL.Path, "asset") ||
-			strings.Contains(req.URL.Path, "/cache/") {
-			i = rand.Intn(len(t.Servers))
-		}
-	}
 
-	server := t.Servers[i]
+		resp, err := t.RoundTripper.RoundTrip(req1)
 
-	req1, err := server.encodeRequest(req)
-	if err != nil {
-		return nil, fmt.Errorf("GAE encodeRequest: %s", err.Error())
-	}
+		if err != nil {
+			if i == t.RetryTimes-1 {
+				return nil, err
+			}
 
-	resp, err := t.RoundTripper.RoundTrip(req1)
-	if err != nil || resp == nil {
-		// glog.Errorf("%s \"GAE %s %s %s\" %#v %v", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp, err)
-		return resp, err
-	}
-
-	switch resp.StatusCode {
-	case http.StatusBadGateway:
-		if strings.Contains(resp.Header.Get("Via"), "Chrome-Compression-Proxy") {
-			if t.MultiDialer != nil {
-				//FIXME: we need ban the server in MultiDialer, but how?
+			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
+				if t1, ok := t.RoundTripper.(interface {
+					CloseIdleConnections()
+				}); ok {
+					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, t1)
+					go func() {
+						defer func() { recover() }()
+						t1.CloseIdleConnections()
+					}()
+				} else {
+					time.Sleep(t.RetryDelay)
+				}
+				continue
 			}
 		}
-	case 503:
-		if len(t.Servers) == 1 {
-			break
-		}
-		glog.Warningf("%s over qouta, switch to next appid.", server.URL.String())
-		t.muServers.Lock()
-		if server == t.Servers[0] {
-			for i := 0; i < len(t.Servers)-1; i++ {
-				t.Servers[i] = t.Servers[i+1]
+
+		if resp.StatusCode != http.StatusOK {
+			if i == t.RetryTimes-1 {
+				return resp, nil
 			}
-			t.Servers[len(t.Servers)-1] = server
+
+			switch resp.StatusCode {
+			case http.StatusServiceUnavailable:
+				if len(t.Servers) == 1 {
+					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.URL.String())
+				} else {
+					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.URL.String())
+					t.roundServers()
+				}
+				time.Sleep(t.RetryDelay)
+				continue
+			case http.StatusBadGateway:
+				if strings.Contains(resp.Header.Get("Via"), "Chrome-Compression-Proxy") {
+					if t.MultiDialer != nil {
+						//FIXME: we need ban the server in MultiDialer, but how?
+					}
+				}
+				return resp, nil
+			default:
+				return resp, nil
+			}
 		}
-		t.muServers.Unlock()
-		resp := &http.Response{
-			Status:     "302 Found",
-			StatusCode: http.StatusFound,
-			Proto:      "HTTP/1.1",
-			ProtoMajor: 1,
-			ProtoMinor: 1,
-			Header: http.Header{
-				"Location": []string{req.URL.String()},
-			},
-			Request:       req,
-			Close:         false,
-			ContentLength: 0,
+
+		resp1, err := server.decodeResponse(resp)
+		if err != nil {
+			return nil, err
 		}
-		return resp, nil
-	default:
-		break
+		if resp1 != nil {
+			resp1.Request = req
+		}
+		return resp1, nil
 	}
 
-	resp1, err := server.decodeResponse(resp)
-	if resp1 != nil {
-		resp1.Request = req
+	return nil, fmt.Errorf("GAE: cannot reach here with %#v", req)
+}
+
+func (t *Transport) roundServers() {
+	server := t.Servers[0]
+	t.muServers.Lock()
+	if server == t.Servers[0] {
+		for i := 0; i < len(t.Servers)-1; i++ {
+			t.Servers[i] = t.Servers[i+1]
+		}
+		t.Servers[len(t.Servers)-1] = server
+	}
+	t.muServers.Unlock()
+}
+
+func (t *Transport) pickServer(req *http.Request, i int) Server {
+	n := 0
+
+	if i > 0 && len(t.Servers) > 1 {
+		n = 1 + rand.Intn(len(t.Servers)-1)
+	} else {
+		switch path.Ext(req.URL.Path) {
+		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
+			n = rand.Intn(len(t.Servers))
+		case "":
+			name := path.Base(req.URL.Path)
+			if strings.Contains(name, "play") ||
+				strings.Contains(name, "video") {
+				n = rand.Intn(len(t.Servers))
+			}
+		default:
+			if req.Header.Get("Range") != "" ||
+				strings.Contains(req.URL.Host, "img.") ||
+				strings.Contains(req.URL.Host, "cache.") ||
+				strings.Contains(req.URL.Host, "video.") ||
+				strings.Contains(req.URL.Host, "static.") ||
+				strings.HasPrefix(req.URL.Host, "img") ||
+				strings.HasPrefix(req.URL.Path, "/static") ||
+				strings.HasPrefix(req.URL.Path, "/asset") ||
+				strings.Contains(req.URL.Path, "min.js") ||
+				strings.Contains(req.URL.Path, "static") ||
+				strings.Contains(req.URL.Path, "asset") ||
+				strings.Contains(req.URL.Path, "/cache/") {
+				n = rand.Intn(len(t.Servers))
+			}
+		}
 	}
 
-	return resp1, err
+	return t.Servers[n]
 }
