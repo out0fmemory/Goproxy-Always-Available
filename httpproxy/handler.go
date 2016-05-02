@@ -5,6 +5,10 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"os"
+	"runtime"
+	"strings"
+	"syscall"
 
 	"github.com/phuslu/glog"
 
@@ -120,11 +124,37 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		defer resp.Body.Close()
 		n, err := helpers.IoCopy(rw, resp.Body)
 		if err != nil {
-			if nerr, ok := err.(net.Error); ok && nerr.Temporary() {
+			if isClosedConnError(err) {
 				glog.Infof("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
 			} else {
 				glog.Warningf("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
 			}
 		}
 	}
+}
+
+func isClosedConnError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	str := err.Error()
+	if strings.Contains(str, "use of closed network connection") {
+		return true
+	}
+
+	if runtime.GOOS == "windows" {
+		const WSAECONNABORTED = 10053
+		const WSAECONNRESET = 10054
+		if oe, ok := err.(*net.OpError); ok && (oe.Op == "read" || oe.Op == "write") {
+			if se, ok := oe.Err.(*os.SyscallError); ok && (se.Syscall == "wsarecv" || se.Syscall == "wsasend") {
+				if n, ok := se.Err.(syscall.Errno); ok {
+					if n == WSAECONNRESET || n == WSAECONNABORTED {
+						return true
+					}
+				}
+			}
+		}
+	}
+	return false
 }
