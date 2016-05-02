@@ -302,7 +302,7 @@ function FindProxyForURL(url, host) {
 
 	resp := &http.Response{
 		Status:        "200 OK",
-		StatusCode:    200,
+		StatusCode:    http.StatusOK,
 		Proto:         "HTTP/1.1",
 		ProtoMajor:    1,
 		ProtoMinor:    1,

@@ -207,7 +207,7 @@ func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.C
 				continue
 			}
 			if resp.StatusCode != http.StatusPartialContent {
-				if resp.StatusCode >= 400 {
+				if resp.StatusCode >= http.StatusBadRequest {
 					time.Sleep(1 * time.Second)
 				}
 				continue

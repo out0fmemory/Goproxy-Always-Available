@@ -123,8 +123,8 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	glog.V(1).Infof("UnAuthenticated URL %v from %#v", req.URL.String(), req.RemoteAddr)
 
 	noAuthResponse := &http.Response{
-		Status:        "407 Proxy authentication required",
-		StatusCode:    407,
+		Status:        "407 Proxy Authentication Required",
+		StatusCode:    http.StatusProxyAuthRequired,
 		Proto:         "HTTP/1.1",
 		ProtoMajor:    1,
 		ProtoMinor:    1,

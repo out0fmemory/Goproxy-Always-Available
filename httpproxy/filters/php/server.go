@@ -80,7 +80,7 @@ func (s *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 }
 
 func (s *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return resp, nil
 	}
 

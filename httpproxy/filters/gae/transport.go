@@ -82,8 +82,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 		t.muServers.Unlock()
 		resp := &http.Response{
-			Status:     "302 Moved Temporarily",
-			StatusCode: 302,
+			Status:     "302 Found",
+			StatusCode: http.StatusFound,
 			Proto:      "HTTP/1.1",
 			ProtoMajor: 1,
 			ProtoMinor: 1,

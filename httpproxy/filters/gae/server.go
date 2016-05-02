@@ -64,7 +64,7 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 }
 
 func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return resp, nil
 	}
 
@@ -105,7 +105,7 @@ func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 		}
 	}
 
-	if resp1.StatusCode >= 400 {
+	if resp1.StatusCode >= http.StatusBadRequest {
 		switch {
 		case resp.Body == nil:
 			break
