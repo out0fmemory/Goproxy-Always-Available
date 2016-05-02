@@ -33,7 +33,7 @@ awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) 
 
 go build -v
 ```
-- 调试 goproxy
+- 运行调试 goproxy
 ```bash
 ./goproxy -v=2
 ```
@@ -43,5 +43,5 @@ make
 ```
 - 交叉编译+打包 goproxy
 ```bash
-make GOOS=windows GOARCH=amd386
+make GOOS=windows GOARCH=amd64
 ```
