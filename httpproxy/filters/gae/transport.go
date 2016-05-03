@@ -36,9 +36,6 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		resp, err := t.RoundTripper.RoundTrip(req1)
 
 		if err != nil {
-			if i == t.RetryTimes-1 {
-				return nil, err
-			}
 
 			if nerr, ok := err.(net.Error); ok && nerr.Timeout() {
 				if t1, ok := t.RoundTripper.(interface {
@@ -49,9 +46,13 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 						defer func() { recover() }()
 						t1.CloseIdleConnections()
 					}()
-				} else {
-					time.Sleep(t.RetryDelay)
 				}
+			}
+
+			if i == t.RetryTimes-1 {
+				return nil, err
+			} else {
+				glog.Warningf("GAE: request \"%s\" error: %T(%v), continue...", req.URL.String(), err, err)
 				continue
 			}
 		}
