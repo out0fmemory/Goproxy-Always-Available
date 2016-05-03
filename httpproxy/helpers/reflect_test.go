@@ -1,0 +1,36 @@
+package helpers
+
+import (
+	"net/http"
+	"testing"
+)
+
+func TestReflectRemoteAddrFromResponseHTTP(t *testing.T) {
+	u := "http://www.google.cn"
+	resp, err := http.Get(u)
+	if err != nil {
+		t.Errorf("http.Get(%#v) error: %v", u, err)
+	}
+
+	addr, err := ReflectRemoteAddrFromResponse(resp)
+	if err != nil {
+		t.Errorf("ReflectRemoteAddrFromResponse(%T) error: %v", resp, err)
+	}
+
+	t.Logf("u=%#v, addr=%#v", u, addr.String())
+}
+
+func TestReflectRemoteAddrFromResponseHTTPS(t *testing.T) {
+	u := "https://www.bing.com"
+	resp, err := http.Get(u)
+	if err != nil {
+		t.Errorf("http.Get(%#v) error: %v", u, err)
+	}
+
+	addr, err := ReflectRemoteAddrFromResponse(resp)
+	if err != nil {
+		t.Errorf("ReflectRemoteAddrFromResponse(%T) error: %v", resp, err)
+	}
+
+	t.Logf("u=%#v, addr=%#v", u, addr.String())
+}
