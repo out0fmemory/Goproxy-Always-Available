@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"../../dialer"
+	"../../helpers"
 
 	"github.com/phuslu/glog"
 )
@@ -82,12 +83,15 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				time.Sleep(t.RetryDelay)
 				continue
 			case http.StatusBadGateway:
-				if strings.Contains(resp.Header.Get("Via"), "Chrome-Compression-Proxy") {
-					if t.MultiDialer != nil {
-						//FIXME: we need ban the server in MultiDialer, but how?
+				if t.MultiDialer != nil {
+					if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
+						if ip, _, err := net.SplitHostPort(addr.String()); err == nil {
+							glog.Warningf("GAE: %s is not a gws/gvs ip, add to blacklist for 1 hours", ip)
+							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(1*time.Hour))
+						}
 					}
 				}
-				return resp, nil
+				continue
 			default:
 				return resp, nil
 			}
