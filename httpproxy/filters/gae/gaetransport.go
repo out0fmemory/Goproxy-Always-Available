@@ -37,17 +37,24 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		if err != nil {
 
-			if nerr, ok := err.(*net.OpError); ok {
-				if nerr.Timeout() || nerr.Op == "read" {
-					if t1, ok := t.RoundTripper.(interface {
-						CloseIdleConnections()
-					}); ok {
-						glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, t1)
-						go func() {
-							defer func() { recover() }()
-							t1.CloseIdleConnections()
-						}()
-					}
+			var isTimeoutError bool
+			if ne, ok := err.(net.Error); ok && ne.Timeout() {
+				isTimeoutError = true
+			} else if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
+				isTimeoutError = true
+			} else {
+				isTimeoutError = false
+			}
+
+			if isTimeoutError {
+				if t1, ok := t.RoundTripper.(interface {
+					CloseIdleConnections()
+				}); ok {
+					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, t1)
+					go func() {
+						defer func() { recover() }()
+						t1.CloseIdleConnections()
+					}()
 				}
 			}
 
