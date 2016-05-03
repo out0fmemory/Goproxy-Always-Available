@@ -15,10 +15,17 @@ func ReflectRemoteAddrFromResponse(resp *http.Response) (net.Addr, error) {
 	v := reflect.ValueOf(resp.Body)
 
 	switch v.Type().String() {
+	case "*http.gzipReader":
+		v = v.Elem().FieldByName("body")
+		fallthrough
 	case "*http.bodyEOFSignal":
 		v = v.Elem().FieldByName("body").Elem()
 		v = reflect.Indirect(v).FieldByName("src").Elem()
 		switch v.Type().String() {
+		case "*internal.chunkedReader":
+			v = reflect.Indirect(v).FieldByName("r").Elem()
+			v = reflect.Indirect(v).FieldByName("rd").Elem()
+			v = reflect.Indirect(v).FieldByName("conn").Elem()
 		case "*io.LimitedReader":
 			v = reflect.Indirect(v).FieldByName("R").Elem()
 			v = reflect.Indirect(v).FieldByName("rd").Elem()
@@ -34,11 +41,10 @@ func ReflectRemoteAddrFromResponse(resp *http.Response) (net.Addr, error) {
 		return nil, fmt.Errorf("ReflectRemoteAddrFromResponse: unsupport %#v Type=%s", v, v.Type().String())
 	}
 
-	if v.Type().String() == "*tls.Conn" {
-		v = reflect.Indirect(v).FieldByName("conn").Elem()
-	}
-
 	switch v.Type().String() {
+	case "*tls.Conn":
+		v = reflect.Indirect(v).FieldByName("conn").Elem()
+		fallthrough
 	case "*net.TCPConn":
 		v = reflect.Indirect(v).FieldByName("fd").Elem()
 		v = reflect.Indirect(v).FieldByName("raddr").Elem()
