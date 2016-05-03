@@ -4,7 +4,7 @@ export GITHUB_USER=${GITHUB_USER:-phuslu}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
-export WORKING_DIR=$HOME/tmp.$(date "+%Y%m%d%H%M%S").${RANDOM:-$$}.${GITHUB_REPO}
+export WORKING_DIR=/tmp/${GITHUB_REPO}.$(date "+%Y%m%d").${RANDOM:-$$}
 export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
@@ -152,7 +152,7 @@ function release_repo_ci() {
 
 function clean() {
 	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht && md5sum *)
-	rm -rf $HOME/tmp.*.${GITHUB_REPO}
+	rm -rf ${WORKING_DIR}
 }
 
 init_github
