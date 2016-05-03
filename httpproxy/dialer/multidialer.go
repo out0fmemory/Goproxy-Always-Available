@@ -58,7 +58,7 @@ type MultiDialer struct {
 	IPv6Only        bool
 	TLSConfig       *tls.Config
 	Site2Alias      *helpers.HostMatcher
-	IPBlackList     *helpers.HostMatcher
+	IPBlackList     lrucache.Cache
 	HostMap         map[string][]string
 	DNSServers      []net.IP
 	DNSCache        lrucache.Cache
@@ -87,7 +87,7 @@ func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
 
 	addrs = make([]string, 0)
 	for _, h := range hs {
-		if d.IPBlackList.Match(h) {
+		if _, ok := d.IPBlackList.GetQuiet(h); ok {
 			continue
 		}
 
@@ -126,11 +126,19 @@ func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string
 	for _, rr := range r.Answer {
 		if d.IPv6Only {
 			if aaaa, ok := rr.(*dns.AAAA); ok {
-				addrs = append(addrs, aaaa.AAAA.String())
+				ip := aaaa.AAAA.String()
+				if _, ok := d.IPBlackList.GetQuiet(ip); ok {
+					continue
+				}
+				addrs = append(addrs, ip)
 			}
 		} else {
 			if a, ok := rr.(*dns.A); ok {
-				addrs = append(addrs, a.A.String())
+				ip := a.A.String()
+				if _, ok := d.IPBlackList.GetQuiet(ip); ok {
+					continue
+				}
+				addrs = append(addrs, ip)
 			}
 		}
 	}
@@ -182,7 +190,15 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 
 	addrs = make([]string, 0)
 	for addr, _ := range seen {
+		if _, ok := d.IPBlackList.GetQuiet(addr); ok {
+			continue
+		}
 		addrs = append(addrs, addr)
+	}
+
+	if len(addrs) == 0 {
+		glog.Errorf("MULTIDIALER: LookupAlias(%#v) have no good ip addrs", alias)
+		return nil, fmt.Errorf("MULTIDIALER: LookupAlias(%#v) have no good ip addrs", alias)
 	}
 
 	return addrs, nil

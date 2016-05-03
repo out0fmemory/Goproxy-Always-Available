@@ -124,7 +124,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		IPv6Only:        config.IPv6Only,
 		TLSConfig:       nil,
 		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
-		IPBlackList:     helpers.NewHostMatcher(config.IPBlackList),
+		IPBlackList:     lrucache.NewLRUCache(8192),
 		HostMap:         config.HostMap,
 		DNSServers:      dnsServers,
 		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
@@ -135,6 +135,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		TLSConnError:    lrucache.NewLRUCache(8192),
 		ConnExpiry:      5 * time.Minute,
 		Level:           config.Transport.Dialer.Level,
+	}
+
+	for _, ip := range config.IPBlackList {
+		d.IPBlackList.Set(ip, struct{}{}, time.Time{})
 	}
 
 	var tr http.RoundTripper
