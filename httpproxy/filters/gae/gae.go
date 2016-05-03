@@ -29,24 +29,25 @@ const (
 )
 
 type Config struct {
-	AppIDs       []string
-	Scheme       string
-	Domain       string
-	Path         string
-	Password     string
-	SSLVerify    bool
-	IPv6Only     bool
-	DisableHTTP2 bool
-	ForceHTTP2   bool
-	Sites        []string
-	Site2Alias   map[string]string
-	HostMap      map[string][]string
-	ForceHTTPS   []string
-	ForceGAE     []string
-	FakeOptions  map[string][]string
-	DNSServers   []string
-	IPBlackList  []string
-	Transport    struct {
+	AppIDs          []string
+	Scheme          string
+	Domain          string
+	Path            string
+	Password        string
+	SSLVerify       bool
+	IPv6Only        bool
+	DisableHTTP2    bool
+	ForceHTTP2      bool
+	Sites           []string
+	Site2Alias      map[string]string
+	HostMap         map[string][]string
+	FakeServerNames []string
+	ForceHTTPS      []string
+	ForceGAE        []string
+	FakeOptions     map[string][]string
+	DNSServers      []string
+	IPBlackList     []string
+	Transport       struct {
 		Dialer struct {
 			DNSCacheExpiry int
 			DNSCacheSize   uint
@@ -126,6 +127,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
 		IPBlackList:     lrucache.NewLRUCache(8192),
 		HostMap:         config.HostMap,
+		FakeServerNames: config.FakeServerNames,
 		DNSServers:      dnsServers,
 		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry:  time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,

@@ -20,19 +20,6 @@ import (
 
 var (
 	onceDefaultTLSConfigForGoogle sync.Once
-	fakeSNINamesForGoogle         []string = []string{
-		"appleid.apple.com",
-		"assets-cdn.github.com",
-		"download.windowsupdate.com",
-		"github.com",
-		"www.apple.com",
-		"www.bing.com",
-		"www.microsoft.com",
-		// "ad.doubleclick.net",
-		// "googleads.g.doubleclick.net",
-		// "pubads.g.doubleclick.net",
-		// "www.google-analytics.com",
-	}
 )
 
 func pickupCiphers(ciphers []uint16) []uint16 {
@@ -51,7 +38,6 @@ func GetDefaultTLSConfigForGoogle() *tls.Config {
 		ciphers := pickupCiphers(defaultTLSConfigForGoogle.CipherSuites)
 		ciphers = append(ciphers, pickupCiphers(mixinCiphersForGoogle)...)
 		defaultTLSConfigForGoogle.CipherSuites = ciphers
-		defaultTLSConfigForGoogle.ServerName = fakeSNINamesForGoogle[rand.Intn(len(fakeSNINamesForGoogle))]
 	})
 
 	return defaultTLSConfigForGoogle
@@ -62,6 +48,7 @@ type MultiDialer struct {
 	IPv6Only        bool
 	TLSConfig       *tls.Config
 	Site2Alias      *helpers.HostMatcher
+	FakeServerNames []string
 	IPBlackList     lrucache.Cache
 	HostMap         map[string][]string
 	DNSServers      []net.IP
@@ -292,7 +279,9 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 
 					switch {
 					case strings.HasPrefix(alias, "google_"):
-						config = GetDefaultTLSConfigForGoogle()
+						config = new(tls.Config)
+						*config = *GetDefaultTLSConfigForGoogle()
+						config.ServerName = d.FakeServerNames[rand.Intn(len(d.FakeServerNames))]
 					default:
 						config = &tls.Config{
 							InsecureSkipVerify: true,

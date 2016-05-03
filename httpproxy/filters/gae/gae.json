@@ -72,6 +72,19 @@
 		"translate.googleapis.com",
 		"domains.google.com",
 	],
+	"FakeServerNames": [
+		"appleid.apple.com",
+		"assets-cdn.github.com",
+		"download.windowsupdate.com",
+		"github.com",
+		"www.apple.com",
+		"www.bing.com",
+		"www.microsoft.com",
+		// "ad.doubleclick.net",
+		// "googleads.g.doubleclick.net",
+		// "pubads.g.doubleclick.net",
+		// "www.google-analytics.com",
+	],
 	"FakeOptions": {
 		"*.twitter.com": [
 			"Access-Control-Allow-Credentials: true",
