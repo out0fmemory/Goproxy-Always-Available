@@ -28,6 +28,10 @@ var (
 		"www.apple.com",
 		"www.bing.com",
 		"www.microsoft.com",
+		// "ad.doubleclick.net",
+		// "googleads.g.doubleclick.net",
+		// "pubads.g.doubleclick.net",
+		// "www.google-analytics.com",
 	}
 )
 
