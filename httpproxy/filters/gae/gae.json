@@ -52,7 +52,7 @@
 		"*.googletagservices.com": "google_hk",
 		"*.googleusercontent.com": "google_hk",
 		"*.gstatic.com": "google_hk",
-		// "*.youtube.com": "google_hk",
+		"*.youtube.com": "google_hk",
 		"*.ytimg.com": "google_hk",
 		"dl.google.com": "google_cn",
 		"talk.google.com": "google_talk",
