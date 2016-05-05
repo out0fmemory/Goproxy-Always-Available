@@ -280,7 +280,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 }
 
 func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Conn, error) {
-	glog.Warningf("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	glog.Warningf("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
