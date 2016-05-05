@@ -8,11 +8,18 @@ import (
 )
 
 func ReflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
+	var v reflect.Value
+
+	v = reflect.ValueOf(resp).Elem().FieldByName("RemoteAddr")
+	if v.IsValid() {
+		return v.String(), nil
+	}
+
 	if resp.Body == nil {
 		return "", fmt.Errorf("ReflectRemoteAddrFromResponse: cannot reflect %#v for %v", resp, resp.Request.URL.String())
 	}
 
-	v := reflect.ValueOf(resp.Body)
+	v = reflect.ValueOf(resp.Body)
 
 	switch v.Type().String() {
 	case "*http.gzipReader":
