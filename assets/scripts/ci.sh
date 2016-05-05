@@ -47,7 +47,7 @@ function build_go() {
 	cd go/src
 	git remote add -f upstream https://github.com/golang/go
 	git rebase upstream/master
-	BUILD_GO_TAG_BACK_STEPS=~3 bash ./make.bash
+	bash ./make.bash
 	git push -f origin master
 
 	(set +x; \
