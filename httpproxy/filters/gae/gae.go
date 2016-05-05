@@ -159,9 +159,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.ForceHTTP2:
+		_ = dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames)
 		tr = &http2.Transport{
 			DialTLS:            d.DialTLS2,
-			TLSClientConfig:    dialer.GetDefaultTLSConfigForGoogle(),
+			TLSClientConfig:    dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames),
 			DisableCompression: config.Transport.DisableCompression,
 		}
 	case config.DisableHTTP2:

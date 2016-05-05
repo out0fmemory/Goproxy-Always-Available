@@ -4,6 +4,8 @@ package dialer
 
 import (
 	"crypto/tls"
+	"math/rand"
+	"sync"
 )
 
 var (
@@ -29,11 +31,15 @@ var (
 		NextProtos: []string{"h2", "h2-14", "http/1.1"},
 	}
 
-	mixinCiphersForGoogle []uint16 = []uint16{
-		tls.TLS_RSA_WITH_RC4_128_SHA,
-		tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-		tls.TLS_ECDHE_RSA_WITH_RC4_128_SHA,
-		tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
-		tls.TLS_ECDHE_ECDSA_WITH_RC4_128_SHA,
-	}
+	onceDefaultTLSConfigForGoogle sync.Once
 )
+
+func GetDefaultTLSConfigForGoogle(fakeServerNames []string) *tls.Config {
+	onceDefaultTLSConfigForGoogle.Do(func() {
+		if len(fakeServerNames) > 0 {
+			defaultTLSConfigForGoogle.ServerName = fakeServerNames[rand.Intn(len(fakeServerNames))]
+		}
+	})
+
+	return defaultTLSConfigForGoogle
+}
