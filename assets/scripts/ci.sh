@@ -107,6 +107,10 @@ function build_repo() {
 
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v {}
 
+	for UNITTEST_PACKAGE in ./httpproxy/helpers; do
+		go test -v ${UNITTEST_PACKAGE}
+	done
+
 	for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 linux/mips64 linux/mips64le darwin/amd64 darwin/386 windows/amd64 windows/386; do
 		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
 		mkdir -p ${WORKING_DIR}/r${RELEASE}
