@@ -71,6 +71,7 @@
 	"ForceGAE": [
 		"translate.googleapis.com",
 		"domains.google.com",
+		"www.google.com/patents",
 	],
 	"FakeServerNames": [
 		"appleid.apple.com",
