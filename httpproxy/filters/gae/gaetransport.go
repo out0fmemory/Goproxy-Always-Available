@@ -1,7 +1,9 @@
 package gae
 
 import (
+	"bytes"
 	"fmt"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -104,7 +106,29 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if resp1 != nil {
 			resp1.Request = req
 		}
-		return resp1, nil
+		if i == t.RetryTimes-1 {
+			return resp, err
+		}
+
+		switch resp1.StatusCode {
+		case http.StatusBadGateway:
+			body, err := ioutil.ReadAll(resp1.Body)
+			if err != nil {
+				resp1.Body.Close()
+				return nil, err
+			}
+			resp1.Body.Close()
+			switch {
+			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
+				glog.Warningf("GAE: fetchserver(%s) urlfetch %#v get DEADLINE_EXCEEDED, continue...", req1.URL.String(), req.URL.String())
+				continue
+			default:
+				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))
+				return resp1, nil
+			}
+		default:
+			return resp1, nil
+		}
 	}
 
 	return nil, fmt.Errorf("GAE: cannot reach here with %#v", req)
