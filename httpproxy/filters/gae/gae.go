@@ -72,7 +72,7 @@ type Filter struct {
 	GAETransport       *Transport
 	DirectTransport    http.RoundTripper
 	ForceHTTPSMatcher  *helpers.HostMatcher
-	ForceGAEMatcher    *helpers.HostMatcher
+	ForceGAEStrings    []string
 	FakeOptionsMatcher *helpers.HostMatcher
 	SiteMatcher        *helpers.HostMatcher
 	DirectSiteMatcher  *helpers.HostMatcher
@@ -210,14 +210,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 		DirectTransport:    tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(config.ForceHTTPS),
-		ForceGAEMatcher:    helpers.NewHostMatcher(config.ForceGAE),
+		ForceGAEStrings:    config.ForceGAE,
 		FakeOptionsMatcher: helpers.NewHostMatcherWithStrings(config.FakeOptions),
 		SiteMatcher:        helpers.NewHostMatcher(config.Sites),
 		DirectSiteMatcher:  helpers.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
 }
 
-func (p *Filter) FilterName() string {
+func (f *Filter) FilterName() string {
 	return filterName
 }
 
@@ -298,7 +298,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			}
 		}
 
-		if req.URL.Scheme != "http" && !f.ForceGAEMatcher.Match(req.Host) {
+		if req.URL.Scheme != "http" && !f.shouldForceGAE(req) {
 			tr = f.DirectTransport
 			if s := req.Header.Get("Connection"); s != "" {
 				if s1 := strings.ToLower(s); s != s1 {
@@ -317,4 +317,15 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	}
 
 	return ctx, resp, nil
+}
+
+func (f *Filter) shouldForceGAE(req *http.Request) bool {
+	if len(f.ForceGAEStrings) > 0 {
+		for _, s := range f.ForceGAEStrings {
+			if strings.Contains(req.URL.String(), s) {
+				return true
+			}
+		}
+	}
+	return false
 }
