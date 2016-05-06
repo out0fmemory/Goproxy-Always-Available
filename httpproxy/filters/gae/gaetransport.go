@@ -78,9 +78,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			switch resp.StatusCode {
 			case http.StatusServiceUnavailable:
 				if len(t.Servers) == 1 {
-					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.URL.String())
+					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.URL.Host)
 				} else {
-					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.URL.String())
+					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.URL.Host)
 					t.roundServers()
 				}
 				time.Sleep(t.RetryDelay)
@@ -121,7 +121,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp1.Body.Close()
 			switch {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
-				glog.Warningf("GAE: fetchserver(%s) urlfetch %#v get DEADLINE_EXCEEDED, continue...", req1.URL.String(), req.URL.String())
+				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, continue...", req1.URL.Host, req.URL.String())
 				continue
 			default:
 				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))
