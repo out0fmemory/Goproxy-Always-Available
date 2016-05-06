@@ -52,7 +52,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				isTimeoutError = false
 			}
 
-			if isTimeoutError {
+			if isTimeoutError && i == 0 {
 				if t1, ok := t.RoundTripper.(interface {
 					CloseIdleConnections()
 				}); ok {
