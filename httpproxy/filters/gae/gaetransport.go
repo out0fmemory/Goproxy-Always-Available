@@ -42,7 +42,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if err != nil {
 
 			var isTimeoutError bool
-			if ne, ok := err.(net.Error); ok && ne.Timeout() {
+			if ne, ok := err.(interface {
+				Timeout() bool
+			}); ok && ne.Timeout() {
 				isTimeoutError = true
 			} else if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
 				isTimeoutError = true
