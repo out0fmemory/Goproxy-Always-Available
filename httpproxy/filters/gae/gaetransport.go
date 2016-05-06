@@ -30,7 +30,6 @@ type Transport struct {
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for i := 0; i < t.RetryTimes; i++ {
 		server := t.pickServer(req, i)
-		server.Deadline = time.Duration(i+1) * DefaultGAEDeadline
 
 		req1, err := server.encodeRequest(req)
 		if err != nil {
@@ -123,8 +122,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp1.Body.Close()
 			switch {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
-				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, continue...", req1.URL.Host, req.URL.String())
-				continue
+				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED.", req1.URL.Host, req.URL.String())
+				fallthrough
 			default:
 				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))
 				return resp1, nil
