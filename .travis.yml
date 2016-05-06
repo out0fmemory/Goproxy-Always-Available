@@ -3,7 +3,7 @@ sudo: false
 language: bash
 
 script:
-  - bash -x -e < <(curl -kL https://github.com/phuslu/goproxy/raw/master/assets/scripts/ci.sh)
+  - cd && bash -x -e < <(curl -kL https://github.com/phuslu/goproxy/raw/master/assets/scripts/ci.sh)
 
 branches:
   only:

@@ -30,14 +30,16 @@ export RELEASE_NAME=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "name: '\
 export RELEASE_NOTE=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "description: '\K.+?'," | sed 's/..$//'`
 export RELEASE_FILES=`cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP 'artifact: \K\S+\.(7z|zip|gz|bz2|xz|tar)'`
 
-for FILE in ${RELEASE_FILES}; do
+for FILE in ${RELEASE_FILES}
+do
     echo Downloading ${FILE} from https://github.com/${GITHUB_USER}/${GITHUB_CI_REPO}.git#${GITHUB_TAG}
     ${GITHUB_RELEASE_BIN} download --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag ${GITHUB_TAG} --name "$FILE"
 done
 
 git clone --branch master https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}
 pushd ${GITHUB_REPO}
-for TAG in $(git tag); do
+for TAG in $(git tag)
+do
 	${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${TAG} || true
 	git push origin :${TAG}
 	git tag -d ${TAG}
@@ -49,7 +51,8 @@ popd
 sleep 3
 
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_TAG} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
-for FILE in ${RELEASE_FILES}; do
+for FILE in ${RELEASE_FILES}
+do
     echo Uploading ${FILE} to https://github.com/${GITHUB_USER}/${GITHUB_REPO}.git#${GITHUB_TAG}
     ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_TAG} --name "${FILE}" --file "${FILE}"
 done

@@ -1,21 +1,21 @@
-#!/bin/bash
+#!/bin/bash -xe
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
-export WORKING_DIR=/tmp/${GITHUB_REPO}.$(date "+%Y%m%d").${RANDOM:-$$}
+export WORKING_DIR=$(pwd)/${GITHUB_REPO}.$(date "+%Y%m%d").${RANDOM:-$$}
 export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
-	echo "\$GITHUB_TOKEN is not set, abort"
-	exit 1
+	echo "WARNING: \$GITHUB_TOKEN is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc; do
+for CMD in curl awk git tar bzip2 xz 7za gcc make
+do
 	if ! $(which ${CMD} >/dev/null 2>&1); then
 		echo "tool ${CMD} is not installed, abort."
 		exit 1
@@ -31,7 +31,9 @@ function init_github() {
 	git config --global user.email "${GITHUB_USER}@noreply.github.com"
 
 	if ! grep -q 'machine github.com' ~/.netrc; then
-		(set +x; echo "machine github.com login $GITHUB_USER password $GITHUB_TOKEN" >>~/.netrc)
+		if [ ${#GITHUB_TOKEN} -gt 0 ]; then
+			(set +x; echo "machine github.com login $GITHUB_USER password $GITHUB_TOKEN" >>~/.netrc)
+		fi
 	fi
 
 	popd
@@ -48,7 +50,7 @@ function build_go() {
 	git remote add -f upstream https://github.com/golang/go
 	git rebase upstream/master
 	bash ./make.bash
-	git push -f origin master
+	grep -q 'machine github.com' ~/.netrc && git push -f origin master
 
 	(set +x; \
 		echo '================================================================================' ;\
@@ -73,7 +75,7 @@ function build_glog() {
 	git remote add -f upstream https://github.com/golang/glog
 	git rebase upstream/master
 	go build -v
-	git push -f origin master
+	grep -q 'machine github.com' ~/.netrc && git push -f origin master
 
 	popd
 }
@@ -86,7 +88,7 @@ function build_http2() {
 	git remote add -f upstream https://github.com/golang/net
 	git rebase upstream/master
 	go build -v
-	git push -f origin master
+	grep -q 'machine github.com' ~/.netrc && git push -f origin master
 
 	popd
 }
@@ -107,11 +109,19 @@ function build_repo() {
 
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v {}
 
-	for UNITTEST_PACKAGE in ./httpproxy/helpers; do
-		go test -v ${UNITTEST_PACKAGE}
-	done
+	go test -v ./httpproxy/helpers
 
-	for OSARCH in linux/amd64 linux/386 linux/arm linux/arm64 linux/mips64 linux/mips64le darwin/amd64 darwin/386 windows/amd64 windows/386; do
+	for OSARCH in darwin/386 \
+				darwin/amd64 \
+				linux/386 \
+				linux/amd64 \
+				linux/arm \
+				linux/arm64 \
+				linux/mips64 \
+				linux/mips64le \
+				windows/386 \
+				windows/amd64
+	do
 		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
 		mkdir -p ${WORKING_DIR}/r${RELEASE}
 		cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
@@ -126,6 +136,11 @@ function build_repo() {
 function release_repo_ci() {
 	if [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
 		return
+	fi
+
+	if [ ${#GITHUB_TOKEN} -eq 0 ]; then
+		echo "\$GITHUB_TOKEN is not set, abort"
+		exit 1
 	fi
 
 	pushd ${WORKING_DIR}
@@ -147,7 +162,8 @@ function release_repo_ci() {
 	sleep 1
 	${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}"
 
-	for FILE in *; do
+	for FILE in *
+	do
 		${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE}
 	done
 
