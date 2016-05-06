@@ -23,9 +23,10 @@ const (
 )
 
 const (
-	DefaultGAEScheme string = "https"
-	DefaultGAEDomain string = "appspot.com"
-	DefaultGAEPath   string = "/_gh/"
+	DefaultGAEScheme   string        = "https"
+	DefaultGAEDomain   string        = "appspot.com"
+	DefaultGAEPath     string        = "/_gh/"
+	DefaultGAEDeadline time.Duration = 12 * time.Second
 )
 
 type Config struct {

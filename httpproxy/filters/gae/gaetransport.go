@@ -30,6 +30,7 @@ type Transport struct {
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for i := 0; i < t.RetryTimes; i++ {
 		server := t.pickServer(req, i)
+		server.Deadline = time.Duration(i+1) * DefaultGAEDeadline
 
 		req1, err := server.encodeRequest(req)
 		if err != nil {

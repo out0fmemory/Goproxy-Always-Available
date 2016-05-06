@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"../../helpers"
 )
@@ -19,6 +20,7 @@ type Server struct {
 	URL       *url.URL
 	Password  string
 	SSLVerify bool
+	Deadline  time.Duration
 }
 
 func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
@@ -33,6 +35,9 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
 	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
 	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", f.Password)
+	if f.Deadline > 0 {
+		fmt.Fprintf(w, "X-Urlfetch-Deadline: %d\r\n", f.Deadline/time.Second)
+	}
 	w.Close()
 
 	b0 := make([]byte, 2)
