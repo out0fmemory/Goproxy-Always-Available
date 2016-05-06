@@ -122,7 +122,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp1.Body.Close()
 			switch {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
-				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED.", req1.URL.Host, req.URL.String())
+				glog.V(2).Infof("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED.", req1.URL.Host, req.URL.String())
 				fallthrough
 			default:
 				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))
