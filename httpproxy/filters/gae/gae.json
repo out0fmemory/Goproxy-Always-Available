@@ -137,7 +137,7 @@
 		},
 		"DisableCompression": false,
 		"DisableKeepAlives": false,
-		"IdleConnTimeout": 0,
+		"IdleConnTimeout": 180,
 		"MaxIdleConnsPerHost": 16,
 		"ResponseHeaderTimeout": 24,
 		"RetryDelay": 0.5,
