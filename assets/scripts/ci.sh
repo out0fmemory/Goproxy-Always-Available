@@ -138,12 +138,12 @@ function release_repo_ci() {
 		return
 	fi
 
+	pushd ${WORKING_DIR}
+
 	if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 		echo "\$GITHUB_TOKEN is not set, abort"
 		exit 1
 	fi
-
-	pushd ${WORKING_DIR}
 
 	git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_CI_REPO} ${GITHUB_CI_REPO}
 	cd ${GITHUB_CI_REPO}
