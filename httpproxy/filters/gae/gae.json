@@ -55,6 +55,7 @@
 		"*.youtube.com": "google_hk",
 		"*.ytimg.com": "google_hk",
 		"dl.google.com": "google_cn",
+		"fonts.googleapis.com": "google_cn",
 		"talk.google.com": "google_talk",
 		"talk.l.google.com": "google_talk",
 		"talkx.l.google.com": "google_talk",
