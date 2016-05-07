@@ -5,9 +5,9 @@ goproxy 正式版 https://git.io/goproxy 每日构建版 [ ![CI Releases](https:
 
 ## 文档
 * 简易教程 https://github.com/phuslu/goproxy/blob/wiki/SimpleGuide.md
-* 图文教程 https://github.com/phuslu/goproxy/blob/wiki/InstallGuide.md
-* 常见问题 https://github.com/phuslu/goproxy/blob/wiki/FAQ.md
 * 配置介绍 https://github.com/phuslu/goproxy/blob/wiki/ConfigIntroduce.md
+* 常见问题 https://github.com/phuslu/goproxy/blob/wiki/FAQ.md
+* 编译步骤 https://github.com/phuslu/goproxy/blob/wiki/HowToBuild.md
 
 ## 代码
  * goproxy https://github.com/phuslu/goproxy
