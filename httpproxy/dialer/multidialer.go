@@ -395,6 +395,7 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 				}
 			}
 
+			start = time.Now()
 			tlsConn := tls.Client(conn, config)
 			err = tlsConn.Handshake()
 
