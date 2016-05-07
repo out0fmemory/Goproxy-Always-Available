@@ -40,18 +40,17 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		if err != nil {
 
-			var isTimeoutError bool
+			isTimeoutError := false
 			if ne, ok := err.(interface {
 				Timeout() bool
 			}); ok && ne.Timeout() {
 				isTimeoutError = true
-			} else if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
+			}
+			if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
 				isTimeoutError = true
-			} else {
-				isTimeoutError = false
 			}
 
-			if isTimeoutError && i == 0 {
+			if isTimeoutError {
 				if t1, ok := t.RoundTripper.(interface {
 					CloseIdleConnections()
 				}); ok {
