@@ -45,3 +45,7 @@ make
 ```bash
 make GOOS=windows GOARCH=amd64
 ```
+- 一键编译 GoProxy
+```bash
+bash -x -e < <(curl -kL https://github.com/phuslu/goproxy/raw/master/assets/scripts/ci.sh)
+```
