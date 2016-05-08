@@ -312,6 +312,15 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		glog.Warningf("%s \"GAE %s %s %s %s\" error: %T(%v)", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, err, err)
+		if prefix == "DIRECT" {
+			if ne, ok := err.(net.Error); ok && ne.Timeout() {
+				if t1, ok := tr.(*http.Transport); ok {
+					t1.CloseIdleConnections()
+				} else if t2, ok := tr.(*http2.Transport); ok {
+					t2.CloseConnections()
+				}
+			}
+		}
 	} else {
 		glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
