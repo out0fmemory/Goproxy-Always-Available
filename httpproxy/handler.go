@@ -1,7 +1,7 @@
 package httpproxy
 
 import (
-	// "context"
+	"context"
 	"fmt"
 	"io"
 	"net"
@@ -31,9 +31,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	remoteAddr := req.RemoteAddr
 
 	// Prepare filter.Context
-	ctx := req.Context()
-	ctx = filters.PutListener(ctx, h.Listener)
-	ctx = filters.PutResponseWriter(ctx, rw)
+	ctx := filters.NewContext(req.Context(), h.Listener, rw)
 	req = req.WithContext(ctx)
 
 	// Enable transport http proxy
@@ -96,7 +94,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		// A roundtrip filter give a response
 		if resp != nil {
 			resp.Request = req
-			ctx = filters.PutRoundTripFilter(ctx, f)
+			ctx = context.WithValue(ctx, filters.ContextRoundTripFilterKey, f)
 			break
 		}
 	}

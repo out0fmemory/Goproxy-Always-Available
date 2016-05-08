@@ -6,36 +6,37 @@ import (
 	"net/http"
 )
 
-func PutListener(ctx context.Context, ln net.Listener) context.Context {
-	return context.WithValue(ctx, "context·Listener", ln)
+const (
+	ContextRoundTripFilterKey = "context·RoundTripFilter"
+	contextListenerKey        = "context·Listener"
+	contextResponseWriterKey  = "context·ResponseWriter"
+	contextHijackedKey        = "context·Hijacked"
+)
+
+func NewContext(ctx context.Context, ln net.Listener, rw http.ResponseWriter) context.Context {
+	ctx = context.WithValue(ctx, contextListenerKey, ln)
+	ctx = context.WithValue(ctx, contextResponseWriterKey, rw)
+	return ctx
 }
 
 func GetListener(ctx context.Context) net.Listener {
-	return ctx.Value("context·Listener").(net.Listener)
-}
-
-func PutResponseWriter(ctx context.Context, rw http.ResponseWriter) context.Context {
-	return context.WithValue(ctx, "context·ResponseWriter", rw)
+	return ctx.Value(contextListenerKey).(net.Listener)
 }
 
 func GetResponseWriter(ctx context.Context) http.ResponseWriter {
-	return ctx.Value("context·ResponseWriter").(http.ResponseWriter)
-}
-
-func PutRoundTripFilter(ctx context.Context, filter RoundTripFilter) context.Context {
-	return context.WithValue(ctx, "context·RoundTripFilter", filter)
+	return ctx.Value(contextResponseWriterKey).(http.ResponseWriter)
 }
 
 func GetRoundTripFilter(ctx context.Context) RoundTripFilter {
-	return ctx.Value("context·RoundTripFilter").(RoundTripFilter)
+	return ctx.Value(ContextRoundTripFilterKey).(RoundTripFilter)
 }
 
 func PutHijacked(ctx context.Context, hijacked bool) context.Context {
-	return context.WithValue(ctx, "context·Hijacked", hijacked)
+	return context.WithValue(ctx, contextHijackedKey, hijacked)
 }
 
 func GetHijacked(ctx context.Context) bool {
-	v := ctx.Value("context·Hijacked")
+	v := ctx.Value(contextHijackedKey)
 	if v == nil {
 		return false
 	}
