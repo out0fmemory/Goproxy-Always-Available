@@ -164,7 +164,14 @@ function release_repo_ci() {
 
 	for FILE in *
 	do
-		${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE}
+		for i in 1 2 3 4 5
+		do
+			if ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE} ; then
+				break
+			else
+				sleep 1
+			fi
+		done
 	done
 
 	popd
