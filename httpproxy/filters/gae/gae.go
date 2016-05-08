@@ -255,7 +255,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	var tr http.RoundTripper = f.GAETransport
-	prefix := "FETCH"
 
 	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) {
 		if !strings.HasPrefix(req.Header.Get("Referer"), "https://") {
@@ -306,14 +305,18 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					req.Header.Set("Connection", s1)
 				}
 			}
-			prefix = "DIRECT"
 		}
+	}
+
+	prefix := "FETCH"
+	if tr == f.DirectTransport {
+		prefix = "DIRECT"
 	}
 
 	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		glog.Warningf("%s \"GAE %s %s %s %s\" error: %T(%v)", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, err, err)
-		if prefix == "DIRECT" {
+		if tr == f.DirectTransport {
 			if ne, ok := err.(net.Error); ok && ne.Timeout() {
 				if t1, ok := tr.(*http.Transport); ok {
 					t1.CloseIdleConnections()
