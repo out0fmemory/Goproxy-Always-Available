@@ -62,6 +62,7 @@
 	},
 	"ForceHTTPS": [
 		"www.google.com",
+		"www.google.com.hk",
 		"books.google.com",
 		"books.google.com.hk",
 		"scholar.google.com",
