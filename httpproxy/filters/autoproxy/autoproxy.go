@@ -3,6 +3,7 @@ package autoproxy
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"io"
@@ -237,7 +238,7 @@ func (f *Filter) updater() {
 	}
 }
 
-func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
+func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 
 	if !strings.HasPrefix(req.RequestURI, placeholderPath) {
 		return ctx, nil, nil

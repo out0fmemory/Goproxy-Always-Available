@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/base64"
 	"net"
 	"net/http"
@@ -78,15 +79,15 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Request, error) {
+func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
 	if auth := req.Header.Get("Proxy-Authorization"); auth != "" {
 		req.Header.Del("Proxy-Authorization")
-		ctx.SetString(authHeader, auth)
+		ctx = filters.PutString(ctx, authHeader, auth)
 	}
 	return ctx, req, nil
 }
 
-func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
+func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 
 	if ip, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
 		if _, ok := f.WhiteList[ip]; ok {
@@ -94,7 +95,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		}
 	}
 
-	if auth, ok := ctx.GetString(authHeader); ok {
+	if auth := filters.GetString(ctx, authHeader); auth != "" {
 		if _, ok := f.ByPassHeaders.Get(auth); ok {
 			glog.V(3).Infof("auth filter hit bypass cache %#v", auth)
 			return ctx, nil, nil

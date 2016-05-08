@@ -1,6 +1,7 @@
 package stripssl
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io"
@@ -96,7 +97,7 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Request, error) {
+func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
 	if req.Method != http.MethodConnect {
 		return ctx, req, nil
 	}
@@ -115,9 +116,10 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		needStripSSL = false
 	}
 
-	hijacker, ok := ctx.GetResponseWriter().(http.Hijacker)
+	rw := filters.GetResponseWriter(ctx)
+	hijacker, ok := rw.(http.Hijacker)
 	if !ok {
-		return ctx, nil, fmt.Errorf("%#v does not implments Hijacker", ctx.GetResponseWriter())
+		return ctx, nil, fmt.Errorf("%#v does not implments Hijacker", rw)
 	}
 
 	conn, _, err := hijacker.Hijack()
@@ -152,13 +154,13 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 		c = tlsConn
 	}
 
-	if ln1, ok := ctx.GetListener().(helpers.Listener); ok {
+	if ln1, ok := filters.GetListener(ctx).(helpers.Listener); ok {
 		ln1.Add(c)
-		ctx.Hijack(true)
+		ctx = filters.PutHijacked(ctx, true)
 		return ctx, nil, nil
 	}
 
-	loConn, err := net.Dial("tcp", ctx.GetListener().Addr().String())
+	loConn, err := net.Dial("tcp", filters.GetListener(ctx).Addr().String())
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -166,7 +168,7 @@ func (f *Filter) Request(ctx *filters.Context, req *http.Request) (*filters.Cont
 	go helpers.IoCopy(loConn, c)
 	go helpers.IoCopy(c, loConn)
 
-	ctx.Hijack(true)
+	ctx = filters.PutHijacked(ctx, true)
 	return ctx, nil, nil
 }
 

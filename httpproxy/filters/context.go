@@ -1,144 +1,85 @@
 package filters
 
 import (
+	"context"
 	"net"
 	"net/http"
-	"strings"
 )
 
-const (
-	VenderHeader string = "X-Vender-Info"
-)
-
-type VenderKey string
-
-func (v VenderKey) String() string {
-	return string(v)
+func PutListener(ctx context.Context, ln net.Listener) context.Context {
+	return context.WithValue(ctx, "context·Listener", ln)
 }
 
-type Context struct {
-	ln           net.Listener
-	rw           http.ResponseWriter
-	filter       RoundTripFilter
-	venderString string
-	venderValues map[VenderKey]string
-	values       map[string]interface{}
-	hijacked     bool
+func GetListener(ctx context.Context) net.Listener {
+	return ctx.Value("context·Listener").(net.Listener)
 }
 
-func NewContext(ln net.Listener, rw http.ResponseWriter, req *http.Request) *Context {
-	var c Context
-	c.ln = ln
-	c.rw = rw
-	c.filter = nil
-	c.values = make(map[string]interface{})
-	c.venderString = req.Header.Get(VenderHeader)
-	c.venderValues = make(map[VenderKey]string)
+func PutResponseWriter(ctx context.Context, rw http.ResponseWriter) context.Context {
+	return context.WithValue(ctx, "context·ResponseWriter", rw)
+}
 
-	if c.venderString != "" {
-		for _, part := range strings.Split(strings.TrimSpace(c.venderString), ";") {
-			part = strings.TrimSpace(part)
-			if i := strings.Index(part, "="); i > 0 {
-				name, val := part[:i], part[i+1:]
-				c.venderValues[VenderKey(name)] = val
-			}
-		}
+func GetResponseWriter(ctx context.Context) http.ResponseWriter {
+	return ctx.Value("context·ResponseWriter").(http.ResponseWriter)
+}
+
+func PutRoundTripFilter(ctx context.Context, filter RoundTripFilter) context.Context {
+	return context.WithValue(ctx, "context·RoundTripFilter", filter)
+}
+
+func GetRoundTripFilter(ctx context.Context) RoundTripFilter {
+	return ctx.Value("context·RoundTripFilter").(RoundTripFilter)
+}
+
+func PutHijacked(ctx context.Context, hijacked bool) context.Context {
+	return context.WithValue(ctx, "context·Hijacked", hijacked)
+}
+
+func GetHijacked(ctx context.Context) bool {
+	v := ctx.Value("context·Hijacked")
+	if v == nil {
+		return false
 	}
-	return &c
-}
 
-func (c *Context) SetRoundTripFilter(filter RoundTripFilter) {
-	c.filter = filter
-}
-
-func (c *Context) SetString(name string, value string) {
-	c.set(name, value)
-}
-
-func (c *Context) SetBool(name string, value bool) {
-	c.set(name, value)
-}
-
-func (c *Context) SetInt(name string, value int) {
-	c.set(name, value)
-}
-
-func (c *Context) SetStringMap(name string, value map[string]string) {
-	c.set(name, value)
-}
-
-func (c *Context) set(name string, value interface{}) {
-	c.values[name] = value
-}
-
-func (c *Context) GetString(name string) (string, bool) {
-	v, ok := c.values[name]
+	v1, ok := v.(bool)
 	if !ok {
-		return "", false
+		return false
 	}
-	s, ok := v.(string)
-	if !ok {
-		return "", false
-	}
-	return s, true
+
+	return v1
 }
 
-func (c *Context) GetBool(name string) (bool, bool) {
-	v, ok := c.values[name]
+func PutString(ctx context.Context, name, value string) context.Context {
+	return context.WithValue(ctx, "string·"+name, value)
+}
+
+func GetString(ctx context.Context, name string) string {
+	value := ctx.Value("string·" + name)
+	if value == nil {
+		return ""
+	}
+
+	s, ok := value.(string)
+	if !ok {
+		return ""
+	}
+
+	return s
+}
+
+func PutBool(ctx context.Context, name string, value bool) context.Context {
+	return context.WithValue(ctx, "bool·"+name, value)
+}
+
+func GetBool(ctx context.Context, name string) (bool, bool) {
+	value := ctx.Value("bool·" + name)
+	if value == nil {
+		return false, false
+	}
+
+	v, ok := value.(bool)
 	if !ok {
 		return false, false
 	}
-	s, ok := v.(bool)
-	if !ok {
-		return false, false
-	}
-	return s, true
-}
 
-func (c *Context) GetInt(name string) (int, bool) {
-	v, ok := c.values[name]
-	if !ok {
-		return 0, false
-	}
-	s, ok := v.(int)
-	if !ok {
-		return 0, false
-	}
-	return s, true
-}
-
-func (c *Context) GetStringMap(name string) (map[string]string, bool) {
-	v, ok := c.values[name]
-	if !ok {
-		return nil, false
-	}
-	s, ok := v.(map[string]string)
-	if !ok {
-		return nil, false
-	}
-	return s, true
-}
-
-func (c *Context) GetListener() net.Listener {
-	return c.ln
-}
-
-func (c *Context) GetResponseWriter() http.ResponseWriter {
-	return c.rw
-}
-
-func (c *Context) GetVenderString() string {
-	return c.venderString
-}
-
-func (c *Context) GetRoundTripFilter() RoundTripFilter {
-	return c.filter
-}
-
-func (c *Context) Hijack(hijacked bool) {
-	c.hijacked = hijacked
-}
-
-func (c *Context) Hijacked() bool {
-	return c.hijacked
+	return v, true
 }

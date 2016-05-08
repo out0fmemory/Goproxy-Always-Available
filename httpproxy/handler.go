@@ -1,6 +1,7 @@
 package httpproxy
 
 import (
+	// "context"
 	"fmt"
 	"io"
 	"net"
@@ -30,7 +31,10 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	remoteAddr := req.RemoteAddr
 
 	// Prepare filter.Context
-	ctx := filters.NewContext(h.Listener, rw, req)
+	ctx := req.Context()
+	ctx = filters.PutListener(ctx, h.Listener)
+	ctx = filters.PutResponseWriter(ctx, rw)
+	req = req.WithContext(ctx)
 
 	// Enable transport http proxy
 	if req.Method != "CONNECT" && !req.URL.IsAbs() {
@@ -56,7 +60,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, f := range h.RequestFilters {
 		ctx, req, err = f.Request(ctx, req)
 		// A roundtrip filter hijacked
-		if ctx.Hijacked() {
+		if filters.GetHijacked(ctx) {
 			return
 		}
 		if err != nil {
@@ -65,6 +69,8 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 			return
 		}
+		// Update context for request
+		req = req.WithContext(ctx)
 	}
 
 	if req.Body != nil {
@@ -76,7 +82,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, f := range h.RoundTripFilters {
 		ctx, resp, err = f.RoundTrip(ctx, req)
 		// A roundtrip filter hijacked
-		if ctx.Hijacked() {
+		if filters.GetHijacked(ctx) {
 			return
 		}
 		// Unexcepted errors
@@ -85,10 +91,12 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
 		}
+		// Update context for request
+		req = req.WithContext(ctx)
 		// A roundtrip filter give a response
 		if resp != nil {
 			resp.Request = req
-			ctx.SetRoundTripFilter(f)
+			ctx = filters.PutRoundTripFilter(ctx, f)
 			break
 		}
 	}
@@ -105,6 +113,8 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, msg, http.StatusBadGateway)
 			return
 		}
+		// Update context for request
+		req = req.WithContext(ctx)
 	}
 
 	if resp == nil {

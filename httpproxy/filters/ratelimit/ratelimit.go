@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"io"
 	"net/http"
 
@@ -66,7 +67,7 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) Response(ctx *filters.Context, resp *http.Response) (*filters.Context, *http.Response, error) {
+func (f *Filter) Response(ctx context.Context, resp *http.Response) (context.Context, *http.Response, error) {
 
 	if f.Rate > 0 && resp.ContentLength > f.Threshold {
 		glog.V(2).Infof("RateLimit %#v rate to %#v", resp.Request.URL.String(), f.Rate)

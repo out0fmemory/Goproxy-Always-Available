@@ -1,6 +1,7 @@
 package filters
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 )
@@ -11,17 +12,17 @@ type Filter interface {
 
 type RequestFilter interface {
 	FilterName() string
-	Request(*Context, *http.Request) (*Context, *http.Request, error)
+	Request(context.Context, *http.Request) (context.Context, *http.Request, error)
 }
 
 type RoundTripFilter interface {
 	FilterName() string
-	RoundTrip(*Context, *http.Request) (*Context, *http.Response, error)
+	RoundTrip(context.Context, *http.Request) (context.Context, *http.Response, error)
 }
 
 type ResponseFilter interface {
 	FilterName() string
-	Response(*Context, *http.Response) (*Context, *http.Response, error)
+	Response(context.Context, *http.Response) (context.Context, *http.Response, error)
 }
 
 type RegisteredFilter struct {

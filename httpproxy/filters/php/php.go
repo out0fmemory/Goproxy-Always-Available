@@ -1,6 +1,7 @@
 package php
 
 import (
+	"context"
 	"crypto/tls"
 	"net"
 	"net/http"
@@ -158,7 +159,7 @@ func (p *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
+func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	if !f.Sites.Match(req.Host) {
 		return ctx, nil, nil
 	}

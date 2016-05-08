@@ -2,6 +2,7 @@ package direct
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"fmt"
 	"io/ioutil"
@@ -116,7 +117,7 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Context, *http.Response, error) {
+func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	switch req.Method {
 	case "CONNECT":
 		glog.V(2).Infof("%s \"DIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
@@ -125,7 +126,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 			return ctx, nil, err
 		}
 
-		rw := ctx.GetResponseWriter()
+		rw := filters.GetResponseWriter(ctx)
 
 		hijacker, ok := rw.(http.Hijacker)
 		if !ok {
@@ -149,7 +150,7 @@ func (f *Filter) RoundTrip(ctx *filters.Context, req *http.Request) (*filters.Co
 		go helpers.IoCopy(rconn, lconn)
 		helpers.IoCopy(lconn, rconn)
 
-		ctx.Hijack(true)
+		ctx = filters.PutHijacked(ctx, true)
 		return ctx, nil, nil
 	default:
 		resp, err := f.transport.RoundTrip(req)
