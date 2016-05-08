@@ -317,7 +317,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	if err != nil {
 		glog.Warningf("%s \"GAE %s %s %s %s\" error: %T(%v)", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, err, err)
 		if tr == f.DirectTransport {
-			if ne, ok := err.(net.Error); ok && ne.Timeout() {
+			if ne, ok := err.(interface {
+				Timeout() bool
+			}); ok && ne.Timeout() {
 				if t1, ok := tr.(*http.Transport); ok {
 					t1.CloseIdleConnections()
 				} else if t2, ok := tr.(*http2.Transport); ok {
