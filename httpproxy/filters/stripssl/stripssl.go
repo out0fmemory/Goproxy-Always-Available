@@ -156,7 +156,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 	if ln1, ok := filters.GetListener(ctx).(helpers.Listener); ok {
 		ln1.Add(c)
-		ctx = filters.PutHijacked(ctx, true)
+		ctx = filters.SetHijacked(ctx, true)
 		return ctx, nil, nil
 	}
 
@@ -168,7 +168,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	go helpers.IoCopy(loConn, c)
 	go helpers.IoCopy(c, loConn)
 
-	ctx = filters.PutHijacked(ctx, true)
+	ctx = filters.SetHijacked(ctx, true)
 	return ctx, nil, nil
 }
 

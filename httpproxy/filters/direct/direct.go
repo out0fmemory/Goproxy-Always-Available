@@ -150,7 +150,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		go helpers.IoCopy(rconn, lconn)
 		helpers.IoCopy(lconn, rconn)
 
-		ctx = filters.PutHijacked(ctx, true)
+		ctx = filters.SetHijacked(ctx, true)
 		return ctx, nil, nil
 	default:
 		resp, err := f.transport.RoundTrip(req)

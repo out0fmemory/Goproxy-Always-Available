@@ -7,47 +7,44 @@ import (
 )
 
 const (
-	ContextRoundTripFilterKey = "context·RoundTripFilter"
-	contextListenerKey        = "context·Listener"
-	contextResponseWriterKey  = "context·ResponseWriter"
-	contextHijackedKey        = "context·Hijacked"
+	ContextKey = "context·"
 )
 
+type racer struct {
+	ln  net.Listener
+	rw  http.ResponseWriter
+	rtf RoundTripFilter
+	hj  bool
+}
+
 func NewContext(ctx context.Context, ln net.Listener, rw http.ResponseWriter) context.Context {
-	ctx = context.WithValue(ctx, contextListenerKey, ln)
-	ctx = context.WithValue(ctx, contextResponseWriterKey, rw)
-	ctx = context.WithValue(ctx, contextHijackedKey, false)
-	return ctx
+	return context.WithValue(ctx, ContextKey, &racer{ln, rw, nil, false})
 }
 
 func GetListener(ctx context.Context) net.Listener {
-	return ctx.Value(contextListenerKey).(net.Listener)
+	return ctx.Value(ContextKey).(*racer).ln
 }
 
 func GetResponseWriter(ctx context.Context) http.ResponseWriter {
-	return ctx.Value(contextResponseWriterKey).(http.ResponseWriter)
+	return ctx.Value(ContextKey).(*racer).rw
 }
 
 func GetRoundTripFilter(ctx context.Context) RoundTripFilter {
-	return ctx.Value(ContextRoundTripFilterKey).(RoundTripFilter)
+	return ctx.Value(ContextKey).(*racer).rtf
 }
 
-func PutHijacked(ctx context.Context, hijacked bool) context.Context {
-	return context.WithValue(ctx, contextHijackedKey, hijacked)
+func SetRoundTripFilter(ctx context.Context, filter RoundTripFilter) context.Context {
+	ctx.Value(ContextKey).(*racer).rtf = filter
+	return ctx
 }
 
 func GetHijacked(ctx context.Context) bool {
-	v := ctx.Value(contextHijackedKey)
-	if v == nil {
-		return false
-	}
+	return ctx.Value(ContextKey).(*racer).hj
+}
 
-	v1, ok := v.(bool)
-	if !ok {
-		return false
-	}
-
-	return v1
+func SetHijacked(ctx context.Context, hijacked bool) context.Context {
+	ctx.Value(ContextKey).(*racer).hj = hijacked
+	return ctx
 }
 
 func PutString(ctx context.Context, name, value string) context.Context {
