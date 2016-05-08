@@ -380,7 +380,7 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 
 	for _, addr := range addrs {
 		go func(addr string, c chan<- racer) {
-			start := time.Now()
+			// start := time.Now()
 			conn, err := d.Dialer.Dial(network, addr)
 			if err != nil {
 				d.TLSConnDuration.Del(addr)
@@ -395,7 +395,7 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 				}
 			}
 
-			start = time.Now()
+			start := time.Now()
 			tlsConn := tls.Client(conn, config)
 			err = tlsConn.Handshake()
 

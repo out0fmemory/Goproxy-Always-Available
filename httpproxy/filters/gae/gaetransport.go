@@ -140,13 +140,13 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 func (t *Transport) roundServers() {
 	server := t.Servers[0]
 	t.muServers.Lock()
+	defer t.muServers.Unlock()
 	if server == t.Servers[0] {
 		for i := 0; i < len(t.Servers)-1; i++ {
 			t.Servers[i] = t.Servers[i+1]
 		}
 		t.Servers[len(t.Servers)-1] = server
 	}
-	t.muServers.Unlock()
 }
 
 func (t *Transport) pickServer(req *http.Request, i int) Server {
