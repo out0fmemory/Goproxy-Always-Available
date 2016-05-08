@@ -3,7 +3,8 @@
 		{
 			"Url": "http://yourapp.com/",
 			"Password": "123456",
-			"SSLVerify": false
+			"SSLVerify": false,
+			"Host": "",
 		}
 	],
 	"Sites": [

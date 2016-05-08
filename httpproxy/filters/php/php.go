@@ -26,6 +26,7 @@ type Config struct {
 		URL       string
 		Password  string
 		SSLVerify bool
+		Host      string
 	}
 	Sites     []string
 	Transport struct {
@@ -71,6 +72,23 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
+	servers := make([]Server, 0)
+	for _, s := range config.Servers {
+		u, err := url.Parse(s.URL)
+		if err != nil {
+			return nil, err
+		}
+
+		server := Server{
+			URL:       u,
+			Password:  s.Password,
+			SSLVerify: s.SSLVerify,
+			Host:      s.Host,
+		}
+
+		servers = append(servers, server)
+	}
+
 	d := &dialer.Dialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
@@ -83,6 +101,30 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
 		LoopbackAddrs:  nil,
 		Level:          2,
+	}
+
+	for _, server := range servers {
+		if server.Host != "" {
+			host := server.URL.Host
+			if _, _, err := net.SplitHostPort(host); err != nil {
+				if server.URL.Scheme == "https" {
+					host += ":443"
+				} else {
+					host += ":80"
+				}
+			}
+
+			host1 := server.Host
+			if _, _, err := net.SplitHostPort(host1); err != nil {
+				if server.URL.Scheme == "https" {
+					host1 += ":443"
+				} else {
+					host1 += ":80"
+				}
+			}
+
+			d.DNSCache.Set(host, host1, time.Time{})
+		}
 	}
 
 	tr := &http.Transport{
@@ -100,22 +142,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		if err != nil {
 			glog.Warningf("PHP: Error enabling Transport HTTP/2 support: %v", err)
 		}
-	}
-
-	servers := make([]Server, 0)
-	for _, s := range config.Servers {
-		u, err := url.Parse(s.URL)
-		if err != nil {
-			return nil, err
-		}
-
-		server := Server{
-			URL:       u,
-			Password:  s.Password,
-			SSLVerify: s.SSLVerify,
-		}
-
-		servers = append(servers, server)
 	}
 
 	return &Filter{

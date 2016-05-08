@@ -17,6 +17,7 @@ type Server struct {
 	URL       *url.URL
 	Password  string
 	SSLVerify bool
+	Host      string
 }
 
 func (s *Server) encodeRequest(req *http.Request) (*http.Request, error) {
