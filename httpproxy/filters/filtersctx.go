@@ -16,6 +16,7 @@ const (
 func NewContext(ctx context.Context, ln net.Listener, rw http.ResponseWriter) context.Context {
 	ctx = context.WithValue(ctx, contextListenerKey, ln)
 	ctx = context.WithValue(ctx, contextResponseWriterKey, rw)
+	ctx = context.WithValue(ctx, contextHijackedKey, false)
 	return ctx
 }
 
