@@ -14,9 +14,9 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc make
+for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum
 do
-	if ! $(which ${CMD} >/dev/null 2>&1); then
+	if ! type -p ${CMD}; then
 		echo "tool ${CMD} is not installed, abort."
 		exit 1
 	fi
