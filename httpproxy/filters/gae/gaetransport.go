@@ -67,7 +67,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			if i == t.RetryTimes-1 {
 				return nil, err
 			} else {
-				glog.Warningf("GAE: request \"%s\" error: %T(%v), continue...", req.URL.String(), err, err)
+				glog.Warningf("GAE: request \"%s\" error: %T(%v), retry...", req.URL.String(), err, err)
 				continue
 			}
 		}
@@ -123,8 +123,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp1.Body.Close()
 			switch {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
-				glog.V(2).Infof("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED.", req1.URL.Host, req.URL.String())
-				fallthrough
+				glog.V(2).Infof("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, retry...", req1.URL.Host, req.URL.String())
+				continue
 			default:
 				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))
 				return resp1, nil
