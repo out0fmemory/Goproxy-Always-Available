@@ -82,7 +82,7 @@ func (f *Filter) FilterName() string {
 func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
 	if auth := req.Header.Get("Proxy-Authorization"); auth != "" {
 		req.Header.Del("Proxy-Authorization")
-		ctx = filters.PutString(ctx, authHeader, auth)
+		ctx = filters.WithString(ctx, authHeader, auth)
 	}
 	return ctx, req, nil
 }
@@ -95,7 +95,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 	}
 
-	if auth := filters.GetString(ctx, authHeader); auth != "" {
+	if auth := filters.String(ctx, authHeader); auth != "" {
 		if _, ok := f.ByPassHeaders.Get(auth); ok {
 			glog.V(3).Infof("auth filter hit bypass cache %#v", auth)
 			return ctx, nil, nil

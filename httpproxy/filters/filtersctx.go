@@ -33,25 +33,23 @@ func GetRoundTripFilter(ctx context.Context) RoundTripFilter {
 	return ctx.Value(ContextKey).(*racer).rtf
 }
 
-func SetRoundTripFilter(ctx context.Context, filter RoundTripFilter) context.Context {
-	ctx.Value(ContextKey).(*racer).rtf = filter
-	return ctx
-}
-
 func GetHijacked(ctx context.Context) bool {
 	return ctx.Value(ContextKey).(*racer).hj
 }
 
-func SetHijacked(ctx context.Context, hijacked bool) context.Context {
-	ctx.Value(ContextKey).(*racer).hj = hijacked
-	return ctx
+func SetRoundTripFilter(ctx context.Context, filter RoundTripFilter) {
+	ctx.Value(ContextKey).(*racer).rtf = filter
 }
 
-func PutString(ctx context.Context, name, value string) context.Context {
+func SetHijacked(ctx context.Context, hijacked bool) {
+	ctx.Value(ContextKey).(*racer).hj = hijacked
+}
+
+func WithString(ctx context.Context, name, value string) context.Context {
 	return context.WithValue(ctx, "string·"+name, value)
 }
 
-func GetString(ctx context.Context, name string) string {
+func String(ctx context.Context, name string) string {
 	value := ctx.Value("string·" + name)
 	if value == nil {
 		return ""
@@ -65,11 +63,11 @@ func GetString(ctx context.Context, name string) string {
 	return s
 }
 
-func PutBool(ctx context.Context, name string, value bool) context.Context {
+func WithBool(ctx context.Context, name string, value bool) context.Context {
 	return context.WithValue(ctx, "bool·"+name, value)
 }
 
-func GetBool(ctx context.Context, name string) (bool, bool) {
+func Bool(ctx context.Context, name string) (bool, bool) {
 	value := ctx.Value("bool·" + name)
 	if value == nil {
 		return false, false

@@ -97,7 +97,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		// A roundtrip filter give a response
 		if resp != nil {
 			resp.Request = req
-			ctx = filters.SetRoundTripFilter(ctx, f)
+			filters.SetRoundTripFilter(ctx, f)
 			break
 		}
 	}

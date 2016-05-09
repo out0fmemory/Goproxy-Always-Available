@@ -86,12 +86,12 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		case f.SiteMatcher.Match(req.Host):
 			req.Header.Set("Range", fmt.Sprintf("bytes=%d-%d", 0, f.MaxSize))
 			glog.V(2).Infof("AUTORANGE Sites rule matched, add %s for\"%s\"", req.Header.Get("Range"), req.URL.String())
-			ctx = filters.PutBool(ctx, "autorange.site", true)
+			ctx = filters.WithBool(ctx, "autorange.site", true)
 		default:
 			glog.V(3).Infof("AUTORANGE ignore preserved empty range for %#v", req.URL)
 		}
 	} else {
-		ctx = filters.PutBool(ctx, "autorange.default", true)
+		ctx = filters.WithBool(ctx, "autorange.default", true)
 		parts := strings.Split(r, "=")
 		switch parts[0] {
 		case "bytes":
@@ -115,7 +115,7 @@ func (f *Filter) Response(ctx context.Context, resp *http.Response) (context.Con
 		return ctx, resp, nil
 	}
 
-	if ok1, ok := filters.GetBool(ctx, "autorange.default"); ok && ok1 {
+	if ok1, ok := filters.Bool(ctx, "autorange.default"); ok && ok1 {
 		return ctx, resp, nil
 	}
 
