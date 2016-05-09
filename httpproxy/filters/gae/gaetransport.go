@@ -4,12 +4,8 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"net"
 	"net/http"
-	"path"
-	"strings"
-	"sync"
 	"time"
 
 	"../../dialer"
@@ -21,15 +17,14 @@ import (
 type Transport struct {
 	http.RoundTripper
 	MultiDialer *dialer.MultiDialer
-	Servers     []Server
-	muServers   sync.Mutex
+	Servers     *Servers
 	RetryDelay  time.Duration
 	RetryTimes  int
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for i := 0; i < t.RetryTimes; i++ {
-		server := t.pickServer(req, i)
+		server := t.Servers.pickServer(req, i)
 
 		req1, err := server.encodeRequest(req)
 		if err != nil {
@@ -81,11 +76,12 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 			switch resp.StatusCode {
 			case http.StatusServiceUnavailable:
-				if len(t.Servers) == 1 {
+				if t.Servers.Len() == 1 {
 					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.URL.Host)
+					return resp, nil
 				} else {
 					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.URL.Host)
-					t.roundServers()
+					t.Servers.roundServers()
 				}
 				time.Sleep(t.RetryDelay)
 				continue
@@ -137,52 +133,4 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	return nil, fmt.Errorf("GAE: cannot reach here with %#v", req)
-}
-
-func (t *Transport) roundServers() {
-	server := t.Servers[0]
-	t.muServers.Lock()
-	defer t.muServers.Unlock()
-	if server == t.Servers[0] {
-		for i := 0; i < len(t.Servers)-1; i++ {
-			t.Servers[i] = t.Servers[i+1]
-		}
-		t.Servers[len(t.Servers)-1] = server
-	}
-}
-
-func (t *Transport) pickServer(req *http.Request, i int) Server {
-	n := 0
-
-	if i > 0 && len(t.Servers) > 1 {
-		n = 1 + rand.Intn(len(t.Servers)-1)
-	} else {
-		switch path.Ext(req.URL.Path) {
-		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-			n = rand.Intn(len(t.Servers))
-		case "":
-			name := path.Base(req.URL.Path)
-			if strings.Contains(name, "play") ||
-				strings.Contains(name, "video") {
-				n = rand.Intn(len(t.Servers))
-			}
-		default:
-			if req.Header.Get("Range") != "" ||
-				strings.Contains(req.URL.Host, "img.") ||
-				strings.Contains(req.URL.Host, "cache.") ||
-				strings.Contains(req.URL.Host, "video.") ||
-				strings.Contains(req.URL.Host, "static.") ||
-				strings.HasPrefix(req.URL.Host, "img") ||
-				strings.HasPrefix(req.URL.Path, "/static") ||
-				strings.HasPrefix(req.URL.Path, "/asset") ||
-				strings.Contains(req.URL.Path, "min.js") ||
-				strings.Contains(req.URL.Path, "static") ||
-				strings.Contains(req.URL.Path, "asset") ||
-				strings.Contains(req.URL.Path, "/cache/") {
-				n = rand.Intn(len(t.Servers))
-			}
-		}
-	}
-
-	return t.Servers[n]
 }

@@ -207,7 +207,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		GAETransport: &Transport{
 			RoundTripper: tr,
 			MultiDialer:  d,
-			Servers:      servers,
+			Servers:      NewServers(servers),
 			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Second,
 			RetryTimes:   config.Transport.RetryTimes,
 		},

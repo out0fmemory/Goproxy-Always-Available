@@ -8,9 +8,13 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"math/rand"
 	"net/http"
 	"net/url"
+	"path"
 	"strings"
+	"sync"
+	"sync/atomic"
 	"time"
 
 	"../../helpers"
@@ -129,4 +133,68 @@ func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 	}
 
 	return
+}
+
+type Servers struct {
+	servers   []Server
+	roundOnce atomic.Value
+}
+
+func NewServers(servers []Server) *Servers {
+	ss := &Servers{
+		servers: servers,
+	}
+	ss.roundOnce.Store(new(sync.Once))
+	return ss
+}
+
+func (ss *Servers) Len() int {
+	return len(ss.servers)
+}
+
+func (ss *Servers) roundServers() {
+	ss.roundOnce.Load().(*sync.Once).Do(func() {
+		server := ss.servers[0]
+		for i := 0; i < len(ss.servers)-1; i++ {
+			ss.servers[i] = ss.servers[i+1]
+		}
+		ss.servers[len(ss.servers)-1] = server
+		ss.roundOnce.Store(new(sync.Once))
+	})
+}
+
+func (ss *Servers) pickServer(req *http.Request, i int) Server {
+	n := 0
+
+	if i > 0 && len(ss.servers) > 1 {
+		n = 1 + rand.Intn(len(ss.servers)-1)
+	} else {
+		switch path.Ext(req.URL.Path) {
+		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
+			n = rand.Intn(len(ss.servers))
+		case "":
+			name := path.Base(req.URL.Path)
+			if strings.Contains(name, "play") ||
+				strings.Contains(name, "video") {
+				n = rand.Intn(len(ss.servers))
+			}
+		default:
+			if req.Header.Get("Range") != "" ||
+				strings.Contains(req.URL.Host, "img.") ||
+				strings.Contains(req.URL.Host, "cache.") ||
+				strings.Contains(req.URL.Host, "video.") ||
+				strings.Contains(req.URL.Host, "static.") ||
+				strings.HasPrefix(req.URL.Host, "img") ||
+				strings.HasPrefix(req.URL.Path, "/static") ||
+				strings.HasPrefix(req.URL.Path, "/asset") ||
+				strings.Contains(req.URL.Path, "min.js") ||
+				strings.Contains(req.URL.Path, "static") ||
+				strings.Contains(req.URL.Path, "asset") ||
+				strings.Contains(req.URL.Path, "/cache/") {
+				n = rand.Intn(len(ss.servers))
+			}
+		}
+	}
+
+	return ss.servers[n]
 }
