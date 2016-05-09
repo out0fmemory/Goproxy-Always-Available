@@ -163,12 +163,15 @@ func (ss *Servers) roundServers() {
 	})
 }
 
-func (ss *Servers) pickServer(req *http.Request, i int) Server {
-	n := 0
+func (ss *Servers) pickServer(req *http.Request, base int) Server {
+	var n int
 
-	if i > 0 && len(ss.servers) > 1 {
+	switch {
+	case ss.Len() == 1:
+		n = 0
+	case base > 0:
 		n = 1 + rand.Intn(len(ss.servers)-1)
-	} else {
+	default:
 		switch path.Ext(req.URL.Path) {
 		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
 			n = rand.Intn(len(ss.servers))
