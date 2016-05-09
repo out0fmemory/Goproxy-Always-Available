@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	ContextKey = "context·"
+	contextKey int = 0x3f71df90 // fmt.Sprintf("%x", md5.Sum([]byte("phuslu")))[:8]
 )
 
 type racer struct {
@@ -18,39 +18,39 @@ type racer struct {
 }
 
 func NewContext(ctx context.Context, ln net.Listener, rw http.ResponseWriter) context.Context {
-	return context.WithValue(ctx, ContextKey, &racer{ln, rw, nil, false})
+	return context.WithValue(ctx, contextKey, &racer{ln, rw, nil, false})
 }
 
 func GetListener(ctx context.Context) net.Listener {
-	return ctx.Value(ContextKey).(*racer).ln
+	return ctx.Value(contextKey).(*racer).ln
 }
 
 func GetResponseWriter(ctx context.Context) http.ResponseWriter {
-	return ctx.Value(ContextKey).(*racer).rw
+	return ctx.Value(contextKey).(*racer).rw
 }
 
 func GetRoundTripFilter(ctx context.Context) RoundTripFilter {
-	return ctx.Value(ContextKey).(*racer).rtf
+	return ctx.Value(contextKey).(*racer).rtf
 }
 
 func GetHijacked(ctx context.Context) bool {
-	return ctx.Value(ContextKey).(*racer).hj
+	return ctx.Value(contextKey).(*racer).hj
 }
 
 func SetRoundTripFilter(ctx context.Context, filter RoundTripFilter) {
-	ctx.Value(ContextKey).(*racer).rtf = filter
+	ctx.Value(contextKey).(*racer).rtf = filter
 }
 
 func SetHijacked(ctx context.Context, hijacked bool) {
-	ctx.Value(ContextKey).(*racer).hj = hijacked
+	ctx.Value(contextKey).(*racer).hj = hijacked
 }
 
 func WithString(ctx context.Context, name, value string) context.Context {
-	return context.WithValue(ctx, "string·"+name, value)
+	return context.WithValue(ctx, name, value)
 }
 
 func String(ctx context.Context, name string) string {
-	value := ctx.Value("string·" + name)
+	value := ctx.Value(name)
 	if value == nil {
 		return ""
 	}
@@ -64,11 +64,11 @@ func String(ctx context.Context, name string) string {
 }
 
 func WithBool(ctx context.Context, name string, value bool) context.Context {
-	return context.WithValue(ctx, "bool·"+name, value)
+	return context.WithValue(ctx, name, value)
 }
 
 func Bool(ctx context.Context, name string) (bool, bool) {
-	value := ctx.Value("bool·" + name)
+	value := ctx.Value(name)
 	if value == nil {
 		return false, false
 	}
