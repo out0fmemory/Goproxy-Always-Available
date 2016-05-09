@@ -2,9 +2,10 @@
 
 以下步骤都假设你的工作目录位于 ~/workspace/goproxy/
 
-- 保证系统安装了如下工具 awk/git/tar/bzip2/xz/7za/gcc，检查命令：
+- 保证系统安装了如下工具 awk/git/tar/bzip2/xz/7za/gcc/make，检查命令：
 ```bash
-for CMD in curl awk git tar bzip2 xz 7za gcc; do
+for CMD in curl awk git tar bzip2 xz 7za gcc make
+do
 	if ! $(which ${CMD} >/dev/null 2>&1); then
 		echo "tool ${CMD} is not installed, abort."
 	fi
