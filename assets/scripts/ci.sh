@@ -159,8 +159,15 @@ function release_repo_ci() {
 
 	cd ${WORKING_DIR}/r${RELEASE}/
 	${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
-	sleep 3
-	${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}"
+
+	for i in 1 2 3 4 5
+	do
+		if ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}" ; then
+			break
+		else
+			sleep 5
+		fi
+	done
 
 	for FILE in *
 	do
