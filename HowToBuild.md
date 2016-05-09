@@ -1,6 +1,11 @@
 #如何编译 GoProxy
 
-以下步骤都假设你的工作目录位于 ~/workspace/goproxy/
+GoProxy 对 golang 周边库做了一些修改。具体的改动请见，
+- https://github.com/phuslu/go
+- https://github.com/phuslu/net
+- https://github.com/phuslu/glog
+
+所以编译需要从 golang 工具链开始编译, 以下步骤都假设你的工作目录位于 ~/workspace/goproxy/
 
 - 保证系统安装了如下工具 awk/git/tar/bzip2/xz/7za/gcc/make，检查命令：
 ```bash
