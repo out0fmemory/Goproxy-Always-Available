@@ -74,6 +74,7 @@ type Filter struct {
 	DirectTransport    http.RoundTripper
 	ForceHTTPSMatcher  *helpers.HostMatcher
 	ForceGAEStrings    []string
+	ForceGAEMatcher    *helpers.HostMatcher
 	FakeOptionsMatcher *helpers.HostMatcher
 	SiteMatcher        *helpers.HostMatcher
 	DirectSiteMatcher  *helpers.HostMatcher
@@ -201,6 +202,16 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		servers = append(servers, server)
 	}
 
+	forceGAEStrings := make([]string, 0)
+	forceGAEMatcherStrings := make([]string, 0)
+	for _, s := range config.ForceGAE {
+		if strings.Contains(s, "/") {
+			forceGAEStrings = append(forceGAEStrings, s)
+		} else {
+			forceGAEMatcherStrings = append(forceGAEMatcherStrings, s)
+		}
+	}
+
 	return &Filter{
 		Config:      *config,
 		MultiDialer: d,
@@ -213,7 +224,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 		DirectTransport:    tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(config.ForceHTTPS),
-		ForceGAEStrings:    config.ForceGAE,
+		ForceGAEMatcher:    helpers.NewHostMatcher(forceGAEMatcherStrings),
+		ForceGAEStrings:    forceGAEStrings,
 		FakeOptionsMatcher: helpers.NewHostMatcherWithStrings(config.FakeOptions),
 		SiteMatcher:        helpers.NewHostMatcher(config.Sites),
 		DirectSiteMatcher:  helpers.NewHostMatcherWithString(config.Site2Alias),
@@ -338,6 +350,10 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 }
 
 func (f *Filter) shouldForceGAE(req *http.Request) bool {
+	if f.ForceGAEMatcher.Match(req.Host) {
+		return true
+	}
+
 	if len(f.ForceGAEStrings) > 0 {
 		for _, s := range f.ForceGAEStrings {
 			if strings.Contains(req.URL.String(), s) {
@@ -345,5 +361,6 @@ func (f *Filter) shouldForceGAE(req *http.Request) bool {
 			}
 		}
 	}
+
 	return false
 }
