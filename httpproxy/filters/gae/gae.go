@@ -346,7 +346,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	}
 
-	return ctx, resp, nil
+	return ctx, resp, err
 }
 
 func (f *Filter) shouldForceGAE(req *http.Request) bool {
