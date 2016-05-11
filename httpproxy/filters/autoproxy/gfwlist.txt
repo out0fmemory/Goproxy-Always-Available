@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: EW2Pl2AWtbWRrfnzpJifkA
+! Checksum: AwnhCRCMFa4WQXgpUgZFQQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Sat, 07 May 2016 12:58:14 +0800
+! Last Modified: Mon, 09 May 2016 12:01:07 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -83,6 +83,8 @@
 ||madonna-av.com
 ||mangafox.com
 ||mangafox.me
+||matome-plus.com
+||matome-plus.net
 ||mattwilcox.net
 ||metarthunter.com
 ||mfxmedia.com
@@ -442,6 +444,8 @@ voa-11.akacast.akamaistream.net
 ||akiba-online.com
 ||al-qimmah.net
 ||alabout.com
+.alanhou.com
+|http://alanhou.com
 ||alasbarricadas.org
 alexlur.org
 ||alforattv.net
@@ -602,6 +606,8 @@ bannedbook.org
 bayvoice.net
 ||bayvoice.net
 dajusha.baywords.com
+||bbchat.tv
+||bb-chat.tv
 .bbc.co.uk*chinese
 .bbc.co.uk/tv
 .bbc.co*zhongwen
@@ -1130,6 +1136,7 @@ cts.com.tw
 ||cusu.hk
 .cw.com.tw
 |http://forum.cyberctm.com
+cyberghostvpn.com
 ||cyberghostvpn.com
 ||cynscribe.com
 cytode.us
@@ -1372,6 +1379,7 @@ electionsmeter.com
 ||elpais.com
 .eltondisney.com
 ||emacsblog.org
+.emaga.com/info/3407
 emilylau.org.hk
 .empfil.com
 .emule-ed2k.com
@@ -2165,6 +2173,8 @@ bbs.hasi.wang
 have8.com
 @@||haygo.com
 ||hdtvb.net
+.hdzog.com
+|http://hdzog.com
 ||heartyit.com
 .hec.su
 |http://hec.su
@@ -2354,13 +2364,13 @@ humanrightsbriefing.org
 ||hung-ya.com
 ||hungerstrikeforaids.org
 ||huping.net
+.hurriyet.com.tr
 ||hutianyi.net
 hutong9.net
 ||hwayue.org.tw
 ||hwinfo.com
 |http://fang-lizhi.hxwk.org/
 hxwq.org
-||hypeshell.com
 ||hyperrate.com
 
 !--------------------II-------------------------
@@ -5098,6 +5108,7 @@ video.yahoo.com
 ||yakbutterblues.com
 yam.com
 ||yam.com
+||yam.org.tw
 .yanghengjun.com
 yangjianli.com
 .yasni.co.uk
