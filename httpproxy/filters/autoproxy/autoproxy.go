@@ -24,12 +24,12 @@ import (
 
 const (
 	filterName      string = "autoproxy"
+	myProxyPAC      string = "proxy.pac"
 	placeholderPath string = "/proxy.pac"
 )
 
 type Config struct {
-	MyProxyPAC string
-	GFWList    struct {
+	GFWList struct {
 		Enabled  bool
 		URL      string
 		File     string
@@ -133,7 +133,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	f := &Filter{
 		Config:         *config,
 		Store:          store,
-		MyProxyPAC:     config.MyProxyPAC,
+		MyProxyPAC:     myProxyPAC,
 		GFWListEnabled: config.GFWList.Enabled,
 		GFWList:        &gfwlist,
 		AutoProxy2Pac:  autoproxy2pac,
