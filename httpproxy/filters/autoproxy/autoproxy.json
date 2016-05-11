@@ -1,4 +1,8 @@
 {
+	"PreferFilter": {
+		"rarbg.to": "php",
+		"*.eyny.com": "php",
+	},
 	"GFWList": {
 		"Enabled": true,
 		"URL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",

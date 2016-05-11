@@ -19,6 +19,7 @@ import (
 	"github.com/phuslu/glog"
 
 	"../../filters"
+	"../../helpers"
 	"../../storage"
 )
 
@@ -29,7 +30,8 @@ const (
 )
 
 type Config struct {
-	GFWList struct {
+	PreferFilter map[string]string
+	GFWList      struct {
 		Enabled  bool
 		URL      string
 		File     string
@@ -56,6 +58,7 @@ type Filter struct {
 	GFWListEnabled bool
 	GFWList        *GFWList
 	AutoProxy2Pac  *AutoProxy2Pac
+	PreferFilter   *helpers.HostMatcher
 	Transport      *http.Transport
 	UpdateChan     chan struct{}
 }
@@ -130,6 +133,15 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		Proxy: http.ProxyFromEnvironment,
 	}
 
+	fm := make(map[string]interface{})
+	for host, name := range config.PreferFilter {
+		f, err := filters.GetFilter(name)
+		if err != nil {
+			glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
+		}
+		fm[host] = f
+	}
+
 	f := &Filter{
 		Config:         *config,
 		Store:          store,
@@ -138,6 +150,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		GFWList:        &gfwlist,
 		AutoProxy2Pac:  autoproxy2pac,
 		Transport:      transport,
+		PreferFilter:   helpers.NewHostMatcherWithValue(fm),
 		UpdateChan:     make(chan struct{}),
 	}
 
@@ -239,6 +252,10 @@ func (f *Filter) updater() {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	if f1, ok := f.PreferFilter.Lookup(req.Host); ok {
+		glog.V(2).Infof("AUTOPROXY: PreferFilter matched, request %#v with %T", req.URL.String(), f1)
+		return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
+	}
 
 	if !strings.HasPrefix(req.RequestURI, placeholderPath) {
 		return ctx, nil, nil
