@@ -51,13 +51,13 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				}); ok {
 					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseConnections()", req.URL.String(), err, t1)
 					t1.CloseConnections()
-					t.MultiDialer.ClearCache()
+					// t.MultiDialer.ClearCache()
 				} else if t1, ok := t.RoundTripper.(interface {
 					CloseIdleConnections()
 				}); ok {
 					glog.Warningf("GAE: request \"%s\" timeout: %v, %T.CloseIdleConnections()", req.URL.String(), err, t1)
 					t1.CloseIdleConnections()
-					t.MultiDialer.ClearCache()
+					// t.MultiDialer.ClearCache()
 				}
 			}
 

@@ -138,7 +138,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		TCPConnError:    lrucache.NewLRUCache(8192),
 		TLSConnDuration: lrucache.NewLRUCache(8192),
 		TLSConnError:    lrucache.NewLRUCache(8192),
-		ConnExpiry:      3 * time.Minute,
+		ConnExpiry:      5 * time.Minute,
 		Level:           config.Transport.Dialer.Level,
 	}
 
@@ -334,7 +334,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			if ne, ok := err.(interface {
 				Timeout() bool
 			}); ok && ne.Timeout() {
-				f.MultiDialer.ClearCache()
+				// f.MultiDialer.ClearCache()
 				if t1, ok := tr.(*http.Transport); ok {
 					t1.CloseIdleConnections()
 				} else if t2, ok := tr.(*http2.Transport); ok {
