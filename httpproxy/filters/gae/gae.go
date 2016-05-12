@@ -241,33 +241,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return ctx, nil, nil
 	}
 
-	if req.Method == http.MethodOptions {
-		if v, ok := f.FakeOptionsMatcher.Lookup(req.Host); ok {
-			resp := &http.Response{
-				Status:        "200 OK",
-				StatusCode:    http.StatusOK,
-				Proto:         "HTTP/1.1",
-				ProtoMajor:    1,
-				ProtoMinor:    1,
-				Header:        http.Header{},
-				Request:       req,
-				Close:         false,
-				ContentLength: -1,
-			}
-			for _, s := range v.([]string) {
-				parts := strings.SplitN(s, ":", 2)
-				if len(parts) == 2 {
-					resp.Header.Add(parts[0], strings.TrimSpace(parts[1]))
-				}
-			}
-			if origin := req.Header.Get("Origin"); origin != "" {
-				resp.Header.Set("Access-Control-Allow-Origin", origin)
-			}
-			glog.V(2).Infof("%s \"GAE FAKEOPTIONS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
-			return ctx, resp, nil
-		}
-	}
-
 	var tr http.RoundTripper = f.GAETransport
 
 	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) {
@@ -319,6 +292,33 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					req.Header.Set("Connection", s1)
 				}
 			}
+		}
+	}
+
+	if tr != f.DirectTransport && req.Method == http.MethodOptions {
+		if v, ok := f.FakeOptionsMatcher.Lookup(req.Host); ok {
+			resp := &http.Response{
+				Status:        "200 OK",
+				StatusCode:    http.StatusOK,
+				Proto:         "HTTP/1.1",
+				ProtoMajor:    1,
+				ProtoMinor:    1,
+				Header:        http.Header{},
+				Request:       req,
+				Close:         false,
+				ContentLength: -1,
+			}
+			for _, s := range v.([]string) {
+				parts := strings.SplitN(s, ":", 2)
+				if len(parts) == 2 {
+					resp.Header.Add(parts[0], strings.TrimSpace(parts[1]))
+				}
+			}
+			if origin := req.Header.Get("Origin"); origin != "" {
+				resp.Header.Set("Access-Control-Allow-Origin", origin)
+			}
+			glog.V(2).Infof("%s \"GAE FAKEOPTIONS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			return ctx, resp, nil
 		}
 	}
 
