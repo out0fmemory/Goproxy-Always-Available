@@ -30,8 +30,11 @@ const (
 )
 
 type Config struct {
-	PreferFilter map[string]string
-	GFWList      struct {
+	PreferFilter struct {
+		Enabled bool
+		Rules   map[string]string
+	}
+	GFWList struct {
 		Enabled  bool
 		URL      string
 		File     string
@@ -53,14 +56,15 @@ type GFWList struct {
 
 type Filter struct {
 	Config
-	Store          storage.Store
-	MyProxyPAC     string
-	GFWListEnabled bool
-	GFWList        *GFWList
-	AutoProxy2Pac  *AutoProxy2Pac
-	PreferFilter   *helpers.HostMatcher
-	Transport      *http.Transport
-	UpdateChan     chan struct{}
+	Store               storage.Store
+	MyProxyPAC          string
+	GFWListEnabled      bool
+	GFWList             *GFWList
+	AutoProxy2Pac       *AutoProxy2Pac
+	PreferFilterEnabled bool
+	PreferFilterRules   *helpers.HostMatcher
+	Transport           *http.Transport
+	UpdateChan          chan struct{}
 }
 
 func init() {
@@ -133,25 +137,28 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		Proxy: http.ProxyFromEnvironment,
 	}
 
-	fm := make(map[string]interface{})
-	for host, name := range config.PreferFilter {
-		f, err := filters.GetFilter(name)
-		if err != nil {
-			glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
-		}
-		fm[host] = f
+	f := &Filter{
+		Config:              *config,
+		Store:               store,
+		MyProxyPAC:          myProxyPAC,
+		GFWListEnabled:      config.GFWList.Enabled,
+		GFWList:             &gfwlist,
+		AutoProxy2Pac:       autoproxy2pac,
+		Transport:           transport,
+		PreferFilterEnabled: config.PreferFilter.Enabled,
+		UpdateChan:          make(chan struct{}),
 	}
 
-	f := &Filter{
-		Config:         *config,
-		Store:          store,
-		MyProxyPAC:     myProxyPAC,
-		GFWListEnabled: config.GFWList.Enabled,
-		GFWList:        &gfwlist,
-		AutoProxy2Pac:  autoproxy2pac,
-		Transport:      transport,
-		PreferFilter:   helpers.NewHostMatcherWithValue(fm),
-		UpdateChan:     make(chan struct{}),
+	if f.PreferFilterEnabled {
+		fm := make(map[string]interface{})
+		for host, name := range config.PreferFilter.Rules {
+			f, err := filters.GetFilter(name)
+			if err != nil {
+				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
+			}
+			fm[host] = f
+		}
+		f.PreferFilterRules = helpers.NewHostMatcherWithValue(fm)
 	}
 
 	if f.GFWListEnabled {
@@ -252,9 +259,11 @@ func (f *Filter) updater() {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if f1, ok := f.PreferFilter.Lookup(req.Host); ok {
-		glog.V(2).Infof("AUTOPROXY: PreferFilter matched, request %#v with %T", req.URL.String(), f1)
-		return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
+	if f.PreferFilterEnabled {
+		if f1, ok := f.PreferFilterRules.Lookup(req.Host); ok {
+			glog.V(2).Infof("AUTOPROXY: PreferFilter matched, request %#v with %T", req.URL.String(), f1)
+			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
+		}
 	}
 
 	if !strings.HasPrefix(req.RequestURI, placeholderPath) {

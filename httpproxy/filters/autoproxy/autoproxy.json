@@ -1,7 +1,9 @@
 {
 	"PreferFilter": {
-		"rarbg.to": "php",
-		"*.eyny.com": "php",
+		"Enabled": false,
+		"Rules": {
+			"rarbg.to": "direct",
+		},
 	},
 	"GFWList": {
 		"Enabled": true,
