@@ -1,5 +1,5 @@
 {
-	"PreferFilter": {
+	"SiterFilters": {
 		"Enabled": false,
 		"Rules": {
 			"rarbg.to": "direct",

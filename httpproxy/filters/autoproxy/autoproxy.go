@@ -30,7 +30,7 @@ const (
 )
 
 type Config struct {
-	PreferFilter struct {
+	SiterFilters struct {
 		Enabled bool
 		Rules   map[string]string
 	}
@@ -61,8 +61,8 @@ type Filter struct {
 	GFWListEnabled      bool
 	GFWList             *GFWList
 	AutoProxy2Pac       *AutoProxy2Pac
-	PreferFilterEnabled bool
-	PreferFilterRules   *helpers.HostMatcher
+	SiterFiltersEnabled bool
+	SiterFiltersRules   *helpers.HostMatcher
 	Transport           *http.Transport
 	UpdateChan          chan struct{}
 }
@@ -145,20 +145,20 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		GFWList:             &gfwlist,
 		AutoProxy2Pac:       autoproxy2pac,
 		Transport:           transport,
-		PreferFilterEnabled: config.PreferFilter.Enabled,
+		SiterFiltersEnabled: config.SiterFilters.Enabled,
 		UpdateChan:          make(chan struct{}),
 	}
 
-	if f.PreferFilterEnabled {
+	if f.SiterFiltersEnabled {
 		fm := make(map[string]interface{})
-		for host, name := range config.PreferFilter.Rules {
+		for host, name := range config.SiterFilters.Rules {
 			f, err := filters.GetFilter(name)
 			if err != nil {
 				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
 			}
 			fm[host] = f
 		}
-		f.PreferFilterRules = helpers.NewHostMatcherWithValue(fm)
+		f.SiterFiltersRules = helpers.NewHostMatcherWithValue(fm)
 	}
 
 	if f.GFWListEnabled {
@@ -259,9 +259,9 @@ func (f *Filter) updater() {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if f.PreferFilterEnabled {
-		if f1, ok := f.PreferFilterRules.Lookup(req.Host); ok {
-			glog.V(2).Infof("AUTOPROXY: PreferFilter matched, request %#v with %T", req.URL.String(), f1)
+	if f.SiterFiltersEnabled {
+		if f1, ok := f.SiterFiltersRules.Lookup(req.Host); ok {
+			glog.V(2).Infof("AUTOPROXY: SiterFilters matched, request %#v with %T", req.URL.String(), f1)
 			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
 		}
 	}
