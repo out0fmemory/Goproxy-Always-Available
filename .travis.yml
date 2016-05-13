@@ -18,7 +18,7 @@ notifications:
   email:
     recipients:
       - phuslu@hotmail.com
-    on_success: change
+    on_success: never
     on_failure: change
   webhooks:
     urls:
