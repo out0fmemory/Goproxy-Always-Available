@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 
 	"../../filters"
@@ -29,6 +30,10 @@ const (
 
 type Config struct {
 	SiteFilters struct {
+		Enabled bool
+		Rules   map[string]string
+	}
+	RegionFilters struct {
 		Enabled bool
 		Rules   map[string]string
 	}
@@ -58,16 +63,20 @@ type GFWList struct {
 
 type Filter struct {
 	Config
-	Store              storage.Store
-	MyProxyPACEnabled  bool
-	MyProxyPACFile     string
-	GFWListEnabled     bool
-	GFWList            *GFWList
-	AutoProxy2Pac      *AutoProxy2Pac
-	SiteFiltersEnabled bool
-	SiteFiltersRules   *helpers.HostMatcher
-	Transport          *http.Transport
-	UpdateChan         chan struct{}
+	Store                storage.Store
+	MyProxyPACEnabled    bool
+	MyProxyPACFile       string
+	GFWListEnabled       bool
+	GFWList              *GFWList
+	AutoProxy2Pac        *AutoProxy2Pac
+	SiteFiltersEnabled   bool
+	SiteFiltersRules     *helpers.HostMatcher
+	RegionFiltersEnabled bool
+	RegionFiltersRules   *helpers.HostMatcher
+	RegionDNSCache       lrucache.Cache
+	RegionIPCache        lrucache.Cache
+	Transport            *http.Transport
+	UpdateChan           chan struct{}
 }
 
 func init() {
@@ -141,16 +150,17 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	f := &Filter{
-		Config:             *config,
-		Store:              store,
-		MyProxyPACEnabled:  config.MyProxyPac.Enabled,
-		MyProxyPACFile:     config.MyProxyPac.File,
-		GFWListEnabled:     config.GFWList.Enabled,
-		GFWList:            &gfwlist,
-		AutoProxy2Pac:      autoproxy2pac,
-		Transport:          transport,
-		SiteFiltersEnabled: config.SiteFilters.Enabled,
-		UpdateChan:         make(chan struct{}),
+		Config:               *config,
+		Store:                store,
+		MyProxyPACEnabled:    config.MyProxyPac.Enabled,
+		MyProxyPACFile:       config.MyProxyPac.File,
+		GFWListEnabled:       config.GFWList.Enabled,
+		GFWList:              &gfwlist,
+		AutoProxy2Pac:        autoproxy2pac,
+		Transport:            transport,
+		SiteFiltersEnabled:   config.SiteFilters.Enabled,
+		RegionFiltersEnabled: config.RegionFilters.Enabled,
+		UpdateChan:           make(chan struct{}),
 	}
 
 	if f.SiteFiltersEnabled {
@@ -160,9 +170,27 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 			if err != nil {
 				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
 			}
+			if _, ok := f.(filters.RoundTripFilter); !ok {
+				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) return %T, not a RoundTripFilter", name, f)
+			}
 			fm[host] = f
 		}
 		f.SiteFiltersRules = helpers.NewHostMatcherWithValue(fm)
+	}
+
+	if f.RegionFiltersEnabled {
+		fm := make(map[string]interface{})
+		for host, name := range config.SiteFilters.Rules {
+			f, err := filters.GetFilter(name)
+			if err != nil {
+				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
+			}
+			if _, ok := f.(filters.RoundTripFilter); !ok {
+				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) return %T, not a RoundTripFilter", name, f)
+			}
+			fm[host] = f
+		}
+		f.RegionFiltersRules = helpers.NewHostMatcherWithValue(fm)
 	}
 
 	if f.GFWListEnabled {
@@ -182,6 +210,10 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
 		}
+	}
+
+	if f.RegionFiltersEnabled {
+		//TODO
 	}
 
 	if f.MyProxyPACEnabled {
