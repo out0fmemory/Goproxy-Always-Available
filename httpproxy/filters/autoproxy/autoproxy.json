@@ -1,9 +1,13 @@
 {
-	"SiterFilters": {
+	"SiteFilters": {
 		"Enabled": false,
 		"Rules": {
 			"rarbg.to": "direct",
 		},
+	},
+	"MyProxyPac": {
+		"Enabled": true,
+		"File": "proxy.pac",
 	},
 	"GFWList": {
 		"Enabled": true,

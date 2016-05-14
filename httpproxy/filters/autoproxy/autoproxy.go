@@ -24,15 +24,17 @@ import (
 )
 
 const (
-	filterName      string = "autoproxy"
-	myProxyPAC      string = "proxy.pac"
-	placeholderPath string = "/proxy.pac"
+	filterName string = "autoproxy"
 )
 
 type Config struct {
-	SiterFilters struct {
+	SiteFilters struct {
 		Enabled bool
 		Rules   map[string]string
+	}
+	MyProxyPac struct {
+		Enabled bool
+		File    string
 	}
 	GFWList struct {
 		Enabled  bool
@@ -56,15 +58,16 @@ type GFWList struct {
 
 type Filter struct {
 	Config
-	Store               storage.Store
-	MyProxyPAC          string
-	GFWListEnabled      bool
-	GFWList             *GFWList
-	AutoProxy2Pac       *AutoProxy2Pac
-	SiterFiltersEnabled bool
-	SiterFiltersRules   *helpers.HostMatcher
-	Transport           *http.Transport
-	UpdateChan          chan struct{}
+	Store              storage.Store
+	MyProxyPACEnabled  bool
+	MyProxyPACFile     string
+	GFWListEnabled     bool
+	GFWList            *GFWList
+	AutoProxy2Pac      *AutoProxy2Pac
+	SiteFiltersEnabled bool
+	SiteFiltersRules   *helpers.HostMatcher
+	Transport          *http.Transport
+	UpdateChan         chan struct{}
 }
 
 func init() {
@@ -138,27 +141,28 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	f := &Filter{
-		Config:              *config,
-		Store:               store,
-		MyProxyPAC:          myProxyPAC,
-		GFWListEnabled:      config.GFWList.Enabled,
-		GFWList:             &gfwlist,
-		AutoProxy2Pac:       autoproxy2pac,
-		Transport:           transport,
-		SiterFiltersEnabled: config.SiterFilters.Enabled,
-		UpdateChan:          make(chan struct{}),
+		Config:             *config,
+		Store:              store,
+		MyProxyPACEnabled:  config.MyProxyPac.Enabled,
+		MyProxyPACFile:     config.MyProxyPac.File,
+		GFWListEnabled:     config.GFWList.Enabled,
+		GFWList:            &gfwlist,
+		AutoProxy2Pac:      autoproxy2pac,
+		Transport:          transport,
+		SiteFiltersEnabled: config.SiteFilters.Enabled,
+		UpdateChan:         make(chan struct{}),
 	}
 
-	if f.SiterFiltersEnabled {
+	if f.SiteFiltersEnabled {
 		fm := make(map[string]interface{})
-		for host, name := range config.SiterFilters.Rules {
+		for host, name := range config.SiteFilters.Rules {
 			f, err := filters.GetFilter(name)
 			if err != nil {
 				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, host, err)
 			}
 			fm[host] = f
 		}
-		f.SiterFiltersRules = helpers.NewHostMatcherWithValue(fm)
+		f.SiteFiltersRules = helpers.NewHostMatcherWithValue(fm)
 	}
 
 	if f.GFWListEnabled {
@@ -170,6 +174,100 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 func (f *Filter) FilterName() string {
 	return filterName
+}
+
+func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	if f.SiteFiltersEnabled {
+		if f1, ok := f.SiteFiltersRules.Lookup(req.Host); ok {
+			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
+			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
+		}
+	}
+
+	if f.MyProxyPACEnabled {
+		if req.RequestURI[1:len(req.RequestURI)] == f.MyProxyPACFile {
+			glog.V(2).Infof("%s \"AUTOPROXY MyProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+			return f.myProxyPACRoundTrip(ctx, req)
+		}
+	}
+
+	return ctx, nil, nil
+}
+
+func (f *Filter) myProxyPACRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	if strings.Contains(req.URL.Query().Encode(), "flush") {
+		f.UpdateChan <- struct{}{}
+	}
+
+	data := ""
+
+	obj, err := f.Store.GetObject(f.MyProxyPACFile, -1, -1)
+	if os.IsNotExist(err) {
+		glog.V(2).Infof("AUTOPROXY MyProxyPac: generate %#v", f.MyProxyPACFile)
+
+		s := fmt.Sprintf(`// User-defined FindProxyForURL
+function FindProxyForURL(url, host) {
+    if (shExpMatch(host, '*.google*.*') ||
+       dnsDomainIs(host, '.ggpht.com') ||
+       dnsDomainIs(host, '.gstatic.com') ||
+       host == 'goo.gl') {
+        return 'PROXY %s';
+    }
+    return 'DIRECT';
+}
+`, req.URL.Host)
+		f.Store.PutObject(f.MyProxyPACFile, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
+	} else {
+		if body := obj.Body(); body != nil {
+			body.Close()
+		}
+	}
+
+	if obj, err := f.Store.GetObject(f.MyProxyPACFile, -1, -1); err == nil {
+		body := obj.Body()
+		defer body.Close()
+		if b, err := ioutil.ReadAll(body); err == nil {
+			s := strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
+			if _, port, err := net.SplitHostPort(req.URL.Host); err == nil {
+				for _, localaddr := range []string{"127.0.0.1", "::1", "localhost"} {
+					s = strings.Replace(s, net.JoinHostPort(localaddr, port), req.URL.Host, -1)
+				}
+			}
+			data += s
+		}
+	}
+
+	if f.GFWListEnabled {
+		data += f.AutoProxy2Pac.GeneratePac(req)
+	} else {
+		data += `
+function FindProxyForURL(url, host) {
+    if (isPlainHostName(host) ||
+        host.indexOf('127.') == 0 ||
+        host.indexOf('192.168.') == 0 ||
+        host.indexOf('10.') == 0 ||
+        shExpMatch(host, 'localhost.*')) {
+        return 'DIRECT';
+    }
+
+    return MyFindProxyForURL(url, host);
+}`
+	}
+
+	resp := &http.Response{
+		Status:        "200 OK",
+		StatusCode:    http.StatusOK,
+		Proto:         "HTTP/1.1",
+		ProtoMajor:    1,
+		ProtoMinor:    1,
+		Header:        http.Header{},
+		Request:       req,
+		Close:         true,
+		ContentLength: int64(len(data)),
+		Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
+	}
+
+	return ctx, resp, nil
 }
 
 func (f *Filter) updater() {
@@ -256,91 +354,4 @@ func (f *Filter) updater() {
 			resp.Body.Close()
 		}
 	}
-}
-
-func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if f.SiterFiltersEnabled {
-		if f1, ok := f.SiterFiltersRules.Lookup(req.Host); ok {
-			glog.V(2).Infof("AUTOPROXY: SiterFilters matched, request %#v with %T", req.URL.String(), f1)
-			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
-		}
-	}
-
-	if !strings.HasPrefix(req.RequestURI, placeholderPath) {
-		return ctx, nil, nil
-	}
-
-	if strings.Contains(req.URL.Query().Encode(), "flush") {
-		f.UpdateChan <- struct{}{}
-	}
-
-	data := ""
-
-	obj, err := f.Store.GetObject(f.MyProxyPAC, -1, -1)
-	if os.IsNotExist(err) {
-		s := fmt.Sprintf(`// User-defined FindProxyForURL
-function FindProxyForURL(url, host) {
-    if (shExpMatch(host, '*.google*.*') ||
-       dnsDomainIs(host, '.ggpht.com') ||
-       dnsDomainIs(host, '.gstatic.com') ||
-       host == 'goo.gl') {
-        return 'PROXY %s';
-    }
-    return 'DIRECT';
-}
-`, req.URL.Host)
-		f.Store.PutObject(f.MyProxyPAC, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
-	} else {
-		if body := obj.Body(); body != nil {
-			body.Close()
-		}
-	}
-
-	if obj, err := f.Store.GetObject(f.MyProxyPAC, -1, -1); err == nil {
-		body := obj.Body()
-		defer body.Close()
-		if b, err := ioutil.ReadAll(body); err == nil {
-			s := strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
-			if _, port, err := net.SplitHostPort(req.URL.Host); err == nil {
-				for _, localaddr := range []string{"127.0.0.1", "::1", "localhost"} {
-					s = strings.Replace(s, net.JoinHostPort(localaddr, port), req.URL.Host, -1)
-				}
-			}
-			data += s
-		}
-	}
-
-	if f.GFWListEnabled {
-		data += f.AutoProxy2Pac.GeneratePac(req)
-	} else {
-		data += `
-function FindProxyForURL(url, host) {
-    if (isPlainHostName(host) ||
-        host.indexOf('127.') == 0 ||
-        host.indexOf('192.168.') == 0 ||
-        host.indexOf('10.') == 0 ||
-        shExpMatch(host, 'localhost.*')) {
-        return 'DIRECT';
-    }
-
-    return MyFindProxyForURL(url, host);
-}`
-	}
-
-	resp := &http.Response{
-		Status:        "200 OK",
-		StatusCode:    http.StatusOK,
-		Proto:         "HTTP/1.1",
-		ProtoMajor:    1,
-		ProtoMinor:    1,
-		Header:        http.Header{},
-		Request:       req,
-		Close:         true,
-		ContentLength: int64(len(data)),
-		Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
-	}
-
-	glog.V(2).Infof("%s \"AUTOPROXY %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.RequestURI, req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
-
-	return ctx, resp, nil
 }
