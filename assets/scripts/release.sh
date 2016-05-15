@@ -36,25 +36,13 @@ do
     ${GITHUB_RELEASE_BIN} download --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag ${GITHUB_TAG} --name "$FILE"
 done
 
-git clone --branch master https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}
-pushd ${GITHUB_REPO}
-for TAG in $(git tag)
-do
-	${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${TAG} || true
-	git push origin :${TAG}
-	git tag -d ${TAG}
-done
-git tag ${GITHUB_TAG} c0e230ab18e1c9b8f097e34b2675056037367e3c
-git push origin ${GITHUB_TAG}
-popd
+${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} || true
+${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 
-sleep 3
-
-${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_TAG} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 for FILE in ${RELEASE_FILES}
 do
     echo Uploading ${FILE} to https://github.com/${GITHUB_USER}/${GITHUB_REPO}.git#${GITHUB_TAG}
-    ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_TAG} --name "${FILE}" --file "${FILE}"
+    ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${FILE}" --file "${FILE}"
 done
 
 popd
