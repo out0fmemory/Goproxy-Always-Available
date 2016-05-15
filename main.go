@@ -39,14 +39,15 @@ GoProxy Version    : %s (go/%s %s/%s)`,
 		fmt.Fprintf(os.Stderr, `
 GoProxy Profile    : %s
 Listen Address     : %s
-Enabled Filters    : %v`, profile,
+Enabled Filters    : %v`,
+			profile,
 			config.Address,
 			fmt.Sprintf("%s|%s|%s", strings.Join(config.RequestFilters, ","), strings.Join(config.RoundTripFilters, ","), strings.Join(config.ResponseFilters, ",")))
 		for _, fn := range config.RoundTripFilters {
-			if fn == "autoproxy" {
+			switch fn {
+			case "autoproxy":
 				fmt.Fprintf(os.Stderr, `
-Pac Server         : http://%s/proxy.pac`,
-					config.Address)
+Pac Server         : http://%s/proxy.pac`, config.Address)
 			}
 		}
 		go httpproxy.ServeProfile(profile)
