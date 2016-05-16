@@ -140,8 +140,8 @@
 		"DisableKeepAlives": false,
 		"IdleConnTimeout": 180,
 		"MaxIdleConnsPerHost": 16,
-		"ResponseHeaderTimeout": 24,
+		"ResponseHeaderTimeout": 16,
 		"RetryDelay": 0.5,
-		"RetryTimes": 2,
+		"RetryTimes": 3,
 	}
 }
