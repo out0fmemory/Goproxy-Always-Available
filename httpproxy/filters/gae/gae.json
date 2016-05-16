@@ -61,14 +61,8 @@
 		"talkx.l.google.com": "google_talk",
 	},
 	"ForceHTTPS": [
-		"www.google.com",
-		"www.google.com.hk",
-		"books.google.com",
-		"books.google.com.hk",
-		"scholar.google.com",
-		"scholar.google.com.hk",
-		"translate.google.com",
-		"translate.google.com.hk",
+		"*.google.com",
+		"*.google.com.hk",
 	],
 	"ForceGAE": [
 		"translate.googleapis.com",
