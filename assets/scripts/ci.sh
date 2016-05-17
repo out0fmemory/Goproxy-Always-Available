@@ -185,7 +185,7 @@ function release_repo_ci() {
 }
 
 function clean() {
-	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht && md5sum *)
+	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht && sha256sum *)
 	rm -rf ${WORKING_DIR}
 }
 
