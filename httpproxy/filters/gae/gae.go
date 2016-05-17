@@ -36,7 +36,7 @@ type Config struct {
 	Path            string
 	Password        string
 	SSLVerify       bool
-	IPv6Only        bool
+	ForceIPv6       bool
 	DisableHTTP2    bool
 	ForceHTTP2      bool
 	Sites           []string
@@ -125,7 +125,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		IPv6Only:        config.IPv6Only,
+		ForceIPv6:       config.ForceIPv6,
 		TLSConfig:       nil,
 		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
 		IPBlackList:     lrucache.NewLRUCache(8192),

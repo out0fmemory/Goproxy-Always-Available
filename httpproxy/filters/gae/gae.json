@@ -4,7 +4,7 @@
 	],
 	"Password": "",
 	"SSLVerify": false,
-	"IPv6Only": false,
+	"ForceIPv6": false,
 	"DisableHTTP2": false,
 	"ForceHTTP2": false,
 	"Sites": [
