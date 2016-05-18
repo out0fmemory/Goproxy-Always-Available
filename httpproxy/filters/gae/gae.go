@@ -219,7 +219,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	if config.EnableDeadProbe {
 		go func() {
 			probe := func() {
-				req, _ := http.NewRequest(http.MethodGet, "https://www.google.com/404", nil)
+				req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
 				ctx, cancel := context.WithTimeout(req.Context(), 3*time.Second)
 				defer cancel()
 				req = req.WithContext(ctx)
