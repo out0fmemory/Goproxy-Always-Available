@@ -1,4 +1,4 @@
-goproxy 正式版 https://git.io/goproxy [ ![CI Releases](https://img.shields.io/github/release/phuslu/goproxy-ci.svg?label=daily%20release)](https://github.com/phuslu/goproxy-ci/releases) [ ![CI Status](https://travis-ci.org/phuslu/goproxy.svg?branch=master)](https://travis-ci.org/phuslu/goproxy/builds) [ ![Google Translate](https://www.gstatic.com/images/branding/product/1x/translate_24dp.png)](https://translate.google.com/translate?hl=en&sl=zh-CN&tl=en&u=https%3A%2F%2Fgithub.com%2Fphuslu%2Fgoproxy)
+goproxy 正式版 https://git.io/goproxy [ ![CI Releases](https://img.shields.io/github/release/phuslu/goproxy-ci.svg?label=nightly)](https://github.com/phuslu/goproxy-ci/releases) [ ![CI Status](https://travis-ci.org/phuslu/goproxy.svg?branch=master)](https://travis-ci.org/phuslu/goproxy/builds) [ ![Google Translate](https://www.gstatic.com/images/branding/product/1x/translate_24dp.png)](https://translate.google.com/translate?hl=en&sl=zh-CN&tl=en&u=https%3A%2F%2Fgithub.com%2Fphuslu%2Fgoproxy)
 
 ## 讨论区
 * https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
