@@ -3,6 +3,7 @@ package gae
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -39,6 +40,7 @@ type Config struct {
 	ForceIPv6       bool
 	DisableHTTP2    bool
 	ForceHTTP2      bool
+	EnableDeadProbe bool
 	Sites           []string
 	Site2Alias      map[string]string
 	HostMap         map[string][]string
@@ -158,16 +160,18 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
 	}
 
+	t2 := &http2.Transport{
+		DialTLS:            d.DialTLS2,
+		TLSClientConfig:    dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames),
+		DisableCompression: config.Transport.DisableCompression,
+	}
+
 	switch {
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.ForceHTTP2:
 		_ = dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames)
-		tr = &http2.Transport{
-			DialTLS:            d.DialTLS2,
-			TLSClientConfig:    dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames),
-			DisableCompression: config.Transport.DisableCompression,
-		}
+		tr = t2
 	case config.DisableHTTP2:
 		tr = t1
 	default:
@@ -210,6 +214,34 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		} else {
 			forceGAEMatcherStrings = append(forceGAEMatcherStrings, s)
 		}
+	}
+
+	if config.EnableDeadProbe {
+		go func() {
+			for {
+				time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+				req, _ := http.NewRequest(http.MethodGet, "https://www.google.com/404", nil)
+				resp, err := tr.RoundTrip(req)
+				if resp != nil && resp.Body != nil {
+					glog.V(3).Infof("GAE EnableDeadProbe \"%s %s\" %d -", req.Method, req.URL.String(), resp.StatusCode)
+					resp.Body.Close()
+				}
+				if err != nil {
+					glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
+					type timeouter interface {
+						Timeout() bool
+					}
+					if ne, ok := err.(timeouter); ok && ne.Timeout() {
+						if tr == t2 {
+							t2.CloseConnections()
+						}
+						if tr == t1 {
+							t1.CloseIdleConnections()
+						}
+					}
+				}
+			}
+		}()
 	}
 
 	return &Filter{

@@ -7,6 +7,7 @@
 	"ForceIPv6": false,
 	"DisableHTTP2": false,
 	"ForceHTTP2": false,
+	"EnableDeadProbe": true,
 	"Sites": [
 		"*"
 	],
