@@ -218,9 +218,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	if config.EnableDeadProbe {
 		go func() {
-			for {
-				time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+			probe := func() {
 				req, _ := http.NewRequest(http.MethodGet, "https://www.google.com/404", nil)
+				ctx, cancel := context.WithTimeout(req.Context(), 3*time.Second)
+				defer cancel()
+				req = req.WithContext(ctx)
 				resp, err := tr.RoundTrip(req)
 				if resp != nil && resp.Body != nil {
 					glog.V(3).Infof("GAE EnableDeadProbe \"%s %s\" %d -", req.Method, req.URL.String(), resp.StatusCode)
@@ -228,10 +230,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				}
 				if err != nil {
 					glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
-					type timeouter interface {
-						Timeout() bool
-					}
-					if ne, ok := err.(timeouter); ok && ne.Timeout() {
+					s := strings.ToLower(err.Error())
+					if strings.HasPrefix(s, "net/http: request canceled") || strings.Contains(s, "timeout") {
 						if tr == t2 {
 							t2.CloseConnections()
 						}
@@ -240,6 +240,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 						}
 					}
 				}
+			}
+
+			for {
+				time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+				probe()
 			}
 		}()
 	}
