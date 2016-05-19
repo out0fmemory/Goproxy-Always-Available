@@ -252,15 +252,11 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 				if hosts, err := d.LookupAlias(alias); err == nil {
 					var config *tls.Config
 
+					isGoogleAddr := false
 					switch {
 					case strings.HasPrefix(alias, "google_"):
 						config = GetDefaultTLSConfigForGoogle(d.FakeServerNames)
-						if d.SSLVerify {
-							config1 := new(tls.Config)
-							*config1 = *config
-							config1.InsecureSkipVerify = false
-							config = config1
-						}
+						isGoogleAddr = true
 					default:
 						config = &tls.Config{
 							InsecureSkipVerify: true,
@@ -276,7 +272,20 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 					if d.ForceIPv6 {
 						network = "tcp6"
 					}
-					return d.dialMultiTLS(network, addrs, config)
+					conn, err := d.dialMultiTLS(network, addrs, config)
+					if err != nil {
+						return nil, err
+					}
+					if d.SSLVerify && isGoogleAddr {
+						if tc, ok := conn.(*tls.Conn); ok {
+							issuer := tc.ConnectionState().PeerCertificates[0].Issuer.CommonName
+							if !strings.HasPrefix(issuer, "Google ") {
+								defer conn.Close()
+								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), issuer)
+							}
+						}
+					}
+					return conn, nil
 				}
 			}
 		}
@@ -296,9 +305,11 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 				if hosts, err := d.LookupAlias(alias); err == nil {
 					var config *tls.Config
 
+					isGoogleAddr := false
 					switch {
 					case strings.HasPrefix(alias, "google_"):
 						config = GetDefaultTLSConfigForGoogle(d.FakeServerNames)
+						isGoogleAddr = true
 					default:
 						config = cfg
 					}
@@ -311,7 +322,20 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					if d.ForceIPv6 {
 						network = "tcp6"
 					}
-					return d.dialMultiTLS(network, addrs, config)
+					conn, err := d.dialMultiTLS(network, addrs, config)
+					if err != nil {
+						return nil, err
+					}
+					if d.SSLVerify && isGoogleAddr {
+						if tc, ok := conn.(*tls.Conn); ok {
+							issuer := tc.ConnectionState().PeerCertificates[0].Issuer.CommonName
+							if !strings.HasPrefix(issuer, "Google ") {
+								defer conn.Close()
+								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), issuer)
+							}
+						}
+					}
+					return conn, nil
 				}
 			}
 		}
