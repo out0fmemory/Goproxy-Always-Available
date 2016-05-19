@@ -20,14 +20,36 @@ import (
 	"../../helpers"
 )
 
-type Server struct {
-	URL       *url.URL
-	Password  string
-	SSLVerify bool
-	Deadline  time.Duration
+const (
+	GAEScheme string = "https"
+	GAEDomain string = ".appspot.com"
+	GAEPath   string = "/_gh/"
+)
+
+type Servers struct {
+	appids    []string
+	password  string
+	sslVerify bool
+	deadline  time.Duration
+	roundOnce atomic.Value
 }
 
-func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
+func NewServers(appids []string, password string, sslVerify bool, deadline time.Duration) *Servers {
+	s := &Servers{
+		appids:    appids,
+		password:  password,
+		sslVerify: sslVerify,
+		deadline:  deadline,
+	}
+	s.roundOnce.Store(new(sync.Once))
+	return s
+}
+
+func (s *Servers) Len() int {
+	return len(s.appids)
+}
+
+func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL) (*http.Request, error) {
 	var err error
 	var b bytes.Buffer
 
@@ -38,9 +60,9 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 
 	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
 	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
-	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", f.Password)
-	if f.Deadline > 0 {
-		fmt.Fprintf(w, "X-Urlfetch-Deadline: %d\r\n", f.Deadline/time.Second)
+	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", s.password)
+	if s.deadline > 0 {
+		fmt.Fprintf(w, "X-Urlfetch-Deadline: %d\r\n", s.deadline/time.Second)
 	}
 	w.Close()
 
@@ -52,8 +74,8 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 		ProtoMajor: 1,
 		ProtoMinor: 1,
 		Method:     "POST",
-		URL:        f.URL,
-		Host:       f.URL.Host,
+		URL:        fetchserver,
+		Host:       fetchserver.Host,
 		Header:     http.Header{},
 	}
 
@@ -72,7 +94,7 @@ func (f *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 	return req1, nil
 }
 
-func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
+func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err error) {
 	if resp.StatusCode != http.StatusOK {
 		return resp, nil
 	}
@@ -135,51 +157,23 @@ func (f *Server) decodeResponse(resp *http.Response) (resp1 *http.Response, err 
 	return
 }
 
-type Servers struct {
-	servers   []Server
-	roundOnce atomic.Value
-}
-
-func NewServers(servers []Server) *Servers {
-	ss := &Servers{
-		servers: servers,
-	}
-	ss.roundOnce.Store(new(sync.Once))
-	return ss
-}
-
-func (ss *Servers) Len() int {
-	return len(ss.servers)
-}
-
-func (ss *Servers) roundServers() {
-	ss.roundOnce.Load().(*sync.Once).Do(func() {
-		server := ss.servers[0]
-		for i := 0; i < len(ss.servers)-1; i++ {
-			ss.servers[i] = ss.servers[i+1]
-		}
-		ss.servers[len(ss.servers)-1] = server
-		ss.roundOnce.Store(new(sync.Once))
-	})
-}
-
-func (ss *Servers) pickServer(req *http.Request, base int) Server {
+func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 	var n int
 
 	switch {
-	case ss.Len() == 1:
+	case len(s.appids) == 1:
 		n = 0
 	case base > 0:
-		n = 1 + rand.Intn(len(ss.servers)-1)
+		n = 1 + rand.Intn(len(s.appids)-1)
 	default:
 		switch path.Ext(req.URL.Path) {
 		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-			n = rand.Intn(len(ss.servers))
+			n = rand.Intn(len(s.appids))
 		case "":
 			name := path.Base(req.URL.Path)
 			if strings.Contains(name, "play") ||
 				strings.Contains(name, "video") {
-				n = rand.Intn(len(ss.servers))
+				n = rand.Intn(len(s.appids))
 			}
 		default:
 			if req.Header.Get("Range") != "" ||
@@ -194,10 +188,25 @@ func (ss *Servers) pickServer(req *http.Request, base int) Server {
 				strings.Contains(req.URL.Path, "static") ||
 				strings.Contains(req.URL.Path, "asset") ||
 				strings.Contains(req.URL.Path, "/cache/") {
-				n = rand.Intn(len(ss.servers))
+				n = rand.Intn(len(s.appids))
 			}
 		}
 	}
 
-	return ss.servers[n]
+	return &url.URL{
+		Scheme: GAEScheme,
+		Host:   s.appids[n] + GAEDomain,
+		Path:   GAEPath,
+	}
+}
+
+func (s *Servers) RoundServers() {
+	s.roundOnce.Load().(*sync.Once).Do(func() {
+		defer s.roundOnce.Store(new(sync.Once))
+		server := s.appids[0]
+		for i := 0; i < len(s.appids)-1; i++ {
+			s.appids[i] = s.appids[i+1]
+		}
+		s.appids[len(s.appids)-1] = server
+	})
 }

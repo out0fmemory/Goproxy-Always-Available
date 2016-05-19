@@ -2,11 +2,9 @@ package gae
 
 import (
 	"context"
-	"fmt"
 	"math/rand"
 	"net"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -24,17 +22,8 @@ const (
 	filterName string = "gae"
 )
 
-const (
-	DefaultGAEScheme string = "https"
-	DefaultGAEDomain string = "appspot.com"
-	DefaultGAEPath   string = "/_gh/"
-)
-
 type Config struct {
 	AppIDs          []string
-	Scheme          string
-	Domain          string
-	Path            string
 	Password        string
 	SSLVerify       bool
 	ForceIPv6       bool
@@ -88,18 +77,6 @@ func init() {
 	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
 	if err != nil {
 		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
-	}
-
-	if config.Scheme == "" {
-		config.Scheme = DefaultGAEScheme
-	}
-
-	if config.Domain == "" {
-		config.Domain = DefaultGAEDomain
-	}
-
-	if config.Path == "" {
-		config.Path = DefaultGAEPath
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{
@@ -182,30 +159,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		tr = t1
 	}
 
-	servers := make([]Server, 0)
-	for _, appid := range config.AppIDs {
-		var rawurl string
-		switch strings.Count(appid, ".") {
-		case 0, 1:
-			rawurl = fmt.Sprintf("%s://%s.%s%s", config.Scheme, appid, config.Domain, config.Path)
-		default:
-			rawurl = fmt.Sprintf("%s://%s.%s%s", config.Scheme, appid, config.Path)
-		}
-		u, err := url.Parse(rawurl)
-		if err != nil {
-			return nil, err
-		}
-
-		server := Server{
-			URL:       u,
-			Password:  config.Password,
-			SSLVerify: config.SSLVerify,
-			Deadline:  time.Duration(config.Transport.ResponseHeaderTimeout-4) * time.Second,
-		}
-
-		servers = append(servers, server)
-	}
-
 	forceGAEStrings := make([]string, 0)
 	forceGAEMatcherStrings := make([]string, 0)
 	for _, s := range config.ForceGAE {
@@ -255,9 +208,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		GAETransport: &Transport{
 			RoundTripper: tr,
 			MultiDialer:  d,
-			Servers:      NewServers(servers),
-			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Second,
-			RetryTimes:   config.Transport.RetryTimes,
+			Servers: NewServers(config.AppIDs,
+				config.Password,
+				config.SSLVerify,
+				time.Duration(config.Transport.ResponseHeaderTimeout-4)*time.Second),
+			RetryDelay: time.Duration(config.Transport.RetryDelay*1000) * time.Second,
+			RetryTimes: config.Transport.RetryTimes,
 		},
 		DirectTransport:    tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(config.ForceHTTPS),

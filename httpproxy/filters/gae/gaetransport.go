@@ -24,11 +24,10 @@ type Transport struct {
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for i := 0; i < t.RetryTimes; i++ {
-		server := t.Servers.pickServer(req, i)
-
-		req1, err := server.encodeRequest(req)
+		server := t.Servers.PickFetchServer(req, i)
+		req1, err := t.Servers.EncodeRequest(req, server)
 		if err != nil {
-			return nil, fmt.Errorf("GAE encodeRequest: %s", err.Error())
+			return nil, fmt.Errorf("GAE EncodeRequest: %s", err.Error())
 		}
 
 		resp, err := t.RoundTripper.RoundTrip(req1)
@@ -77,11 +76,11 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			switch resp.StatusCode {
 			case http.StatusServiceUnavailable:
 				if t.Servers.Len() == 1 {
-					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.URL.Host)
+					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.Host)
 					return resp, nil
 				} else {
-					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.URL.Host)
-					t.Servers.roundServers()
+					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.Host)
+					t.Servers.RoundServers()
 				}
 				time.Sleep(t.RetryDelay)
 				continue
@@ -100,7 +99,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			}
 		}
 
-		resp1, err := server.decodeResponse(resp)
+		resp1, err := t.Servers.DecodeResponse(resp)
 		if err != nil {
 			return nil, err
 		}
