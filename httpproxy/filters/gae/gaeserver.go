@@ -64,6 +64,9 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL) (*http.
 	if s.deadline > 0 {
 		fmt.Fprintf(w, "X-Urlfetch-Deadline: %d\r\n", s.deadline/time.Second)
 	}
+	if s.sslVerify {
+		fmt.Fprintf(w, "X-Urlfetch-SSLVerify: 1\r\n")
+	}
 	w.Close()
 
 	b0 := make([]byte, 2)

@@ -105,6 +105,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			DualStack: config.Transport.Dialer.DualStack,
 		},
 		ForceIPv6:       config.ForceIPv6,
+		SSLVerify:       config.SSLVerify,
 		TLSConfig:       nil,
 		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
 		IPBlackList:     lrucache.NewLRUCache(8192),

@@ -20,6 +20,7 @@ import (
 type MultiDialer struct {
 	net.Dialer
 	ForceIPv6       bool
+	SSLVerify       bool
 	TLSConfig       *tls.Config
 	Site2Alias      *helpers.HostMatcher
 	FakeServerNames []string
@@ -254,6 +255,12 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 					switch {
 					case strings.HasPrefix(alias, "google_"):
 						config = GetDefaultTLSConfigForGoogle(d.FakeServerNames)
+						if d.SSLVerify {
+							config1 := new(tls.Config)
+							*config1 = *config
+							config1.InsecureSkipVerify = false
+							config = config1
+						}
 					default:
 						config = &tls.Config{
 							InsecureSkipVerify: true,
