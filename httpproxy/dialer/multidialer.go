@@ -18,16 +18,6 @@ import (
 	"../helpers"
 )
 
-var (
-	// curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text
-	GoogleG2 []byte = []byte{
-		0x4a, 0xdd, 0x06, 0x16, 0x1b,
-		0xbc, 0xf6, 0x68, 0xb5, 0x76,
-		0xf5, 0x81, 0xb6, 0xbb, 0x62,
-		0x1a, 0xba, 0x5a, 0x81, 0x2f,
-	}
-)
-
 type MultiDialer struct {
 	net.Dialer
 	ForceIPv6       bool
@@ -35,6 +25,7 @@ type MultiDialer struct {
 	TLSConfig       *tls.Config
 	Site2Alias      *helpers.HostMatcher
 	FakeServerNames []string
+	GoogleG2KeyID   []byte
 	IPBlackList     lrucache.Cache
 	HostMap         map[string][]string
 	DNSServers      []net.IP
@@ -291,9 +282,16 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 						if tc, ok := conn.(*tls.Conn); ok {
 							cert := tc.ConnectionState().PeerCertificates[0]
 							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
-							if bytes.Compare(cert.AuthorityKeyId, GoogleG2) != 0 {
-								defer conn.Close()
-								return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+							if d.GoogleG2KeyID != nil {
+								if bytes.Compare(cert.AuthorityKeyId, d.GoogleG2KeyID) != 0 {
+									defer conn.Close()
+									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+								}
+							} else {
+								if !strings.HasPrefix(cert.Issuer.CommonName, "Google ") {
+									defer conn.Close()
+									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+								}
 							}
 						}
 					}
@@ -342,9 +340,16 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 						if tc, ok := conn.(*tls.Conn); ok {
 							cert := tc.ConnectionState().PeerCertificates[0]
 							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
-							if bytes.Compare(cert.AuthorityKeyId, GoogleG2) != 0 {
-								defer conn.Close()
-								return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+							if d.GoogleG2KeyID != nil {
+								if bytes.Compare(cert.AuthorityKeyId, d.GoogleG2KeyID) != 0 {
+									defer conn.Close()
+									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+								}
+							} else {
+								if !strings.HasPrefix(cert.Issuer.CommonName, "Google ") {
+									defer conn.Close()
+									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+								}
 							}
 						}
 					}

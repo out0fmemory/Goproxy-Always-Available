@@ -2,6 +2,7 @@ package gae
 
 import (
 	"context"
+	"encoding/hex"
 	"math/rand"
 	"net"
 	"net/http"
@@ -34,6 +35,7 @@ type Config struct {
 	Site2Alias      map[string]string
 	HostMap         map[string][]string
 	FakeServerNames []string
+	GoogleG2KeyID   string
 	ForceHTTPS      []string
 	ForceGAE        []string
 	FakeOptions     map[string][]string
@@ -98,6 +100,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
+	// curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text
+	googleG2KeyID, err := hex.DecodeString(config.GoogleG2KeyID)
+	if err != nil {
+		return nil, err
+	}
+
 	d := &dialer.MultiDialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
@@ -111,6 +119,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		IPBlackList:     lrucache.NewLRUCache(8192),
 		HostMap:         config.HostMap,
 		FakeServerNames: config.FakeServerNames,
+		GoogleG2KeyID:   googleG2KeyID,
 		DNSServers:      dnsServers,
 		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry:  time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,

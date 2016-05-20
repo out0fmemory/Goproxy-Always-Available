@@ -83,6 +83,7 @@
 		// "pubads.g.doubleclick.net",
 		// "www.google-analytics.com",
 	],
+	"GoogleG2KeyID": "4add06161bbcf668b576f581b6bb621aba5a812f",
 	"FakeOptions": {
 		"*": [
 			"Access-Control-Allow-Credentials: true",
