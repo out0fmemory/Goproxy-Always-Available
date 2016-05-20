@@ -1,8 +1,8 @@
 package dialer
 
 import (
+	"bytes"
 	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -16,6 +16,16 @@ import (
 	"github.com/phuslu/glog"
 
 	"../helpers"
+)
+
+var (
+	// curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text
+	GoogleG2 []byte = []byte{
+		0x4a, 0xdd, 0x06, 0x16, 0x1b,
+		0xbc, 0xf6, 0x68, 0xb5, 0x76,
+		0xf5, 0x81, 0xb6, 0xbb, 0x62,
+		0x1a, 0xba, 0x5a, 0x81, 0x2f,
+	}
 )
 
 type MultiDialer struct {
@@ -279,15 +289,11 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 					}
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
-							certs := tc.ConnectionState().PeerCertificates
-							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, certs[0].Subject)
-							if !strings.HasPrefix(certs[0].Issuer.CommonName, "Google ") {
+							cert := tc.ConnectionState().PeerCertificates[0]
+							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
+							if bytes.Compare(cert.AuthorityKeyId, GoogleG2) != 0 {
 								defer conn.Close()
-								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), certs[0].Issuer)
-							}
-							if _, err = certs[len(certs)-1].Verify(x509.VerifyOptions{}); err != nil {
-								defer conn.Close()
-								return nil, err
+								return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
 							}
 						}
 					}
@@ -334,15 +340,11 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					}
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
-							certs := tc.ConnectionState().PeerCertificates
-							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, certs[0].Subject)
-							if !strings.HasPrefix(certs[0].Issuer.CommonName, "Google ") {
+							cert := tc.ConnectionState().PeerCertificates[0]
+							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
+							if bytes.Compare(cert.AuthorityKeyId, GoogleG2) != 0 {
 								defer conn.Close()
-								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), certs[0].Issuer)
-							}
-							if _, err = certs[len(certs)-1].Verify(x509.VerifyOptions{}); err != nil {
-								defer conn.Close()
-								return nil, err
+								return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
 							}
 						}
 					}
