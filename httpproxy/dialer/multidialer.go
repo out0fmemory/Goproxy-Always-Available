@@ -279,12 +279,13 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 					}
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
-							cert := tc.ConnectionState().PeerCertificates[0]
-							if !strings.HasPrefix(cert.Issuer.CommonName, "Google ") {
+							certs := tc.ConnectionState().PeerCertificates
+							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, certs[0].Subject)
+							if !strings.HasPrefix(certs[0].Issuer.CommonName, "Google ") {
 								defer conn.Close()
-								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), cert.Issuer)
+								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), certs[0].Issuer)
 							}
-							if _, err = cert.Verify(x509.VerifyOptions{}); err != nil {
+							if _, err = certs[len(certs)-1].Verify(x509.VerifyOptions{}); err != nil {
 								defer conn.Close()
 								return nil, err
 							}
@@ -333,12 +334,13 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					}
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
-							cert := tc.ConnectionState().PeerCertificates[0]
-							if !strings.HasPrefix(cert.Issuer.CommonName, "Google ") {
+							certs := tc.ConnectionState().PeerCertificates
+							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, certs[0].Subject)
+							if !strings.HasPrefix(certs[0].Issuer.CommonName, "Google ") {
 								defer conn.Close()
-								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), cert.Issuer)
+								return nil, fmt.Errorf("The issuer of %s is %#v, not Google", conn.RemoteAddr(), certs[0].Issuer)
 							}
-							if _, err = cert.Verify(x509.VerifyOptions{}); err != nil {
+							if _, err = certs[len(certs)-1].Verify(x509.VerifyOptions{}); err != nil {
 								defer conn.Close()
 								return nil, err
 							}
