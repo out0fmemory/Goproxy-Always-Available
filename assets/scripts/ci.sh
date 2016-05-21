@@ -114,7 +114,12 @@ function build_repo() {
 	#GoogleG2KeyID=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text | grep -A1 'X509v3 Subject Key Identifier:' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
 	GoogleG2KeyID=$(openssl s_client -showcerts -connect www.google.com:443 2>/dev/null </dev/null | openssl x509 -text | grep -A1 'X509v3 Authority Key Identifier:' | sed -e 's/keyid://' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
 	sed -i -r "s/\"GoogleG2KeyID\": \".+\"/\"GoogleG2KeyID\": \"$GoogleG2KeyID\"/g" httpproxy/filters/gae/gae.json
-	git diff
+	if git status -s | grep -q 'gae.json' ; then
+		git diff
+		git add httpproxy/filters/gae/gae.json
+		git commit -m "update GoogleG2KeyID to $GoogleG2KeyID"
+		git push -f origin master
+	fi
 
 	for OSARCH in darwin/386 \
 				darwin/amd64 \
