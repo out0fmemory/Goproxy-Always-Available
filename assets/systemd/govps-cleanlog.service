@@ -1,9 +1,9 @@
 [Unit]
-Description=goproxy cleanlog
+Description=gopvs cleanlog
 
 [Service]
 Type=simple
-ExecStart=/bin/find /var/log/ -name "goproxy.*" -mtime +1 -delete
+ExecStart=/bin/find /var/log/ -name "govpvs.*" -mtime +1 -delete
 IOSchedulingClass=idle
 User=root
 

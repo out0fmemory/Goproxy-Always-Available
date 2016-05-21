@@ -45,12 +45,8 @@ ifeq ($(GOOS), windows)
 	SOURCES += $(REPO)/assets/startup/addto-startup.vbs
 else ifeq ($(GOOS), darwin)
 	SOURCES += $(REPO)/assets/gui/goproxy-osx.command
-else ifneq (,$(filter $(GOOS)_$(GOARCH),linux_386 linux_amd64))
-	SOURCES += $(REPO)/assets/gui/goproxy-gtk.py
-	SOURCES += $(REPO)/assets/systemd/goproxy.service
-	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.service
-	SOURCES += $(REPO)/assets/systemd/goproxy-cleanlog.timer
 else
+	SOURCES += $(REPO)/assets/gui/goproxy-gtk.py
 	SOURCES += $(REPO)/assets/startup/goproxy.sh
 endif
 

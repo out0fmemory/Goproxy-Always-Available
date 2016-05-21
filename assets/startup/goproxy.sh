@@ -12,31 +12,25 @@
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Monitor for goproxy activity
-# Description:       goproxy is a gae proxy forked from gappproxy/wallproxy.
+# Description:       goproxy is a go proxy
 ### END INIT INFO
 
 # **NOTE** bash will exit immediately if any command exits with non-zero.
 set -e
 
 PACKAGE_NAME=goproxy
-PACKAGE_DESC="goproxy proxy server"
+PACKAGE_DESC="a go proxy"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    nohup ./goproxy -v=2 /opt/goproxy/goproxy -addr=0.0.0.0:8000 -pidfile /var/run/goproxy.pid -v=1 -logtostderr=0 -log_dir=/var/log/ &
+    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=/var/log/ &
     echo "${PACKAGE_NAME}."
 }
 
 stop() {
     echo -n "Stopping ${PACKAGE_DESC}: "
-    kill `cat /var/run/goproxy.pid` >/dev/null 2>&1 || true
-    echo "${PACKAGE_NAME}."
-}
-
-reload() {
-    echo -n "Reloading ${PACKAGE_DESC}: "
-    kill -HUP `cat /var/run/goproxy.pid` >/dev/null 2>&1 || true
+    killall goproxy >/dev/null 2>&1 || true
     echo "${PACKAGE_NAME}."
 }
 
@@ -48,7 +42,7 @@ restart() {
 
 usage() {
     N=$(basename "$0")
-    echo "Usage: [sudo] $N {start|stop|reload|restart}" >&2
+    echo "Usage: [sudo] $N {start|stop|restart}" >&2
     exit 1
 }
 
@@ -66,9 +60,6 @@ case "$1" in
         ;;
     stop)
         stop
-        ;;
-    reload)
-        reload
         ;;
     restart)
         restart
