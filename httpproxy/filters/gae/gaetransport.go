@@ -122,6 +122,14 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
 				glog.V(2).Infof("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, retry...", req1.URL.Host, req.URL.String())
 				continue
+			case bytes.Contains(body, []byte("ver quota")):
+				glog.V(2).Infof("GAE: %s urlfetch %#v get over quota, retry...", req1.URL.Host, req.URL.String())
+				time.Sleep(t.RetryDelay)
+				continue
+			case bytes.Contains(body, []byte("urlfetch: CLOSED")):
+				glog.V(2).Infof("GAE: %s urlfetch %#v get urlfetch: CLOSED, retry...", req1.URL.Host, req.URL.String())
+				time.Sleep(t.RetryDelay)
+				continue
 			default:
 				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))
 				return resp1, nil
