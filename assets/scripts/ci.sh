@@ -111,7 +111,8 @@ function build_repo() {
 
 	go test -v ./httpproxy/helpers
 
-	GoogleG2KeyID=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text | grep -A1 'X509v3 Subject Key Identifier:' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
+	#GoogleG2KeyID=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text | grep -A1 'X509v3 Subject Key Identifier:' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
+	GoogleG2KeyID=$(openssl s_client -showcerts -connect www.google.com:443 2>/dev/null </dev/null | openssl x509 -text | grep -A1 'X509v3 Authority Key Identifier:' | sed -e 's/keyid://' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
 	sed -i -r "s/\"GoogleG2KeyID\": \".+\"/\"GoogleG2KeyID\": \"$GoogleG2KeyID\"/g" httpproxy/filters/gae/gae.json
 	git diff
 
