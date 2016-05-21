@@ -72,7 +72,7 @@ AAAASUVORK5CYII="""
 import sys
 import os
 import re
-import thread
+import threading
 import base64
 import platform
 
@@ -108,7 +108,9 @@ def spawn_later(seconds, target, *args, **kwargs):
         import time
         time.sleep(seconds)
         return target(*args, **kwargs)
-    return thread.start_new_thread(wrap, args, kwargs)
+    t = threading.Thread(target=wrap, args=args, kwargs=kwargs)
+    t.setDaemon(True)
+    t.run()
 
 
 def drop_desktop():
@@ -129,7 +131,7 @@ StartupNotify=true
     filename1 = os.path.join(dirname, 'goproxy-gtk.desktop')
     with open(filename1, 'w') as fp:
         fp.write(DESKTOP_FILE)
-        os.chmod(filename1, 0755)
+        os.chmod(filename1, 0o755)
 
 
 def should_visible():
