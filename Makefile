@@ -61,7 +61,6 @@ endif
 
 .PHONY: build
 build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_DISTEXT)
-	mv $< $(shell echo $< | sed 's/_darwin_/_macosx_/') || true
 	ls -lht $(DISTDIR)
 
 .PHONY: clean

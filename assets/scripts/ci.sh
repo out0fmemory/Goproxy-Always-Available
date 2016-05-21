@@ -14,7 +14,7 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum
+for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum rename
 do
 	if ! type -p ${CMD}; then
 		echo "tool ${CMD} is not installed, abort."
@@ -118,6 +118,8 @@ function build_repo() {
 
 	for OSARCH in darwin/386 \
 				darwin/amd64 \
+				freebsd/386 \
+				freebsd/amd64 \
 				linux/386 \
 				linux/amd64 \
 				linux/arm \
@@ -133,7 +135,10 @@ function build_repo() {
 		make clean
 	done
 
-	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht)
+	cd ${WORKING_DIR}/r${RELEASE}
+	rename 's/_darwin_(amd64|386)/_macosx_$1/' *
+	rename 's/_darwin_(arm64|arm)/_ios_$1/' *
+	ls -lht
 
 	popd
 }
