@@ -211,14 +211,15 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 	}
 
 	var appid string
+	bads := s.badAppIDs.Len()
 	switch {
-	case s.badAppIDs.Len() == 0:
+	case bads == 0:
 		if !randChoice {
 			appid = s.appids[0]
 		} else {
 			appid = s.appids[rand.Intn(len(s.appids))]
 		}
-	case s.badAppIDs.Len() == len(s.appids):
+	case bads == len(s.appids):
 		glog.Errorf("GAE: all appids=%v over quota", s.appids)
 		appid = s.appids[0]
 	case !randChoice:
@@ -229,18 +230,22 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 			}
 		}
 	default:
-		oks := len(s.appids) - s.badAppIDs.Len()
-		count := oks
+		count := rand.Intn(len(s.appids) - bads)
 		for _, id := range s.appids {
 			if s.IsBadAppID(id) {
 				continue
 			}
-			count -= 1 + rand.Intn(oks)
-			if count <= 0 {
+			if count == 0 {
 				appid = id
 				break
+			} else {
+				count--
 			}
 		}
+	}
+
+	if appid == "" {
+		appid = s.appids[0]
 	}
 
 	return &url.URL{
