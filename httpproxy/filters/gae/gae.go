@@ -41,7 +41,6 @@ type Config struct {
 		ClientSessionCacheSize int
 		Ciphers                []string
 		ServerName             []string
-		NextProtos             []string
 	}
 	GoogleG2KeyID string
 	ForceHTTPS    []string
@@ -133,7 +132,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
 			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 		},
-		NextProtos: []string{"h2", "h2-14", "http/1.1"},
 	}
 	switch config.TLSConfig.Version {
 	case "TLSv12", "TLSv1.2":
@@ -164,8 +162,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	if len(config.TLSConfig.ServerName) > 0 {
 		googleTLSConfig.ServerName = config.TLSConfig.ServerName[rand.Intn(len(config.TLSConfig.ServerName))]
 	}
-	if config.DisableHTTP2 {
-		googleTLSConfig.NextProtos = nil
+	if !config.DisableHTTP2 {
+		googleTLSConfig.NextProtos = []string{"h2", "h2-14", "http/1.1"}
 	}
 
 	d := &dialer.MultiDialer{
@@ -220,13 +218,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.ForceHTTP2:
 		tr = t2
-	case config.DisableHTTP2:
-		tr = t1
-	default:
+	case !config.DisableHTTP2:
 		err := http2.ConfigureTransport(t1)
 		if err != nil {
 			glog.Warningf("GAE: Error enabling Transport HTTP/2 support: %v", err)
 		}
+		tr = t1
+	default:
 		tr = t1
 	}
 

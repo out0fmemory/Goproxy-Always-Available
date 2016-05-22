@@ -91,7 +91,6 @@
 			// "pubads.g.doubleclick.net",
 			// "www.google-analytics.com",
 		],
-		"NextProtos": ["h2", "h2-14", "http/1.1"],
 	},
 	"GoogleG2KeyID": "4add06161bbcf668b576f581b6bb621aba5a812f",
 	"FakeOptions": {
