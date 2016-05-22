@@ -24,7 +24,7 @@ type MultiDialer struct {
 	SSLVerify       bool
 	TLSConfig       *tls.Config
 	Site2Alias      *helpers.HostMatcher
-	FakeServerNames []string
+	GoogleTLSConfig *tls.Config
 	GoogleG2KeyID   []byte
 	IPBlackList     lrucache.Cache
 	HostMap         map[string][]string
@@ -257,7 +257,7 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 					isGoogleAddr := false
 					switch {
 					case strings.HasPrefix(alias, "google_"):
-						config = GetDefaultTLSConfigForGoogle(d.FakeServerNames)
+						config = d.GoogleTLSConfig
 						isGoogleAddr = true
 					default:
 						config = &tls.Config{
@@ -318,7 +318,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					isGoogleAddr := false
 					switch {
 					case strings.HasPrefix(alias, "google_"):
-						config = GetDefaultTLSConfigForGoogle(d.FakeServerNames)
+						config = d.GoogleTLSConfig
 						isGoogleAddr = true
 					default:
 						config = cfg

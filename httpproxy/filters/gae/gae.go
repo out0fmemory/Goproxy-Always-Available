@@ -2,6 +2,7 @@ package gae
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/hex"
 	"math/rand"
 	"net"
@@ -34,14 +35,21 @@ type Config struct {
 	Sites           []string
 	Site2Alias      map[string]string
 	HostMap         map[string][]string
-	FakeServerNames []string
-	GoogleG2KeyID   string
-	ForceHTTPS      []string
-	ForceGAE        []string
-	FakeOptions     map[string][]string
-	DNSServers      []string
-	IPBlackList     []string
-	Transport       struct {
+	TLSConfig       struct {
+		Version                string
+		SSLVerify              bool
+		ClientSessionCacheSize int
+		Ciphers                []string
+		ServerName             []string
+		NextProtos             []string
+	}
+	GoogleG2KeyID string
+	ForceHTTPS    []string
+	ForceGAE      []string
+	FakeOptions   map[string][]string
+	DNSServers    []string
+	IPBlackList   []string
+	Transport     struct {
 		Dialer struct {
 			DNSCacheExpiry int
 			DNSCacheSize   uint
@@ -106,6 +114,60 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		return nil, err
 	}
 
+	googleTLSConfig := &tls.Config{
+		MinVersion:         tls.VersionTLS12,
+		InsecureSkipVerify: true,
+		ServerName:         "www.microsoft.com",
+		ClientSessionCache: tls.NewLRUClientSessionCache(config.TLSConfig.ClientSessionCacheSize),
+		CipherSuites: []uint16{
+			tls.TLS_RSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+		},
+		NextProtos: []string{"h2", "h2-14", "http/1.1"},
+	}
+	switch config.TLSConfig.Version {
+	case "TLSv12", "TLSv1.2":
+		googleTLSConfig.MinVersion = tls.VersionTLS12
+	case "TLSv11", "TLSv1.1":
+		googleTLSConfig.MinVersion = tls.VersionTLS11
+	default:
+		googleTLSConfig.MinVersion = tls.VersionTLS10
+	}
+	pickupCiphers := func(names []string) []uint16 {
+		ciphers := make([]uint16, 0)
+		for _, name := range names {
+			cipher := dialer.Cipher(name)
+			if cipher == 0 {
+				glog.Fatalf("GAE: cipher %#v is not supported.", name)
+			}
+			ciphers = append(ciphers, cipher)
+		}
+		length := len(ciphers)
+		n := rand.Intn(length)
+		for i := n + 1; i < length; i++ {
+			j := rand.Intn(i)
+			ciphers[i], ciphers[j] = ciphers[j], ciphers[i]
+		}
+		return ciphers[:n+1]
+	}
+	googleTLSConfig.CipherSuites = pickupCiphers(config.TLSConfig.Ciphers)
+	if len(config.TLSConfig.ServerName) > 0 {
+		googleTLSConfig.ServerName = config.TLSConfig.ServerName[rand.Intn(len(config.TLSConfig.ServerName))]
+	}
+	if config.DisableHTTP2 {
+		googleTLSConfig.NextProtos = nil
+	}
+
 	d := &dialer.MultiDialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
@@ -118,7 +180,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
 		IPBlackList:     lrucache.NewLRUCache(8192),
 		HostMap:         config.HostMap,
-		FakeServerNames: config.FakeServerNames,
+		GoogleTLSConfig: googleTLSConfig,
 		GoogleG2KeyID:   googleG2KeyID,
 		DNSServers:      dnsServers,
 		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
@@ -149,7 +211,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	t2 := &http2.Transport{
 		DialTLS:            d.DialTLS2,
-		TLSClientConfig:    dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames),
+		TLSClientConfig:    d.GoogleTLSConfig,
 		DisableCompression: config.Transport.DisableCompression,
 	}
 
@@ -157,7 +219,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.ForceHTTP2:
-		_ = dialer.GetDefaultTLSConfigForGoogle(config.FakeServerNames)
 		tr = t2
 	case config.DisableHTTP2:
 		tr = t1
