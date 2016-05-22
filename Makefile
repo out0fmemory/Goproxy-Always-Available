@@ -3,11 +3,10 @@ REVSION = $(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
-SOURCEDIR = $(REPO)/
-BUILDDIR = $(REPO)/build
-STAGEDIR = $(BUILDDIR)/stage
-OBJECTDIR = $(BUILDDIR)/obj
-DISTDIR = $(BUILDDIR)/dist
+BUILDROOT = $(REPO)/build
+STAGEDIR = $(BUILDROOT)/stage
+OBJECTDIR = $(BUILDROOT)/obj
+DISTDIR = $(BUILDROOT)/dist
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
@@ -15,7 +14,7 @@ GOARCH ?= $(shell go env GOARCH)
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
 	GOPROXY_STAGEDIR = $(STAGEDIR)
-	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9 -m0=lzma -mfb=64 -md=32m -ms=on
+	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9 -m0=lzma2 -mfb=128 -md=64m -ms=on -aoa
 	GOPROXY_DISTEXT = .7z
 else ifeq ($(GOOS), darwin)
 	GOPROXY_EXE = $(PACKAGE)
@@ -34,9 +33,8 @@ OBJECTS += $(OBJECTDIR)/$(GOPROXY_EXE)
 
 SOURCES :=
 SOURCES += $(REPO)/README.md
-SOURCES += $(SOURCEDIR)/httpproxy/httpproxy.json
+SOURCES += $(REPO)/httpproxy/httpproxy.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
-#SOURCES += $(SOURCEDIR)/goproxy.pem
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(GOOS), windows)
@@ -61,13 +59,11 @@ build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_DISTEXT)
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(BUILDDIR)
+	$(RM) -rf $(BUILDROOT)
 
 $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_DISTEXT): $(OBJECTS)
-	mkdir -p $(DISTDIR)
-	mkdir -p $(GOPROXY_STAGEDIR)/ && \
-	cp $(OBJECTDIR)/$(GOPROXY_EXE) $(GOPROXY_STAGEDIR)/$(GOPROXY_EXE)
-	cp $(SOURCES) $(GOPROXY_STAGEDIR)/
+	mkdir -p $(DISTDIR) $(STAGEDIR) $(GOPROXY_STAGEDIR)
+	cp $(OBJECTS) $(SOURCES) $(GOPROXY_STAGEDIR)
 	cd $(STAGEDIR) && $(GOPROXY_DISTCMD) $@ *
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
