@@ -95,7 +95,7 @@ func LookupConfigStoreURI(filterName string) string {
 		return "zip://" + ConfigZip
 	}
 
-	for _, dirname := range []string{".", "httpproxy", "httpproxy/filters/" + filterName} {
+	for _, dirname := range []string{filepath.Dir(os.Args[0]), ".", "httpproxy", "httpproxy/filters/" + filterName} {
 		filename := dirname + "/" + filterName + ".json"
 		if _, err := os.Stat(filename); err == nil {
 			return "file://" + dirname
