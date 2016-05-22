@@ -173,27 +173,27 @@ function release_repo_ci() {
 	local GITHUB_RELEASE_BIN=$(pwd)/$(curl -L ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
 
 	cd ${WORKING_DIR}/r${RELEASE}/
-	${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
 
-	for i in 1 2 3 4 5
+	for i in $(seq 5)
 	do
-		if ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}" ; then
-			break
-		else
+		${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} >/dev/null 2>&1 || true
+
+		if ! ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name "${GITHUB_REPO} r${RELEASE}" --description "${RELEASE_DESCRIPTION}" ; then
 			sleep 5
+			continue
 		fi
-	done
 
-	for FILE in *
-	do
-		for i in 1 2 3 4 5
+		local allok="true"
+		for FILE in *
 		do
-			if ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE} ; then
+			if ! ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE} ; then
+				allok="false"
 				break
-			else
-				sleep 1
 			fi
 		done
+		if [ "${allok}" == "true" ]; then
+			break
+		fi
 	done
 
 	popd

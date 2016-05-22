@@ -17,6 +17,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/cloudflare/golibs/lrucache"
+
 	"../../helpers"
 )
 
@@ -28,6 +30,7 @@ const (
 
 type Servers struct {
 	appids    []string
+	badAppIDs lrucache.Cache
 	password  string
 	sslVerify bool
 	deadline  time.Duration
@@ -37,6 +40,7 @@ type Servers struct {
 func NewServers(appids []string, password string, sslVerify bool, deadline time.Duration) *Servers {
 	s := &Servers{
 		appids:    appids,
+		badAppIDs: lrucache.NewLRUCache(uint(len(appids))),
 		password:  password,
 		sslVerify: sslVerify,
 		deadline:  deadline,
@@ -47,6 +51,10 @@ func NewServers(appids []string, password string, sslVerify bool, deadline time.
 
 func (s *Servers) Len() int {
 	return len(s.appids)
+}
+
+func (s *Servers) ToggleBadAppID(appid string, duration time.Duration) {
+	s.badAppIDs.Set(appid, struct{}{}, time.Now().Add(duration))
 }
 
 func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL) (*http.Request, error) {
@@ -196,9 +204,14 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 		}
 	}
 
+	appid := s.appids[n]
+	if _, ok := s.badAppIDs.Get(appid); ok {
+		appid = s.appids[0]
+	}
+
 	return &url.URL{
 		Scheme: GAEScheme,
-		Host:   s.appids[n] + GAEDomain,
+		Host:   appid + GAEDomain,
 		Path:   GAEPath,
 	}
 }
