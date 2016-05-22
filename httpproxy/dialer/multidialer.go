@@ -245,68 +245,16 @@ func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 }
 
 func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
-	glog.Warningf("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
-	switch network {
-	case "tcp", "tcp4", "tcp6":
-		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.Site2Alias.Lookup(host); ok {
-				alias := alias0.(string)
-				if hosts, err := d.LookupAlias(alias); err == nil {
-					var config *tls.Config
-
-					isGoogleAddr := false
-					switch {
-					case strings.HasPrefix(alias, "google_"):
-						config = d.GoogleTLSConfig
-						isGoogleAddr = true
-					default:
-						config = &tls.Config{
-							InsecureSkipVerify: true,
-							ServerName:         address,
-						}
-					}
-					glog.V(3).Infof("DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
-
-					addrs := make([]string, len(hosts))
-					for i, host := range hosts {
-						addrs[i] = net.JoinHostPort(host, port)
-					}
-					if d.ForceIPv6 {
-						network = "tcp6"
-					}
-					conn, err := d.dialMultiTLS(network, addrs, config)
-					if err != nil {
-						return nil, err
-					}
-					if d.SSLVerify && isGoogleAddr {
-						if tc, ok := conn.(*tls.Conn); ok {
-							cert := tc.ConnectionState().PeerCertificates[0]
-							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
-							if d.GoogleG2KeyID != nil {
-								if bytes.Compare(cert.AuthorityKeyId, d.GoogleG2KeyID) != 0 {
-									defer conn.Close()
-									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
-								}
-							} else {
-								if !strings.HasPrefix(cert.Issuer.CommonName, "Google ") {
-									defer conn.Close()
-									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
-								}
-							}
-						}
-					}
-					return conn, nil
-				}
-			}
-		}
-	default:
-		break
-	}
-	return tls.DialWithDialer(&d.Dialer, network, address, d.TLSConfig)
+	return d.DialTLS2(network, address, nil)
 }
 
 func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Conn, error) {
 	glog.Warningf("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+
+	if cfg == nil {
+		cfg = d.TLSConfig
+	}
+
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
@@ -320,10 +268,15 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					case strings.HasPrefix(alias, "google_"):
 						config = d.GoogleTLSConfig
 						isGoogleAddr = true
+					case cfg == nil:
+						config = &tls.Config{
+							InsecureSkipVerify: !d.SSLVerify,
+							ServerName:         address,
+						}
 					default:
 						config = cfg
 					}
-					glog.V(3).Infof("DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
+					glog.V(3).Infof("DialTLS2(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
 
 					addrs := make([]string, len(hosts))
 					for i, host := range hosts {
