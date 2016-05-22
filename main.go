@@ -16,14 +16,20 @@ var version = "r9999"
 func main() {
 
 	logToStderr := true
+	verbose := true
 	for i := 1; i < len(os.Args); i++ {
 		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
 			logToStderr = false
-			break
+		}
+		if strings.HasPrefix(os.Args[i], "-v=") {
+			verbose = false
 		}
 	}
 	if logToStderr {
 		flag.Set("logtostderr", "true")
+	}
+	if verbose {
+		flag.Set("v", "2")
 	}
 	flag.Parse()
 
