@@ -79,8 +79,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.Host)
 					return resp, nil
 				} else {
-					glog.Warningf("GAE: %s over qouta, switch to next appid...", server.Host)
-					t.Servers.RoundServers()
+					glog.Warningf("GAE: %s over qouta, try switch to next appid...", server.Host)
+					t.Servers.ToggleBadServer(server, 2*time.Hour)
 				}
 				time.Sleep(t.RetryDelay)
 				continue

@@ -13,11 +13,10 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
+	"github.com/phuslu/glog"
 
 	"../../helpers"
 )
@@ -34,19 +33,16 @@ type Servers struct {
 	password  string
 	sslVerify bool
 	deadline  time.Duration
-	roundOnce atomic.Value
 }
 
 func NewServers(appids []string, password string, sslVerify bool, deadline time.Duration) *Servers {
-	s := &Servers{
+	return &Servers{
 		appids:    appids,
 		badAppIDs: lrucache.NewLRUCache(uint(len(appids))),
 		password:  password,
 		sslVerify: sslVerify,
 		deadline:  deadline,
 	}
-	s.roundOnce.Store(new(sync.Once))
-	return s
 }
 
 func (s *Servers) Len() int {
@@ -55,6 +51,16 @@ func (s *Servers) Len() int {
 
 func (s *Servers) ToggleBadAppID(appid string, duration time.Duration) {
 	s.badAppIDs.Set(appid, struct{}{}, time.Now().Add(duration))
+}
+
+func (s *Servers) IsBadAppID(appid string) bool {
+	_, ok := s.badAppIDs.Get(appid)
+	return ok
+}
+
+func (s *Servers) ToggleBadServer(fetchserver *url.URL, duration time.Duration) {
+	appid := strings.TrimSuffix(fetchserver.Host, GAEDomain)
+	s.ToggleBadAppID(appid, duration)
 }
 
 func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL) (*http.Request, error) {
@@ -169,22 +175,22 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 }
 
 func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
-	var n int
+	randChoice := false
 
 	switch {
 	case len(s.appids) == 1:
-		n = 0
+		randChoice = false
 	case base > 0:
-		n = 1 + rand.Intn(len(s.appids)-1)
+		randChoice = true
 	default:
 		switch path.Ext(req.URL.Path) {
 		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-			n = rand.Intn(len(s.appids))
+			randChoice = true
 		case "":
 			name := path.Base(req.URL.Path)
 			if strings.Contains(name, "play") ||
 				strings.Contains(name, "video") {
-				n = rand.Intn(len(s.appids))
+				randChoice = true
 			}
 		default:
 			if req.Header.Get("Range") != "" ||
@@ -199,14 +205,42 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 				strings.Contains(req.URL.Path, "static") ||
 				strings.Contains(req.URL.Path, "asset") ||
 				strings.Contains(req.URL.Path, "/cache/") {
-				n = rand.Intn(len(s.appids))
+				randChoice = true
 			}
 		}
 	}
 
-	appid := s.appids[n]
-	if _, ok := s.badAppIDs.Get(appid); ok {
+	var appid string
+	switch {
+	case s.badAppIDs.Len() == 0:
+		if !randChoice {
+			appid = s.appids[0]
+		} else {
+			appid = s.appids[rand.Intn(len(s.appids))]
+		}
+	case s.badAppIDs.Len() == len(s.appids):
+		glog.Errorf("GAE: all appids=%v over quota", s.appids)
 		appid = s.appids[0]
+	case !randChoice:
+		for _, id := range s.appids {
+			if !s.IsBadAppID(id) {
+				appid = id
+				break
+			}
+		}
+	default:
+		oks := len(s.appids) - s.badAppIDs.Len()
+		count := oks
+		for _, id := range s.appids {
+			if s.IsBadAppID(id) {
+				continue
+			}
+			count -= 1 + rand.Intn(oks)
+			if count <= 0 {
+				appid = id
+				break
+			}
+		}
 	}
 
 	return &url.URL{
@@ -214,15 +248,4 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 		Host:   appid + GAEDomain,
 		Path:   GAEPath,
 	}
-}
-
-func (s *Servers) RoundServers() {
-	s.roundOnce.Load().(*sync.Once).Do(func() {
-		defer s.roundOnce.Store(new(sync.Once))
-		server := s.appids[0]
-		for i := 0; i < len(s.appids)-1; i++ {
-			s.appids[i] = s.appids[i+1]
-		}
-		s.appids[len(s.appids)-1] = server
-	})
 }
