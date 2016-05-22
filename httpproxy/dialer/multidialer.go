@@ -497,9 +497,9 @@ func pickupAddrs(addrs []string, n int, connDuration lrucache.Cache, connError l
 	return append(goodAddrs1, unknownAddrs...)
 }
 
-func shuffle(addrs []string) {
-	for i := len(addrs) - 1; i >= 0; i-- {
+func shuffle(slice []string) {
+	for i := range slice {
 		j := rand.Intn(i + 1)
-		addrs[i], addrs[j] = addrs[j], addrs[i]
+		slice[i], slice[j] = slice[j], slice[i]
 	}
 }
