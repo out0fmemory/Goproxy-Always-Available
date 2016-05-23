@@ -70,6 +70,10 @@
 		"domains.google.com",
 		"www.google.com/patents",
 	],
+	"ForceDeflate": [
+		"baike.baidu.com",
+		"www.serv-u.com"
+	],
 	"TLSConfig": {
 		"Version": "TLSv1.2",
 		"ClientSessionCacheSize": 1024,

@@ -45,6 +45,7 @@ type Config struct {
 	GoogleG2KeyID string
 	ForceHTTPS    []string
 	ForceGAE      []string
+	ForceDeflate  []string
 	FakeOptions   map[string][]string
 	DNSServers    []string
 	IPBlackList   []string
@@ -69,15 +70,16 @@ type Config struct {
 
 type Filter struct {
 	Config
-	MultiDialer        *dialer.MultiDialer
-	GAETransport       *Transport
-	DirectTransport    http.RoundTripper
-	ForceHTTPSMatcher  *helpers.HostMatcher
-	ForceGAEStrings    []string
-	ForceGAEMatcher    *helpers.HostMatcher
-	FakeOptionsMatcher *helpers.HostMatcher
-	SiteMatcher        *helpers.HostMatcher
-	DirectSiteMatcher  *helpers.HostMatcher
+	MultiDialer         *dialer.MultiDialer
+	GAETransport        *Transport
+	DirectTransport     http.RoundTripper
+	ForceHTTPSMatcher   *helpers.HostMatcher
+	ForceGAEStrings     []string
+	ForceGAEMatcher     *helpers.HostMatcher
+	ForceDeflateMatcher *helpers.HostMatcher
+	FakeOptionsMatcher  *helpers.HostMatcher
+	SiteMatcher         *helpers.HostMatcher
+	DirectSiteMatcher   *helpers.HostMatcher
 }
 
 func init() {
@@ -281,13 +283,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			RetryDelay: time.Duration(config.Transport.RetryDelay*1000) * time.Second,
 			RetryTimes: config.Transport.RetryTimes,
 		},
-		DirectTransport:    tr,
-		ForceHTTPSMatcher:  helpers.NewHostMatcher(config.ForceHTTPS),
-		ForceGAEMatcher:    helpers.NewHostMatcher(forceGAEMatcherStrings),
-		ForceGAEStrings:    forceGAEStrings,
-		FakeOptionsMatcher: helpers.NewHostMatcherWithStrings(config.FakeOptions),
-		SiteMatcher:        helpers.NewHostMatcher(config.Sites),
-		DirectSiteMatcher:  helpers.NewHostMatcherWithString(config.Site2Alias),
+		DirectTransport:     tr,
+		ForceHTTPSMatcher:   helpers.NewHostMatcher(config.ForceHTTPS),
+		ForceGAEMatcher:     helpers.NewHostMatcher(forceGAEMatcherStrings),
+		ForceGAEStrings:     forceGAEStrings,
+		ForceDeflateMatcher: helpers.NewHostMatcher(config.ForceDeflate),
+		FakeOptionsMatcher:  helpers.NewHostMatcherWithStrings(config.FakeOptions),
+		SiteMatcher:         helpers.NewHostMatcher(config.Sites),
+		DirectSiteMatcher:   helpers.NewHostMatcherWithString(config.Site2Alias),
 	}, nil
 }
 
@@ -384,6 +387,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	prefix := "FETCH"
 	if tr == f.DirectTransport {
 		prefix = "DIRECT"
+	}
+
+	if f.ForceDeflateMatcher.Match(req.Host) {
+		// req.Header.Set("Accept-Encoding", "deflate")
+		req.Header.Del("Accept-Encoding")
 	}
 
 	resp, err := tr.RoundTrip(req)
