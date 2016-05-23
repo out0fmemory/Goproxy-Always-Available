@@ -19,11 +19,26 @@ func (hm *HostMatcher) add(host string, value interface{}) {
 	case host == "*":
 		hm.starValue = value
 	case !strings.Contains(host, "*"):
+		if hm.strictMap == nil {
+			hm.strictMap = make(map[string]interface{})
+		}
 		hm.strictMap[host] = value
 	case strings.HasPrefix(host, "*") && !strings.Contains(host[1:], "*"):
+		if hm.prefixList == nil {
+			hm.prefixList = make([]string, 0)
+		}
+		if hm.prefixMap == nil {
+			hm.prefixMap = make(map[string]interface{})
+		}
 		hm.prefixList = append(hm.prefixList, host[1:])
 		hm.prefixMap[host[1:]] = value
 	default:
+		if hm.wildcardList == nil {
+			hm.wildcardList = make([]string, 0)
+		}
+		if hm.wildcardMap == nil {
+			hm.wildcardMap = make(map[string]interface{})
+		}
 		hm.wildcardList = append(hm.wildcardList, host)
 		hm.wildcardMap[host] = value
 	}
@@ -54,14 +69,7 @@ func NewHostMatcherWithStrings(hosts map[string][]string) *HostMatcher {
 }
 
 func NewHostMatcherWithValue(values map[string]interface{}) *HostMatcher {
-	hm := &HostMatcher{
-		starValue:    nil,
-		strictMap:    make(map[string]interface{}),
-		prefixList:   make([]string, 0),
-		prefixMap:    make(map[string]interface{}),
-		wildcardList: make([]string, 0),
-		wildcardMap:  make(map[string]interface{}),
-	}
+	hm := &HostMatcher{}
 
 	for host, value := range values {
 		hm.add(host, value)
@@ -88,19 +96,25 @@ func (hm *HostMatcher) Lookup(host string) (interface{}, bool) {
 		return hm.starValue, true
 	}
 
-	if value, ok := hm.strictMap[host]; ok {
-		return value, true
-	}
-
-	for _, key := range hm.prefixList {
-		if strings.HasSuffix(host, key) {
-			return hm.prefixMap[key], true
+	if hm.strictMap != nil {
+		if value, ok := hm.strictMap[host]; ok {
+			return value, true
 		}
 	}
 
-	for _, key := range hm.wildcardList {
-		if matched, _ := path.Match(key, host); matched {
-			return hm.wildcardMap[key], true
+	if hm.prefixList != nil {
+		for _, key := range hm.prefixList {
+			if strings.HasSuffix(host, key) {
+				return hm.prefixMap[key], true
+			}
+		}
+	}
+
+	if hm.wildcardList != nil {
+		for _, key := range hm.wildcardList {
+			if matched, _ := path.Match(key, host); matched {
+				return hm.wildcardMap[key], true
+			}
 		}
 	}
 
