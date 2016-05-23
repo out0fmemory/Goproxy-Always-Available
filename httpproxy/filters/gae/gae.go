@@ -271,6 +271,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}()
 	}
 
+	helpers.ShuffleStrings(config.AppIDs)
+
 	return &Filter{
 		Config:      *config,
 		MultiDialer: d,

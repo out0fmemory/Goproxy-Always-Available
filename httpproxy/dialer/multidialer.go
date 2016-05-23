@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"math/rand"
 	"net"
 	"sort"
 	"strings"
@@ -489,17 +488,10 @@ func pickupAddrs(addrs []string, n int, connDuration lrucache.Cache, connError l
 		goodAddrs1[i] = r.addr
 	}
 
-	shuffle(unknownAddrs)
+	helpers.ShuffleStrings(unknownAddrs)
 	if len(goodAddrs1)+len(unknownAddrs) > n {
 		unknownAddrs = unknownAddrs[:n-len(goodAddrs1)]
 	}
 
 	return append(goodAddrs1, unknownAddrs...)
-}
-
-func shuffle(slice []string) {
-	for i := range slice {
-		j := rand.Intn(i + 1)
-		slice[i], slice[j] = slice[j], slice[i]
-	}
 }
