@@ -252,12 +252,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 					glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
 					s := strings.ToLower(err.Error())
 					if strings.HasPrefix(s, "net/http: request canceled") || strings.Contains(s, "timeout") {
-						if tr == t2 {
-							t2.CloseConnections()
-						}
-						if tr == t1 {
-							t1.CloseIdleConnections()
-						}
+						TryCloseConnections(tr)
 					}
 				}
 			}
@@ -398,11 +393,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				Timeout() bool
 			}); ok && ne.Timeout() {
 				// f.MultiDialer.ClearCache()
-				if t1, ok := tr.(*http.Transport); ok {
-					t1.CloseIdleConnections()
-				} else if t2, ok := tr.(*http2.Transport); ok {
-					t2.CloseConnections()
-				}
+				TryCloseConnections(tr)
 			}
 		}
 		if resp != nil && resp.Body != nil {
