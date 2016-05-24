@@ -1,6 +1,7 @@
 package gae
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/hex"
@@ -410,8 +411,26 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return ctx, nil, err
 	}
 
-	if f.ForceDeflateMatcher.Match(req.Host) {
-		resp.Header.Set("Content-Encoding", "deflate")
+	if f.ForceDeflateMatcher.Match(req.Host) &&
+		resp.Header.Get("Content-Encoding") == "" &&
+		strings.HasPrefix(resp.Header.Get("Content-Type"), "text/html") {
+		buf := make([]byte, 1024)
+		n, err := resp.Body.Read(buf)
+		if err != nil {
+			defer resp.Body.Close()
+			return ctx, nil, err
+		}
+		switch buf[0] {
+		case ' ', '<':
+			break
+		default:
+			if bytes.HasPrefix(buf, []byte("\x1f\x8b\x08")) {
+				resp.Header.Set("Content-Encoding", "gzip")
+			} else {
+				resp.Header.Set("Content-Encoding", "deflate")
+			}
+		}
+		resp.Body = helpers.NewMultiReadCloser(bytes.NewReader(buf[:n]), resp.Body)
 	}
 
 	glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
