@@ -389,11 +389,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		prefix = "DIRECT"
 	}
 
-	if f.ForceDeflateMatcher.Match(req.Host) {
-		// req.Header.Set("Accept-Encoding", "deflate")
-		req.Header.Del("Accept-Encoding")
-	}
-
 	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		glog.Warningf("%s \"GAE %s %s %s %s\" error: %T(%v)", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, err, err)
@@ -409,10 +404,17 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				}
 			}
 		}
-	} else {
-		glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+		return ctx, nil, err
 	}
 
+	if f.ForceDeflateMatcher.Match(req.Host) {
+		resp.Header.Set("Content-Encoding", "deflate")
+	}
+
+	glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	return ctx, resp, err
 }
 
