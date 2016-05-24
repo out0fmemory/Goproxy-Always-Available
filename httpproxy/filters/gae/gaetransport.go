@@ -45,8 +45,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			}
 
 			if isTimeoutError {
-				glog.Warningf("GAE: \"%s %s\" timeout: %v, TryCloseConnections(%T)", req.Method, req.URL.String(), err, t.RoundTripper)
-				TryCloseConnections(t.RoundTripper)
+				glog.Warningf("GAE: \"%s %s\" timeout: %v, helpers.TryCloseConnections(%T)", req.Method, req.URL.String(), err, t.RoundTripper)
+				helpers.TryCloseConnections(t.RoundTripper)
 			}
 
 			if i == t.RetryTimes-1 {
