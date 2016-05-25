@@ -31,7 +31,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	remoteAddr := req.RemoteAddr
 
 	// Prepare filter.Context
-	ctx := filters.NewContext(req.Context(), h.Listener, rw)
+	ctx := filters.NewContext(req.Context(), h, h.Listener, rw)
 	req = req.WithContext(ctx)
 
 	// Enable transport http proxy
