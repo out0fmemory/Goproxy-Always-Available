@@ -14,7 +14,7 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum rename
+for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum rename timeout
 do
 	if ! type -p ${CMD}; then
 		echo "tool ${CMD} is not installed, abort."
@@ -188,7 +188,7 @@ function release_repo_ci() {
 		local allok="true"
 		for FILE in *
 		do
-			if ! ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE} ; then
+			if ! timeout -k60 60 ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_CI_REPO} --tag r${RELEASE} --name ${FILE} --file ${FILE} ; then
 				allok="false"
 				break
 			fi
