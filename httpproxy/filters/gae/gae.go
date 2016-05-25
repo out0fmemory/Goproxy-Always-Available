@@ -413,7 +413,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 		buf = buf[:n]
 		switch {
-		case bytes.HasPrefix(buf, []byte("\x1f\x8b\x08")):
+		case helpers.IsGzip(buf):
 			resp.Header.Set("Content-Encoding", "gzip")
 		case helpers.IsBinary(buf):
 			resp.Header.Set("Content-Encoding", "deflate")

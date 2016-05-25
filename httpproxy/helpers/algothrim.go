@@ -31,15 +31,3 @@ func ShuffleUint16s(slice []uint16) {
 		slice[i], slice[j] = slice[j], slice[i]
 	}
 }
-
-func IsBinary(b []byte) bool {
-	if len(b) > 512 {
-		b = b[:512]
-	}
-	for _, c := range b {
-		if c > 0x7f {
-			return true
-		}
-	}
-	return false
-}
