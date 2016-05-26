@@ -69,7 +69,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 					return resp, nil
 				} else {
 					glog.Warningf("GAE: %s over qouta, try switch to next appid...", server.Host)
-					t.Servers.ToggleBadServer(server, 2*time.Hour)
+					t.Servers.ToggleBadServer(server)
 				}
 				time.Sleep(t.RetryDelay)
 				continue

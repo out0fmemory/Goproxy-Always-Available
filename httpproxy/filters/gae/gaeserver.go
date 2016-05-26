@@ -13,10 +13,8 @@ import (
 	"net/url"
 	"path"
 	"strings"
+	"sync"
 	"time"
-
-	"github.com/cloudflare/golibs/lrucache"
-	"github.com/phuslu/glog"
 
 	"../../helpers"
 )
@@ -28,8 +26,9 @@ const (
 )
 
 type Servers struct {
-	appids    []string
-	badAppIDs lrucache.Cache
+	appids1   []string
+	appids2   []string
+	muAppID   *sync.RWMutex
 	password  string
 	sslVerify bool
 	deadline  time.Duration
@@ -37,8 +36,9 @@ type Servers struct {
 
 func NewServers(appids []string, password string, sslVerify bool, deadline time.Duration) *Servers {
 	return &Servers{
-		appids:    appids,
-		badAppIDs: lrucache.NewLRUCache(uint(len(appids))),
+		appids1:   appids,
+		appids2:   []string{},
+		muAppID:   new(sync.RWMutex),
 		password:  password,
 		sslVerify: sslVerify,
 		deadline:  deadline,
@@ -46,21 +46,26 @@ func NewServers(appids []string, password string, sslVerify bool, deadline time.
 }
 
 func (s *Servers) Len() int {
-	return len(s.appids)
+	s.muAppID.RLock()
+	defer s.muAppID.RUnlock()
+	return len(s.appids1)
 }
 
-func (s *Servers) ToggleBadAppID(appid string, duration time.Duration) {
-	s.badAppIDs.Set(appid, struct{}{}, time.Now().Add(duration))
+func (s *Servers) ToggleBadAppID(appid string) {
+	s.muAppID.Lock()
+	defer s.muAppID.Lock()
+	appids := make([]string, 0)
+	for _, id := range s.appids1 {
+		if id != appid {
+			appids = append(appids, id)
+		}
+	}
+	s.appids1 = appids
+	s.appids2 = append(s.appids2, appid)
 }
 
-func (s *Servers) IsBadAppID(appid string) bool {
-	_, ok := s.badAppIDs.Get(appid)
-	return ok
-}
-
-func (s *Servers) ToggleBadServer(fetchserver *url.URL, duration time.Duration) {
-	appid := strings.TrimSuffix(fetchserver.Host, GAEDomain)
-	s.ToggleBadAppID(appid, duration)
+func (s *Servers) ToggleBadServer(fetchserver *url.URL) {
+	s.ToggleBadAppID(strings.TrimSuffix(fetchserver.Host, GAEDomain))
 }
 
 func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL) (*http.Request, error) {
@@ -177,76 +182,49 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 	randChoice := false
 
-	switch {
-	case len(s.appids) == 1:
-		randChoice = false
-	case base > 0:
+	switch path.Ext(req.URL.Path) {
+	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4", ".js", ".css":
 		randChoice = true
-	default:
-		switch path.Ext(req.URL.Path) {
-		case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
+	case "":
+		name := path.Base(req.URL.Path)
+		if strings.Contains(name, "play") ||
+			strings.Contains(name, "video") {
 			randChoice = true
-		case "":
-			name := path.Base(req.URL.Path)
-			if strings.Contains(name, "play") ||
-				strings.Contains(name, "video") {
-				randChoice = true
-			}
-		default:
-			if req.Header.Get("Range") != "" ||
-				strings.Contains(req.URL.Host, "img.") ||
-				strings.Contains(req.URL.Host, "cache.") ||
-				strings.Contains(req.URL.Host, "video.") ||
-				strings.Contains(req.URL.Host, "static.") ||
-				strings.HasPrefix(req.URL.Host, "img") ||
-				strings.HasPrefix(req.URL.Path, "/static") ||
-				strings.HasPrefix(req.URL.Path, "/asset") ||
-				strings.Contains(req.URL.Path, "min.js") ||
-				strings.Contains(req.URL.Path, "static") ||
-				strings.Contains(req.URL.Path, "asset") ||
-				strings.Contains(req.URL.Path, "/cache/") {
-				randChoice = true
-			}
 		}
+	default:
+		if req.Header.Get("Range") != "" ||
+			strings.Contains(req.URL.Host, "img.") ||
+			strings.Contains(req.URL.Host, "cache.") ||
+			strings.Contains(req.URL.Host, "video.") ||
+			strings.Contains(req.URL.Host, "static.") ||
+			strings.HasPrefix(req.URL.Host, "img") ||
+			strings.HasPrefix(req.URL.Path, "/static") ||
+			strings.HasPrefix(req.URL.Path, "/asset") ||
+			strings.Contains(req.URL.Path, "static") ||
+			strings.Contains(req.URL.Path, "asset") ||
+			strings.Contains(req.URL.Path, "/cache/") {
+			randChoice = true
+		}
+	}
+
+	if base > 0 {
+		randChoice = true
 	}
 
 	var appid string
-	bads := s.badAppIDs.Len()
-	switch {
-	case bads == 0:
-		if !randChoice {
-			appid = s.appids[0]
-		} else {
-			appid = s.appids[rand.Intn(len(s.appids))]
-		}
-	case bads == len(s.appids):
-		glog.Errorf("GAE: all appids=%v over quota", s.appids)
-		appid = s.appids[0]
-	case !randChoice:
-		for _, id := range s.appids {
-			if !s.IsBadAppID(id) {
-				appid = id
-				break
-			}
-		}
-	default:
-		count := rand.Intn(len(s.appids) - bads)
-		for _, id := range s.appids {
-			if s.IsBadAppID(id) {
-				continue
-			}
-			if count == 0 {
-				appid = id
-				break
-			} else {
-				count--
-			}
-		}
+	s.muAppID.RLock()
+	if len(s.appids1) == 0 {
+		s.muAppID.Lock()
+		s.appids1, s.appids2 = s.appids2, s.appids1
+		helpers.ShuffleStrings(s.appids1)
+		s.muAppID.Unlock()
 	}
-
-	if appid == "" {
-		appid = s.appids[0]
+	if !randChoice {
+		appid = s.appids1[0]
+	} else {
+		appid = s.appids1[rand.Intn(len(s.appids1))]
 	}
+	s.muAppID.RUnlock()
 
 	return &url.URL{
 		Scheme: GAEScheme,
