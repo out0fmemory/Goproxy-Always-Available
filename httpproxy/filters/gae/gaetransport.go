@@ -64,13 +64,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 			switch resp.StatusCode {
 			case http.StatusServiceUnavailable:
-				if t.Servers.Len() == 1 {
-					glog.Warningf("GAE: %s over qouta, please add more appids to gae.user.json", server.Host)
-					return resp, nil
-				} else {
-					glog.Warningf("GAE: %s over qouta, try switch to next appid...", server.Host)
-					t.Servers.ToggleBadServer(server)
-				}
+				glog.Warningf("GAE: %s over qouta, try switch to next appid...", server.Host)
+				t.Servers.ToggleBadServer(server)
 				time.Sleep(t.RetryDelay)
 				continue
 			case http.StatusBadGateway, http.StatusNotFound:

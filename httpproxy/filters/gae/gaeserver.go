@@ -45,12 +45,6 @@ func NewServers(appids []string, password string, sslVerify bool, deadline time.
 	}
 }
 
-func (s *Servers) Len() int {
-	s.muAppID.RLock()
-	defer s.muAppID.RUnlock()
-	return len(s.appids1)
-}
-
 func (s *Servers) ToggleBadAppID(appid string) {
 	s.muAppID.Lock()
 	defer s.muAppID.Lock()
