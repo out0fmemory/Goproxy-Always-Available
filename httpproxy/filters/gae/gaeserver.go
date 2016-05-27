@@ -14,6 +14,7 @@ import (
 	"path"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"../../helpers"
@@ -26,23 +27,25 @@ const (
 )
 
 type Servers struct {
-	appids1   []string
-	appids2   []string
-	muAppID   *sync.RWMutex
-	password  string
-	sslVerify bool
-	deadline  time.Duration
+	perferAppid atomic.Value
+	muAppID     sync.RWMutex
+	appids1     []string
+	appids2     []string
+	password    string
+	sslVerify   bool
+	deadline    time.Duration
 }
 
 func NewServers(appids []string, password string, sslVerify bool, deadline time.Duration) *Servers {
-	return &Servers{
+	server := &Servers{
 		appids1:   appids,
 		appids2:   []string{},
-		muAppID:   new(sync.RWMutex),
 		password:  password,
 		sslVerify: sslVerify,
 		deadline:  deadline,
 	}
+	server.perferAppid.Store(server.appids1[0])
+	return server
 }
 
 func (s *Servers) ToggleBadAppID(appid string) {
@@ -56,6 +59,11 @@ func (s *Servers) ToggleBadAppID(appid string) {
 	}
 	s.appids1 = appids
 	s.appids2 = append(s.appids2, appid)
+	if len(s.appids1) == 0 {
+		s.appids1, s.appids2 = s.appids2, s.appids1
+		helpers.ShuffleStrings(s.appids1)
+	}
+	s.perferAppid.Store(s.appids1[0])
 }
 
 func (s *Servers) ToggleBadServer(fetchserver *url.URL) {
@@ -205,21 +213,16 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 		randChoice = true
 	}
 
-	var appid string
-	s.muAppID.RLock()
-	if len(s.appids1) == 0 {
-		s.muAppID.Lock()
-		s.appids1, s.appids2 = s.appids2, s.appids1
-		helpers.ShuffleStrings(s.appids1)
-		s.muAppID.Unlock()
-	}
 	if !randChoice {
-		appid = s.appids1[0]
+		return toServer(s.perferAppid.Load().(string))
 	} else {
-		appid = s.appids1[rand.Intn(len(s.appids1))]
+		s.muAppID.RLock()
+		defer s.muAppID.RUnlock()
+		return toServer(s.appids1[rand.Intn(len(s.appids1))])
 	}
-	s.muAppID.RUnlock()
+}
 
+func toServer(appid string) *url.URL {
 	return &url.URL{
 		Scheme: GAEScheme,
 		Host:   appid + GAEDomain,
