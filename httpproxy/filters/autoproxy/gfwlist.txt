@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: LU9RbInsbyjsB7/az19tPw
+! Checksum: 01bKckbcD+8EqmBd17GXTA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 24 May 2016 11:17:07 +0800
+! Last Modified: Fri, 27 May 2016 08:34:40 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -320,6 +320,7 @@ china-mmm.sa.com
 ||173ng.com
 .17t17p.com
 18onlygirls.com
+.18virginsex.com
 .1949er.org
 zhao.1984.city
 ||zhao.1984.city
@@ -339,21 +340,27 @@ zhao.1984.city
 .2008xianzhang.info
 ||2008xianzhang.info
 ||2017.hk
-.21pron.com
 21andy.com/blog
+.21pron.com
+21sextury.com
 .228.net.tw
 24smile.org
 2lipstube.com
 .2shared.com
+30boxes.com
 .315lz.com
 ||32red.com
 ||36rain.com
 .3a5a.com
+3arabtv.com
 .3boys2girls.com
 .3ren.ca
 .3tui.net
 ||4bluestones.biz
 ||4chan.org
+.4everproxy.com
+||4everproxy.com
+||4rbtv.com
 ||4shared.com
 taiwannation.50webs.com
 ||51.ca
@@ -362,6 +369,7 @@ taiwannation.50webs.com
 5i01.com
 .5isotoi5.org
 .5maodang.com
+||63i.com
 .64museum.org
 64tianwang.com
 64wiki.com
@@ -370,20 +378,25 @@ taiwannation.50webs.com
 6park.com
 ||6park.com
 ||7capture.com
+.7cow.com
 .8-d.com
 |http://8-d.com
+85cc.net
 |http://85st.com
 .881903.com/page/zh-tw/
 ||881903.com
 .888.com
 89-64.org
 ||89-64.org
+.8news.com.tw
 .8z1.net
 ||8z1.net
 .9001700.com
 |http://908taiwan.org/
 ||91porn.com
 .92ccav.com
+.991.com
+|http://991.com
 .99btgc01.com
 ||99btgc01.com
 .99cn.info
@@ -406,6 +419,7 @@ a5.com.ru
 .aboutgfw.com
 .abs.edu
 .accim.org
+.aceros-de-hispania.com
 .acevpn.com
 ||acevpn.com
 .acg18.me
@@ -468,7 +482,9 @@ allgirlsallowed.org
 alliance.org.hk
 .allinfa.com
 |http://allinfa.com
+.alljackpotscasino.com
 ||allmovie.com
+.alphaporno.com
 ||alternate-tools.com
 alvinalexander.com
 alwaysdata.com
@@ -499,6 +515,7 @@ www1.american.edu/ted/ice/tibet
 ||android-x86.org
 ||angularjs.org
 animecrazy.net
+.animeshippuuden.com
 aniscartujo.com
 ||aniscartujo.com
 ||anobii.com
@@ -593,6 +610,7 @@ avaaz.org
 ||avoision.com
 .avyahoo.com
 ||axureformac.com
+.azerbaycan.tv
 azerimix.com
 !--boxun.azurewebsites.net doesn't exist.
 boxun*.azurewebsites.net
@@ -605,6 +623,7 @@ backchina.com
 ||backchina.com
 .backpackers.com.tw/forum
 backtotiananmen.com
+.badjojo.com
 badoo.com
 |http://*2.bahamut.com.tw
 ||baidu.jp
@@ -620,6 +639,7 @@ bannedbook.org
 .bannednews.org
 .barenakedislam.com
 ||barnabu.co.uk
+bartvpn.com
 bayvoice.net
 ||bayvoice.net
 dajusha.baywords.com
@@ -635,14 +655,18 @@ newsforums.bbc.co.uk
 ||bbcchinese.com
 |http://bbc.in
 .bbg.gov
+bbs-tw.com
 .bbsdigest.com/thread
 ||bbsfeed.com
 bbsland.com
 .bbsmo.com
 .bbsone.com
+bbtoystore.com
+.bcast.co.nz
 .bcc.com.tw/board
 .bcchinese.net
 .bcmorning.com
+bdsmvideos.net
 .beaconevents.com
 .bebo.com
 ||bebo.com
@@ -656,6 +680,7 @@ beijingspring.com
 beric.me
 .berlintwitterwall.com
 ||berlintwitterwall.com
+.berm.co.nz
 .bestforchina.org
 ||bestforchina.org
 ||bestvpn.com
@@ -699,6 +724,7 @@ bipic.net
 bitsnoop.com
 bizhat.com
 ||bl-doujinsouko.com
+.bjnewlife.org
 bjzc.org
 ||bjzc.org
 .blacklogic.com
@@ -1128,6 +1154,7 @@ comefromchina.com
 coolder.com
 ||coolder.com
 ||coolloud.org.tw
+.coolncute.com
 corumcollege.com
 .cos-moe.com
 |http://cos-moe.com
@@ -1404,6 +1431,7 @@ bbs.ecstart.com
 /twimg\.edgesuite\.net\/\/?appledaily/
 edicypages.com
 .edmontonchina.cn
+.edmontonservice.com
 edoors.com
 .edubridge.com
 ||edubridge.com
@@ -1749,6 +1777,7 @@ hk.frienddy.com/hk
 .fsurf.com
 .ftchinese.com/channel/video
 .ftchinese.com/story/00102753
+.ftchinese.com/story/001026807
 .ftchinese.com/story/001037090
 .ftchinese.com/story/001037091
 .ftchinese.com/story/001038220
@@ -4516,7 +4545,7 @@ tuitwit.com
 |http://tw01.org
 
 !---Tumblr---
-!--||tumblr.com
+||tumblr.com
 !--@@||assets.tumblr.com
 !--@@||data.tumblr.com
 !--@@||media.tumblr.com
@@ -4822,6 +4851,7 @@ vietdaikynguyen.com
 .vijayatemple.org
 ||viki.com
 vimeo.com
+||vimeo.com
 ||vimperator.org
 ||vincnd.com
 ||vinniev.com
