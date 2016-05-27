@@ -182,16 +182,18 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 }
 
 func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
-	randChoice := false
+	perfer := true
 
 	switch path.Ext(req.URL.Path) {
-	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4", ".js", ".css":
-		randChoice = true
+	case "bmp", "gif", "ico", "jpeg", "jpg", "png", "tif", "tiff",
+		"3gp", "3gpp", "avi", "f4v", "flv", "m4p", "mkv", "mp4",
+		"mp4v", "mpv4", "rmvb", ".webp", ".js", ".css":
+		perfer = false
 	case "":
 		name := path.Base(req.URL.Path)
 		if strings.Contains(name, "play") ||
 			strings.Contains(name, "video") {
-			randChoice = true
+			perfer = false
 		}
 	default:
 		if req.Header.Get("Range") != "" ||
@@ -205,15 +207,19 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 			strings.Contains(req.URL.Path, "static") ||
 			strings.Contains(req.URL.Path, "asset") ||
 			strings.Contains(req.URL.Path, "/cache/") {
-			randChoice = true
+			perfer = false
 		}
 	}
 
 	if base > 0 {
-		randChoice = true
+		perfer = false
 	}
 
-	if !randChoice {
+	if req.Method == http.MethodPost {
+		perfer = true
+	}
+
+	if perfer {
 		return toServer(s.perferAppid.Load().(string))
 	} else {
 		s.muAppID.RLock()
