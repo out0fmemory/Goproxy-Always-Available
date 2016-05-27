@@ -8,10 +8,9 @@ import (
 )
 
 func ReflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
-	if v := reflect.ValueOf(resp).Elem().FieldByName("RemoteAddr"); v.IsValid() {
-		return v.String(), nil
-	}
-
+	// if v := reflect.ValueOf(resp).Elem().FieldByName("RemoteAddr"); v.IsValid() {
+	// 	return v.String(), nil
+	// }
 	return reflectRemoteAddrFromResponse(resp)
 }
 
