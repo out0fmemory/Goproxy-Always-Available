@@ -164,6 +164,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
 			glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
 			rootCA.once.Do(func() {
+				helpers.RemoveCAFromSystemRoot(rootCA.name)
 				if err = helpers.ImportCAToSystemRoot(rootCA.ca); err != nil {
 					glog.Errorf("Import RootCA(%#v) error: %v", name, err)
 				} else {
