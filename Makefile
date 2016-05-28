@@ -39,7 +39,6 @@ SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
 ifeq ($(GOOS), windows)
 	SOURCES += $(REPO)/assets/gui/goproxy-gui.exe
-	SOURCES += $(REPO)/assets/certmgr/certmgr.exe
 	SOURCES += $(REPO)/assets/startup/addto-startup.vbs
 else ifeq ($(GOOS), darwin)
 	SOURCES += $(REPO)/assets/gui/goproxy-osx.command
