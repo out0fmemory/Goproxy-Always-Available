@@ -10,11 +10,11 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
-	"os/exec"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
+
+	"../../helpers"
 
 	"github.com/phuslu/glog"
 )
@@ -94,25 +94,6 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
 		outFile2.Close()
 
-		cmds := make([]*exec.Cmd, 0)
-		switch runtime.GOOS {
-		case "windows":
-			cmds = append(cmds, exec.Command("certmgr.exe", "-del", "-c", "-n", name, "-s", "-r", "localMachine", "root"))
-			cmds = append(cmds, exec.Command("certmgr.exe", "-add", "-c", certFile, "-s", "-r", "localMachine", "root"))
-		case "darwin":
-			cmds = append(cmds, exec.Command("security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", certFile))
-		default:
-			break
-		}
-
-		for _, cmd := range cmds {
-			if err := cmd.Run(); err != nil {
-				glog.Errorf("Import RootCA(%#v) error: %v", cmd.Args, err)
-			} else {
-				glog.Infof("Import RootCA(%s) OK", certFile)
-			}
-		}
-
 		if fis, err := ioutil.ReadDir(certDir); err == nil {
 			for _, fi := range fis {
 				if err = os.Remove(certDir + "/" + fi.Name()); err != nil {
@@ -172,6 +153,15 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 				}
 				rootCA.priv = priv
 			}
+		}
+	}
+
+	if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
+		glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
+		if err = helpers.ImportCAToSystemRoot(name, certFile); err != nil {
+			glog.Errorf("Import RootCA(%#v) error: %v", name, err)
+		} else {
+			glog.Infof("Import RootCA(%s) OK", certFile)
 		}
 	}
 
