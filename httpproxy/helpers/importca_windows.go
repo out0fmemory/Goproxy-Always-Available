@@ -1,19 +1,36 @@
 package helpers
 
 import (
-	"os/exec"
+	"encoding/pem"
+	"fmt"
+	"io/ioutil"
+	"syscall"
+	"unsafe"
+)
+
+var (
+	crypt32                              = syscall.NewLazyDLL("crypt32.dll")
+	procCertAddEncodedCertificateToStore = crypt32.NewProc("CertAddEncodedCertificateToStore")
 )
 
 func ImportCAToSystemRoot(name, filename string) error {
-	cmds := make([]*exec.Cmd, 0)
-	cmds = append(cmds, exec.Command("certmgr.exe", "-del", "-c", "-n", name, "-s", "-r", "localMachine", "root"))
-	cmds = append(cmds, exec.Command("certmgr.exe", "-add", "-c", filename, "-s", "-r", "localMachine", "root"))
-
-	for i, cmd := range cmds {
-		err := cmd.Run()
-		if err != nil && i == len(cmds)-1 {
-			return err
-		}
+	data, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return err
 	}
-	return nil
+
+	block, _ := pem.Decode(data)
+	if block.Type != "CERTIFICATE" {
+		return fmt.Errorf("\"%s\" type is %v, not CERTIFICATE", filename, block.Type)
+	}
+
+	handle, err := syscall.CertOpenStore(10, 0, 0, 0x4000|0x20000|0x00000004, uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr("root"))))
+	if err != nil {
+		return err
+	}
+	defer syscall.CertCloseStore(handle, 0)
+
+	_, _, _ = procCertAddEncodedCertificateToStore.Call(uintptr(handle), 1, uintptr(unsafe.Pointer(&block.Bytes[0])), uintptr(uint(len(block.Bytes))), 4, 0)
+
+	return err
 }
