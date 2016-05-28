@@ -212,7 +212,7 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) e
 		PublicKey:          csr.PublicKey,
 		SerialNumber:       big.NewInt(time.Now().UnixNano()),
 		SignatureAlgorithm: x509.SHA256WithRSA,
-		NotBefore:          time.Now().Add(-time.Duration(10 * time.Minute)).UTC(),
+		NotBefore:          time.Now().Add(-time.Duration(30 * 24 * time.Hour)),
 		NotAfter:           time.Now().Add(vaildFor),
 		KeyUsage:           x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		ExtKeyUsage: []x509.ExtKeyUsage{
