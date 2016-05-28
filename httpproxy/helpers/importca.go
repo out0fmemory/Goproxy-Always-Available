@@ -9,3 +9,7 @@ import (
 func ImportCAToSystemRoot(cert *x509.Certificate) error {
 	return nil
 }
+
+func RemoveCAFromSystemRoot(name string) error {
+	return nil
+}
