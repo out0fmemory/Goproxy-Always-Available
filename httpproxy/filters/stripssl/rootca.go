@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -156,12 +157,15 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		}
 	}
 
-	if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
-		glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
-		if err = helpers.ImportCAToSystemRoot(name, certFile); err != nil {
-			glog.Errorf("Import RootCA(%#v) error: %v", name, err)
-		} else {
-			glog.Infof("Import RootCA(%s) OK", certFile)
+	switch runtime.GOOS {
+	case "windows", "darwin":
+		if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
+			glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
+			if err = helpers.ImportCAToSystemRoot(name, certFile); err != nil {
+				glog.Errorf("Import RootCA(%#v) error: %v", name, err)
+			} else {
+				glog.Infof("Import RootCA(%s) OK", certFile)
+			}
 		}
 	}
 
