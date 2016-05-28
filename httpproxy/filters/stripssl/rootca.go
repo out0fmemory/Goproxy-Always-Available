@@ -27,6 +27,7 @@ type RootCA struct {
 	rsaBits  int
 	certDir  string
 	mu       *sync.Mutex
+	once     *sync.Once
 
 	ca       *x509.Certificate
 	priv     *rsa.PrivateKey
@@ -44,6 +45,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		rsaBits:  rsaBits,
 		certDir:  certDir,
 		mu:       new(sync.Mutex),
+		once:     new(sync.Once),
 	}
 
 	if _, err := os.Stat(certFile); os.IsNotExist(err) {
@@ -161,11 +163,13 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 	case "windows", "darwin":
 		if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
 			glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
-			if err = helpers.ImportCAToSystemRoot(name, certFile); err != nil {
-				glog.Errorf("Import RootCA(%#v) error: %v", name, err)
-			} else {
-				glog.Infof("Import RootCA(%s) OK", certFile)
-			}
+			rootCA.once.Do(func() {
+				if err = helpers.ImportCAToSystemRoot(name, certFile); err != nil {
+					glog.Errorf("Import RootCA(%#v) error: %v", name, err)
+				} else {
+					glog.Infof("Import RootCA(%s) OK", certFile)
+				}
+			})
 		}
 	}
 
