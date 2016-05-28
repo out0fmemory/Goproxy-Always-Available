@@ -1,9 +1,7 @@
 package helpers
 
 import (
-	"encoding/pem"
-	"fmt"
-	"io/ioutil"
+	"crypto/x509"
 	"syscall"
 	"unsafe"
 )
@@ -13,16 +11,8 @@ var (
 	procCertAddEncodedCertificateToStore = crypt32.NewProc("CertAddEncodedCertificateToStore")
 )
 
-func ImportCAToSystemRoot(name, filename string) error {
-	data, err := ioutil.ReadFile(filename)
-	if err != nil {
-		return err
-	}
-
-	block, _ := pem.Decode(data)
-	if block.Type != "CERTIFICATE" {
-		return fmt.Errorf("\"%s\" type is %v, not CERTIFICATE", filename, block.Type)
-	}
+func ImportCAToSystemRoot(cert *x509.Certificate) error {
+	data := cert.Raw
 
 	handle, err := syscall.CertOpenStore(10, 0, 0, 0x4000|0x20000|0x00000004, uintptr(unsafe.Pointer(syscall.StringToUTF16Ptr("root"))))
 	if err != nil {
@@ -30,7 +20,10 @@ func ImportCAToSystemRoot(name, filename string) error {
 	}
 	defer syscall.CertCloseStore(handle, 0)
 
-	_, _, _ = procCertAddEncodedCertificateToStore.Call(uintptr(handle), 1, uintptr(unsafe.Pointer(&block.Bytes[0])), uintptr(uint(len(block.Bytes))), 4, 0)
+	_, _, err = procCertAddEncodedCertificateToStore.Call(uintptr(handle), 1, uintptr(unsafe.Pointer(&data[0])), uintptr(uint(len(data))), 4, 0)
+	if err.(syscall.Errno) != 0 {
+		return err
+	}
 
-	return err
+	return nil
 }
