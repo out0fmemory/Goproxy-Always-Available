@@ -1,20 +1,13 @@
-//+build !windows
-
 package helpers
 
 import (
 	"os/exec"
-	"runtime"
 )
 
 func ImportCAToSystemRoot(name, filename string) error {
 	cmds := make([]*exec.Cmd, 0)
-	switch runtime.GOOS {
-	case "darwin":
-		cmds = append(cmds, exec.Command("security", "add-trusted-cert", "-d", "-r", "trustRoot", "-k", "/Library/Keychains/System.keychain", filename))
-	default:
-		break
-	}
+	cmds = append(cmds, exec.Command("certmgr.exe", "-del", "-c", "-n", name, "-s", "-r", "localMachine", "root"))
+	cmds = append(cmds, exec.Command("certmgr.exe", "-add", "-c", filename, "-s", "-r", "localMachine", "root"))
 
 	for i, cmd := range cmds {
 		err := cmd.Run()
