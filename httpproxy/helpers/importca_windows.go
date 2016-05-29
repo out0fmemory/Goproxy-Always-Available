@@ -36,6 +36,7 @@ func RemoveCAFromSystemRoot(name string) error {
 	}
 	defer syscall.CertCloseStore(store, 0)
 
+	certs := make([]*syscall.CertContext, 0)
 	var cert *syscall.CertContext
 	for {
 		cert, err = syscall.CertEnumCertificatesInStore(store, cert)
@@ -55,11 +56,14 @@ func RemoveCAFromSystemRoot(name string) error {
 		if c.Subject.CommonName == name ||
 			(len(c.Subject.Names) > 0 && c.Subject.Names[0].Value == name) ||
 			(len(c.Subject.Organization) > 0 && c.Subject.Organization[0] == name) {
-			_, _, err := procCertDeleteCertificateFromStore.Call(uintptr(unsafe.Pointer(cert)))
-			if err.(syscall.Errno) != 0 {
-				return err
-			}
-			return nil
+			certs = append(certs, cert)
+		}
+	}
+
+	for _, cert := range certs {
+		_, _, err := procCertDeleteCertificateFromStore.Call(uintptr(unsafe.Pointer(cert)))
+		if err.(syscall.Errno) != 0 {
+			return err
 		}
 	}
 
