@@ -54,6 +54,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 			IsCA:         true,
 			SerialNumber: big.NewInt(1),
 			Subject: pkix.Name{
+				CommonName:   name,
 				Organization: []string{name},
 			},
 			NotBefore: time.Now().Add(-time.Duration(30 * 24 * time.Hour)),
