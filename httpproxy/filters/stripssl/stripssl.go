@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
@@ -63,13 +64,18 @@ func init() {
 	}
 }
 
-func NewFilter(config *Config) (_ filters.Filter, err error) {
-	var ca *RootCA
+var (
+	defaultCA *RootCA
+	onceCA    sync.Once
+)
 
-	ca, err = NewRootCA(config.RootCA.Name, time.Duration(config.RootCA.Duration)*time.Second, config.RootCA.RsaBits, config.RootCA.Dirname)
-	if err != nil {
-		return nil, err
-	}
+func NewFilter(config *Config) (_ filters.Filter, err error) {
+	onceCA.Do(func() {
+		defaultCA, err = NewRootCA(config.RootCA.Name, time.Duration(config.RootCA.Duration)*time.Second, config.RootCA.RsaBits, config.RootCA.Dirname)
+		if err != nil {
+			glog.Fatalf("NewRootCA(%#v) error: %v", config.RootCA.Name, err)
+		}
+	})
 
 	if _, err := os.Stat(config.RootCA.Dirname); os.IsNotExist(err) {
 		if err = os.Mkdir(config.RootCA.Dirname, 0755); err != nil {
@@ -79,7 +85,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 	f := &Filter{
 		Config:         *config,
-		CA:             ca,
+		CA:             defaultCA,
 		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
 		Ports:          make(map[string]struct{}),

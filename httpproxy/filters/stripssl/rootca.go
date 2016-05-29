@@ -10,6 +10,7 @@ import (
 	"io/ioutil"
 	"math/big"
 	"os"
+	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
@@ -27,7 +28,6 @@ type RootCA struct {
 	rsaBits  int
 	certDir  string
 	mu       *sync.Mutex
-	once     *sync.Once
 
 	ca       *x509.Certificate
 	priv     *rsa.PrivateKey
@@ -45,7 +45,6 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		rsaBits:  rsaBits,
 		certDir:  certDir,
 		mu:       new(sync.Mutex),
-		once:     new(sync.Once),
 	}
 
 	if _, err := os.Stat(certFile); os.IsNotExist(err) {
@@ -84,27 +83,21 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 		rootCA.priv = priv
 		rootCA.derBytes = derBytes
 
-		outFile1, err := os.Create(keyFile)
+		tmpfile1, err := ioutil.TempFile(filepath.Dir(keyFile), keyFile)
 		if err != nil {
 			return nil, err
 		}
-		pem.Encode(outFile1, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
-		outFile1.Close()
+		pem.Encode(tmpfile1, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
+		tmpfile1.Close()
+		os.Rename(tmpfile1.Name(), keyFile)
 
-		outFile2, err := os.Create(certFile)
+		tmpfile2, err := ioutil.TempFile(filepath.Dir(certFile), certFile)
 		if err != nil {
 			return nil, err
 		}
-		pem.Encode(outFile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
-		outFile2.Close()
-
-		if fis, err := ioutil.ReadDir(certDir); err == nil {
-			for _, fi := range fis {
-				if err = os.Remove(certDir + "/" + fi.Name()); err != nil {
-					glog.Errorf("Remove(%#v) error: %v", fi.Name(), err)
-				}
-			}
-		}
+		pem.Encode(tmpfile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
+		tmpfile2.Close()
+		os.Rename(tmpfile2.Name(), certFile)
 	} else {
 		data, err := ioutil.ReadFile(keyFile)
 		if err != nil {
@@ -164,14 +157,20 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string)
 	case "windows", "darwin":
 		if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
 			glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
-			rootCA.once.Do(func() {
-				helpers.RemoveCAFromSystemRoot(rootCA.name)
-				if err = helpers.ImportCAToSystemRoot(rootCA.ca); err != nil {
-					glog.Errorf("Import RootCA(%#v) error: %v", name, err)
-				} else {
-					glog.Infof("Import RootCA(%s) OK", certFile)
+			helpers.RemoveCAFromSystemRoot(rootCA.name)
+			if err = helpers.ImportCAToSystemRoot(rootCA.ca); err != nil {
+				glog.Errorf("Import RootCA(%#v) error: %v", name, err)
+			} else {
+				glog.Infof("Import RootCA(%s) OK", certFile)
+			}
+
+			if fis, err := ioutil.ReadDir(certDir); err == nil {
+				for _, fi := range fis {
+					if err = os.Remove(certDir + "/" + fi.Name()); err != nil {
+						glog.Errorf("Remove(%#v) error: %v", fi.Name(), err)
+					}
 				}
-			})
+			}
 		}
 	}
 
