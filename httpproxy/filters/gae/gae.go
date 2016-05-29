@@ -147,7 +147,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	pickupCiphers := func(names []string) []uint16 {
 		ciphers := make([]uint16, 0)
 		for _, name := range names {
-			cipher := dialer.Cipher(name)
+			cipher := helpers.Cipher(name)
 			if cipher == 0 {
 				glog.Fatalf("GAE: cipher %#v is not supported.", name)
 			}

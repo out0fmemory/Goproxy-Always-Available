@@ -1,4 +1,4 @@
-package dialer
+package helpers
 
 import (
 	"crypto/tls"
@@ -15,9 +15,9 @@ func Cipher(name string) uint16 {
 	case "TLS_RSA_WITH_AES_256_CBC_SHA":
 		return tls.TLS_RSA_WITH_AES_256_CBC_SHA
 	case "TLS_RSA_WITH_AES_128_CBC_SHA256":
-		return tls.TLS_RSA_WITH_AES_128_CBC_SHA256
+		return 0x003c
 	case "TLS_RSA_WITH_AES_256_CBC_SHA256":
-		return tls.TLS_RSA_WITH_AES_256_CBC_SHA256
+		return 0x003d
 	case "TLS_RSA_WITH_AES_128_GCM_SHA256":
 		return tls.TLS_RSA_WITH_AES_128_GCM_SHA256
 	case "TLS_RSA_WITH_AES_256_GCM_SHA384":
@@ -37,7 +37,7 @@ func Cipher(name string) uint16 {
 	case "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA":
 		return tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
 	case "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256":
-		return tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256
+		return 0xc027
 	case "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256":
 		return tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256
 	case "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256":
@@ -60,9 +60,9 @@ func CipherName(value uint16) string {
 		return "TLS_RSA_WITH_AES_128_CBC_SHA"
 	case tls.TLS_RSA_WITH_AES_256_CBC_SHA:
 		return "TLS_RSA_WITH_AES_256_CBC_SHA"
-	case tls.TLS_RSA_WITH_AES_128_CBC_SHA256:
+	case 0x003c:
 		return "TLS_RSA_WITH_AES_128_CBC_SHA256"
-	case tls.TLS_RSA_WITH_AES_256_CBC_SHA256:
+	case 0x003d:
 		return "TLS_RSA_WITH_AES_256_CBC_SHA256"
 	case tls.TLS_RSA_WITH_AES_128_GCM_SHA256:
 		return "TLS_RSA_WITH_AES_128_GCM_SHA256"
@@ -82,7 +82,7 @@ func CipherName(value uint16) string {
 		return "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA"
 	case tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:
 		return "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
-	case tls.TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256:
+	case 0xc027:
 		return "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256"
 	case tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
 		return "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
