@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net"
-	"os"
 	"sync"
 	"time"
 
@@ -15,13 +14,8 @@ const (
 	backlog = 1024
 )
 
-type filer interface {
-	File() (*os.File, error)
-}
-
 type Listener interface {
 	net.Listener
-	filer
 
 	Add(net.Conn) error
 }
@@ -134,13 +128,6 @@ func (l *listener) Close() error {
 
 func (l *listener) Addr() net.Addr {
 	return l.ln.Addr()
-}
-
-func (l *listener) File() (*os.File, error) {
-	if f, ok := l.ln.(filer); ok {
-		return f.File()
-	}
-	return nil, fmt.Errorf("%T does not has func File()", l.ln)
 }
 
 func (l *listener) Add(conn net.Conn) error {
