@@ -181,6 +181,12 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 		}
 	}
 
+	if _, err := os.Stat(certDir); os.IsNotExist(err) {
+		if err = os.Mkdir(certDir, 0755); err != nil {
+			return nil, err
+		}
+	}
+
 	return rootCA, nil
 }
 

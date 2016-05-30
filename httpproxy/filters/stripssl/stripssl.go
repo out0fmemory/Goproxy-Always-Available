@@ -7,7 +7,6 @@ import (
 	"io"
 	"net"
 	"net/http"
-	"os"
 	"strconv"
 	"sync"
 	"time"
@@ -81,12 +80,6 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 			glog.Fatalf("NewRootCA(%#v) error: %v", config.RootCA.Name, err)
 		}
 	})
-
-	if _, err := os.Stat(config.RootCA.Dirname); os.IsNotExist(err) {
-		if err = os.Mkdir(config.RootCA.Dirname, 0755); err != nil {
-			return nil, err
-		}
-	}
 
 	f := &Filter{
 		Config:         *config,
