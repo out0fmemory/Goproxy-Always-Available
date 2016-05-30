@@ -34,9 +34,16 @@ type RootCA struct {
 	derBytes []byte
 }
 
-func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string) (*RootCA, error) {
+func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string, portable bool) (*RootCA, error) {
 	keyFile := name + ".key"
 	certFile := name + ".crt"
+
+	if portable {
+		rootdir := filepath.Dir(os.Args[0])
+		keyFile = filepath.Join(rootdir, keyFile)
+		certFile = filepath.Join(rootdir, certFile)
+		certDir = filepath.Join(rootdir, certDir)
+	}
 
 	rootCA := &RootCA{
 		name:     name,

@@ -31,6 +31,7 @@ type Config struct {
 		Name     string
 		Duration int
 		RsaBits  int
+		Portable bool
 	}
 	Ports []int
 	Sites []string
@@ -71,7 +72,11 @@ var (
 
 func NewFilter(config *Config) (_ filters.Filter, err error) {
 	onceCA.Do(func() {
-		defaultCA, err = NewRootCA(config.RootCA.Name, time.Duration(config.RootCA.Duration)*time.Second, config.RootCA.RsaBits, config.RootCA.Dirname)
+		defaultCA, err = NewRootCA(config.RootCA.Name,
+			time.Duration(config.RootCA.Duration)*time.Second,
+			config.RootCA.RsaBits,
+			config.RootCA.Dirname,
+			config.RootCA.Portable)
 		if err != nil {
 			glog.Fatalf("NewRootCA(%#v) error: %v", config.RootCA.Name, err)
 		}
