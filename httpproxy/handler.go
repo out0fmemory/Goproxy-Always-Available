@@ -89,6 +89,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 		// Unexcepted errors
 		if err != nil {
+			filters.SetRoundTripFilter(ctx, f)
 			glog.Errorf("%s Filter RoundTrip %T error: %v", remoteAddr, f, err)
 			http.Error(rw, fmtError(ctx, err), http.StatusBadGateway)
 			return
@@ -148,10 +149,12 @@ func fmtError(ctx context.Context, err error) string {
     "type": "localproxy",
     "host": "%s",
     "software": "go/%s %s/%s",
+    "filter": "%T",
     "error": "%s"
 }
 `, filters.GetListener(ctx).Addr().String(),
 		runtime.Version(), runtime.GOOS, runtime.GOARCH,
+		filters.GetRoundTripFilter(ctx),
 		err.Error())
 }
 
