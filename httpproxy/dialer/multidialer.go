@@ -19,23 +19,25 @@ import (
 
 type MultiDialer struct {
 	net.Dialer
-	ForceIPv6       bool
-	SSLVerify       bool
-	TLSConfig       *tls.Config
-	Site2Alias      *helpers.HostMatcher
-	GoogleTLSConfig *tls.Config
-	GoogleG2KeyID   []byte
-	IPBlackList     lrucache.Cache
-	HostMap         map[string][]string
-	DNSServers      []net.IP
-	DNSCache        lrucache.Cache
-	DNSCacheExpiry  time.Duration
-	TCPConnDuration lrucache.Cache
-	TCPConnError    lrucache.Cache
-	TLSConnDuration lrucache.Cache
-	TLSConnError    lrucache.Cache
-	ConnExpiry      time.Duration
-	Level           int
+	ForceIPv6         bool
+	SSLVerify         bool
+	TLSConfig         *tls.Config
+	Site2Alias        *helpers.HostMatcher
+	GoogleTLSConfig   *tls.Config
+	GoogleG2KeyID     []byte
+	IPBlackList       lrucache.Cache
+	HostMap           map[string][]string
+	DNSServers        []net.IP
+	DNSCache          lrucache.Cache
+	DNSCacheExpiry    time.Duration
+	TCPConnDuration   lrucache.Cache
+	TCPConnError      lrucache.Cache
+	TLSConnDuration   lrucache.Cache
+	TLSConnError      lrucache.Cache
+	TCPConnReadBuffer int
+	TLSConnReadBuffer int
+	ConnExpiry        time.Duration
+	Level             int
 }
 
 func (d *MultiDialer) ClearCache() {
@@ -336,6 +338,11 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 			conn, err := d.Dialer.Dial(network, addr)
 			end := time.Now()
 			if err == nil {
+				if d.TCPConnReadBuffer > 0 {
+					if tc, ok := conn.(*net.TCPConn); ok {
+						tc.SetReadBuffer(d.TCPConnReadBuffer)
+					}
+				}
 				d.TCPConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
 			} else {
 				d.TCPConnDuration.Del(addr)
@@ -388,6 +395,12 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 				d.TLSConnError.Set(addr, err, time.Now().Add(d.ConnExpiry))
 				lane <- racer{conn, err}
 				return
+			}
+
+			if d.TLSConnReadBuffer > 0 {
+				if tc, ok := conn.(*net.TCPConn); ok {
+					tc.SetReadBuffer(d.TLSConnReadBuffer)
+				}
 			}
 
 			if config == nil {

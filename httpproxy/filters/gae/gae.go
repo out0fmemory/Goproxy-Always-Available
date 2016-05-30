@@ -52,12 +52,13 @@ type Config struct {
 	IPBlackList   []string
 	Transport     struct {
 		Dialer struct {
-			DNSCacheExpiry int
-			DNSCacheSize   uint
-			DualStack      bool
-			KeepAlive      int
-			Level          int
-			Timeout        int
+			DNSCacheExpiry   int
+			DNSCacheSize     uint
+			SocketReadBuffer int
+			DualStack        bool
+			KeepAlive        int
+			Level            int
+			Timeout          int
 		}
 		DisableCompression    bool
 		DisableKeepAlives     bool
@@ -170,23 +171,25 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		ForceIPv6:       config.ForceIPv6,
-		SSLVerify:       config.SSLVerify,
-		TLSConfig:       nil,
-		Site2Alias:      helpers.NewHostMatcherWithString(config.Site2Alias),
-		IPBlackList:     lrucache.NewLRUCache(8192),
-		HostMap:         config.HostMap,
-		GoogleTLSConfig: googleTLSConfig,
-		GoogleG2KeyID:   googleG2KeyID,
-		DNSServers:      dnsServers,
-		DNSCache:        lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
-		DNSCacheExpiry:  time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
-		TCPConnDuration: lrucache.NewLRUCache(8192),
-		TCPConnError:    lrucache.NewLRUCache(8192),
-		TLSConnDuration: lrucache.NewLRUCache(8192),
-		TLSConnError:    lrucache.NewLRUCache(8192),
-		ConnExpiry:      5 * time.Minute,
-		Level:           config.Transport.Dialer.Level,
+		ForceIPv6:         config.ForceIPv6,
+		SSLVerify:         config.SSLVerify,
+		TLSConfig:         nil,
+		Site2Alias:        helpers.NewHostMatcherWithString(config.Site2Alias),
+		IPBlackList:       lrucache.NewLRUCache(8192),
+		HostMap:           config.HostMap,
+		GoogleTLSConfig:   googleTLSConfig,
+		GoogleG2KeyID:     googleG2KeyID,
+		DNSServers:        dnsServers,
+		DNSCache:          lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+		DNSCacheExpiry:    time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
+		TCPConnDuration:   lrucache.NewLRUCache(8192),
+		TCPConnError:      lrucache.NewLRUCache(8192),
+		TLSConnDuration:   lrucache.NewLRUCache(8192),
+		TLSConnError:      lrucache.NewLRUCache(8192),
+		TCPConnReadBuffer: config.Transport.Dialer.SocketReadBuffer,
+		TLSConnReadBuffer: config.Transport.Dialer.SocketReadBuffer,
+		ConnExpiry:        5 * time.Minute,
+		Level:             config.Transport.Dialer.Level,
 	}
 
 	for _, ip := range config.IPBlackList {
