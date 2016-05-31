@@ -3,7 +3,7 @@
 		"Enabled": false,
 		"Rules": {
 			"rarbg.to": "direct",
-			"*.slideshare.net": "php",
+			"www.slideshare.net": "php",
 		},
 	},
 	"MyProxyPac": {
