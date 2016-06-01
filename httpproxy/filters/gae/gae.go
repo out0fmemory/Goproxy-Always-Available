@@ -155,7 +155,25 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			ciphers = append(ciphers, cipher)
 		}
 		helpers.ShuffleUint16s(ciphers)
-		return ciphers[:1+rand.Intn(len(ciphers))]
+		ciphers = ciphers[:1+rand.Intn(len(ciphers))]
+		ciphers1 := []uint16{}
+		for _, name := range []string{
+			"TLS_RSA_WITH_AES_256_CBC_SHA256",
+			"TLS_RSA_WITH_AES_256_GCM_SHA384",
+			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
+			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+		} {
+			if !helpers.ContainsString(names, name) {
+				if c := helpers.Cipher(name); c != 0 {
+					ciphers1 = append(ciphers1, c)
+				}
+			}
+		}
+		helpers.ShuffleUint16s(ciphers1)
+		ciphers1 = ciphers1[:rand.Intn(len(ciphers1))]
+		ciphers = append(ciphers, ciphers1...)
+		helpers.ShuffleUint16s(ciphers)
+		return ciphers
 	}
 	googleTLSConfig.CipherSuites = pickupCiphers(config.TLSConfig.Ciphers)
 	if len(config.TLSConfig.ServerName) > 0 {
