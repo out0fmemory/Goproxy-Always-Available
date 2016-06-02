@@ -1,15 +1,18 @@
 {
 	"RootCA": {
 		"Name": "GoProxy",
-		"Dirname": "Cache",
+		"Dirname": "cache",
 		"Duration": 31536000,
 		"RSABits": 2048,
 		"Portable": true,
 	},
 	"Ports": [
 		443,
+		7443,
 		8443,
+		9443,
 		10443,
+		20443,
 	],
 	"Sites": [
 		"*"
