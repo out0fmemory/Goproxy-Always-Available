@@ -154,7 +154,7 @@
 		"Dialer": {
 			"DNSCacheExpiry": 864000,
 			"DNSCacheSize": 81920,
-			"SocketReadBuffer": 32768,
+			"SocketReadBuffer": 0,
 			"DualStack": false,
 			"KeepAlive": 300,
 			"Level": 4,
