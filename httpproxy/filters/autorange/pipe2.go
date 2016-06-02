@@ -6,157 +6,172 @@ import (
 	"io"
 	"sync"
 	"sync/atomic"
-	"time"
 )
 
 type fragment struct {
-	data  []byte
-	pos   int64
-	index int
+	pos  int64
+	data []byte
 }
 
-type fragmentQueue struct {
-	q  []fragment
-	mu sync.Mutex
+type fragmentHeap []*fragment
+
+func (h fragmentHeap) Len() int           { return len(h) }
+func (h fragmentHeap) Less(i, j int) bool { return h[i].pos < h[j].pos }
+func (h fragmentHeap) Swap(i, j int)      { h[i], h[j] = h[j], h[i] }
+
+func (h *fragmentHeap) Push(x interface{}) {
+	*h = append(*h, x.(*fragment))
 }
 
-func (q fragmentQueue) Len() int {
-	return len(q.q)
-}
-
-func (q fragmentQueue) Less(i, j int) bool {
-	return q.q[i].pos < q.q[j].pos
-}
-
-func (q fragmentQueue) Swap(i, j int) {
-	q.q[i], q.q[j] = q.q[j], q.q[i]
-	q.q[i].index = i
-	q.q[j].index = j
-}
-
-func (q *fragmentQueue) Push(x interface{}) {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-
-	n := len(q.q)
-	item := x.(fragment)
-	item.index = n
-	q.q = append(q.q, item)
-}
-
-func (q *fragmentQueue) Pop() interface{} {
-	q.mu.Lock()
-	defer q.mu.Unlock()
-
-	old := q.q
+func (h *fragmentHeap) Pop() interface{} {
+	old := *h
 	n := len(old)
-	item := old[n-1]
-	item.index = -1 // for safety
-	q.q = old[0 : n-1]
-	return item
+	x := old[n-1]
+	*h = old[0 : n-1]
+	return x
 }
 
 type FragmentPipe struct {
-	l    int64
-	err  error
-	pos  int64
-	size int64
-	q    fragmentQueue
-	c    *sync.Cond
+	length int64
+	err    atomic.Value
+	pos    int64
+	size   int64
+	heap   fragmentHeap
+	mu     *sync.Mutex
+	cond   *sync.Cond
 }
 
 func NewFragmentPipe(size int64) *FragmentPipe {
 	return &FragmentPipe{
+		pos:  0,
 		size: size,
-		q: fragmentQueue{
-			q: []fragment{},
-		},
-		c: sync.NewCond(&sync.Mutex{}),
+		heap: []*fragment{},
+		mu:   new(sync.Mutex),
+		cond: sync.NewCond(new(sync.Mutex)),
 	}
 }
 
 func (p *FragmentPipe) Len() int64 {
-	return atomic.LoadInt64(&p.l)
+	return atomic.LoadInt64(&p.length)
 }
 
 func (p *FragmentPipe) Write(data []byte, pos int64) (int, error) {
-	if pos == p.pos {
-		defer p.c.Signal()
+	if err := p.err.Load().(error); err != nil {
+		return 0, err
 	}
-	heap.Push(&p.q, fragment{data, pos, -1})
-	atomic.AddInt64(&p.l, int64(len(data)))
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if pos == p.pos {
+		defer p.cond.Signal()
+	}
+	heap.Push(&p.heap, &fragment{pos, data})
+	atomic.AddInt64(&p.length, int64(len(data)))
 	return len(data), nil
 }
 
+func (p *FragmentPipe) Read(data []byte) (int, error) {
+	p.cond.L.Lock()
+	defer p.cond.L.Unlock()
+	p.cond.Wait()
+
+	if err := p.err.Load().(error); err != nil {
+		return 0, err
+	}
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	if p.pos == p.size-1 {
+		p.Close()
+		return 0, nil
+	}
+
+	top := p.heap[0]
+	if p.pos != top.pos {
+		err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, p.pos)
+		defer p.CloseWithError(err)
+		return 0, err
+	}
+
+	n := copy(data, top.data)
+	atomic.AddInt64(&p.length, -int64(n))
+	p.pos += int64(n)
+	if n < len(top.data) {
+		top.pos += int64(n)
+		top.data = top.data[n:]
+		defer p.cond.Signal()
+	} else {
+		heap.Pop(&p.heap)
+		if p.heap[0].pos == p.pos {
+			defer p.cond.Signal()
+		}
+	}
+	return n, nil
+}
+
 func (p *FragmentPipe) Close() error {
-	defer p.c.Signal()
+	defer p.cond.Signal()
 	return p.CloseWithError(io.EOF)
 }
 
 func (p *FragmentPipe) CloseWithError(err error) error {
-	defer p.c.Signal()
+	defer p.cond.Signal()
 	if err == nil {
 		err = io.EOF
 	}
-	p.err = err
+	p.err.Store(err)
 	return nil
 }
 
-func (p *FragmentPipe) Read(data []byte) (int, error) {
-	if p.err != nil {
-		return 0, p.err
+func (p *FragmentPipe) writeTo(w io.Writer) (int64, error) {
+	p.cond.L.Lock()
+	p.cond.Wait()
+	defer p.cond.L.Unlock()
+
+	if err := p.err.Load().(error); err != nil {
+		return 0, err
 	}
 
-	if p.pos == p.size-1 {
-		p.Close()
-		return 0, io.EOF
-	}
+	p.mu.Lock()
+	defer p.mu.Unlock()
 
-	top := heap.Pop(&p.q).(fragment)
-	if p.pos > top.pos {
-		return 0, fmt.Errorf("%T.pos=%d is larger then %d", p, p.pos, top.pos)
-	} else if p.pos < top.pos {
-		return 0, nil
-	} else {
-		n := copy(data, top.data)
-		if n < len(top.data) {
-			top.data = top.data[n:]
-			top.pos += int64(n)
-			heap.Push(&p.q, top)
+	for {
+		top := p.heap[0]
+		if p.pos != top.pos {
+			err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, p.pos)
+			defer p.CloseWithError(err)
+			return 0, err
 		}
-		atomic.AddInt64(&p.l, -int64(n))
-		return n, nil
+
+		n, err := w.Write(top.data)
+		atomic.AddInt64(&p.length, -int64(n))
+		p.pos += int64(n)
+		if err != nil {
+			defer p.CloseWithError(err)
+			return int64(n), err
+		}
+
+		if n < len(top.data) {
+			top.pos += int64(n)
+			top.data = top.data[n:]
+			defer p.cond.Signal()
+		} else {
+			heap.Pop(&p.heap)
+			if p.heap[0].pos == p.pos {
+				defer p.cond.Signal()
+			}
+		}
 	}
 }
 
 func (p *FragmentPipe) WriteTo(w io.Writer) (int64, error) {
-	var n int64
-	for n < p.size {
-		if p.err != nil {
-			return 0, p.err
-		}
-		if p.q.Len() == 0 {
-			time.Sleep(100 * time.Millisecond)
-			continue
-		}
-		top := heap.Pop(&p.q).(fragment)
-		if top.pos < n {
-			return 0, fmt.Errorf("%T.pos=%d is larger then %d", top, top.pos, n)
-		} else if top.pos > n {
-			time.Sleep(100 * time.Millisecond)
-			continue
-		} else {
-			n1, err := w.Write(top.data)
-			n += int64(n1)
-			if err != nil {
-				return n, err
-			}
-			if n1 < len(top.data) {
-				top.data = top.data[n1:]
-				top.pos += int64(n1)
-				heap.Push(&p.q, top)
-			}
-		}
+	var size, n int64
+	var err error
+	for err == nil && size < p.size {
+		n, err = p.writeTo(w)
+		size += n
 	}
-	return n, nil
+	return size, err
 }
