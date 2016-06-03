@@ -110,7 +110,7 @@
 	"FakeOptions": {
 		"*": [
 			"Access-Control-Allow-Credentials: true",
-			"Access-Control-Allow-Headers: Authorization, Content-Type, If-Modified-Since, X-Msgr-Region, X-Act-As-User-Id, X-B3-Flags, X-Contribute-To-User-Id, X-CSRF-Token, X-Guest-Token, X-TD-Iff-Mtime, X-TD-Mtime-Check, X-Goog-Authuser, X-Twitter-Auth-Type, X-Twitter-Client, X-Twitter-Client-Version, X-Twitter-Polling, X-Twitter-UTCOffset",
+			"Access-Control-Allow-Headers: Accept, Authorization, Content-Type, If-Modified-Since, X-Msgr-Region, X-Act-As-User-Id, X-B3-Flags, X-Contribute-To-User-Id, X-CSRF-Token, X-Guest-Token, X-TD-Iff-Mtime, X-TD-Mtime-Check, X-Goog-Authuser, X-Twitter-Auth-Type, X-Twitter-Client, X-Twitter-Client-Version, X-Twitter-Polling, X-Twitter-UTCOffset, X-Nytv",
 			"Access-Control-Allow-Methods: GET, POST, HEAD, PUT, DELETE, OPTIONS, PATCH",
 			"Access-Control-Allow-Origin: *",
 			"Access-Control-Expose-Headers: Cache-Control, Content-Encoding, Content-Length, Content-Type, Date, Expires, Server, Vary, X-Google-GFE-Backend-Request-Cost, X-FB-Debug, X-Loader-Length",
