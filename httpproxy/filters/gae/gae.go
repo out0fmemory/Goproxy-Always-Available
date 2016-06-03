@@ -396,6 +396,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			if origin := req.Header.Get("Origin"); origin != "" {
 				resp.Header.Set("Access-Control-Allow-Origin", origin)
 			}
+			if headers := req.Header.Get("Access-Control-Request-Headers"); headers != "" {
+				resp.Header.Set("Access-Control-Allow-Headers", headers)
+			}
 			glog.V(2).Infof("%s \"GAE FAKEOPTIONS %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 			return ctx, resp, nil
 		}
