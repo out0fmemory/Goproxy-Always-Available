@@ -1,4 +1,4 @@
-package autorange
+package helpers
 
 import (
 	"container/heap"
