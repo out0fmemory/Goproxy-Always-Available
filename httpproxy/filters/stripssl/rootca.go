@@ -90,21 +90,15 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 		rootCA.priv = priv
 		rootCA.derBytes = derBytes
 
-		tmpfile1, err := ioutil.TempFile(filepath.Dir(keyFile), keyFile)
-		if err != nil {
+		keypem := &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)}
+		if err = ioutil.WriteFile(keyFile, pem.EncodeToMemory(keypem), 0755); err != nil {
 			return nil, err
 		}
-		pem.Encode(tmpfile1, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)})
-		tmpfile1.Close()
-		os.Rename(tmpfile1.Name(), keyFile)
 
-		tmpfile2, err := ioutil.TempFile(filepath.Dir(certFile), certFile)
-		if err != nil {
+		certpem := &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes}
+		if err = ioutil.WriteFile(certFile, pem.EncodeToMemory(certpem), 0755); err != nil {
 			return nil, err
 		}
-		pem.Encode(tmpfile2, &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes})
-		tmpfile2.Close()
-		os.Rename(tmpfile2.Name(), certFile)
 	} else {
 		data, err := ioutil.ReadFile(keyFile)
 		if err != nil {
@@ -164,7 +158,9 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 	case "windows", "darwin":
 		if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
 			glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
-			helpers.RemoveCAFromSystemRoot(rootCA.name)
+			if err = helpers.RemoveCAFromSystemRoot(rootCA.name); err != nil {
+				glog.Errorf("Remove Old RootCA(%#v) error: %v", name, err)
+			}
 			if err = helpers.ImportCAToSystemRoot(rootCA.ca); err != nil {
 				glog.Errorf("Import RootCA(%#v) error: %v", name, err)
 			} else {
