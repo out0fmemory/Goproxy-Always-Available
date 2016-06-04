@@ -61,10 +61,11 @@ func RemoveCAFromSystemRoot(name string) error {
 	}
 
 	for _, cert := range certs {
-		_, _, err := procCertDeleteCertificateFromStore.Call(uintptr(unsafe.Pointer(cert)))
-		if err.(syscall.Errno) != 0 {
-			return err
-		}
+		_, _, err = procCertDeleteCertificateFromStore.Call(uintptr(unsafe.Pointer(cert)))
+	}
+
+	if se, ok := err.(syscall.Errno); ok && se != 0 {
+		return err
 	}
 
 	return nil
