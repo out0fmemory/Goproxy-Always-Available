@@ -136,37 +136,42 @@ func (p *FragmentPipe) writeTo(w io.Writer) (int64, error) {
 		return 0, err.(error)
 	}
 
+	<-p.token
+
+	if err := p.err.Load(); err != nil {
+		return 0, err.(error)
+	}
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	<-p.token
-	for {
-		top := p.heap[0]
-		if atomic.LoadInt64(&p.pos) != top.pos {
-			err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, atomic.LoadInt64(&p.pos))
-			defer p.CloseWithError(err)
-			return 0, err
-		}
+	top := p.heap[0]
+	if atomic.LoadInt64(&p.pos) != top.pos {
+		err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, atomic.LoadInt64(&p.pos))
+		defer p.CloseWithError(err)
+		return 0, err
+	}
 
-		n, err := w.Write(top.data)
-		atomic.AddInt64(&p.length, -int64(n))
-		atomic.AddInt64(&p.pos, int64(n))
-		if err != nil {
-			defer p.CloseWithError(err)
-			return int64(n), err
-		}
+	n, err := w.Write(top.data)
+	atomic.AddInt64(&p.length, -int64(n))
+	atomic.AddInt64(&p.pos, int64(n))
+	if err != nil {
+		defer p.CloseWithError(err)
+		return int64(n), err
+	}
 
-		if n < len(top.data) {
-			top.pos += int64(n)
-			top.data = top.data[n:]
+	if n < len(top.data) {
+		top.pos += int64(n)
+		top.data = top.data[n:]
+		p.token <- struct{}{}
+	} else {
+		heap.Pop(&p.heap)
+		if len(p.heap) > 0 && p.heap[0].pos == atomic.LoadInt64(&p.pos) {
 			p.token <- struct{}{}
-		} else {
-			heap.Pop(&p.heap)
-			if len(p.heap) > 0 && p.heap[0].pos == atomic.LoadInt64(&p.pos) {
-				p.token <- struct{}{}
-			}
 		}
 	}
+
+	return int64(n), nil
 }
 
 func (p *FragmentPipe) WriteTo(w io.Writer) (int64, error) {

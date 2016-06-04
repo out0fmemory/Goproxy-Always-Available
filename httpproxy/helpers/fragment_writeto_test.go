@@ -7,29 +7,29 @@ import (
 	"time"
 )
 
-func TestFragmentPipe1(t *testing.T) {
+func TestFragmentPipeWriteTo1(t *testing.T) {
 	p := NewFragmentPipe(6)
 	p.WriteString("foo", 0)
 	p.WriteString("bar", 3)
-	data, err := ioutil.ReadAll(p)
+	n, err := io.Copy(ioutil.Discard, p)
 	if err != nil {
-		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+		t.Errorf("io.Copy(%T) error: %v", p, err)
 	}
-	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+	t.Logf("io.Copy(%T) return: n=%v, err=%v", p, n, err)
 }
 
-func TestFragmentPipe2(t *testing.T) {
+func TestFragmentPipeWriteTo2(t *testing.T) {
 	p := NewFragmentPipe(6)
 	go p.WriteString("foo", 0)
 	go p.WriteString("bar", 3)
-	data, err := ioutil.ReadAll(p)
+	n, err := io.Copy(ioutil.Discard, p)
 	if err != nil {
-		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+		t.Errorf("io.Copy(%T) error: %v", p, err)
 	}
-	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+	t.Logf("io.Copy(%T) return: n=%v, err=%v", p, n, err)
 }
 
-func TestFragmentPipe3(t *testing.T) {
+func TestFragmentPipeWriteTo3(t *testing.T) {
 	p := NewFragmentPipe(6)
 	go func() {
 		time.Sleep(50 * time.Millisecond)
@@ -38,14 +38,14 @@ func TestFragmentPipe3(t *testing.T) {
 	go func() {
 		p.WriteString("bar", 3)
 	}()
-	data, err := ioutil.ReadAll(p)
+	n, err := io.Copy(ioutil.Discard, p)
 	if err != nil {
-		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+		t.Errorf("io.Copy(%T) error: %v", p, err)
 	}
-	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+	t.Logf("io.Copy(%T) return: n=%v, err=%v", p, n, err)
 }
 
-func TestFragmentPipe4(t *testing.T) {
+func TestFragmentPipeWriteTo4(t *testing.T) {
 	p := NewFragmentPipe(6)
 	go func() {
 		p.WriteString("foo", 0)
@@ -54,14 +54,14 @@ func TestFragmentPipe4(t *testing.T) {
 		time.Sleep(50 * time.Millisecond)
 		p.WriteString("bar", 3)
 	}()
-	data, err := ioutil.ReadAll(p)
+	n, err := io.Copy(ioutil.Discard, p)
 	if err != nil {
-		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+		t.Errorf("io.Copy(%T) error: %v", p, err)
 	}
-	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+	t.Logf("io.Copy(%T) return: n=%v, err=%v", p, n, err)
 }
 
-func TestFragmentPipe5(t *testing.T) {
+func TestFragmentPipeWriteTo5(t *testing.T) {
 	p := NewFragmentPipe(6)
 	go func() {
 		time.Sleep(50 * time.Millisecond)
@@ -74,11 +74,11 @@ func TestFragmentPipe5(t *testing.T) {
 	if err == nil {
 		t.Errorf("ioutil.ReadAll(%#v) should not return nil err", p)
 	} else {
-		t.Logf("ioutil.ReadAll(%T) return:err=%v", p, err)
+		t.Logf("io.Copy(%T) return:err=%v", p, err)
 	}
 }
 
-func TestFragmentPipe6(t *testing.T) {
+func TestFragmentPipeWriteTo6(t *testing.T) {
 	p := NewFragmentPipe(12)
 	go func() {
 		time.Sleep(10 * time.Millisecond)
@@ -96,9 +96,9 @@ func TestFragmentPipe6(t *testing.T) {
 		time.Sleep(10 * time.Millisecond)
 		p.WriteString("bar", 9)
 	}()
-	data, err := ioutil.ReadAll(p)
+	n, err := io.Copy(ioutil.Discard, p)
 	if err != nil {
-		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+		t.Errorf("io.Copy(%T) error: %v", p, err)
 	}
-	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+	t.Logf("io.Copy(%T) return: n=%v, err=%v", p, n, err)
 }
