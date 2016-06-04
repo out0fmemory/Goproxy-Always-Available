@@ -87,6 +87,10 @@ func (p *FragmentPipe) Read(data []byte) (int, error) {
 
 	<-p.token
 
+	if err := p.err.Load(); err != nil {
+		return 0, err.(error)
+	}
+
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
@@ -114,14 +118,13 @@ func (p *FragmentPipe) Read(data []byte) (int, error) {
 }
 
 func (p *FragmentPipe) Close() error {
-	p.CloseWithError(io.EOF)
-	p.token <- struct{}{}
+	defer p.CloseWithError(io.EOF)
 	return nil
 }
 
 func (p *FragmentPipe) CloseWithError(err error) error {
 	if err == nil {
-		err = io.EOF
+		err = io.ErrClosedPipe
 	}
 	p.err.Store(err)
 	p.token <- struct{}{}

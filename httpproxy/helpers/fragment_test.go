@@ -1,8 +1,10 @@
 package helpers
 
 import (
+	"io"
 	"io/ioutil"
 	"testing"
+	"time"
 )
 
 func TestFragmentPipe1(t *testing.T) {
@@ -25,4 +27,53 @@ func TestFragmentPipe2(t *testing.T) {
 		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
 	}
 	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+}
+
+func TestFragmentPipe3(t *testing.T) {
+	p := NewFragmentPipe(6)
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		p.WriteString("foo", 0)
+	}()
+	go func() {
+		p.WriteString("bar", 3)
+	}()
+	data, err := ioutil.ReadAll(p)
+	if err != nil {
+		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+	}
+	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+}
+
+func TestFragmentPipe4(t *testing.T) {
+	p := NewFragmentPipe(6)
+	go func() {
+		p.WriteString("foo", 0)
+	}()
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		p.WriteString("bar", 3)
+	}()
+	data, err := ioutil.ReadAll(p)
+	if err != nil {
+		t.Errorf("ioutil.ReadAll(%T) error: %v", p, err)
+	}
+	t.Logf("ioutil.ReadAll(%T) return: %#v", p, string(data))
+}
+
+func TestFragmentPipe5(t *testing.T) {
+	p := NewFragmentPipe(6)
+	go func() {
+		time.Sleep(50 * time.Millisecond)
+		p.CloseWithError(io.ErrClosedPipe)
+	}()
+	go func() {
+		p.WriteString("bar", 3)
+	}()
+	_, err := ioutil.ReadAll(p)
+	if err == nil {
+		t.Errorf("ioutil.ReadAll(%#v) should not return nil err", p)
+	} else {
+		t.Logf("ioutil.ReadAll(%T) return:err=%v", p, err)
+	}
 }
