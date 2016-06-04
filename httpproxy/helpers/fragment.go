@@ -33,21 +33,21 @@ func (h *fragmentHeap) Pop() interface{} {
 
 type FragmentPipe struct {
 	length int64
-	err    atomic.Value
 	pos    int64
+	err    atomic.Value
 	size   int64
 	heap   fragmentHeap
 	mu     *sync.Mutex
-	cond   *sync.Cond
+	token  chan struct{}
 }
 
 func NewFragmentPipe(size int64) *FragmentPipe {
 	return &FragmentPipe{
-		pos:  0,
-		size: size,
-		heap: []*fragment{},
-		mu:   new(sync.Mutex),
-		cond: sync.NewCond(new(sync.Mutex)),
+		pos:   0,
+		size:  size,
+		heap:  []*fragment{},
+		mu:    new(sync.Mutex),
+		token: make(chan struct{}, 1024),
 	}
 }
 
@@ -55,99 +55,99 @@ func (p *FragmentPipe) Len() int64 {
 	return atomic.LoadInt64(&p.length)
 }
 
+func (p *FragmentPipe) WriteString(data string, pos int64) (int, error) {
+	return p.Write([]byte(data), pos)
+}
+
 func (p *FragmentPipe) Write(data []byte, pos int64) (int, error) {
-	if err := p.err.Load().(error); err != nil {
-		return 0, err
+	if err := p.err.Load(); err != nil {
+		return 0, err.(error)
 	}
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	if pos == p.pos {
-		defer p.cond.Signal()
-	}
 	heap.Push(&p.heap, &fragment{pos, data})
 	atomic.AddInt64(&p.length, int64(len(data)))
+	if pos == atomic.LoadInt64(&p.pos) {
+		p.token <- struct{}{}
+	}
 	return len(data), nil
 }
 
 func (p *FragmentPipe) Read(data []byte) (int, error) {
-	p.cond.L.Lock()
-	defer p.cond.L.Unlock()
-	p.cond.Wait()
-
-	if err := p.err.Load().(error); err != nil {
-		return 0, err
+	if err := p.err.Load(); err != nil {
+		return 0, err.(error)
 	}
 
-	p.mu.Lock()
-	defer p.mu.Unlock()
-
-	if p.pos == p.size-1 {
+	if atomic.LoadInt64(&p.pos) == p.size {
 		p.Close()
 		return 0, nil
 	}
 
+	<-p.token
+
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	top := p.heap[0]
-	if p.pos != top.pos {
-		err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, p.pos)
+	if atomic.LoadInt64(&p.pos) != top.pos {
+		err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, atomic.LoadInt64(&p.pos))
 		defer p.CloseWithError(err)
 		return 0, err
 	}
 
 	n := copy(data, top.data)
 	atomic.AddInt64(&p.length, -int64(n))
-	p.pos += int64(n)
+	atomic.AddInt64(&p.pos, int64(n))
 	if n < len(top.data) {
 		top.pos += int64(n)
 		top.data = top.data[n:]
-		defer p.cond.Signal()
+		p.token <- struct{}{}
 	} else {
 		heap.Pop(&p.heap)
-		if p.heap[0].pos == p.pos {
-			defer p.cond.Signal()
+		if len(p.heap) > 0 && p.heap[0].pos == atomic.LoadInt64(&p.pos) {
+			p.token <- struct{}{}
 		}
 	}
 	return n, nil
 }
 
 func (p *FragmentPipe) Close() error {
-	defer p.cond.Signal()
-	return p.CloseWithError(io.EOF)
+	p.CloseWithError(io.EOF)
+	p.token <- struct{}{}
+	return nil
 }
 
 func (p *FragmentPipe) CloseWithError(err error) error {
-	defer p.cond.Signal()
 	if err == nil {
 		err = io.EOF
 	}
 	p.err.Store(err)
+	p.token <- struct{}{}
 	return nil
 }
 
 func (p *FragmentPipe) writeTo(w io.Writer) (int64, error) {
-	p.cond.L.Lock()
-	p.cond.Wait()
-	defer p.cond.L.Unlock()
-
-	if err := p.err.Load().(error); err != nil {
-		return 0, err
+	if err := p.err.Load(); err != nil {
+		return 0, err.(error)
 	}
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
+	<-p.token
 	for {
 		top := p.heap[0]
-		if p.pos != top.pos {
-			err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, p.pos)
+		if atomic.LoadInt64(&p.pos) != top.pos {
+			err := fmt.Errorf("%T.pos=%d is not equal to %T.pos=%d", top, top.pos, p, atomic.LoadInt64(&p.pos))
 			defer p.CloseWithError(err)
 			return 0, err
 		}
 
 		n, err := w.Write(top.data)
 		atomic.AddInt64(&p.length, -int64(n))
-		p.pos += int64(n)
+		atomic.AddInt64(&p.pos, int64(n))
 		if err != nil {
 			defer p.CloseWithError(err)
 			return int64(n), err
@@ -156,11 +156,11 @@ func (p *FragmentPipe) writeTo(w io.Writer) (int64, error) {
 		if n < len(top.data) {
 			top.pos += int64(n)
 			top.data = top.data[n:]
-			defer p.cond.Signal()
+			p.token <- struct{}{}
 		} else {
 			heap.Pop(&p.heap)
-			if p.heap[0].pos == p.pos {
-				defer p.cond.Signal()
+			if len(p.heap) > 0 && p.heap[0].pos == atomic.LoadInt64(&p.pos) {
+				p.token <- struct{}{}
 			}
 		}
 	}
