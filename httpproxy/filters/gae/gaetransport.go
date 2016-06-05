@@ -68,12 +68,15 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				t.Servers.ToggleBadServer(server)
 				time.Sleep(t.RetryDelay)
 				continue
-			case http.StatusBadGateway, http.StatusNotFound:
+			case http.StatusFound,
+				http.StatusBadGateway,
+				http.StatusNotFound,
+				http.StatusMethodNotAllowed:
 				if t.MultiDialer != nil {
 					if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
 						if ip, _, err := net.SplitHostPort(addr); err == nil {
-							glog.Warningf("GAE: %s StatusCode is %d, does not looks like a gws/gvs ip, add to blacklist for 2 hours", ip, resp.StatusCode)
-							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(2*time.Hour))
+							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for 8 hours", ip, resp.StatusCode)
+							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(8*time.Hour))
 						}
 					}
 				}
