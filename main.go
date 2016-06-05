@@ -35,6 +35,11 @@ func main() {
 
 	gover := strings.Split(strings.Replace(runtime.Version(), "devel +", "devel+", 1), " ")[0]
 
+	switch runtime.GOARCH {
+	case "386", "amd64":
+		helpers.SetConsoleTitle(fmt.Sprintf("GoProxy %s (go/%s)", version, gover))
+	}
+
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
 GoProxy Version    : %s (go/%s %s/%s)`,
 		version, gover, runtime.GOOS, runtime.GOARCH)
@@ -59,10 +64,6 @@ Pac Server         : http://%s/proxy.pac`, config.Address)
 		go httpproxy.ServeProfile(profile)
 	}
 	fmt.Fprintf(os.Stderr, "\n------------------------------------------------------\n")
-
-	if runtime.GOOS == "windows" {
-		helpers.SetConsoleTitle(fmt.Sprintf("GoProxy %s (go/%s)", version, gover))
-	}
 
 	select {}
 }
