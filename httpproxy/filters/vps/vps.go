@@ -102,11 +102,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			i = rand.Intn(len(f.FetchServers))
 		}
 	default:
-		if strings.Contains(req.URL.Host, "img.") ||
-			strings.Contains(req.URL.Host, "cache.") ||
-			strings.Contains(req.URL.Host, "video.") ||
-			strings.Contains(req.URL.Host, "static.") ||
-			strings.HasPrefix(req.URL.Host, "img") ||
+		if strings.Contains(req.Host, "img.") ||
+			strings.Contains(req.Host, "cache.") ||
+			strings.Contains(req.Host, "video.") ||
+			strings.Contains(req.Host, "static.") ||
+			strings.HasPrefix(req.Host, "img") ||
 			strings.HasPrefix(req.URL.Path, "/static") ||
 			strings.HasPrefix(req.URL.Path, "/asset") ||
 			strings.Contains(req.URL.Path, "min.js") ||

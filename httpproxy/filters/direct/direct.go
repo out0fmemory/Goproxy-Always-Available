@@ -153,6 +153,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		filters.SetHijacked(ctx, true)
 		return ctx, nil, nil
 	default:
+		helpers.FixRequestURL(req)
 		resp, err := f.transport.RoundTrip(req)
 
 		if err != nil {

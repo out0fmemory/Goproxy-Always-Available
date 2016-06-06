@@ -38,3 +38,14 @@ func TryCloseConnections(tr http.RoundTripper) bool {
 
 	return false
 }
+
+func FixRequestURL(req *http.Request) {
+	if req.URL.Host == "" {
+		switch {
+		case req.Host != "":
+			req.URL.Host = req.Host
+		case req.TLS != nil:
+			req.URL.Host = req.TLS.ServerName
+		}
+	}
+}

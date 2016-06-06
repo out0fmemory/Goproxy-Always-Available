@@ -43,11 +43,19 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 				req.URL.Scheme = "http"
 			}
 		}
-		if req.URL.Host == "" {
-			if req.Host != "" {
-				req.URL.Host = req.Host
-			} else {
-				if req.TLS != nil {
+
+		if req.TLS != nil {
+			if req.Host == "" {
+				if req.URL.Host != "" {
+					req.Host = req.URL.Host
+				} else {
+					req.Host = req.TLS.ServerName
+				}
+			}
+			if req.URL.Host == "" {
+				if req.Host != "" {
+					req.URL.Host = req.Host
+				} else {
 					req.URL.Host = req.TLS.ServerName
 				}
 			}

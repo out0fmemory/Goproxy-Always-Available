@@ -74,6 +74,8 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL) (*http.
 	var err error
 	var b bytes.Buffer
 
+	helpers.FixRequestURL(req)
+
 	w, err := flate.NewWriter(&b, flate.BestCompression)
 	if err != nil {
 		return nil, err
@@ -197,11 +199,11 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 		}
 	default:
 		if req.Header.Get("Range") != "" ||
-			strings.Contains(req.URL.Host, "img.") ||
-			strings.Contains(req.URL.Host, "cache.") ||
-			strings.Contains(req.URL.Host, "video.") ||
-			strings.Contains(req.URL.Host, "static.") ||
-			strings.HasPrefix(req.URL.Host, "img") ||
+			strings.Contains(req.Host, "img.") ||
+			strings.Contains(req.Host, "cache.") ||
+			strings.Contains(req.Host, "video.") ||
+			strings.Contains(req.Host, "static.") ||
+			strings.HasPrefix(req.Host, "img") ||
 			strings.HasPrefix(req.URL.Path, "/static") ||
 			strings.HasPrefix(req.URL.Path, "/asset") ||
 			strings.Contains(req.URL.Path, "static") ||

@@ -24,6 +24,8 @@ func (s *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 	var err error
 	var b bytes.Buffer
 
+	helpers.FixRequestURL(req)
+
 	w, err := flate.NewWriter(&b, flate.BestCompression)
 	if err != nil {
 		return nil, err
