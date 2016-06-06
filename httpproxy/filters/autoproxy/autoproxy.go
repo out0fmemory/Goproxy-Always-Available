@@ -6,12 +6,14 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"html/template"
 	"io"
 	"io/ioutil"
-	"net"
+	"mime"
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -37,9 +39,9 @@ type Config struct {
 		Enabled bool
 		Rules   map[string]string
 	}
-	MyProxyPac struct {
+	IndexFiles struct {
 		Enabled bool
-		File    string
+		Files   []string
 	}
 	GFWList struct {
 		Enabled  bool
@@ -64,8 +66,8 @@ type GFWList struct {
 type Filter struct {
 	Config
 	Store                storage.Store
-	MyProxyPACEnabled    bool
-	MyProxyPACFile       string
+	IndexFilesEnabled    bool
+	IndexFiles           map[string]struct{}
 	GFWListEnabled       bool
 	GFWList              *GFWList
 	AutoProxy2Pac        *AutoProxy2Pac
@@ -76,7 +78,6 @@ type Filter struct {
 	RegionDNSCache       lrucache.Cache
 	RegionIPCache        lrucache.Cache
 	Transport            *http.Transport
-	UpdateChan           chan struct{}
 }
 
 func init() {
@@ -96,6 +97,8 @@ func init() {
 	if err != nil {
 		glog.Fatalf("Register(%#v) error: %s", filterName, err)
 	}
+
+	mime.AddExtensionType(".crt", "application/x-x509-user-cert")
 }
 
 func NewFilter(config *Config) (_ filters.Filter, err error) {
@@ -145,22 +148,23 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		return nil, err
 	}
 
-	transport := &http.Transport{
-		Proxy: http.ProxyFromEnvironment,
-	}
+	transport := &http.Transport{}
 
 	f := &Filter{
 		Config:               *config,
 		Store:                store,
-		MyProxyPACEnabled:    config.MyProxyPac.Enabled,
-		MyProxyPACFile:       config.MyProxyPac.File,
+		IndexFilesEnabled:    config.IndexFiles.Enabled,
+		IndexFiles:           make(map[string]struct{}),
 		GFWListEnabled:       config.GFWList.Enabled,
 		GFWList:              &gfwlist,
 		AutoProxy2Pac:        autoproxy2pac,
 		Transport:            transport,
 		SiteFiltersEnabled:   config.SiteFilters.Enabled,
 		RegionFiltersEnabled: config.RegionFilters.Enabled,
-		UpdateChan:           make(chan struct{}),
+	}
+
+	for _, name := range config.IndexFiles.Files {
+		f.IndexFiles[name] = struct{}{}
 	}
 
 	if f.SiteFiltersEnabled {
@@ -216,26 +220,119 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		//TODO
 	}
 
-	if f.MyProxyPACEnabled {
-		if req.RequestURI[1:len(req.RequestURI)] == f.MyProxyPACFile {
-			glog.V(2).Infof("%s \"AUTOPROXY MyProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
-			return f.myProxyPACRoundTrip(ctx, req)
+	if f.IndexFilesEnabled && req.URL.Host == "" && req.RequestURI[0] == '/' {
+		if strings.HasSuffix(req.URL.Path, ".pac") && !strings.Contains(req.URL.Path[1:], "/") {
+			glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+			return f.ProxyPacRoundTrip(ctx, req)
+		}
+		filename := req.RequestURI[1:len(req.RequestURI)]
+		if _, ok := f.IndexFiles[filename]; ok || filename == "" {
+			glog.V(2).Infof("%s \"AUTOPROXY IndexFiles %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+			return f.IndexFilesRoundTrip(ctx, req)
 		}
 	}
 
 	return ctx, nil, nil
 }
 
-func (f *Filter) myProxyPACRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if strings.Contains(req.URL.Query().Encode(), "flush") {
-		f.UpdateChan <- struct{}{}
+func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	filename := req.RequestURI[1:len(req.RequestURI)]
+
+	if filename == "" {
+		const tpl = `<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+	</head>
+	<body>
+		{{ range $key, $value := .IndexFiles }}
+		   <li><a href="{{ $key }}">{{ $key }}</a></li>
+		{{ end }}
+	</body>
+</html>`
+		t, err := template.New("index").Parse(tpl)
+		if err != nil {
+			return ctx, nil, err
+		}
+
+		b := new(bytes.Buffer)
+		err = t.Execute(b, struct{ IndexFiles map[string]struct{} }{f.IndexFiles})
+		if err != nil {
+			return ctx, nil, err
+		}
+
+		return ctx, &http.Response{
+			Status:     "200 OK",
+			StatusCode: http.StatusOK,
+			Proto:      "HTTP/1.1",
+			ProtoMajor: 1,
+			ProtoMinor: 1,
+			Header: http.Header{
+				"Content-Type": []string{"text/html"},
+			},
+			Request:       req,
+			Close:         true,
+			ContentLength: int64(b.Len()),
+			Body:          ioutil.NopCloser(b),
+		}, nil
 	}
+
+	if filename == "favicon.ico" {
+		return ctx, &http.Response{
+			Status:        "404 NotFound",
+			StatusCode:    http.StatusNotFound,
+			Proto:         "HTTP/1.1",
+			ProtoMajor:    1,
+			ProtoMinor:    1,
+			Header:        http.Header{},
+			Request:       req,
+			ContentLength: 0,
+		}, nil
+	}
+
+	obj, err := f.Store.GetObject(filename, -1, -1)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	body := obj.Body()
+	defer body.Close()
+
+	data, err := ioutil.ReadAll(body)
+	if err != nil {
+		return ctx, nil, err
+	}
+
+	contentType := mime.TypeByExtension(filepath.Ext(filename))
+	if contentType == "" {
+		contentType = http.DetectContentType(data)
+	}
+
+	return ctx, &http.Response{
+		Status:     "200 OK",
+		StatusCode: http.StatusOK,
+		Proto:      "HTTP/1.1",
+		ProtoMajor: 1,
+		ProtoMinor: 1,
+		Header: http.Header{
+			"Content-Type": []string{contentType},
+		},
+		Request:       req,
+		Close:         true,
+		ContentLength: int64(len(data)),
+		Body:          ioutil.NopCloser(bytes.NewReader(data)),
+	}, nil
+}
+
+func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	filename := req.RequestURI[1:len(req.RequestURI)]
 
 	data := ""
 
-	obj, err := f.Store.GetObject(f.MyProxyPACFile, -1, -1)
-	if os.IsNotExist(err) {
-		glog.V(2).Infof("AUTOPROXY MyProxyPac: generate %#v", f.MyProxyPACFile)
+	obj, err := f.Store.GetObject(filename, -1, -1)
+	switch {
+	case os.IsNotExist(err):
+		glog.V(2).Infof("AUTOPROXY ProxyPac: generate %#v", filename)
 
 		s := fmt.Sprintf(`// User-defined FindProxyForURL
 function FindProxyForURL(url, host) {
@@ -247,23 +344,23 @@ function FindProxyForURL(url, host) {
     }
     return 'DIRECT';
 }
-`, req.URL.Host)
-		f.Store.PutObject(f.MyProxyPACFile, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
-	} else {
+`, req.Host)
+		f.Store.PutObject(filename, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
+	case err != nil:
+		return ctx, nil, err
+	case obj != nil:
 		if body := obj.Body(); body != nil {
 			body.Close()
 		}
 	}
 
-	if obj, err := f.Store.GetObject(f.MyProxyPACFile, -1, -1); err == nil {
+	if obj, err := f.Store.GetObject(filename, -1, -1); err == nil {
 		body := obj.Body()
 		defer body.Close()
 		if b, err := ioutil.ReadAll(body); err == nil {
 			s := strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
-			if _, port, err := net.SplitHostPort(req.URL.Host); err == nil {
-				for _, localaddr := range []string{"127.0.0.1", "::1", "localhost"} {
-					s = strings.Replace(s, net.JoinHostPort(localaddr, port), req.URL.Host, -1)
-				}
+			for _, localaddr := range []string{"127.0.0.1:", "[::1]:", "localhost:"} {
+				s = strings.Replace(s, localaddr, req.Host+":", -1)
 			}
 			data += s
 		}
@@ -303,22 +400,14 @@ function FindProxyForURL(url, host) {
 }
 
 func (f *Filter) updater() {
-	glog.V(2).Infof("start updater for %#v", f.GFWList)
+	glog.V(2).Infof("start updater for %#v", f.GFWList.URL.String())
 
 	ticker := time.Tick(10 * time.Minute)
 
 	for {
-		needUpdate := false
-
 		select {
-		case <-f.UpdateChan:
-			glog.V(2).Infof("Begin manual gfwlist(%#v) update...", f.GFWList.URL.String())
-			needUpdate = true
 		case <-ticker:
-			break
-		}
-
-		if !needUpdate {
+			glog.V(2).Infof("Begin auto gfwlist(%#v) update...", f.GFWList.URL.String())
 			h, err := f.Store.HeadObject(f.GFWList.Filename)
 			if err != nil {
 				glog.Warningf("stat gfwlist(%#v) err: %v", f.GFWList.Filename, err)
@@ -337,53 +426,56 @@ func (f *Filter) updater() {
 				continue
 			}
 
-			needUpdate = time.Now().After(modTime.Add(f.GFWList.Duration))
+			if time.Now().Before(modTime.Add(f.GFWList.Duration)) {
+				continue
+			}
 		}
 
-		if needUpdate {
-			req, err := http.NewRequest("GET", f.GFWList.URL.String(), nil)
-			if err != nil {
-				glog.Warningf("NewRequest(%#v) error: %v", f.GFWList.URL.String(), err)
-				continue
-			}
+		glog.Infof("Downloading %#v", f.GFWList.URL.String())
 
-			glog.Infof("Downloading %#v", f.GFWList.URL.String())
+		req, err := http.NewRequest("GET", f.GFWList.URL.String(), nil)
+		if err != nil {
+			glog.Warningf("NewRequest(%#v) error: %v", f.GFWList.URL.String(), err)
+			continue
+		}
+		ctx, cancel := context.WithTimeout(req.Context(), 10*time.Second)
+		req = req.WithContext(ctx)
 
-			resp, err := f.Transport.RoundTrip(req)
-			if err != nil {
-				glog.Warningf("%T.RoundTrip(%#v) error: %v", f.Transport, f.GFWList.URL.String(), err)
-				continue
-			}
+		resp, err := f.Transport.RoundTrip(req)
+		cancel()
+		if err != nil {
+			glog.Warningf("%T.RoundTrip(%#v) error: %v", f.Transport, f.GFWList.URL.String(), err)
+			continue
+		}
 
-			var r io.Reader = resp.Body
-			switch f.GFWList.Encoding {
-			case "base64":
-				r = base64.NewDecoder(base64.StdEncoding, r)
-			default:
-				break
-			}
+		var r io.Reader = resp.Body
+		switch f.GFWList.Encoding {
+		case "base64":
+			r = base64.NewDecoder(base64.StdEncoding, r)
+		default:
+			break
+		}
 
-			data, err := ioutil.ReadAll(r)
-			if err != nil {
-				glog.Warningf("ReadAll(%#v) error: %v", r, err)
-				resp.Body.Close()
-				continue
-			}
-
-			err = f.Store.DeleteObject(f.GFWList.Filename)
-			if err != nil {
-				glog.Warningf("%T.DeleteObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
-				continue
-			}
-
-			err = f.Store.PutObject(f.GFWList.Filename, http.Header{}, ioutil.NopCloser(bytes.NewReader(data)))
-			if err != nil {
-				glog.Warningf("%T.PutObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
-				continue
-			}
-
-			glog.Infof("Update %#v from %#v OK", f.GFWList.Filename, f.GFWList.URL.String())
+		data, err := ioutil.ReadAll(r)
+		if err != nil {
+			glog.Warningf("ReadAll(%#v) error: %v", r, err)
 			resp.Body.Close()
+			continue
 		}
+
+		err = f.Store.DeleteObject(f.GFWList.Filename)
+		if err != nil {
+			glog.Warningf("%T.DeleteObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
+			continue
+		}
+
+		err = f.Store.PutObject(f.GFWList.Filename, http.Header{}, ioutil.NopCloser(bytes.NewReader(data)))
+		if err != nil {
+			glog.Warningf("%T.PutObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
+			continue
+		}
+
+		glog.Infof("Update %#v from %#v OK", f.GFWList.Filename, f.GFWList.URL.String())
+		resp.Body.Close()
 	}
 }

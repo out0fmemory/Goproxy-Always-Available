@@ -6,9 +6,13 @@
 			"www.slideshare.net": "php",
 		},
 	},
-	"MyProxyPac": {
+	"IndexFiles": {
 		"Enabled": true,
-		"File": "proxy.pac",
+		"Files": [
+			"proxy.pac",
+			"GoProxy.crt",
+			"favicon.ico",
+		]
 	},
 	"GFWList": {
 		"Enabled": true,
