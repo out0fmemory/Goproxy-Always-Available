@@ -62,10 +62,6 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	if host, _, err := net.SplitHostPort(req.Host); err == nil {
-		req.Host = host
-	}
-
 	// Filter Request
 	for _, f := range h.RequestFilters {
 		ctx, req, err = f.Request(ctx, req)
