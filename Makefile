@@ -37,7 +37,11 @@ SOURCES += $(REPO)/httpproxy/httpproxy.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 
-ifeq ($(GOOS), windows)
+ifeq ($(GOOS)_$(GOARCH), windows_amd64)
+	SOURCES += $(REPO)/assets/packaging/goproxy-gui.exe
+	SOURCES += $(REPO)/assets/packaging/addto-startup.vbs
+	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.cmd
+else ifeq ($(GOOS)_$(GOARCH), windows_386)
 	SOURCES += $(REPO)/assets/packaging/goproxy-gui.exe
 	SOURCES += $(REPO)/assets/packaging/addto-startup.vbs
 else ifeq ($(GOOS), darwin)
