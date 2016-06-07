@@ -14,7 +14,7 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum rename timeout
+for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum timeout
 do
 	if ! type -p ${CMD}; then
 		echo "tool ${CMD} is not installed, abort."
@@ -23,6 +23,16 @@ do
 done
 
 mkdir -p ${WORKING_DIR}
+
+function rename() {
+	for FILENAME in ${2+"$@"}
+	do
+		local NEWNAME=$(echo ${FILENAME} | sed -r $1)
+		if [ "${NEWNAME}" != "${FILENAME}" ]; then
+			mv -f ${FILENAME} ${NEWNAME}
+		fi
+	done
+}
 
 function init_github() {
 	pushd ${WORKING_DIR}
@@ -143,8 +153,8 @@ function build_repo() {
 	done
 
 	cd ${WORKING_DIR}/r${RELEASE}
-	rename 's/_darwin_(amd64|386)/_macosx_$1/' *
-	rename 's/_darwin_(arm64|arm)/_ios_$1/' *
+	rename 's/_darwin_(amd64|386)/_macosx_\1/' *
+	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
 	ls -lht
 
 	popd
