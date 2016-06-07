@@ -10,7 +10,7 @@ if exist "httpproxy.json" (
     for %%I in (*.user.json) do (
         set has_user_json=1
     )
-    if "%has_user_json%" == "0" (
+    if "!has_user_json!" == "0" (
         echo Please backup your config as .user.json
         pause >NUL
         exit /b -1
@@ -40,9 +40,11 @@ if "%filename%" == "" (
     powershell -Command "Invoke-WebRequest https://github.com/phuslu/goproxy/releases/download/assets/7za.exe -OutFile ~7za.exe"
 ) && (
     echo 4. Checking Goproxy program
-    tasklist /NH /FI "IMAGENAME eq goproxy.exe" | findstr "goproxy.exe" && (
-        echo Please quit GoProxy program.
-        pause >NUL
+:checkgoproxyprogram
+    tasklist /NH /FI "IMAGENAME eq goproxy.exe" | findstr "goproxy.exe" >NUL && (
+        echo %TIME% Please quit GoProxy program.
+        ping -n 3 127.0.0.1 >NUL
+        goto checkgoproxyprogram
     )
     echo 5. Extract Goproxy files
     ~7za.exe x -y ~%filename%
@@ -50,6 +52,6 @@ if "%filename%" == "" (
 ) && (
     echo 6. Done
 ) || (
-    del /f ~*
+    del /f ~* 2>NUL
 )
 pause >NUL
