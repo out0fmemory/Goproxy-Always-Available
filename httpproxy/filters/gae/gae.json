@@ -82,7 +82,8 @@
 	],
 	"ForceDeflate": [
 		"baike.baidu.com",
-		"www.serv-u.com"
+		"www.serv-u.com",
+		"*.skype.com",
 	],
 	"TLSConfig": {
 		"Version": "TLSv1.2",

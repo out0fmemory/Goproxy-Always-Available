@@ -426,9 +426,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return ctx, nil, err
 	}
 
-	if f.ForceDeflateMatcher.Match(req.Host) &&
+	if strings.HasPrefix(resp.Header.Get("Content-Type"), "text/") &&
 		resp.Header.Get("Content-Encoding") == "" &&
-		strings.HasPrefix(resp.Header.Get("Content-Type"), "text/") {
+		f.ForceDeflateMatcher.Match(req.Host) {
 		buf := make([]byte, 1024)
 		n, err := resp.Body.Read(buf)
 		if err != nil {
