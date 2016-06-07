@@ -431,13 +431,13 @@ func (f *Filter) updater() {
 			glog.Warningf("NewRequest(%#v) error: %v", f.GFWList.URL.String(), err)
 			continue
 		}
-		ctx, cancel := context.WithTimeout(req.Context(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(req.Context(), 32*time.Second)
 		req = req.WithContext(ctx)
 
 		resp, err := f.Transport.RoundTrip(req)
 		cancel()
 		if err != nil {
-			glog.Warningf("%T.RoundTrip(%#v) error: %v", f.Transport, f.GFWList.URL.String(), err)
+			glog.Warningf("%T.RoundTrip(%#v) error: %v", f.Transport, f.GFWList.URL.String(), err.Error())
 			continue
 		}
 
