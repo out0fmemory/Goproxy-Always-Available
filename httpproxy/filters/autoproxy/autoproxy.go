@@ -221,15 +221,15 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		//TODO
 	}
 
-	if f.IndexFilesEnabled && req.URL.Host == "" && req.RequestURI[0] == '/' {
-		if strings.HasSuffix(req.URL.Path, ".pac") && !strings.Contains(req.URL.Path[1:], "/") {
-			glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
-			return f.ProxyPacRoundTrip(ctx, req)
-		}
-		filename := req.RequestURI[1:len(req.RequestURI)]
-		if _, ok := f.IndexFiles[filename]; ok || filename == "" {
-			glog.V(2).Infof("%s \"AUTOPROXY IndexFiles %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
-			return f.IndexFilesRoundTrip(ctx, req)
+	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
+		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
+			if f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac") {
+				glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+				return f.ProxyPacRoundTrip(ctx, req)
+			} else {
+				glog.V(2).Infof("%s \"AUTOPROXY IndexFiles %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+				return f.IndexFilesRoundTrip(ctx, req)
+			}
 		}
 	}
 
@@ -237,13 +237,14 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 }
 
 func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	filename := req.RequestURI[1:len(req.RequestURI)]
+	filename := req.URL.Path[1:]
 
 	if filename == "" {
 		const tpl = `<!DOCTYPE html>
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<link rel="icon" type="image/x-icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
 	</head>
 	<body>
 		{{ range $key, $value := .IndexFiles }}
@@ -275,19 +276,6 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 			Close:         true,
 			ContentLength: int64(b.Len()),
 			Body:          ioutil.NopCloser(b),
-		}, nil
-	}
-
-	if filename == "favicon.ico" {
-		return ctx, &http.Response{
-			Status:        "404 NotFound",
-			StatusCode:    http.StatusNotFound,
-			Proto:         "HTTP/1.1",
-			ProtoMajor:    1,
-			ProtoMinor:    1,
-			Header:        http.Header{},
-			Request:       req,
-			ContentLength: 0,
 		}, nil
 	}
 
@@ -326,7 +314,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 }
 
 func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	filename := req.RequestURI[1:len(req.RequestURI)]
+	filename := req.URL.Path[1:]
 
 	data := ""
 
@@ -365,7 +353,7 @@ function FindProxyForURL(url, host) {
 				host = req.Host
 			}
 			for _, localaddr := range []string{"127.0.0.1:", "[::1]:", "localhost:"} {
-				s = strings.Replace(s, localaddr, host+":", -1)
+				s = strings.Replace(s, localaddr, net.JoinHostPort(host, ""), -1)
 			}
 			data += s
 		}

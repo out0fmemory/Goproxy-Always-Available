@@ -2,6 +2,7 @@
 	"SiteFilters": {
 		"Enabled": false,
 		"Rules": {
+			"live.github.com": "direct",
 			"rarbg.to": "direct",
 			"www.slideshare.net": "php",
 		},
@@ -11,7 +12,6 @@
 		"Files": [
 			"proxy.pac",
 			"GoProxy.crt",
-			"favicon.ico",
 		]
 	},
 	"GFWList": {
