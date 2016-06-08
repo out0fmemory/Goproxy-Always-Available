@@ -451,17 +451,9 @@ type racer struct {
 
 type racers []racer
 
-func (r racers) Len() int {
-	return len(r)
-}
-
-func (r racers) Swap(i, j int) {
-	r[i], r[j] = r[j], r[i]
-}
-
-func (r racers) Less(i, j int) bool {
-	return r[i].duration < r[j].duration
-}
+func (r racers) Len() int           { return len(r) }
+func (r racers) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r racers) Less(i, j int) bool { return r[i].duration < r[j].duration }
 
 func pickupAddrs(addrs []string, n int, connDuration lrucache.Cache, connError lrucache.Cache) []string {
 	if len(addrs) <= n {
@@ -490,21 +482,26 @@ func pickupAddrs(addrs []string, n int, connDuration lrucache.Cache, connError l
 		}
 	}
 
-	sort.Sort(racers(goodAddrs))
+	addrs1 := make([]string, 0, n)
 
+	sort.Sort(racers(goodAddrs))
 	if len(goodAddrs) > n/2 {
 		goodAddrs = goodAddrs[:n/2]
 	}
-
-	goodAddrs1 := make([]string, len(goodAddrs), n)
-	for i, r := range goodAddrs {
-		goodAddrs1[i] = r.addr
+	for _, r := range goodAddrs {
+		addrs1 = append(addrs1, r.addr)
 	}
 
-	helpers.ShuffleStrings(unknownAddrs)
-	if len(goodAddrs1)+len(unknownAddrs) > n {
-		unknownAddrs = unknownAddrs[:n-len(goodAddrs1)]
+	for _, addrs2 := range [][]string{unknownAddrs, badAddrs} {
+		if len(addrs1) < n && len(addrs2) > 0 {
+			m := n - len(addrs1)
+			if len(addrs2) > m {
+				helpers.ShuffleStringsN(addrs2, m)
+				addrs2 = addrs2[:m]
+			}
+			addrs1 = append(addrs1, addrs2...)
+		}
 	}
 
-	return append(goodAddrs1, unknownAddrs...)
+	return addrs1
 }
