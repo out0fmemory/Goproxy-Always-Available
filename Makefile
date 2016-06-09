@@ -44,6 +44,7 @@ ifeq ($(GOOS)_$(GOARCH), windows_amd64)
 else ifeq ($(GOOS)_$(GOARCH), windows_386)
 	SOURCES += $(REPO)/assets/packaging/goproxy-gui.exe
 	SOURCES += $(REPO)/assets/packaging/addto-startup.vbs
+	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.cmd
 else ifeq ($(GOOS), darwin)
 	SOURCES += $(REPO)/assets/packaging/goproxy-osx.command
 else
