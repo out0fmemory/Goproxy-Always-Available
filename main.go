@@ -18,10 +18,13 @@ func main() {
 	logToStderr := true
 	verbose := true
 	for i := 1; i < len(os.Args); i++ {
-		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
+		switch {
+		case os.Args[i] == "-version":
+			fmt.Print(version)
+			return
+		case strings.HasPrefix(os.Args[i], "-logtostderr="):
 			logToStderr = false
-		}
-		if strings.HasPrefix(os.Args[i], "-v=") {
+		case strings.HasPrefix(os.Args[i], "-v="):
 			verbose = false
 		}
 	}
