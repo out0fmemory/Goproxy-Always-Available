@@ -31,18 +31,23 @@ if exist "httpproxy.json" (
     )
 )
 
+set filename_pattern=goproxy_windows_386
+if exist "%systemdrive%\Program Files (x86)" (
+    set filename_pattern=goproxy_windows_amd64
+)
+
 set filename=
 (
     echo 1. Checking GoProxy Version
     cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/tag/goproxy ~goproxy_tag.txt
 ) && (
-    for /F "tokens=3 delims=<>" %%I in ('findstr "<strong>goproxy_windows_amd64-r" ~goproxy_tag.txt') do (
+    for /F "tokens=3 delims=<>" %%I in ('findstr "<strong>%filename_pattern%-r" ~goproxy_tag.txt') do (
         set filename=%%I
     )
 )
 del /f ~goproxy_tag.txt
 if "%filename%" == "" (
-    echo Cannot detect goproxy_windows_amd64 version
+    echo Cannot detect %filename_pattern% version
     goto quit
 )
 
