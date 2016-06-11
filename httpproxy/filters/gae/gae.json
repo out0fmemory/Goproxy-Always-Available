@@ -13,26 +13,15 @@
 	],
 	"HostMap" : {
 		"google_hk": [
-			"googleapis.l.google.com",
-			"cert-test.sandbox.google.com",
-			"googlecode.l.googleusercontent.com",
-			"maps.l.google.com",
-			"code.l.google.com",
-			"mail.l.google.com",
 			"mail.google.com",
+			"mail.l.google.com",
+			"maps.l.google.com",
+			"scholar.google.com",
+			"scholar.google.com.hk",
+			"www.google.com",
 			"www.google.com.hk",
 			"www.google.com.tw",
 			"www.l.google.com",
-			"www2.l.google.com",
-			"www3.l.google.com",
-			"www4.l.google.com",
-			"www5.l.google.com",
-			"www.google.com"
-		],
-		"google_talk": [
-			"talk.google.com",
-			"talk.l.google.com",
-			"talkx.l.google.com"
 		],
 		"google_cn": [
 			"www.g.cn",
@@ -57,9 +46,6 @@
 		"*.ytimg.com": "google_hk",
 		"dl.google.com": "google_cn",
 		"fonts.googleapis.com": "google_cn",
-		"talk.google.com": "google_talk",
-		"talk.l.google.com": "google_talk",
-		"talkx.l.google.com": "google_talk",
 	},
 	"ForceHTTPS": [
 		"*.appspot.com",
