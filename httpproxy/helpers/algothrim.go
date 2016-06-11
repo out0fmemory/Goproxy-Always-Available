@@ -12,13 +12,15 @@ func ShuffleStrings(slice []string) {
 }
 
 func ShuffleStringsN(slice []string, n int) {
-	if n <= 0 || n >= len(slice) {
+	l := len(slice)
+
+	if n <= 0 || n > l {
 		panic("ShuffleStringsN n larger than len(slice)")
 	}
 
 	for i := 0; i < n; i++ {
-		j := rand.Intn(n - i)
-		slice[j] = slice[n-i-1]
+		j := rand.Intn(l - i)
+		slice[j], slice[n-i-1] = slice[n-i-1], slice[j]
 	}
 }
 
