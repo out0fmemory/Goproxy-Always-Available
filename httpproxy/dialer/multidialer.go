@@ -346,7 +346,7 @@ func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error
 				d.TCPConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
 			} else {
 				d.TCPConnDuration.Del(addr)
-				d.TLSConnError.Set(addr, err, end.Add(d.ConnExpiry))
+				d.TCPConnError.Set(addr, err, end.Add(d.ConnExpiry))
 			}
 			lane <- racer{conn, err}
 		}(addr, lane)
@@ -414,11 +414,11 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 			err = tlsConn.Handshake()
 
 			end := time.Now()
-			if err == nil {
-				d.TLSConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
-			} else {
+			if err != nil {
 				d.TLSConnDuration.Del(addr)
 				d.TLSConnError.Set(addr, err, end.Add(d.ConnExpiry))
+			} else {
+				d.TLSConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
 			}
 
 			lane <- racer{tlsConn, err}
