@@ -419,7 +419,7 @@ func (f *Filter) updater() {
 				continue
 			}
 
-			if time.Now().Before(modTime.Add(f.GFWList.Duration)) {
+			if time.Now().Sub(modTime) < f.GFWList.Duration {
 				continue
 			}
 		}
