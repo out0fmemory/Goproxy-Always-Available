@@ -14,7 +14,7 @@ GOARCH ?= $(shell go env GOARCH)
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
 	GOPROXY_STAGEDIR = $(STAGEDIR)
-	GOPROXY_DISTCMD = 7za a -y -t7z -mx=9 -m0=lzma2 -mfb=128 -md=64m -ms=on -aoa
+	GOPROXY_DISTCMD = 7za a -y -mx=9 -m0=lzma -mfb=128 -md=64m -ms=on
 	GOPROXY_DISTEXT = .7z
 else ifeq ($(GOOS), darwin)
 	GOPROXY_EXE = $(PACKAGE)
