@@ -5,6 +5,8 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
+wmic /? >NUL
+
 echo. >~gdownload.vbs
 echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~gdownload.vbs
 echo Set Stream = CreateObject("Adodb.Stream") >>~gdownload.vbs
@@ -51,6 +53,7 @@ if not "%localname%" == "" (
 
 set filename=
 (
+    title 1. Checking GoProxy Version
     echo 1. Checking GoProxy Version
     cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/tag/goproxy ~goproxy_tag.txt
 ) && (
@@ -71,32 +74,35 @@ if "%localname%" == "%filename%" (
 )
 
 (
-    echo 2. Downloading %filename%
+    title 2. Downloading 7za.exe for extracting
+    echo 2. Downloading 7za.exe for extracting
+    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/raw/master/assets/download/7za.exe ~7za.exe
+    if not exist "~7za.exe" (
+        echo Cannot download 7za.exe
+        goto quit
+    )
+) && (
+    title 3. Downloading %filename%
+    echo 3. Downloading %filename%
     cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/download/goproxy/%filename% "~%filename%"
     if not exist "~%filename%" (
         echo Cannot download %filename%
         goto quit
     )
 ) && (
-    echo 3. Downloading 7za.exe for extracting
-    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/download/assets/7za.exe ~7za.exe
-    if not exist "~7za.exe" (
-        echo Cannot download 7za.exe
-        goto quit
-    )
-) && (
+    title 4. Checking Goproxy program
     echo 4. Checking Goproxy program
 :checkgoproxyprogram
-    if exist "goproxy.exe" (
-        tasklist /nh /fi "IMAGENAME eq goproxy.exe" | findstr "goproxy.exe" >NUL && (
-            echo %TIME% Please quit GoProxy program.
-            ping -n 2 127.0.0.1 >NUL
-            goto checkgoproxyprogram
-        )
+    wmic process where "name='goproxy.exe'" get ExecutablePath | findstr /l "%~dp0goproxy.exe" >NUL && (
+        echo %TIME% Please quit GoProxy program.
+        ping -n 2 127.0.0.1 >NUL
+        goto checkgoproxyprogram
     )
+    title 5. Extract Goproxy files
     echo 5. Extract Goproxy files
     ~7za.exe x -y ~%filename%
-    echo 6. Done
+    title 6. Update %filename% OK
+    echo 6. Update %filename% OK
 )
 
 :quit
