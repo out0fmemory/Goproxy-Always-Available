@@ -67,7 +67,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 			NotAfter:  time.Now().Add(vaildFor),
 
 			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 			BasicConstraintsValid: true,
 		}
 
