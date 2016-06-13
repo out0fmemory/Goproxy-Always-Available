@@ -15,25 +15,11 @@ var version = "r9999"
 
 func main() {
 
-	logToStderr := true
-	verbose := true
-	for i := 1; i < len(os.Args); i++ {
-		switch {
-		case os.Args[i] == "-version":
-			fmt.Print(version)
-			return
-		case strings.HasPrefix(os.Args[i], "-logtostderr="):
-			logToStderr = false
-		case strings.HasPrefix(os.Args[i], "-v="):
-			verbose = false
-		}
-	}
-	if logToStderr {
-		flag.Set("logtostderr", "true")
-	}
-	if verbose {
-		flag.Set("v", "2")
-	}
+	hintGlog(map[string]string{
+		"logtostderr": "true",
+		"v":           "2",
+	})
+
 	flag.Parse()
 
 	gover := strings.Split(strings.Replace(runtime.Version(), "devel +", "devel+", 1), " ")[0]
@@ -69,4 +55,27 @@ Pac Server         : http://%s/proxy.pac`, config.Address)
 	fmt.Fprintf(os.Stderr, "\n------------------------------------------------------\n")
 
 	select {}
+}
+
+func hintGlog(v map[string]string) {
+	v1 := map[string]bool{}
+
+	for i := 1; i < len(os.Args); i++ {
+		if os.Args[i] == "-version" {
+			fmt.Print(version)
+			os.Exit(0)
+		}
+
+		for key, _ := range v {
+			if strings.HasPrefix(os.Args[i], "-"+key+"=") {
+				v1[key] = true
+			}
+		}
+	}
+
+	for key, value := range v {
+		if seen, ok := v1[key]; !ok || (ok && !seen) {
+			flag.Set(key, value)
+		}
+	}
 }
