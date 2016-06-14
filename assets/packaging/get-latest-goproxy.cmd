@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-wmic /? >NUL
+wmic ComputerSystem Get UserName
 
 echo. >~gdownload.vbs
 echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~gdownload.vbs
@@ -94,7 +94,7 @@ if "%localname%" == "%filename%" (
     echo 4. Checking Goproxy program
 :checkgoproxyprogram
     wmic process where "name='goproxy.exe'" get ExecutablePath | findstr /l "%~dp0goproxy.exe" >NUL && (
-        echo %TIME% Please quit GoProxy program.
+        echo %TIME% Please quit GoProxy program and continue
         ping -n 2 127.0.0.1 >NUL
         goto checkgoproxyprogram
     )
