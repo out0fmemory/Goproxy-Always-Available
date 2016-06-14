@@ -15,7 +15,7 @@ var version = "r9999"
 
 func main() {
 
-	hintGlog(map[string]string{
+	hint(map[string]string{
 		"logtostderr": "true",
 		"v":           "2",
 	})
@@ -57,7 +57,7 @@ Pac Server         : http://%s/proxy.pac`, config.Address)
 	select {}
 }
 
-func hintGlog(v map[string]string) {
+func hint(v map[string]string) {
 	v1 := map[string]bool{}
 
 	for i := 1; i < len(os.Args); i++ {
