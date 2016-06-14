@@ -66,6 +66,7 @@
 	"ForceGAE": [
 		"domains.google.com",
 		"www.google.com/patents",
+		"plus.google.com/$",
 	],
 	"ForceDeflate": [
 		"baike.baidu.com",

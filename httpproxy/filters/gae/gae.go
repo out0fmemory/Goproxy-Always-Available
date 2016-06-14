@@ -77,6 +77,7 @@ type Filter struct {
 	DirectTransport     http.RoundTripper
 	ForceHTTPSMatcher   *helpers.HostMatcher
 	ForceGAEStrings     []string
+	ForceGAESuffixs     []string
 	ForceGAEMatcher     *helpers.HostMatcher
 	ForceDeflateMatcher *helpers.HostMatcher
 	FakeOptionsMatcher  *helpers.HostMatcher
@@ -248,10 +249,15 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	forceGAEStrings := make([]string, 0)
+	forceGAESuffixs := make([]string, 0)
 	forceGAEMatcherStrings := make([]string, 0)
 	for _, s := range config.ForceGAE {
 		if strings.Contains(s, "/") {
-			forceGAEStrings = append(forceGAEStrings, s)
+			if strings.HasSuffix(s, "$") {
+				forceGAESuffixs = append(forceGAESuffixs, strings.TrimRight(s, "$"))
+			} else {
+				forceGAEStrings = append(forceGAEStrings, s)
+			}
 		} else {
 			forceGAEMatcherStrings = append(forceGAEMatcherStrings, s)
 		}
@@ -304,6 +310,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		ForceHTTPSMatcher:   helpers.NewHostMatcher(config.ForceHTTPS),
 		ForceGAEMatcher:     helpers.NewHostMatcher(forceGAEMatcherStrings),
 		ForceGAEStrings:     forceGAEStrings,
+		ForceGAESuffixs:     forceGAESuffixs,
 		ForceDeflateMatcher: helpers.NewHostMatcher(config.ForceDeflate),
 		FakeOptionsMatcher:  helpers.NewHostMatcherWithStrings(config.FakeOptions),
 		SiteMatcher:         helpers.NewHostMatcher(config.Sites),
@@ -445,6 +452,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		resp.Body = helpers.NewMultiReadCloser(bytes.NewReader(buf), resp.Body)
 	}
 
+	if resp != nil && resp.Header != nil {
+		resp.Header.Del("Alt-Svc")
+		resp.Header.Del("Alternate-Protocol")
+	}
+
 	glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 	return ctx, resp, err
 }
@@ -454,9 +466,19 @@ func (f *Filter) shouldForceGAE(req *http.Request) bool {
 		return true
 	}
 
+	u := req.URL.String()
+
+	if len(f.ForceGAESuffixs) > 0 {
+		for _, s := range f.ForceGAESuffixs {
+			if strings.HasSuffix(u, s) {
+				return true
+			}
+		}
+	}
+
 	if len(f.ForceGAEStrings) > 0 {
 		for _, s := range f.ForceGAEStrings {
-			if strings.Contains(req.URL.String(), s) {
+			if strings.Contains(u, s) {
 				return true
 			}
 		}
