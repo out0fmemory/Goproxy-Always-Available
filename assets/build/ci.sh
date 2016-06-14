@@ -106,10 +106,15 @@ function build_http2() {
 function build_repo() {
 	pushd ${WORKING_DIR}
 
-	git clone --branch "master" https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
-
+	git clone https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
 	cd ${GITHUB_REPO}
-	git checkout -f ${GITHUB_COMMIT_ID}
+
+	if [ ${TRAVIS_PULL_REQUEST:-false} == "false" ]; then
+		git checkout -f ${GITHUB_COMMIT_ID}
+	else
+		git fetch origin pull/${TRAVIS_PULL_REQUEST}/head:pr
+		git checkout -f pr
+	fi
 
 	export RELEASE=$(git rev-list HEAD| wc -l | xargs)
 	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
@@ -161,7 +166,7 @@ function build_repo() {
 }
 
 function release_repo_ci() {
-	if [ "$TRAVIS_PULL_REQUEST" == "true" ]; then
+	if [ ${TRAVIS_EVENT_TYPE:-push} != "push" ]; then
 		return
 	fi
 
