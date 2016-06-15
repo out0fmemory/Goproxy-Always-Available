@@ -77,7 +77,7 @@ import base64
 import platform
 
 if platform.mac_ver()[0] > '10.':
-    sys.exit(os.system('osascript -e \'display dialog "Please run goproxy-osx.command instead." buttons {"OK"} default button 1 with icon caution with title "GoProxy GTK"\''))
+    sys.exit(os.system('osascript -e \'display dialog "Please run goproxy-macos.command instead." buttons {"OK"} default button 1 with icon caution with title "GoProxy GTK"\''))
 
 try:
     import pygtk

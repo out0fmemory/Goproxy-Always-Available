@@ -8,5 +8,5 @@ addto-startup.vbs
 goproxy-gtk.desktop
 goproxy-gtk.py
 goproxy-logo.png
-goproxy-osx.command
+goproxy-macos.command
 proxy.pac

@@ -46,7 +46,7 @@ else ifeq ($(GOOS)_$(GOARCH), windows_386)
 	SOURCES += $(REPO)/assets/packaging/addto-startup.vbs
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.cmd
 else ifeq ($(GOOS), darwin)
-	SOURCES += $(REPO)/assets/packaging/goproxy-osx.command
+	SOURCES += $(REPO)/assets/packaging/goproxy-macos.command
 else
 	SOURCES += $(REPO)/assets/packaging/goproxy-gtk.py
 	SOURCES += $(REPO)/assets/packaging/goproxy.sh

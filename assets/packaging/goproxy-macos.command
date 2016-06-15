@@ -5,7 +5,7 @@
 
 __version__ = '1.6'
 
-GOPROXY_TITLE = "GoProxy OS X"
+GOPROXY_TITLE = "GoProxy macOS"
 GOPROXY_ICON_DATA = """\
 iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAABGdBTUEAALGPC/xhBQAAAAFzUkdC
 AK7OHOkAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAArtQTFRF
@@ -49,7 +49,7 @@ from AppKit import *
 ColorSet=[NSColor.blackColor(), NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
 
 
-class GoProxyOSX(NSObject):
+class GoProxyMacOS(NSObject):
 
     console_color=ColorSet[0]
 
@@ -126,7 +126,7 @@ class GoProxyOSX(NSObject):
         nc.addObserver_selector_name_object_(self, 'exit:', NSWorkspaceWillPowerOffNotification, None)
 
     def startGoProxy(self):
-        cmd = '%s/goproxy -v=2' % os.path.dirname(os.path.abspath(__file__))
+        cmd = '%s/goproxy' % os.path.dirname(os.path.abspath(__file__))
         self.master, self.slave = pty.openpty()
         self.pipe = subprocess.Popen(cmd, shell=True, stdin=subprocess.PIPE, stdout=self.slave, stderr=self.slave, close_fds=True)
         self.pipe_fd = os.fdopen(self.master)
@@ -135,7 +135,7 @@ class GoProxyOSX(NSObject):
     def notify(self):
         from Foundation import NSUserNotification, NSUserNotificationCenter
         notification = NSUserNotification.alloc().init()
-        notification.setTitle_("GoProxy OSX Started.")
+        notification.setTitle_("GoProxy macOS Started.")
         notification.setSubtitle_("")
         notification.setInformativeText_("")
         notification.setSoundName_("NSUserNotificationDefaultSoundName")
@@ -200,7 +200,7 @@ def main():
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
     app = NSApplication.sharedApplication()
-    delegate = GoProxyOSX.alloc().init()
+    delegate = GoProxyMacOS.alloc().init()
     app.setDelegate_(delegate)
 
     AppHelper.runEventLoop()

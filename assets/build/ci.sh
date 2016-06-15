@@ -158,7 +158,7 @@ function build_repo() {
 	done
 
 	cd ${WORKING_DIR}/r${RELEASE}
-	rename 's/_darwin_(amd64|386)/_macosx_\1/' *
+	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
 	ls -lht
 
