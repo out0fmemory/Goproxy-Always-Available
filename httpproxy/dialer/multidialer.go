@@ -81,7 +81,7 @@ func (d *MultiDialer) LookupHost2(name string, dnsserver net.IP) (addrs []string
 		m.SetQuestion(dns.Fqdn(name), dns.TypeANY)
 	}
 
-	r, err := dns.Exchange(m, dnsserver.String()+":53")
+	r, err := dns.Exchange(m, net.JoinHostPort(dnsserver.String(), "53"))
 	if err != nil {
 		return nil, err
 	}
