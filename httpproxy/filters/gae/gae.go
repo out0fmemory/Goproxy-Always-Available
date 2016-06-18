@@ -47,7 +47,6 @@ type Config struct {
 		ServerName             []string
 	}
 	GoogleG2KeyID string
-	ForceHTTPS    []string
 	ForceGAE      []string
 	ForceDeflate  []string
 	FakeOptions   map[string][]string
@@ -262,6 +261,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		tr = t1
 	}
 
+	forceHTTPSMatcherStrings := make([]string, 0)
+	for key, value := range config.SiteToAlias {
+		if strings.HasPrefix(value, "google_") {
+			forceHTTPSMatcherStrings = append(forceHTTPSMatcherStrings, key)
+		}
+	}
+
 	forceGAEStrings := make([]string, 0)
 	forceGAESuffixs := make([]string, 0)
 	forceGAEMatcherStrings := make([]string, 0)
@@ -321,7 +327,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			RetryTimes: config.Transport.RetryTimes,
 		},
 		DirectTransport:     tr,
-		ForceHTTPSMatcher:   helpers.NewHostMatcher(config.ForceHTTPS),
+		ForceHTTPSMatcher:   helpers.NewHostMatcher(forceHTTPSMatcherStrings),
 		ForceGAEMatcher:     helpers.NewHostMatcher(forceGAEMatcherStrings),
 		ForceGAEStrings:     forceGAEStrings,
 		ForceGAESuffixs:     forceGAESuffixs,
