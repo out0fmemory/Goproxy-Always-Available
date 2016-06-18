@@ -5,6 +5,7 @@ import (
 	"context"
 	"crypto/tls"
 	"encoding/hex"
+	"flag"
 	"math/rand"
 	"net"
 	"net/http"
@@ -198,6 +199,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		ForceIPv6:         config.ForceIPv6,
 		SSLVerify:         config.SSLVerify,
 		EnableRemoteDNS:   config.EnableRemoteDNS,
+		LogToStderr:       flag.Lookup("logtostderr") != nil,
 		TLSConfig:         nil,
 		Site2Alias:        helpers.NewHostMatcherWithString(config.Site2Alias),
 		IPBlackList:       lrucache.NewLRUCache(8192),

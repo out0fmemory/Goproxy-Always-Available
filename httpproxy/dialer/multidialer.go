@@ -22,6 +22,7 @@ type MultiDialer struct {
 	ForceIPv6         bool
 	SSLVerify         bool
 	EnableRemoteDNS   bool
+	LogToStderr       bool
 	TLSConfig         *tls.Config
 	Site2Alias        *helpers.HostMatcher
 	GoogleTLSConfig   *tls.Config
@@ -221,7 +222,13 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 }
 
 func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
-	glog.Warningf("MULTIDIALER Dial(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TCPConnDuration.Len(), d.TCPConnError.Len())
+	if d.LogToStderr {
+		helpers.SetConsoleTextColorGreen()
+	}
+	glog.V(2).Infof("MULTIDIALER Dial(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TCPConnDuration.Len(), d.TCPConnError.Len())
+	if d.LogToStderr {
+		helpers.SetConsoleTextColorReset()
+	}
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
@@ -250,7 +257,13 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 }
 
 func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Conn, error) {
-	glog.Warningf("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	if d.LogToStderr {
+		helpers.SetConsoleTextColorGreen()
+	}
+	glog.V(2).Infof("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	if d.LogToStderr {
+		helpers.SetConsoleTextColorReset()
+	}
 
 	if cfg == nil {
 		cfg = d.TLSConfig
