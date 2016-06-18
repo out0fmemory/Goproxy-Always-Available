@@ -74,11 +74,11 @@ if "%localname%" == "%filename%" (
 )
 
 (
-    title 2. Downloading 7za.exe for extracting
-    echo 2. Downloading 7za.exe for extracting
-    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/raw/master/assets/download/7za.exe ~7za.exe
-    if not exist "~7za.exe" (
-        echo Cannot download 7za.exe
+    title 2. Downloading 7zCon.sfx for extracting
+    echo 2. Downloading 7zCon.sfx for extracting
+    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/raw/master/assets/download/7zCon.sfx ~7zCon.sfx
+    if not exist "~7zCon.sfx" (
+        echo Cannot download 7zCon.sfx
         goto quit
     )
 ) && (
@@ -100,7 +100,9 @@ if "%localname%" == "%filename%" (
     )
     title 5. Extract Goproxy files
     echo 5. Extract Goproxy files
-    ~7za.exe x -y ~%filename%
+    copy /b ~7zCon.sfx+~%filename% ~%filename%.exe
+    del /f ~gdownload.vbs ~7zCon.sfx ~%filename% 2>NUL
+    ~%filename%.exe -y
     title 6. Update %filename% OK
     echo 6. Update %filename% OK
 )
