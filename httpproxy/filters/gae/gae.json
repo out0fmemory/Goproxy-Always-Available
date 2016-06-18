@@ -29,7 +29,7 @@
 			"www.google.cn"
 		]
 	},
-	"Site2Alias": {
+	"SiteToAlias": {
 		"*.google-analytics.com": "google_cn",
 		".doubleclick.net": "google_cn",
 		".googlesyndication.com": "google_cn",

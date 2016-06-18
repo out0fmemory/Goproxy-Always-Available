@@ -36,6 +36,7 @@ type Config struct {
 	EnableDeadProbe bool
 	EnableRemoteDNS bool
 	Sites           []string
+	SiteToAlias     map[string]string
 	Site2Alias      map[string]string
 	HostMap         map[string][]string
 	TLSConfig       struct {
@@ -190,6 +191,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		glog.Fatalf("GAE: ForceIPv6=%v and EnableRemoteDNS=%v is conflict!", config.ForceIPv6, config.EnableRemoteDNS)
 	}
 
+	if config.Site2Alias == nil {
+		config.Site2Alias = make(map[string]string)
+	}
+	for key, value := range config.SiteToAlias {
+		config.Site2Alias[key] = value
+	}
+	config.SiteToAlias = config.Site2Alias
+
 	d := &dialer.MultiDialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
@@ -201,7 +210,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		EnableRemoteDNS:   config.EnableRemoteDNS,
 		LogToStderr:       flag.Lookup("logtostderr") != nil,
 		TLSConfig:         nil,
-		Site2Alias:        helpers.NewHostMatcherWithString(config.Site2Alias),
+		SiteToAlias:       helpers.NewHostMatcherWithString(config.SiteToAlias),
 		IPBlackList:       lrucache.NewLRUCache(8192),
 		HostMap:           config.HostMap,
 		GoogleTLSConfig:   googleTLSConfig,

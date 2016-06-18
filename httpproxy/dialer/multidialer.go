@@ -24,7 +24,7 @@ type MultiDialer struct {
 	EnableRemoteDNS   bool
 	LogToStderr       bool
 	TLSConfig         *tls.Config
-	Site2Alias        *helpers.HostMatcher
+	SiteToAlias       *helpers.HostMatcher
 	GoogleTLSConfig   *tls.Config
 	GoogleG2KeyID     []byte
 	IPBlackList       lrucache.Cache
@@ -240,7 +240,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.Site2Alias.Lookup(host); ok {
+			if alias0, ok := d.SiteToAlias.Lookup(host); ok {
 				alias := alias0.(string)
 				if hosts, err := d.LookupAlias(alias); err == nil {
 					var config *tls.Config
