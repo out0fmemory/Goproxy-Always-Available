@@ -32,11 +32,8 @@ type MultiDialer struct {
 	DNSServers        []net.IP
 	DNSCache          lrucache.Cache
 	DNSCacheExpiry    time.Duration
-	TCPConnDuration   lrucache.Cache
-	TCPConnError      lrucache.Cache
 	TLSConnDuration   lrucache.Cache
 	TLSConnError      lrucache.Cache
-	TCPConnReadBuffer int
 	TLSConnReadBuffer int
 	ConnExpiry        time.Duration
 	Level             int
@@ -44,8 +41,6 @@ type MultiDialer struct {
 
 func (d *MultiDialer) ClearCache() {
 	// d.DNSCache.Clear()
-	d.TCPConnDuration.Clear()
-	d.TCPConnError.Clear()
 	d.TLSConnDuration.Clear()
 	d.TLSConnError.Clear()
 }
@@ -222,33 +217,6 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 }
 
 func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
-	if d.LogToStderr {
-		helpers.SetConsoleTextColorGreen()
-	}
-	glog.V(2).Infof("MULTIDIALER Dial(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TCPConnDuration.Len(), d.TCPConnError.Len())
-	if d.LogToStderr {
-		helpers.SetConsoleTextColorReset()
-	}
-	switch network {
-	case "tcp", "tcp4", "tcp6":
-		if host, port, err := net.SplitHostPort(address); err == nil {
-			if alias0, ok := d.Site2Alias.Lookup(host); ok {
-				alias := alias0.(string)
-				if hosts, err := d.LookupAlias(alias); err == nil {
-					addrs := make([]string, len(hosts))
-					for i, host := range hosts {
-						addrs[i] = net.JoinHostPort(host, port)
-					}
-					if d.ForceIPv6 {
-						network = "tcp6"
-					}
-					return d.dialMulti(network, addrs)
-				}
-			}
-		}
-	default:
-		break
-	}
 	return d.Dialer.Dial(network, address)
 }
 
@@ -330,83 +298,24 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 	return tls.DialWithDialer(&d.Dialer, network, address, d.TLSConfig)
 }
 
-func (d *MultiDialer) dialMulti(network string, addrs []string) (net.Conn, error) {
-	glog.V(3).Infof("dialMulti(%v, %v)", network, addrs)
-	type racer struct {
-		c net.Conn
-		e error
-	}
-
-	length := len(addrs)
-	if d.Level < length {
-		length = d.Level
-	}
-
-	addrs = pickupAddrs(addrs, length, d.TCPConnDuration, d.TCPConnError)
-	lane := make(chan racer, length)
-
-	for _, addr := range addrs {
-		go func(addr string, c chan<- racer) {
-			start := time.Now()
-			conn, err := d.Dialer.Dial(network, addr)
-			end := time.Now()
-			if err == nil {
-				if d.TCPConnReadBuffer > 0 {
-					if tc, ok := conn.(*net.TCPConn); ok {
-						tc.SetReadBuffer(d.TCPConnReadBuffer)
-					}
-				}
-				d.TCPConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
-			} else {
-				d.TCPConnDuration.Del(addr)
-				d.TCPConnError.Set(addr, err, end.Add(d.ConnExpiry))
-			}
-			lane <- racer{conn, err}
-		}(addr, lane)
-	}
-
-	var r racer
-	for i := 0; i < length; i++ {
-		r = <-lane
-		if r.e == nil {
-			go func(count int) {
-				var r1 racer
-				for ; count > 0; count-- {
-					r1 = <-lane
-					if r1.c != nil {
-						r1.c.Close()
-					}
-				}
-			}(length - 1 - i)
-			return r.c, nil
-		}
-	}
-	return nil, r.e
-}
-
 func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.Config) (net.Conn, error) {
 	glog.V(3).Infof("dialMultiTLS(%v, %v, %#v)", network, addrs, config)
-	type racer struct {
+	type connWithError struct {
 		c net.Conn
 		e error
 	}
 
-	length := len(addrs)
-	if d.Level < length {
-		length = d.Level
-	}
-
-	addrs = pickupAddrs(addrs, length, d.TLSConnDuration, d.TLSConnError)
-	lane := make(chan racer, length)
+	addrs = d.pickupTLSAddrs(addrs, d.Level)
+	lane := make(chan connWithError, len(addrs))
 
 	for _, addr := range addrs {
-		go func(addr string, c chan<- racer) {
+		go func(addr string, c chan<- connWithError) {
 			// start := time.Now()
 			conn, err := d.Dialer.Dial(network, addr)
 			if err != nil {
 				d.TLSConnDuration.Del(addr)
 				d.TLSConnError.Set(addr, err, time.Now().Add(d.ConnExpiry))
-				lane <- racer{conn, err}
+				lane <- connWithError{conn, err}
 				return
 			}
 
@@ -434,23 +343,23 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 				d.TLSConnDuration.Set(addr, end.Sub(start), end.Add(d.ConnExpiry))
 			}
 
-			lane <- racer{tlsConn, err}
+			lane <- connWithError{tlsConn, err}
 		}(addr, lane)
 	}
 
-	var r racer
-	for i := 0; i < length; i++ {
+	var r connWithError
+	for i := range addrs {
 		r = <-lane
 		if r.e == nil {
 			go func(count int) {
-				var r1 racer
+				var r1 connWithError
 				for ; count > 0; count-- {
 					r1 = <-lane
 					if r1.c != nil {
 						r1.c.Close()
 					}
 				}
-			}(length - 1 - i)
+			}(len(addrs) - 1 - i)
 			return r.c, nil
 		}
 	}
@@ -468,7 +377,7 @@ func (r racers) Len() int           { return len(r) }
 func (r racers) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
 func (r racers) Less(i, j int) bool { return r[i].duration < r[j].duration }
 
-func pickupAddrs(addrs []string, n int, connDuration lrucache.Cache, connError lrucache.Cache) []string {
+func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 	if len(addrs) <= n {
 		return addrs
 	}
@@ -478,13 +387,13 @@ func pickupAddrs(addrs []string, n int, connDuration lrucache.Cache, connError l
 	badAddrs := make([]string, 0)
 
 	for _, addr := range addrs {
-		if d, ok := connDuration.GetQuiet(addr); ok {
-			if d1, ok := d.(time.Duration); !ok {
-				glog.Errorf("%#v for %#v is not a time.Duration", d, addr)
+		if duration, ok := d.TLSConnDuration.GetQuiet(addr); ok {
+			if d, ok := duration.(time.Duration); !ok {
+				glog.Errorf("%#v for %#v is not a time.Duration", duration, addr)
 			} else {
-				goodAddrs = append(goodAddrs, racer{addr, d1})
+				goodAddrs = append(goodAddrs, racer{addr, d})
 			}
-		} else if e, ok := connError.GetQuiet(addr); ok {
+		} else if e, ok := d.TLSConnError.GetQuiet(addr); ok {
 			if _, ok := e.(error); !ok {
 				glog.Errorf("%#v for %#v is not a error", e, addr)
 			} else {
