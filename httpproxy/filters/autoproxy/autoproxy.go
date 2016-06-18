@@ -49,6 +49,7 @@ type Config struct {
 		URL      string
 		File     string
 		Encoding string
+		Expiry   int
 		Duration int
 	}
 }
@@ -61,6 +62,7 @@ type GFWList struct {
 	URL      *url.URL
 	Filename string
 	Encoding string
+	Expiry   time.Duration
 	Duration time.Duration
 }
 
@@ -107,6 +109,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 	gfwlist.Encoding = config.GFWList.Encoding
 	gfwlist.Filename = config.GFWList.File
+	gfwlist.Expiry = time.Duration(config.GFWList.Expiry) * time.Second
 	gfwlist.Duration = time.Duration(config.GFWList.Duration) * time.Second
 	gfwlist.URL, err = url.Parse(config.GFWList.URL)
 	if err != nil {
@@ -393,9 +396,9 @@ function FindProxyForURL(url, host) {
 }
 
 func (f *Filter) updater() {
-	glog.V(2).Infof("start updater for %#v", f.GFWList.URL.String())
+	glog.V(2).Infof("start updater for %+v, expiry=%s, duration=%s", f.GFWList.URL.String(), f.GFWList.Expiry, f.GFWList.Duration)
 
-	ticker := time.Tick(10 * time.Minute)
+	ticker := time.Tick(f.GFWList.Duration)
 
 	for {
 		select {
@@ -419,7 +422,7 @@ func (f *Filter) updater() {
 				continue
 			}
 
-			if time.Now().Sub(modTime) < f.GFWList.Duration {
+			if time.Now().Sub(modTime) < f.GFWList.Expiry {
 				continue
 			}
 		}

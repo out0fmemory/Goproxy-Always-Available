@@ -19,6 +19,7 @@
 		"URL": "https://raw.githubusercontent.com/gfwlist/gfwlist/master/gfwlist.txt",
 		"File": "gfwlist.txt",
 		"Encoding": "base64",
-		"Duration": 86400
+		"Expiry": 86400,
+		"Duration": 3600,
 	}
 }
