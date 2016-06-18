@@ -150,17 +150,20 @@ func (s *fileStore) PutObject(object string, header http.Header, data io.ReadClo
 	defer data.Close()
 
 	filename := filepath.Join(s.Dirname, object)
-	tmpname := filename + ".tmp"
-	b, err := ioutil.ReadAll(data)
+
+	f, err := ioutil.TempFile(filepath.Dir(filename), filepath.Base(filename)+".")
 	if err != nil {
 		return err
 	}
 
-	if err = ioutil.WriteFile(tmpname, b, defaultFilePerm); err != nil {
+	if _, err = io.Copy(f, data); err != nil {
+		return err
+	}
+	if err = f.Close(); err != nil {
 		return err
 	}
 
-	if err = os.Rename(tmpname, filename); err != nil {
+	if err = os.Rename(f.Name(), filename); err != nil {
 		return err
 	}
 
