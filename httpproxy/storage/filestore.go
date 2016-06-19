@@ -90,7 +90,7 @@ func (s *fileStore) GetObject(object string, start, end int64) (Object, error) {
 		return nil, fmt.Errorf("%T.GetObject do not support start end parameters", s)
 	}
 
-	req, err := http.NewRequest("GET", "/"+strings.TrimLeft(object, "/"), nil)
+	req, err := http.NewRequest(http.MethodGet, "/"+strings.TrimLeft(object, "/"), nil)
 
 	filename := filepath.Join(s.Dirname, object)
 
@@ -115,11 +115,7 @@ func (s *fileStore) GetObject(object string, start, end int64) (Object, error) {
 	header.Set("Content-Type", contentType)
 
 	resp := &http.Response{
-		Status:        "200 OK",
 		StatusCode:    http.StatusOK,
-		Proto:         "HTTP/1.0",
-		ProtoMajor:    1,
-		ProtoMinor:    0,
 		Header:        header,
 		Request:       req,
 		Close:         true,

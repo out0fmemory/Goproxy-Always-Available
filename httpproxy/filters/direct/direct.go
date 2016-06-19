@@ -160,11 +160,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			glog.Errorf("%s \"DIRECT %s %s %s\" error: %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, err)
 			data := err.Error()
 			resp = &http.Response{
-				Status:        "502 Bad Gateway",
 				StatusCode:    http.StatusBadGateway,
-				Proto:         "HTTP/1.1",
-				ProtoMajor:    1,
-				ProtoMinor:    1,
 				Header:        http.Header{},
 				Request:       req,
 				Close:         true,

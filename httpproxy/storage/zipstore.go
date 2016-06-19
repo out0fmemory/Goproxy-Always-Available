@@ -115,7 +115,7 @@ func (s *zipStore) GetObject(object string, start, end int64) (Object, error) {
 		return nil, ErrNotExists
 	}
 
-	req, err := http.NewRequest("GET", "/"+strings.TrimLeft(object, "/"), nil)
+	req, err := http.NewRequest(http.MethodGet, "/"+strings.TrimLeft(object, "/"), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -135,11 +135,7 @@ func (s *zipStore) GetObject(object string, start, end int64) (Object, error) {
 	}
 
 	resp := &http.Response{
-		Status:        "200 OK",
 		StatusCode:    http.StatusOK,
-		Proto:         "HTTP/1.0",
-		ProtoMajor:    1,
-		ProtoMinor:    0,
 		Header:        header,
 		Request:       req,
 		Close:         true,

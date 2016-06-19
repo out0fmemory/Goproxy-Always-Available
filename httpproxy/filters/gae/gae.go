@@ -355,11 +355,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			u := strings.Replace(req.URL.String(), "http://", "https://", 1)
 			glog.V(2).Infof("GAE FORCEHTTPS get raw url=%v, redirect to %v", req.URL.String(), u)
 			resp := &http.Response{
-				Status:     "301 Moved Permanently",
 				StatusCode: http.StatusMovedPermanently,
-				Proto:      "HTTP/1.1",
-				ProtoMajor: 1,
-				ProtoMinor: 1,
 				Header: http.Header{
 					"Location": []string{u},
 				},
@@ -382,11 +378,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				}
 				glog.V(2).Infof("%s \"GAE REDIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, rawurl, req.Proto)
 				return ctx, &http.Response{
-					Status:     "302 Found",
 					StatusCode: http.StatusFound,
-					Proto:      "HTTP/1.1",
-					ProtoMajor: 1,
-					ProtoMinor: 1,
 					Header: http.Header{
 						"Location": []string{rawurl},
 					},
@@ -410,11 +402,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	if tr != f.DirectTransport && req.Method == http.MethodOptions {
 		if v, ok := f.FakeOptionsMatcher.Lookup(req.Host); ok {
 			resp := &http.Response{
-				Status:        "200 OK",
 				StatusCode:    http.StatusOK,
-				Proto:         "HTTP/1.1",
-				ProtoMajor:    1,
-				ProtoMinor:    1,
 				Header:        http.Header{},
 				Request:       req,
 				Close:         false,

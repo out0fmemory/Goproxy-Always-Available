@@ -50,13 +50,10 @@ func (s *Server) encodeRequest(req *http.Request) (*http.Request, error) {
 	binary.BigEndian.PutUint16(b0, uint16(b.Len()))
 
 	req1 := &http.Request{
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
-		Method:     "POST",
-		URL:        s.URL,
-		Host:       s.URL.Host,
-		Header:     http.Header{},
+		Method: http.MethodPost,
+		URL:    s.URL,
+		Host:   s.URL.Host,
+		Header: http.Header{},
 	}
 
 	if req1.URL.Scheme == "https" {

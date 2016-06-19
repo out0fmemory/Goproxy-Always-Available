@@ -267,11 +267,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		}
 
 		return ctx, &http.Response{
-			Status:     "200 OK",
 			StatusCode: http.StatusOK,
-			Proto:      "HTTP/1.1",
-			ProtoMajor: 1,
-			ProtoMinor: 1,
 			Header: http.Header{
 				"Content-Type": []string{"text/html"},
 			},
@@ -301,11 +297,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 	}
 
 	return ctx, &http.Response{
-		Status:     "200 OK",
 		StatusCode: http.StatusOK,
-		Proto:      "HTTP/1.1",
-		ProtoMajor: 1,
-		ProtoMinor: 1,
 		Header: http.Header{
 			"Content-Type": []string{contentType},
 		},
@@ -380,11 +372,7 @@ function FindProxyForURL(url, host) {
 	}
 
 	resp := &http.Response{
-		Status:        "200 OK",
 		StatusCode:    http.StatusOK,
-		Proto:         "HTTP/1.1",
-		ProtoMajor:    1,
-		ProtoMinor:    1,
 		Header:        http.Header{},
 		Request:       req,
 		Close:         true,
@@ -429,7 +417,7 @@ func (f *Filter) updater() {
 
 		glog.Infof("Downloading %#v", f.GFWList.URL.String())
 
-		req, err := http.NewRequest("GET", f.GFWList.URL.String(), nil)
+		req, err := http.NewRequest(http.MethodGet, f.GFWList.URL.String(), nil)
 		if err != nil {
 			glog.Warningf("NewRequest(%#v) error: %v", f.GFWList.URL.String(), err)
 			continue
