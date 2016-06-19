@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"path"
 	"strings"
 )
@@ -16,6 +17,8 @@ type HostMatcher struct {
 
 func (hm *HostMatcher) add(host string, value interface{}) {
 	switch {
+	case strings.Contains(host, "/"):
+		panic(fmt.Sprintf("invalid host(%#v) for HostMatcher", host))
 	case host == "*":
 		hm.starValue = value
 	case !strings.Contains(host, "*"):
