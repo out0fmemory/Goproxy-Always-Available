@@ -9,6 +9,7 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"time"
 
@@ -373,8 +374,13 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 
 	if f.DirectSiteMatcher.Match(req.Host) {
 		if req.URL.Path == "/url" {
-			if u := req.URL.Query().Get("url"); u != "" {
-				glog.V(2).Infof("GAE REDIRECT get raw url=%v, redirect to %v", req.URL.String(), u)
+			if rawurl := req.URL.Query().Get("url"); rawurl != "" {
+				if u, err := url.Parse(rawurl); err == nil {
+					if u.Scheme == "http" && f.ForceHTTPSMatcher.Match(u.Host) {
+						rawurl = strings.Replace(rawurl, "http://", "https://", 1)
+					}
+				}
+				glog.V(2).Infof("%s \"GAE REDIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, rawurl, req.Proto)
 				return ctx, &http.Response{
 					Status:     "302 Found",
 					StatusCode: http.StatusFound,
@@ -382,7 +388,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					ProtoMajor: 1,
 					ProtoMinor: 1,
 					Header: http.Header{
-						"Location": []string{u},
+						"Location": []string{rawurl},
 					},
 					Request:       req,
 					Close:         true,
