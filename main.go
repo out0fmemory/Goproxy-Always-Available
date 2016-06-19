@@ -58,7 +58,7 @@ Pac Server         : http://%s/proxy.pac`, config.Address)
 }
 
 func hint(v map[string]string) {
-	v1 := map[string]bool{}
+	seen := map[string]struct{}{}
 
 	for i := 1; i < len(os.Args); i++ {
 		if os.Args[i] == "-version" {
@@ -68,13 +68,13 @@ func hint(v map[string]string) {
 
 		for key, _ := range v {
 			if strings.HasPrefix(os.Args[i], "-"+key+"=") {
-				v1[key] = true
+				seen[key] = struct{}{}
 			}
 		}
 	}
 
 	for key, value := range v {
-		if seen, ok := v1[key]; !ok || (ok && !seen) {
+		if _, ok := seen[key]; !ok {
 			flag.Set(key, value)
 		}
 	}
