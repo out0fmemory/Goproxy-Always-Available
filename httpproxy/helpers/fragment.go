@@ -31,7 +31,15 @@ func (h *fragmentHeap) Pop() interface{} {
 	return x
 }
 
-type FragmentPipe struct {
+type FragmentPipe interface {
+	io.ReadCloser
+	io.WriterTo
+	CloseWithError(err error) error
+	Write(data []byte, pos int64) (int, error)
+	WriteString(data string, pos int64) (int, error)
+}
+
+type fragmentPipe struct {
 	length int64
 	pos    int64
 	err    atomic.Value
@@ -41,8 +49,8 @@ type FragmentPipe struct {
 	token  chan struct{}
 }
 
-func NewFragmentPipe(size int64) *FragmentPipe {
-	return &FragmentPipe{
+func NewFragmentPipe(size int64) FragmentPipe {
+	return &fragmentPipe{
 		pos:   0,
 		size:  size,
 		heap:  []*fragment{},
@@ -51,15 +59,15 @@ func NewFragmentPipe(size int64) *FragmentPipe {
 	}
 }
 
-func (p *FragmentPipe) Len() int64 {
+func (p *fragmentPipe) Len() int64 {
 	return atomic.LoadInt64(&p.length)
 }
 
-func (p *FragmentPipe) WriteString(data string, pos int64) (int, error) {
+func (p *fragmentPipe) WriteString(data string, pos int64) (int, error) {
 	return p.Write([]byte(data), pos)
 }
 
-func (p *FragmentPipe) Write(data []byte, pos int64) (int, error) {
+func (p *fragmentPipe) Write(data []byte, pos int64) (int, error) {
 	if err := p.err.Load(); err != nil {
 		return 0, err.(error)
 	}
@@ -75,7 +83,7 @@ func (p *FragmentPipe) Write(data []byte, pos int64) (int, error) {
 	return len(data), nil
 }
 
-func (p *FragmentPipe) Read(data []byte) (int, error) {
+func (p *fragmentPipe) Read(data []byte) (int, error) {
 	if err := p.err.Load(); err != nil {
 		return 0, err.(error)
 	}
@@ -117,12 +125,12 @@ func (p *FragmentPipe) Read(data []byte) (int, error) {
 	return n, nil
 }
 
-func (p *FragmentPipe) Close() error {
+func (p *fragmentPipe) Close() error {
 	defer p.CloseWithError(io.EOF)
 	return nil
 }
 
-func (p *FragmentPipe) CloseWithError(err error) error {
+func (p *fragmentPipe) CloseWithError(err error) error {
 	if err == nil {
 		err = io.ErrClosedPipe
 	}
@@ -131,7 +139,7 @@ func (p *FragmentPipe) CloseWithError(err error) error {
 	return nil
 }
 
-func (p *FragmentPipe) writeTo(w io.Writer) (int64, error) {
+func (p *fragmentPipe) writeTo(w io.Writer) (int64, error) {
 	if err := p.err.Load(); err != nil {
 		return 0, err.(error)
 	}
@@ -174,7 +182,7 @@ func (p *FragmentPipe) writeTo(w io.Writer) (int64, error) {
 	return int64(n), nil
 }
 
-func (p *FragmentPipe) WriteTo(w io.Writer) (int64, error) {
+func (p *fragmentPipe) WriteTo(w io.Writer) (int64, error) {
 	var size, n int64
 	var err error
 	for err == nil && size < p.size {
