@@ -5,7 +5,7 @@
 	"Password": "",
 	"SSLVerify": false,
 	"ForceIPv6": false,
-	"DisableHTTP2": true,
+	"DisableHTTP2": false,
 	"ForceHTTP2": false,
 	"EnableDeadProbe": true,
 	"EnableRemoteDNS": true,
