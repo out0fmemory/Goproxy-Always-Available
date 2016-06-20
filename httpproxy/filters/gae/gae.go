@@ -199,6 +199,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 	config.SiteToAlias = config.Site2Alias
 
+	hostmap := map[string][]string{}
+	for key, value := range config.HostMap {
+		hostmap[key] = helpers.UniqueStrings(value)
+	}
+
 	d := &dialer.MultiDialer{
 		Dialer: net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
@@ -212,7 +217,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		TLSConfig:         nil,
 		SiteToAlias:       helpers.NewHostMatcherWithString(config.SiteToAlias),
 		IPBlackList:       lrucache.NewLRUCache(8192),
-		HostMap:           config.HostMap,
+		HostMap:           hostmap,
 		GoogleTLSConfig:   googleTLSConfig,
 		GoogleG2KeyID:     googleG2KeyID,
 		DNSServers:        dnsServers,
