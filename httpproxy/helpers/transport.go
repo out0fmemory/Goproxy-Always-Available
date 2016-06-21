@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"net"
 	"net/http"
 )
 
@@ -18,9 +19,13 @@ var (
 	}
 )
 
+func alwaysClose(raddr net.Addr, laddr net.Addr, idle bool) bool {
+	return true
+}
+
 func TryCloseConnections(tr http.RoundTripper) bool {
 	type closer1 interface {
-		CloseConnections()
+		CloseConnections(func(raddr net.Addr, laddr net.Addr, idle bool) bool)
 	}
 
 	type closer2 interface {
@@ -28,7 +33,7 @@ func TryCloseConnections(tr http.RoundTripper) bool {
 	}
 
 	if t, ok := tr.(closer1); ok {
-		t.CloseConnections()
+		t.CloseConnections(alwaysClose)
 		return true
 	}
 
