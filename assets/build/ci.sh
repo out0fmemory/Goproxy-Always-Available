@@ -9,6 +9,7 @@ export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
+export GOSHA=${GOSHA:-upstream/master}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
@@ -58,7 +59,7 @@ function build_go() {
 	git clone https://github.com/phuslu/go
 	cd go/src
 	git remote add -f upstream https://github.com/golang/go
-	git rebase upstream/master
+	git rebase ${GOSHA}
 	bash ./make.bash
 	grep -q 'machine github.com' ~/.netrc && git push -f origin master
 
