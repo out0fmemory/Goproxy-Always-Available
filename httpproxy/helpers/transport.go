@@ -19,13 +19,13 @@ var (
 	}
 )
 
-func alwaysClose(raddr net.Addr, laddr net.Addr, idle bool) bool {
+func alwaysClose(conn net.Conn, idle bool) bool {
 	return true
 }
 
 func TryCloseConnections(tr http.RoundTripper) bool {
 	type closer1 interface {
-		CloseConnections(func(raddr net.Addr, laddr net.Addr, idle bool) bool)
+		CloseConnections(func(conn net.Conn, idle bool) bool)
 	}
 
 	type closer2 interface {
