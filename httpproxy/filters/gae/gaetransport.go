@@ -78,6 +78,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for 8 hours", ip, resp.StatusCode)
 							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(8*time.Hour))
 						}
+						if ok := helpers.TryCloseConnectionByRemoteAddr(t.RoundTripper, addr); !ok {
+							glog.Warningf("GAE: TryCloseConnectionByRemoteAddr(%T, %#v) failed.", t.RoundTripper, addr)
+						}
 					}
 				}
 				continue

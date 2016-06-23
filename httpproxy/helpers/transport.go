@@ -44,6 +44,20 @@ func TryCloseConnections(tr http.RoundTripper) bool {
 	return false
 }
 
+func TryCloseConnectionByRemoteAddr(tr http.RoundTripper, addr string) bool {
+	type closer1 interface {
+		CloseConnections(func(conn net.Conn, idle bool) bool)
+	}
+	if t, ok := tr.(closer1); ok {
+		f := func(conn net.Conn, idle bool) bool {
+			return conn != nil && conn.RemoteAddr().String() == addr
+		}
+		t.CloseConnections(f)
+		return true
+	}
+	return false
+}
+
 func FixRequestURL(req *http.Request) {
 	if req.URL.Host == "" {
 		switch {
