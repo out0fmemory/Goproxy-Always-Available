@@ -218,9 +218,21 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	if req.URL.Scheme == "" {
+		req.URL.Scheme = "http"
+	}
+	if req.URL.Host == "" {
+		req.URL.Host = req.Host
+	}
+
 	resp, err := h.Transport.RoundTrip(req)
 	if err != nil {
-		http.Error(rw, err.Error(), http.StatusBadGateway)
+		msg := err.Error()
+		if strings.HasPrefix(msg, "Invaid DNS Record: ") {
+			http.Error(rw, "403 Forbidden", http.StatusForbidden)
+		} else {
+			http.Error(rw, err.Error(), http.StatusBadGateway)
+		}
 		return
 	}
 
