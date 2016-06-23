@@ -3,10 +3,10 @@ REVSION = $(shell git rev-list HEAD | wc -l | xargs)
 PACKAGE = goproxy-vps
 REPO = $(shell git rev-parse --show-toplevel)
 
-GOPROXY_VPS_EXE = $(PACKAGE)$(shell go env GOEXE)
-
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
+GOEXE ?= $(shell go env GOEXE)
+GOPROXY_VPS_EXE = $(PACKAGE)$(GOEXE)
 GOPROXY_VPS_DISTCMD = 7za a -y -mx=9 -m0=lzma -mfb=128 -md=64m -ms=on
 GOPROXY_VPS_DISTEXT = .7z
 
