@@ -239,7 +239,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
-	if req.RequestURI[0] == '/' {
+	if req.Host == "" {
 		http.Error(rw, "403 Forbidden", http.StatusForbidden)
 		return
 	}
@@ -284,7 +284,7 @@ func hint(v map[string]string) {
 
 func genCertificates(hostname string) (tls.Certificate, error) {
 	if hostname == "" {
-		hostname = "www.apple.com"
+		return tls.Certificate{}, fmt.Errorf("genCertificates: Invalid hostname(%#v)", hostname)
 	}
 
 	glog.V(2).Infof("Generating RootCA for %v", hostname)
@@ -358,11 +358,12 @@ func main() {
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
 		glog.Warningf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
-		cert, err = genCertificates("")
+		hostname := "www.apple.com"
+		cert, err = genCertificates(hostname)
 		if err != nil {
-			glog.Fatalf("genCertificates(...) error: %+v", err)
+			glog.Fatalf("genCertificates(%#v) error: %+v", hostname, err)
 		} else {
-			glog.V(2).Infof("genCertificates(%+v) OK", cert.Leaf)
+			glog.V(2).Infof("genCertificates(%#v) OK", hostname)
 		}
 	}
 
