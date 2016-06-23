@@ -1,0 +1,5 @@
+*.crt
+*.key
+*.pem
+*.exe
+*.exe~

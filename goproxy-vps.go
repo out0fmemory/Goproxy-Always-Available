@@ -1,3 +1,5 @@
+// https://git.io/goproxy
+
 package main
 
 import (
@@ -20,13 +22,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/golang/glog"
-	"github.com/phuslu/http2"
+	"github.com/phuslu/glog"
+	"github.com/phuslu/net/http2"
 )
 
-const (
-	Version = "@VERSION@"
-)
+var version = "r9999"
 
 var (
 	transport *http.Transport = &http.Transport{
@@ -309,7 +309,7 @@ func main() {
 		http2.VerboseLogs = true
 	}
 	http2.ConfigureServer(srv, &http2.Server{})
-	glog.Infof("goproxy %s ListenAndServe on %s\n", Version, ln.Addr().String())
+	glog.Infof("goproxy %s ListenAndServe on %s\n", version, ln.Addr().String())
 	srv.Serve(tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 }
 

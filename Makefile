@@ -1,45 +1,29 @@
-RELEASE = r$(shell git rev-list HEAD | wc -l | xargs)
+REVSION = $(shell git rev-list HEAD | wc -l | xargs)
 
-PACKAGE = govps
+PACKAGE = goproxy-vps
 REPO = $(shell git rev-parse --show-toplevel)
-SOURCEDIR = $(REPO)/fetchserver/vps
-BUILDDIR = $(SOURCEDIR)/build
-STAGEDIR = $(BUILDDIR)/stage
-OBJECTDIR = $(BUILDDIR)/obj
-DISTDIR = $(BUILDDIR)/dist
+
+GOPROXY_VPS_EXE = $(PACKAGE)$(shell go env GOEXE)
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
+GOPROXY_VPS_DISTCMD = 7za a -y -mx=9 -m0=lzma -mfb=128 -md=64m -ms=on
+GOPROXY_VPS_DISTEXT = .7z
 
-GOVPS_EXE = $(PACKAGE)
-GOVPS_STAGEDIR = $(STAGEDIR)/opt/govps
-GOVPS_DISTCMD = env BZIP=-9 tar cvjpf
-GOVPS_DISTEXT = .tar.bz2
-
-OBJECTS :=
-OBJECTS += $(OBJECTDIR)/$(GOVPS_EXE)
-
-SOURCES :=
-SOURCES += $(REPO)/assets/systemd/govps.service
-
+SOURCES =
+SOURCES += $(REPO)/goproxy-vps.go
+SOURCES += $(REPO)/goproxy-vps.service
 
 .PHONY: build
-build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOVPS_DISTEXT)
+build: $(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT)
+	ls -lht
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(BUILDDIR)
+	$(RM) -rf $(BUILDROOT)
 
-$(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-$(RELEASE)$(GOVPS_DISTEXT): $(OBJECTS)
-	mkdir -p $(DISTDIR)
-	mkdir -p $(GOVPS_STAGEDIR)/ && \
-	cp $(OBJECTDIR)/$(GOVPS_EXE) $(GOVPS_STAGEDIR)/$(GOVPS_EXE)
-	for f in $(SOURCES) ; do cp $$f $(GOVPS_STAGEDIR)/ ; done
-	cd $(STAGEDIR) && $(GOVPS_DISTCMD) $@ *
+$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT): $(SOURCES) $(GOPROXY_VPS_EXE)
+	$(GOPROXY_VPS_DISTCMD) $@ $^
 
-$(OBJECTDIR)/$(GOVPS_EXE):
-	mkdir -p $(OBJECTDIR)
-	cp govps.go govps.go.orig
-	sed "s/@VERSION@/$(RELEASE)/g" govps.go.orig > govps.go
-	go build -v -o $@ . ; \
-	mv govps.go.orig govps.go
+$(GOPROXY_VPS_EXE): $(SOURCES)
+	go build -v -ldflags="-s -w -X main.version=r$(REVSION)" -o $@ .

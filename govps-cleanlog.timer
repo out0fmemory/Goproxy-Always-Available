@@ -1,8 +1,0 @@
-[Unit]
-Description=govps cleanlog timer
-
-[Timer]
-OnUnitActiveSec=24h
-
-[Install]
-WantedBy=timers.target
