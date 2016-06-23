@@ -166,11 +166,17 @@ function build_repo() {
 	popd
 }
 
-function release_repo_ci() {
-	if [ ${TRAVIS_EVENT_TYPE:-push} != "push" ]; then
-		return
-	fi
+function build_repo_ex() {
+	pushd ${WORKING_DIR}/${GITHUB_REPO}
 
+	git checkout -f server.vps
+	make
+	cp -r *.7z ${WORKING_DIR}/r${RELEASE}
+
+	popd
+}
+
+function release_repo_ci() {
 	pushd ${WORKING_DIR}
 
 	if [ ${#GITHUB_TOKEN} -eq 0 ]; then
@@ -231,5 +237,8 @@ build_go
 build_glog
 build_http2
 build_repo
-release_repo_ci
+if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
+	build_repo_ex
+	release_repo_ci
+fi
 clean
