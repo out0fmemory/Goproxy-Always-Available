@@ -119,35 +119,9 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	return nil, net.UnknownNetworkError("Unkown transport/direct error")
 }
 
-var (
-	dialer *Dialer = &Dialer{
-		Dialer: net.Dialer{
-			KeepAlive: 0,
-			Timeout:   0,
-			DualStack: true,
-		},
-		RetryTimes:     2,
-		RetryDelay:     100 * time.Millisecond,
-		DNSCache:       lrucache.NewLRUCache(8 * 1024),
-		DNSCacheExpiry: 1 * time.Hour,
-		LoopbackAddrs:  make(map[string]struct{}),
-	}
-
-	transport *http.Transport = &http.Transport{
-		Dial: dialer.Dial,
-		TLSClientConfig: &tls.Config{
-			InsecureSkipVerify: true,
-			ClientSessionCache: tls.NewLRUClientSessionCache(1024),
-		},
-		TLSHandshakeTimeout: 16 * time.Second,
-		MaxIdleConnsPerHost: 8,
-		IdleConnTimeout:     180,
-		DisableCompression:  false,
-	}
-)
-
 type Handler struct {
 	AuthMap map[string]string
+	*http.Transport
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -203,7 +177,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 		glog.Infof("%s \"%s %s:%s %s\" - -", req.RemoteAddr, req.Method, host, port, req.Proto)
 
-		conn, err := transport.Dial("tcp", net.JoinHostPort(host, port))
+		conn, err := h.Transport.Dial("tcp", net.JoinHostPort(host, port))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
@@ -244,7 +218,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	resp, err := transport.RoundTrip(req)
+	resp, err := h.Transport.RoundTrip(req)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadGateway)
 		return
@@ -367,8 +341,36 @@ func main() {
 		}
 	}
 
+	dialer := &Dialer{
+		Dialer: net.Dialer{
+			KeepAlive: 0,
+			Timeout:   0,
+			DualStack: true,
+		},
+		RetryTimes:     2,
+		RetryDelay:     100 * time.Millisecond,
+		DNSCache:       lrucache.NewLRUCache(8 * 1024),
+		DNSCacheExpiry: 1 * time.Hour,
+		LoopbackAddrs:  make(map[string]struct{}),
+	}
+
+	transport := &http.Transport{
+		Dial: dialer.Dial,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1024),
+		},
+		TLSHandshakeTimeout: 16 * time.Second,
+		MaxIdleConnsPerHost: 8,
+		IdleConnTimeout:     180,
+		DisableCompression:  false,
+	}
+
 	srv := &http.Server{
-		Handler: &Handler{authMap},
+		Handler: &Handler{
+			AuthMap:   authMap,
+			Transport: transport,
+		},
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 			MinVersion:   tls.VersionTLS12,
