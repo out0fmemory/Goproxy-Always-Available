@@ -1,4 +1,3 @@
-DEBUG ?= 0
 REVSION = $(shell git rev-list HEAD | wc -l | xargs)
 
 PACKAGE = goproxy
@@ -52,11 +51,6 @@ else
 	SOURCES += $(REPO)/assets/packaging/goproxy.sh
 endif
 
-LDFLAGS = -X main.version=r$(REVSION)
-ifeq ($(DEBUG), 0)
-	LDFLAGS += -s -w
-endif
-
 .PHONY: build
 build: $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_DISTEXT)
 	ls -lht $(DISTDIR)
@@ -72,4 +66,4 @@ $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_DISTEXT): $(OBJECTS
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
 	mkdir -p $(OBJECTDIR)
-	go build -v -ldflags="$(LDFLAGS)" -o $@ .
+	go build -v -ldflags="-s -w -X main.version=r$(REVSION)" -o $@ .
