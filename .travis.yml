@@ -13,16 +13,3 @@ addons:
   apt:
     packages:
       - p7zip-full
-
-notifications:
-  email:
-    recipients:
-      - phuslu@hotmail.com
-    on_success: never
-    on_failure: never
-  webhooks:
-    urls:
-      - https://webhooks.gitter.im/e/d5a20bb0bd02e240904f
-    on_success: always
-    on_failure: always
-    on_start: always
