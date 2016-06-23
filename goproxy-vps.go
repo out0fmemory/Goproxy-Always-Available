@@ -354,6 +354,17 @@ func main() {
 		LoopbackAddrs:  make(map[string]struct{}),
 	}
 
+	if addrs, err := net.InterfaceAddrs(); err == nil {
+		for _, addr := range addrs {
+			addr1 := addr.String()
+			switch addr.Network() {
+			case "ip+net":
+				addr1 = strings.Split(addr1, "/")[0]
+			}
+			dialer.LoopbackAddrs[addr1] = struct{}{}
+		}
+	}
+
 	transport := &http.Transport{
 		Dial: dialer.Dial,
 		TLSClientConfig: &tls.Config{
