@@ -9,7 +9,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/base64"
-	"encoding/binary"
 	"encoding/pem"
 	"flag"
 	"fmt"
@@ -19,140 +18,154 @@ import (
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
+	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
 )
 
 var version = "r9999"
 
+type Dialer struct {
+	net.Dialer
+
+	RetryTimes     int
+	RetryDelay     time.Duration
+	DNSCache       lrucache.Cache
+	DNSCacheExpiry time.Duration
+	LoopbackAddrs  map[string]struct{}
+	Level          int
+}
+
+func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
+	glog.V(3).Infof("Dail(%#v, %#v)", network, address)
+
+	switch network {
+	case "tcp", "tcp4", "tcp6":
+		if d.DNSCache != nil {
+			if addr, ok := d.DNSCache.Get(address); ok {
+				address = addr.(string)
+			} else {
+				if host, port, err := net.SplitHostPort(address); err == nil {
+					if ips, err := net.LookupIP(host); err == nil && len(ips) > 0 {
+						ip := ips[0].String()
+						if d.LoopbackAddrs != nil {
+							if _, ok := d.LoopbackAddrs[ip]; ok {
+								return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%s)", host, ip))
+							}
+						}
+						addr := net.JoinHostPort(ip, port)
+						d.DNSCache.Set(address, addr, time.Now().Add(d.DNSCacheExpiry))
+						glog.V(3).Infof("direct Dial cache dns %#v=%#v", address, addr)
+						address = addr
+					}
+				}
+			}
+		}
+	default:
+		break
+	}
+
+	if d.Level <= 1 {
+		retry := d.RetryTimes
+		for i := 0; i < retry; i++ {
+			conn, err = d.Dialer.Dial(network, address)
+			if err == nil || i == retry-1 {
+				break
+			}
+			time.Sleep(d.RetryDelay)
+		}
+		return conn, err
+	} else {
+		type racer struct {
+			c net.Conn
+			e error
+		}
+
+		lane := make(chan racer, d.Level)
+		retry := (d.RetryTimes + d.Level - 1) / d.Level
+		for i := 0; i < retry; i++ {
+			for j := 0; j < d.Level; j++ {
+				go func(addr string, c chan<- racer) {
+					conn, err := d.Dialer.Dial(network, addr)
+					lane <- racer{conn, err}
+				}(address, lane)
+			}
+
+			var r racer
+			for k := 0; k < d.Level; k++ {
+				r = <-lane
+				if r.e == nil {
+					go func(count int) {
+						var r1 racer
+						for ; count > 0; count-- {
+							r1 = <-lane
+							if r1.c != nil {
+								r1.c.Close()
+							}
+						}
+					}(d.Level - 1 - k)
+					return r.c, nil
+				}
+			}
+
+			if i == retry-1 {
+				return nil, r.e
+			}
+		}
+	}
+
+	return nil, net.UnknownNetworkError("Unkown transport/direct error")
+}
+
 var (
+	dialer *Dialer = &Dialer{
+		Dialer: net.Dialer{
+			KeepAlive: 0,
+			Timeout:   0,
+			DualStack: true,
+		},
+		RetryTimes:     2,
+		RetryDelay:     100 * time.Millisecond,
+		DNSCache:       lrucache.NewLRUCache(8 * 1024),
+		DNSCacheExpiry: 1 * time.Hour,
+		LoopbackAddrs:  make(map[string]struct{}),
+	}
+
 	transport *http.Transport = &http.Transport{
+		Dial: dialer.Dial,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
-			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+			ClientSessionCache: tls.NewLRUClientSessionCache(1024),
 		},
-		TLSHandshakeTimeout: 30 * time.Second,
-		MaxIdleConnsPerHost: 4,
+		TLSHandshakeTimeout: 16 * time.Second,
+		MaxIdleConnsPerHost: 8,
+		IdleConnTimeout:     180,
 		DisableCompression:  false,
 	}
 )
 
-type listener struct {
-	net.Listener
-}
-
-func (l *listener) Accept() (c net.Conn, err error) {
-	c, err = l.Listener.Accept()
-	if err != nil {
-		return
-	}
-
-	if tc, ok := c.(*net.TCPConn); ok {
-		tc.SetKeepAlive(true)
-		tc.SetKeepAlivePeriod(3 * time.Minute)
-	}
-
-	return
-}
-
-func genHostname() (hostname string, err error) {
-	var length uint16
-	if err = binary.Read(rand.Reader, binary.BigEndian, &length); err != nil {
-		return
-	}
-
-	buf := make([]byte, 5+length%7)
-	for i := 0; i < len(buf); i++ {
-		var c uint8
-		if err = binary.Read(rand.Reader, binary.BigEndian, &c); err != nil {
-			return
-		}
-		buf[i] = 'a' + c%('z'-'a')
-	}
-
-	return fmt.Sprintf("www.%s.com", buf), nil
-}
-
-type RandomCertificate struct {
-	mu    sync.Mutex
-	mtime time.Time
-	cert  *tls.Certificate
-}
-
-func (rc *RandomCertificate) GetCertificate(clientHello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	if rc.mtime.IsZero() || time.Now().Sub(rc.mtime) < 2*time.Hour {
-		if rc.cert != nil {
-			return rc.cert, nil
-		}
-	}
-
-	rc.mu.Lock()
-	defer rc.mu.Unlock()
-
-	name := "www.gov.cn"
-	if name1, err := genHostname(); err == nil {
-		name = name1
-	}
-
-	glog.Infof("Generating RootCA for %v", name)
-	template := x509.Certificate{
-		IsCA:         true,
-		SerialNumber: big.NewInt(1),
-		Subject: pkix.Name{
-			Organization: []string{name},
-		},
-		NotBefore: time.Now().Add(-time.Duration(5 * time.Minute)),
-		NotAfter:  time.Now().Add(180 * 24 * time.Hour),
-
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-	}
-
-	priv, err := rsa.GenerateKey(rand.Reader, 1024)
-	if err != nil {
-		return nil, err
-	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return nil, err
-	}
-
-	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-
-	cert, err := tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-
-	rc.mtime = time.Now()
-	rc.cert = &cert
-
-	return rc.cert, err
-}
-
-type ProxyHandler struct {
+type Handler struct {
 	AuthMap map[string]string
 }
 
-func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
-	params := map[string]string{}
+	params := http.Header{}
 	for key, values := range req.Header {
 		if strings.HasPrefix(key, paramsPreifx) {
-			params[strings.ToLower(key[len(paramsPreifx):])] = values[0]
+			params[key] = values
 		}
 	}
 
-	for _, key := range params {
-		req.Header.Del(paramsPreifx + key)
+	for key, _ := range params {
+		req.Header.Del(key)
 	}
 
-	if false && p.AuthMap != nil {
+	if len(h.AuthMap) > 0 {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			http.Error(rw, "403 Forbidden", http.StatusForbidden)
@@ -167,7 +180,7 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 					user := parts[0]
 					pass := parts[1]
 					glog.Infof("username=%v password=%v", user, pass)
-					if pass1, ok := p.AuthMap[user]; !ok || pass != pass1 {
+					if pass1, ok := h.AuthMap[user]; !ok || pass != pass1 {
 						http.Error(rw, "403 Forbidden", http.StatusForbidden)
 						return
 					}
@@ -181,7 +194,7 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del("Proxy-Authorization")
 	}
 
-	if req.Method == "CONNECT" {
+	if req.Method == http.MethodConnect {
 		host, port, err := net.SplitHostPort(req.Host)
 		if err != nil {
 			host = req.Host
@@ -190,7 +203,7 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 		glog.Infof("%s \"%s %s:%s %s\" - -", req.RemoteAddr, req.Method, host, port, req.Proto)
 
-		conn, err := net.Dial("tcp", net.JoinHostPort(host, port))
+		conn, err := transport.Dial("tcp", net.JoinHostPort(host, port))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
@@ -226,6 +239,11 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
+	if req.RequestURI[0] == '/' {
+		http.Error(rw, "403 Forbidden", http.StatusForbidden)
+		return
+	}
+
 	resp, err := transport.RoundTrip(req)
 	if err != nil {
 		http.Error(rw, err.Error(), http.StatusBadGateway)
@@ -241,30 +259,84 @@ func (p *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	io.Copy(rw, resp.Body)
 }
 
+func hint(v map[string]string) {
+	seen := map[string]struct{}{}
+
+	for i := 1; i < len(os.Args); i++ {
+		if os.Args[i] == "-version" {
+			fmt.Print(version)
+			os.Exit(0)
+		}
+
+		for key, _ := range v {
+			if strings.HasPrefix(os.Args[i], "-"+key+"=") {
+				seen[key] = struct{}{}
+			}
+		}
+	}
+
+	for key, value := range v {
+		if _, ok := seen[key]; !ok {
+			flag.Set(key, value)
+		}
+	}
+}
+
+func genCertificates(hostname string) (tls.Certificate, error) {
+	if hostname == "" {
+		hostname = "www.apple.com"
+	}
+
+	glog.V(2).Infof("Generating RootCA for %v", hostname)
+	template := x509.Certificate{
+		IsCA:         true,
+		SerialNumber: big.NewInt(1),
+		Subject: pkix.Name{
+			Organization: []string{hostname},
+		},
+		NotBefore: time.Now().Add(-time.Duration(24 * time.Hour)),
+		NotAfter:  time.Now().Add(180 * 24 * time.Hour),
+
+		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+		BasicConstraintsValid: true,
+	}
+
+	priv, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
+	if err != nil {
+		return tls.Certificate{}, err
+	}
+
+	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+
+	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
+}
+
 func main() {
 	var err error
 
 	addr := ":443"
-	auth := `test:123456 foobar:123456`
-	keyFile := "govps.key"
-	certFile := "govps.crt"
-	verbose := false
-	logToStderr := true
-	for i := 1; i < len(os.Args); i++ {
-		if strings.HasPrefix(os.Args[i], "-logtostderr=") {
-			logToStderr = false
-			break
-		}
-	}
-	if logToStderr {
-		flag.Set("logtostderr", "true")
-	}
+	auth := ""
+	keyFile := "goproxy-vps.key"
+	certFile := "goproxy-vps.crt"
+	http2verbose := false
 
 	flag.StringVar(&addr, "addr", addr, "goproxy vps listen addr")
-	flag.StringVar(&keyFile, "keyFile", keyFile, "goproxy vps keyFile")
-	flag.StringVar(&certFile, "certFile", certFile, "goproxy vps certFile")
-	flag.BoolVar(&verbose, "verbose", verbose, "goproxy vps http2 verbose mode")
+	flag.StringVar(&keyFile, "keyfile", keyFile, "goproxy vps keyfile")
+	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
+	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
 	flag.StringVar(&auth, "auth", auth, "goproxy vps auth user:pass list")
+
+	hint(map[string]string{
+		"logtostderr": "true",
+		"v":           "2",
+	})
 	flag.Parse()
 
 	authMap := map[string]string{}
@@ -283,31 +355,26 @@ func main() {
 		glog.Fatalf("Listen(%s) error: %s", addr, err)
 	}
 
-	var certs []tls.Certificate = nil
-	if _, err := os.Stat(keyFile); err == nil {
-		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+	if err != nil {
+		glog.Warningf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
+		cert, err = genCertificates("")
 		if err != nil {
-			glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
+			glog.Fatalf("genCertificates(...) error: %+v", err)
+		} else {
+			glog.V(2).Infof("genCertificates(%+v) OK", cert.Leaf)
 		}
-		certs = []tls.Certificate{cert}
 	}
 
 	srv := &http.Server{
-		Handler: &ProxyHandler{authMap},
+		Handler: &Handler{authMap},
 		TLSConfig: &tls.Config{
-			Certificates: certs,
+			Certificates: []tls.Certificate{cert},
 			MinVersion:   tls.VersionTLS12,
 		},
 	}
 
-	if srv.TLSConfig.Certificates == nil {
-		rc := &RandomCertificate{}
-		srv.TLSConfig.GetCertificate = rc.GetCertificate
-	}
-
-	if verbose {
-		http2.VerboseLogs = true
-	}
+	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
 	glog.Infof("goproxy %s ListenAndServe on %s\n", version, ln.Addr().String())
 	srv.Serve(tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
