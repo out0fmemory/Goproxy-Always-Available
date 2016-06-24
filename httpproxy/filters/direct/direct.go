@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
@@ -84,15 +85,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		LoopbackAddrs:  make(map[string]struct{}),
 	}
 
-	d.LoopbackAddrs = make(map[string]struct{})
-	d.LoopbackAddrs["127.0.0.1"] = struct{}{}
-	d.LoopbackAddrs["::1"] = struct{}{}
 	if addrs, err := net.InterfaceAddrs(); err == nil {
 		for _, addr := range addrs {
+			addr1 := addr.String()
 			switch addr.Network() {
-			case "ip":
-				d.LoopbackAddrs[addr.String()] = struct{}{}
+			case "ip+net":
+				addr1 = strings.Split(addr1, "/")[0]
 			}
+			d.LoopbackAddrs[addr1] = struct{}{}
 		}
 	}
 
