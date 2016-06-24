@@ -6,11 +6,10 @@ Type=simple
 PIDFile=/var/run/goproxy-vps.pid
 ExecStartPre=/bin/rm -rf /var/log/goproxy-vps.*
 ExecStart=/opt/goproxy-vps/goproxy-vps -addr=:443 -v=1 -logtostderr=0 -log_dir=/var/log/
-ExecReload=/bin/kill -HUP $MAINPID
-WorkingDirectory=/opt/
+WorkingDirectory=/opt/goproxy-vps
 User=root
-Restart=on-failure
-RestartSec=5
+Restart=always
+RestartSec=3
 
 [Install]
 WantedBy=multi-user.target
