@@ -3,8 +3,6 @@ Description=goproxy-vps
 
 [Service]
 Type=simple
-PIDFile=/var/run/goproxy-vps.pid
-ExecStartPre=/bin/rm -rf /var/log/goproxy-vps.*
 ExecStart=/opt/goproxy-vps/goproxy-vps -addr=:443 -v=1 -logtostderr=0 -log_dir=/var/log/
 WorkingDirectory=/opt/goproxy-vps
 User=root
