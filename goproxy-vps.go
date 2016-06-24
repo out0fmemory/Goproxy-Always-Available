@@ -356,7 +356,7 @@ func main() {
 	dialer := &Dialer{
 		Dialer: net.Dialer{
 			KeepAlive: 0,
-			Timeout:   0,
+			Timeout:   16,
 			DualStack: true,
 		},
 		RetryTimes:     2,
