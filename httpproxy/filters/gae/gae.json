@@ -37,6 +37,7 @@
 		"*.googletagmanager.com": "google_cn",
 		"*.googletagservices.com": "google_cn",
 		"csi.gstatic.com": "google_cn",
+		"fonts.gstatic.com": "google_cn",
 		"dl.google.com": "google_cn",
 		"fonts.googleapis.com": "google_cn",
 		"*.appspot.com": "google_hk",
