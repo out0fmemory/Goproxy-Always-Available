@@ -61,7 +61,16 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 			SerialNumber: big.NewInt(1),
 			Subject: pkix.Name{
 				CommonName:   name,
+				Country:      []string{"US"},
+				Province:     []string{"California"},
+				Locality:     []string{"Los Angeles"},
 				Organization: []string{name},
+				ExtraNames: []pkix.AttributeTypeAndValue{
+					{
+						Type:  []int{2, 5, 4, 42},
+						Value: name,
+					},
+				},
 			},
 			NotBefore: time.Now().Add(-time.Duration(30 * 24 * time.Hour)),
 			NotAfter:  time.Now().Add(vaildFor),
@@ -69,6 +78,8 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},
 			BasicConstraintsValid: true,
+			// AuthorityKeyId:        sha1.New().Sum([]byte("phuslu")),
+			// SubjectKeyId:          sha1.New().Sum([]byte("phuslu")),
 		}
 
 		priv, err := rsa.GenerateKey(rand.Reader, rsaBits)
