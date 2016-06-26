@@ -171,7 +171,7 @@ function build_repo_ex() {
 
 	git checkout -f server.vps
 	make
-	cp -r *.7z ${WORKING_DIR}/r${RELEASE}
+	cp -r *.xz ${WORKING_DIR}/r${RELEASE}
 
 	popd
 }
