@@ -7,8 +7,8 @@ GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 GOEXE ?= $(shell go env GOEXE)
 GOPROXY_VPS_EXE = $(PACKAGE)$(GOEXE)
-GOPROXY_VPS_DISTCMD = 7za a -y -mx=9 -m0=lzma -mfb=128 -md=64m -ms=on
-GOPROXY_VPS_DISTEXT = .7z
+GOPROXY_VPS_DISTCMD = XZ_OPT=-9 tar cvJpf
+GOPROXY_VPS_DISTEXT = .tar.xz
 
 SOURCES =
 SOURCES += $(REPO)/goproxy-vps.go
