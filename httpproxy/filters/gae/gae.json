@@ -44,6 +44,7 @@
 		"*.ggpht.com": "google_hk",
 		"*.google.com": "google_hk",
 		"*.google.co.jp": "google_hk",
+		"*.google.co.kr": "google_hk",
 		"*.google.co.uk": "google_hk",
 		"*.google.com.hk": "google_hk",
 		"*.google.com.sg": "google_hk",
