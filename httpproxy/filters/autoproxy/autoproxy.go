@@ -101,7 +101,7 @@ func init() {
 		glog.Fatalf("Register(%#v) error: %s", filterName, err)
 	}
 
-	mime.AddExtensionType(".crt", "application/x-x509-user-cert")
+	mime.AddExtensionType(".crt", "application/x-x509-ca-cert")
 }
 
 func NewFilter(config *Config) (_ filters.Filter, err error) {
