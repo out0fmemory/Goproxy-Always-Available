@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
-	"encoding/hex"
+	"encoding/base64"
 	"flag"
 	"math/rand"
 	"net"
@@ -47,13 +47,13 @@ type Config struct {
 		Ciphers                []string
 		ServerName             []string
 	}
-	GoogleG2KeyID string
-	ForceGAE      []string
-	ForceDeflate  []string
-	FakeOptions   map[string][]string
-	DNSServers    []string
-	IPBlackList   []string
-	Transport     struct {
+	GoogleG2PKP  string
+	ForceGAE     []string
+	ForceDeflate []string
+	FakeOptions  map[string][]string
+	DNSServers   []string
+	IPBlackList  []string
+	Transport    struct {
 		Dialer struct {
 			DNSCacheExpiry   int
 			DNSCacheSize     uint
@@ -115,8 +115,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
-	// curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text
-	googleG2KeyID, err := hex.DecodeString(config.GoogleG2KeyID)
+	GoogleG2PKP, err := base64.StdEncoding.DecodeString(config.GoogleG2PKP)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +218,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		IPBlackList:       lrucache.NewLRUCache(8192),
 		HostMap:           hostmap,
 		GoogleTLSConfig:   googleTLSConfig,
-		GoogleG2KeyID:     googleG2KeyID,
+		GoogleG2PKP:       GoogleG2PKP,
 		DNSServers:        dnsServers,
 		DNSCache:          lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry:    time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,

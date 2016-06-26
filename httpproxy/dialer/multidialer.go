@@ -2,6 +2,7 @@ package dialer
 
 import (
 	"bytes"
+	"crypto/sha256"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -26,7 +27,7 @@ type MultiDialer struct {
 	TLSConfig         *tls.Config
 	SiteToAlias       *helpers.HostMatcher
 	GoogleTLSConfig   *tls.Config
-	GoogleG2KeyID     []byte
+	GoogleG2PKP       []byte
 	IPBlackList       lrucache.Cache
 	HostMap           map[string][]string
 	DNSServers        []net.IP
@@ -273,17 +274,22 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					}
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
-							cert := tc.ConnectionState().PeerCertificates[0]
+							certs := tc.ConnectionState().PeerCertificates
+							if len(tc.ConnectionState().PeerCertificates) <= 1 {
+								return nil, fmt.Errorf("Wrong certificate of %s: PeerCertificates=%#v", conn.RemoteAddr(), certs)
+							}
+							cert := certs[1]
 							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
-							if d.GoogleG2KeyID != nil {
-								if bytes.Compare(cert.AuthorityKeyId, d.GoogleG2KeyID) != 0 {
+							if d.GoogleG2PKP != nil {
+								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
+								if bytes.Compare(pkp[:], d.GoogleG2PKP) != 0 {
 									defer conn.Close()
-									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
 								}
 							} else {
-								if !strings.HasPrefix(cert.Issuer.CommonName, "Google ") {
+								if !strings.HasPrefix(cert.Subject.CommonName, "Google ") {
 									defer conn.Close()
-									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, AuthorityKeyId=%#v", conn.RemoteAddr(), cert.Issuer, cert.AuthorityKeyId)
+									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
 								}
 							}
 						}

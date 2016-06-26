@@ -90,7 +90,7 @@
 			// "www.google-analytics.com",
 		],
 	},
-	"GoogleG2KeyID": "4add06161bbcf668b576f581b6bb621aba5a812f",
+	"GoogleG2PKP": "7HIpactkIAq2Y49orFOOQKurWxmmSFZhBCoQYcRhJ3Y=",
 	"FakeOptions": {
 		"*": [
 			"Access-Control-Allow-Credentials: true",

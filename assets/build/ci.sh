@@ -128,13 +128,12 @@ function build_repo() {
 	go test -v ./httpproxy/helpers
 
 	if curl -m 3 https://www.google.com >/dev/null ; then
-		#GoogleG2KeyID=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey -text | grep -A1 'X509v3 Subject Key Identifier:' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
-		GoogleG2KeyID=$(openssl s_client -showcerts -connect www.google.com:443 2>/dev/null </dev/null | openssl x509 -text | grep -A1 'X509v3 Authority Key Identifier:' | sed -e 's/keyid://' | tail -n1 | tr -d ':' | tr '[A-Z]' '[a-z]' | xargs)
-		sed -i -r "s/\"GoogleG2KeyID\": \".+\"/\"GoogleG2KeyID\": \"$GoogleG2KeyID\"/g" httpproxy/filters/gae/gae.json
+		GoogleG2PKP=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl base64)
+		sed -i -r "s/\"GoogleG2PKP\": \".+\"/\"GoogleG2PKP\": \"$GoogleG2PKP\"/g" httpproxy/filters/gae/gae.json
 		if git status -s | grep -q 'gae.json' ; then
 			git diff
 			git add httpproxy/filters/gae/gae.json
-			git commit -m "update GoogleG2KeyID to $GoogleG2KeyID"
+			git commit -m "update GoogleG2PKP to $GoogleG2PKP"
 			grep -q 'machine github.com' ~/.netrc && git push -f origin master
 		fi
 	fi
