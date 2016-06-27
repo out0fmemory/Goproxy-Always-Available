@@ -124,6 +124,18 @@ type Handler struct {
 	*http.Transport
 }
 
+type flushWriter struct {
+	w io.Writer
+}
+
+func (fw flushWriter) Write(p []byte) (n int, err error) {
+	n, err = fw.w.Write(p)
+	if f, ok := fw.w.(http.Flusher); ok {
+		f.Flush()
+	}
+	return
+}
+
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
@@ -183,12 +195,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		hijacker, ok := rw.(http.Hijacker)
-		if !ok {
-			http.Error(rw, fmt.Sprintf("%#v is not http.Hijacker", rw), http.StatusBadGateway)
-			return
-		}
-
 		flusher, ok := rw.(http.Flusher)
 		if !ok {
 			http.Error(rw, fmt.Sprintf("%#v is not http.Flusher", rw), http.StatusBadGateway)
@@ -198,15 +204,32 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		rw.WriteHeader(http.StatusOK)
 		flusher.Flush()
 
-		lconn, _, err := hijacker.Hijack()
-		if err != nil {
-			http.Error(rw, err.Error(), http.StatusBadGateway)
-			return
-		}
-		defer lconn.Close()
+		var w io.Writer
+		var r io.Reader
 
-		go io.Copy(conn, lconn)
-		io.Copy(lconn, conn)
+		switch req.ProtoMajor {
+		case 2:
+			w = flushWriter{rw}
+			r = req.Body
+		default:
+			hijacker, ok := rw.(http.Hijacker)
+			if !ok {
+				http.Error(rw, fmt.Sprintf("%#v is not http.Hijacker", rw), http.StatusBadGateway)
+				return
+			}
+			lconn, _, err := hijacker.Hijack()
+			if err != nil {
+				http.Error(rw, err.Error(), http.StatusBadGateway)
+				return
+			}
+			defer lconn.Close()
+
+			w = lconn
+			r = lconn
+		}
+
+		go io.Copy(conn, r)
+		io.Copy(w, conn)
 
 		return
 	}
