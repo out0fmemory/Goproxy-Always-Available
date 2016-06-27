@@ -22,7 +22,7 @@ func main() {
 
 	flag.Parse()
 
-	gover := strings.Split(strings.Replace(runtime.Version(), "devel +", "devel+", 1), " ")[0]
+	gover := strings.Split(strings.TrimPrefix(runtime.Version(), "devel +"), " ")[0]
 
 	switch runtime.GOARCH {
 	case "386", "amd64":
