@@ -11,7 +11,10 @@ import (
 	"./httpproxy/helpers"
 )
 
-var version = "r9999"
+var (
+	version  = "r9999"
+	http2rev = ""
+)
 
 func main() {
 
@@ -29,9 +32,14 @@ func main() {
 		helpers.SetConsoleTitle(fmt.Sprintf("GoProxy %s (go/%s)", version, gover))
 	}
 
-	fmt.Fprintf(os.Stderr, `------------------------------------------------------
-GoProxy Version    : %s (go/%s %s/%s)`,
-		version, gover, runtime.GOOS, runtime.GOARCH)
+	fmt.Fprintf(os.Stderr, "------------------------------------------------------")
+	if http2rev != "" {
+		fmt.Fprintf(os.Stderr, `
+GoProxy Version    : %s (go/%s http2/%s %s/%s)`, version, gover, http2rev, runtime.GOOS, runtime.GOARCH)
+	} else {
+		fmt.Fprintf(os.Stderr, `
+GoProxy Version    : %s (go/%s %s/%s)`, version, gover, runtime.GOOS, runtime.GOARCH)
+	}
 	for profile, config := range httpproxy.Config {
 		if !config.Enabled {
 			continue

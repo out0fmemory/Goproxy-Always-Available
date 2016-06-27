@@ -1,4 +1,5 @@
 REVSION = $(shell git rev-list HEAD | wc -l | xargs)
+HTTP2REV = $(shell (cd $$GOPATH/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h"))
 
 PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
@@ -68,4 +69,4 @@ $(GOPROXY_DIST): $(OBJECTS)
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
 	mkdir -p $(OBJECTDIR)
-	go build -v -ldflags="-s -w -X main.version=r$(REVSION)" -o $@ .
+	go build -v -ldflags="-s -w -X main.version=r$(REVSION) -X main.http2rev=$(HTTP2REV)" -o $@ .
