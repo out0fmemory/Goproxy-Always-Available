@@ -7,23 +7,24 @@ cd /d "%~dp0"
 
 wmic ComputerSystem Get UserName
 
-echo. >~gdownload.vbs
-echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~gdownload.vbs
-echo Set Stream = CreateObject("Adodb.Stream") >>~gdownload.vbs
-echo Http.SetTimeouts 30*1000, 30*1000, 30*1000, 120*1000  >>~gdownload.vbs
+echo. >~.txt
+echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~.txt
+echo Set Stream = CreateObject("Adodb.Stream") >>~.txt
+echo Http.SetTimeouts 30*1000, 30*1000, 30*1000, 120*1000  >>~.txt
 netstat -an| findstr LISTENING | findstr ":8087" >NUL && (
-    echo Http.SetProxy 2, "127.0.0.1:8087", "" >>~gdownload.vbs
+    echo Http.SetProxy 2, "127.0.0.1:8087", "" >>~.txt
 )
-echo Http.Open "GET", WScript.Arguments.Item(0), False >>~gdownload.vbs
-echo Http.Send >>~gdownload.vbs
-echo Http.WaitForResponse 5 >>~gdownload.vbs
-echo If Not Http.Status = 200 then >>~gdownload.vbs
-echo     WScript.Quit 1 >>~gdownload.vbs
-echo End If >>~gdownload.vbs
-echo Stream.Type = 1 >>~gdownload.vbs
-echo Stream.Open >>~gdownload.vbs
-echo Stream.Write Http.ResponseBody >>~gdownload.vbs
-echo Stream.SaveToFile WScript.Arguments.Item(1), 2 >>~gdownload.vbs
+echo Http.Open "GET", WScript.Arguments.Item(0), False >>~.txt
+echo Http.Send >>~.txt
+echo Http.WaitForResponse 5 >>~.txt
+echo If Not Http.Status = 200 then >>~.txt
+echo     WScript.Quit 1 >>~.txt
+echo End If >>~.txt
+echo Stream.Type = 1 >>~.txt
+echo Stream.Open >>~.txt
+echo Stream.Write Http.ResponseBody >>~.txt
+echo Stream.SaveToFile WScript.Arguments.Item(1), 2 >>~.txt
+ren ~.txt ~gdownload.vbs
 
 
 set has_user_json=0
