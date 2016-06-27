@@ -71,6 +71,7 @@ type Filter struct {
 	Store                storage.Store
 	IndexFilesEnabled    bool
 	IndexFiles           map[string]struct{}
+	ProxyPacCache        lrucache.Cache
 	GFWListEnabled       bool
 	GFWList              *GFWList
 	AutoProxy2Pac        *AutoProxy2Pac
@@ -159,6 +160,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		Store:                store,
 		IndexFilesEnabled:    config.IndexFiles.Enabled,
 		IndexFiles:           make(map[string]struct{}),
+		ProxyPacCache:        lrucache.NewLRUCache(32),
 		GFWListEnabled:       config.GFWList.Enabled,
 		GFWList:              &gfwlist,
 		AutoProxy2Pac:        autoproxy2pac,
@@ -309,9 +311,22 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 }
 
 func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	if v, ok := f.ProxyPacCache.Get(req.RequestURI); ok {
+		if data, ok := v.([]byte); ok {
+			return ctx, &http.Response{
+				StatusCode:    http.StatusOK,
+				Header:        http.Header{},
+				Request:       req,
+				Close:         true,
+				ContentLength: int64(len(data)),
+				Body:          ioutil.NopCloser(bytes.NewReader(data)),
+			}, nil
+		}
+	}
+
 	filename := req.URL.Path[1:]
 
-	data := ""
+	buf := new(bytes.Buffer)
 
 	obj, err := f.Store.GetObject(filename, -1, -1)
 	switch {
@@ -350,14 +365,14 @@ function FindProxyForURL(url, host) {
 			for _, localaddr := range []string{"127.0.0.1:", "[::1]:", "localhost:"} {
 				s = strings.Replace(s, localaddr, net.JoinHostPort(host, ""), -1)
 			}
-			data += s
+			io.WriteString(buf, s)
 		}
 	}
 
 	if f.GFWListEnabled {
-		data += f.AutoProxy2Pac.GeneratePac(req)
+		io.WriteString(buf, f.AutoProxy2Pac.GeneratePac(req))
 	} else {
-		data += `
+		io.WriteString(buf, `
 function FindProxyForURL(url, host) {
     if (isPlainHostName(host) ||
         host.indexOf('127.') == 0 ||
@@ -368,8 +383,11 @@ function FindProxyForURL(url, host) {
     }
 
     return MyFindProxyForURL(url, host);
-}`
+}`)
 	}
+
+	data := buf.Bytes()
+	f.ProxyPacCache.Set(req.RequestURI, data, time.Now().Add(15*time.Minute))
 
 	resp := &http.Response{
 		StatusCode:    http.StatusOK,
@@ -377,7 +395,7 @@ function FindProxyForURL(url, host) {
 		Request:       req,
 		Close:         true,
 		ContentLength: int64(len(data)),
-		Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
+		Body:          ioutil.NopCloser(bytes.NewReader(data)),
 	}
 
 	return ctx, resp, nil
@@ -455,6 +473,8 @@ func (f *Filter) updater() {
 			glog.Warningf("%T.PutObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
 			continue
 		}
+
+		f.ProxyPacCache.Clear()
 
 		glog.Infof("Update %#v from %#v OK", f.GFWList.Filename, f.GFWList.URL.String())
 		resp.Body.Close()
