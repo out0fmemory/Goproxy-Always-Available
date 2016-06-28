@@ -267,7 +267,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		<h2>Index of /</h>
 		<div><ul>
 		{{ range $key, $value := .IndexFiles }}
-		   <li><a href="{{ $key }}">{{ $key }}</a></li>
+		   <li><a href="{{ $key }}">📄 {{ $key }}</a></li>
 		{{ end }}
 		</ul></div>
 	</body>
