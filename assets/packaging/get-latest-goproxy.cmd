@@ -5,7 +5,16 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-wmic process where "name='goproxy.exe'" get ExecutablePath 2>NUL
+(
+  tasklist /fi "imagename eq goproxy.exe" >NUL | findstr "goproxy.exe"
+) && (
+    (
+        wmic process where "name='goproxy.exe'" get ExecutablePath 2>NUL | findstr "goproxy.exe"
+    ) || (
+        echo Please run %~nx0 as administrator
+        goto quit
+    )
+)
 
 echo. >~.txt
 echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~.txt
@@ -24,7 +33,7 @@ echo Stream.Type = 1 >>~.txt
 echo Stream.Open >>~.txt
 echo Stream.Write Http.ResponseBody >>~.txt
 echo Stream.SaveToFile WScript.Arguments.Item(1), 2 >>~.txt
-move /y ~.txt ~gdownload.vbs
+move /y ~.txt ~gdownload.vbs >NUL
 
 
 set has_user_json=0
