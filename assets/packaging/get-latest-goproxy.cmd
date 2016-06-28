@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-wmic ComputerSystem Get UserName
+wmic process where "name='goproxy.exe'" get ExecutablePath 2>NUL
 
 echo. >~.txt
 echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~.txt
