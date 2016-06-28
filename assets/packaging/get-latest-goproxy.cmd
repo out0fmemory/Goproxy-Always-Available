@@ -24,7 +24,7 @@ echo Stream.Type = 1 >>~.txt
 echo Stream.Open >>~.txt
 echo Stream.Write Http.ResponseBody >>~.txt
 echo Stream.SaveToFile WScript.Arguments.Item(1), 2 >>~.txt
-ren ~.txt ~gdownload.vbs
+move /y ~.txt ~gdownload.vbs
 
 
 set has_user_json=0
