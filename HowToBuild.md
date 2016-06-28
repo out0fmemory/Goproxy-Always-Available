@@ -28,8 +28,10 @@ cd ~/workspace/goproxy/
 curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
 mv go go1.6
 
-git clone https://github.com/phuslu/go
-(go/src && bash ./make.bash)
+git clone --depth 1 https://github.com/phuslu/go
+(cd go/src && bash ./make.bash)
+
+export PATH=$PATH:~/workspace/goproxy/go/bin
 ```
 - 编译 goproxy
 ```bash
