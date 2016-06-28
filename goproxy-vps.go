@@ -261,6 +261,11 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req.URL.Host == "" {
 		req.URL.Host = req.Host
 	}
+	if req.ProtoMajor == 2 && req.ProtoMinor == 0 {
+		req.ProtoMajor = 1
+		req.ProtoMinor = 1
+		req.Proto = "HTTP/1.1"
+	}
 
 	resp, err := h.Transport.RoundTrip(req)
 	if err != nil {
