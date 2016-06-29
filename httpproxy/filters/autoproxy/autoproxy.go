@@ -325,16 +325,28 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 	}, nil
 }
 
+func fixProxyHost(s string, req *http.Request) string {
+	host, _, err := net.SplitHostPort(req.Host)
+	if err != nil {
+		host = req.Host
+	}
+	for _, localaddr := range []string{"127.0.0.1:", "[::1]:", "localhost:"} {
+		s = strings.Replace(s, localaddr, net.JoinHostPort(host, ""), -1)
+	}
+	return s
+}
+
 func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	if v, ok := f.ProxyPacCache.Get(req.RequestURI); ok {
-		if data, ok := v.([]byte); ok {
+		if s, ok := v.(string); ok {
+			s = fixProxyHost(s, req)
 			return ctx, &http.Response{
 				StatusCode:    http.StatusOK,
 				Header:        http.Header{},
 				Request:       req,
 				Close:         true,
-				ContentLength: int64(len(data)),
-				Body:          ioutil.NopCloser(bytes.NewReader(data)),
+				ContentLength: int64(len(s)),
+				Body:          ioutil.NopCloser(strings.NewReader(s)),
 			}, nil
 		}
 	}
@@ -347,6 +359,10 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 	switch {
 	case os.IsNotExist(err):
 		glog.V(2).Infof("AUTOPROXY ProxyPac: generate %#v", filename)
+		_, port, err := net.SplitHostPort(req.Host)
+		if err != nil {
+			port = "80"
+		}
 
 		s := fmt.Sprintf(`// User-defined FindProxyForURL
 function FindProxyForURL(url, host) {
@@ -354,11 +370,11 @@ function FindProxyForURL(url, host) {
        dnsDomainIs(host, '.ggpht.com') ||
        dnsDomainIs(host, '.gstatic.com') ||
        host == 'goo.gl') {
-        return 'PROXY %s';
+        return 'PROXY localhost:%s';
     }
     return 'DIRECT';
 }
-`, req.Host)
+`, port)
 		f.Store.PutObject(filename, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
 	case err != nil:
 		return ctx, nil, err
@@ -373,13 +389,6 @@ function FindProxyForURL(url, host) {
 		defer body.Close()
 		if b, err := ioutil.ReadAll(body); err == nil {
 			s := strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
-			host, _, err := net.SplitHostPort(req.Host)
-			if err != nil {
-				host = req.Host
-			}
-			for _, localaddr := range []string{"127.0.0.1:", "[::1]:", "localhost:"} {
-				s = strings.Replace(s, localaddr, net.JoinHostPort(host, ""), -1)
-			}
 			io.WriteString(buf, s)
 		}
 	}
@@ -401,16 +410,17 @@ function FindProxyForURL(url, host) {
 }`)
 	}
 
-	data := buf.Bytes()
-	f.ProxyPacCache.Set(req.RequestURI, data, time.Now().Add(15*time.Minute))
+	s := buf.String()
+	f.ProxyPacCache.Set(req.RequestURI, s, time.Now().Add(15*time.Minute))
 
+	s = fixProxyHost(s, req)
 	resp := &http.Response{
 		StatusCode:    http.StatusOK,
 		Header:        http.Header{},
 		Request:       req,
 		Close:         true,
-		ContentLength: int64(len(data)),
-		Body:          ioutil.NopCloser(bytes.NewReader(data)),
+		ContentLength: int64(len(s)),
+		Body:          ioutil.NopCloser(strings.NewReader(s)),
 	}
 
 	return ctx, resp, nil
