@@ -5,7 +5,6 @@ import (
 	"bytes"
 	"fmt"
 	"io"
-	"net/http"
 	"net/url"
 	"regexp"
 	"sort"
@@ -129,10 +128,10 @@ function FindProxyForURL(url, host) {
 	return nil
 }
 
-func (a *AutoProxy2Pac) GeneratePac(req *http.Request) string {
+func (a *AutoProxy2Pac) GeneratePac(host string) string {
 	if a.template == "" {
 		panic(fmt.Errorf("%T(%#v) has a empty template", a, a))
 	}
 
-	return fmt.Sprintf(a.template, "PROXY "+req.Host)
+	return fmt.Sprintf(a.template, "PROXY "+host)
 }
