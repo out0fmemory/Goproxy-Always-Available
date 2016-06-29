@@ -326,6 +326,20 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 	}, nil
 }
 
+func fixProxyPac(s string, req *http.Request) string {
+	ports := make([]string, 0)
+	for _, addr := range []string{req.Host, filters.GetListener(req.Context()).Addr().String()} {
+		_, port, err := net.SplitHostPort(addr)
+		if err != nil {
+			port = "80"
+		}
+		ports = append(ports, port)
+	}
+
+	r := regexp.MustCompile(`PROXY (127.0.0.1|\[::1\]|localhost):(` + strings.Join(ports, "|") + `)`)
+	return r.ReplaceAllString(s, "PROXY "+req.Host)
+}
+
 func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	_, port, err := net.SplitHostPort(req.Host)
 	if err != nil {
@@ -334,7 +348,7 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 
 	if v, ok := f.ProxyPacCache.Get(req.RequestURI); ok {
 		if s, ok := v.(string); ok {
-			s = regexp.MustCompile(`PROXY (127.0.0.1|\[::1\]|localhost):`+port).ReplaceAllString(s, "PROXY "+req.Host)
+			s = fixProxyPac(s, req)
 			return ctx, &http.Response{
 				StatusCode:    http.StatusOK,
 				Header:        http.Header{},
@@ -403,7 +417,7 @@ function FindProxyForURL(url, host) {
 	s := buf.String()
 	f.ProxyPacCache.Set(req.RequestURI, s, time.Now().Add(15*time.Minute))
 
-	s = regexp.MustCompile(`PROXY (127.0.0.1|\[::1\]|localhost):`+port).ReplaceAllString(s, "PROXY "+req.Host)
+	s = fixProxyPac(s, req)
 	resp := &http.Response{
 		StatusCode:    http.StatusOK,
 		Header:        http.Header{},
