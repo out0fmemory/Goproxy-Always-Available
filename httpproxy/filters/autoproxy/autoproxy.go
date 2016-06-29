@@ -250,6 +250,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 <html>
 	<head>
 		<meta charset="UTF-8">
+		<title>Index of /</title>
 		<link rel="icon" type="image/x-icon" href="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" />
 		<style>
 		div {width: 200px;margin: 30px;}
