@@ -48,7 +48,7 @@ if exist "httpproxy.json" (
 )
 
 set filename_pattern=goproxy_windows_386
-if exist "%systemdrive%\Program Files (x86)" (
+if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
     set filename_pattern=goproxy_windows_amd64
 )
 
