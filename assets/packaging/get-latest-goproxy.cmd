@@ -5,17 +5,6 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-(
-  tasklist /fi "imagename eq goproxy.exe" >NUL | findstr "goproxy.exe"
-) && (
-    (
-        wmic process where "name='goproxy.exe'" get ExecutablePath 2>NUL | findstr "goproxy.exe"
-    ) || (
-        echo Please run %~nx0 as administrator
-        goto quit
-    )
-)
-
 echo. >~.txt
 echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~.txt
 echo Set Stream = CreateObject("Adodb.Stream") >>~.txt
@@ -107,21 +96,18 @@ if "%localname%" == "%filename%" (
         goto quit
     )
 ) && (
-    title 4. Checking Goproxy program
-    echo 4. Checking Goproxy program
-:checkgoproxyprogram
-    wmic process where "name='goproxy.exe'" get ExecutablePath | findstr /l "%~dp0goproxy.exe" >NUL && (
-        echo %TIME% Please quit GoProxy program and continue
-        ping -n 2 127.0.0.1 >NUL
-        goto checkgoproxyprogram
-    )
-    title 5. Extract Goproxy files
-    echo 5. Extract Goproxy files
+    title 4. Extract Goproxy files
+    echo 4. Extract Goproxy files
     copy /b ~7zCon.sfx+~%filename% ~%filename%.exe
     del /f ~gdownload.vbs ~7zCon.sfx ~%filename% 2>NUL
+    for %%I in ("goproxy.exe" "goproxy-gui.exe") do (
+        if exist "%%~I" (
+            move /y "%%~I" "~%%~nI.old.%%~xI"
+        )
+    )
     ~%filename%.exe -y
-    title 6. Update %filename% OK
-    echo 6. Update %filename% OK
+    title 5. Update %filename% OK
+    echo 5. Update %filename% OK
 )
 
 :quit
