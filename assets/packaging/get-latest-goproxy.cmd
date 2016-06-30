@@ -41,18 +41,17 @@ if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
     set filename_pattern=goproxy_windows_amd64
 )
 
-
-set localname=
 if exist "goproxy.exe" (
     for /f "usebackq" %%I in (`goproxy.exe -version`) do (
         echo %%I | findstr /r "r[0-9][0-9][0-9][0-9]*" >NUL && (
-            set localname=!filename_pattern!-%%I.7z
+            set localversion=%%I
         )
     )
 )
-if not "%localname%" == "" (
-    echo 0. Local Goproxy version %localname%
+if not "%localversion%" == "" (
+    echo 0. Local Goproxy version %localversion%
 )
+set localname=!filename_pattern!-!localversion!.7z
 
 set filename=
 (
@@ -102,7 +101,7 @@ if "%localname%" == "%filename%" (
     del /f ~gdownload.vbs ~7zCon.sfx ~%filename% 2>NUL
     for %%I in ("goproxy.exe" "goproxy-gui.exe") do (
         if exist "%%~I" (
-            move /y "%%~I" "~%%~nI.old.%%~xI"
+            move /y "%%~I" "~%%~nI.%localversion%.%%~xI"
         )
     )
     ~%filename%.exe -y
