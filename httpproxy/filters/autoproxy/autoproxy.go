@@ -248,8 +248,10 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 	if filename == "" {
 		const tpl = `<!DOCTYPE html>
 <html>
+<head>
 <meta charset="UTF-8">
-<head><title>Index of /</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Index of /</title>
 </head>
 <body>
 <h1>Index of /</h1>
