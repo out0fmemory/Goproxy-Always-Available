@@ -375,12 +375,12 @@ function FindProxyForURL(url, host) {
 
 		sort.Strings(sites)
 
-		io.WriteString(buf, "var sites = [\n")
+		io.WriteString(buf, "var sites = {\n")
 		for _, site := range sites {
-			io.WriteString(buf, "\""+site+"\",\n")
+			io.WriteString(buf, "\""+site+"\":1,\n")
 		}
-		io.WriteString(buf, "\"google.com\"\n")
-		io.WriteString(buf, "]\n")
+		io.WriteString(buf, "\"google.com\":1\n")
+		io.WriteString(buf, "}\n")
 
 		io.WriteString(buf, `
 function FindProxyForURL(url, host) {
