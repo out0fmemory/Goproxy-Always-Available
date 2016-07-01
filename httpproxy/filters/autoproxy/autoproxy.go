@@ -1,7 +1,6 @@
 package autoproxy
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"encoding/base64"
@@ -360,37 +359,27 @@ function FindProxyForURL(url, host) {
 	}
 
 	if f.GFWListEnabled {
-		object, err := f.Store.GetObject(filename, -1, -1)
+		object, err := f.Store.GetObject(f.GFWList.Filename, -1, -1)
 		if err != nil {
-			glog.Errorf("GetObject(%#v) error: %v", filename, err)
+			glog.Errorf("GetObject(%#v) error: %v", f.GFWList.Filename, err)
 			return ctx, nil, err
 		}
 
 		rc := object.Body()
 		defer rc.Close()
-
-		var r io.Reader
-		br := bufio.NewReader(rc)
-		if data, err := br.Peek(20); err == nil {
-			if bytes.HasPrefix(data, []byte("[AutoProxy ")) {
-				r = br
-			} else {
-				r = base64.NewDecoder(base64.StdEncoding, br)
-			}
-		}
-		sites, err := ParseAutoProxy(r)
+		sites, err := ParseAutoProxy(rc)
 		if err != nil {
 			glog.Errorf("ParseAutoProxy(%#v) error: %v", f.GFWList.Filename, err)
 			return ctx, nil, err
 		}
 
 		sort.Strings(sites)
-		sites = append(sites, "google.com")
 
 		io.WriteString(buf, "var sites = [\n")
 		for _, site := range sites {
-			io.WriteString(buf, "\""+site+"\"\n")
+			io.WriteString(buf, "\""+site+"\",\n")
 		}
+		io.WriteString(buf, "\"google.com\"\n")
 		io.WriteString(buf, "]\n")
 
 		io.WriteString(buf, `
