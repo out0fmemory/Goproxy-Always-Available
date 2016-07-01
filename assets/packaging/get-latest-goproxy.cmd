@@ -101,7 +101,7 @@ if "%localname%" == "%filename%" (
     del /f ~gdownload.vbs ~7zCon.sfx ~%filename% 2>NUL
     for %%I in ("goproxy.exe" "goproxy-gui.exe") do (
         if exist "%%~I" (
-            move /y "%%~I" "~%%~nI.%localversion%.%%~xI"
+            move /y "%%~I" "~%%~nI.%localversion%.%%~xI.tmp"
         )
     )
     ~%filename%.exe -y
