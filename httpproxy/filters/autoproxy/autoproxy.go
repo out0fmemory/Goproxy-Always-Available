@@ -16,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -75,7 +76,6 @@ type Filter struct {
 	ProxyPacCache        lrucache.Cache
 	GFWListEnabled       bool
 	GFWList              *GFWList
-	AutoProxy2Pac        *AutoProxy2Pac
 	SiteFiltersEnabled   bool
 	SiteFiltersRules     *helpers.HostMatcher
 	RegionFiltersEnabled bool
@@ -127,33 +127,6 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		return nil, err
 	}
 
-	autoproxy2pac := &AutoProxy2Pac{
-		Sites: []string{"google.com"},
-	}
-
-	object, err := store.GetObject(gfwlist.Filename, -1, -1)
-	if err != nil {
-		return nil, err
-	}
-
-	rc := object.Body()
-	defer rc.Close()
-
-	var r io.Reader
-	br := bufio.NewReader(rc)
-	if data, err := br.Peek(20); err == nil {
-		if bytes.HasPrefix(data, []byte("[AutoProxy ")) {
-			r = br
-		} else {
-			r = base64.NewDecoder(base64.StdEncoding, br)
-		}
-	}
-
-	err = autoproxy2pac.Read(r)
-	if err != nil {
-		return nil, err
-	}
-
 	transport := &http.Transport{}
 
 	f := &Filter{
@@ -164,7 +137,6 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		ProxyPacCache:        lrucache.NewLRUCache(32),
 		GFWListEnabled:       config.GFWList.Enabled,
 		GFWList:              &gfwlist,
-		AutoProxy2Pac:        autoproxy2pac,
 		Transport:            transport,
 		SiteFiltersEnabled:   config.SiteFilters.Enabled,
 		RegionFiltersEnabled: config.RegionFilters.Enabled,
@@ -315,6 +287,8 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 }
 
 func fixProxyPac(s string, req *http.Request) string {
+	s = strings.Replace(s, "GOPROXY_ADDRESS", req.Host, -1)
+
 	ports := make([]string, 0)
 	for _, addr := range []string{req.Host, filters.GetListener(req.Context()).Addr().String()} {
 		_, port, err := net.SplitHostPort(addr)
@@ -386,7 +360,64 @@ function FindProxyForURL(url, host) {
 	}
 
 	if f.GFWListEnabled {
-		io.WriteString(buf, f.AutoProxy2Pac.GeneratePac("localhost:"+port))
+		object, err := f.Store.GetObject(filename, -1, -1)
+		if err != nil {
+			glog.Errorf("GetObject(%#v) error: %v", filename, err)
+			return ctx, nil, err
+		}
+
+		rc := object.Body()
+		defer rc.Close()
+
+		var r io.Reader
+		br := bufio.NewReader(rc)
+		if data, err := br.Peek(20); err == nil {
+			if bytes.HasPrefix(data, []byte("[AutoProxy ")) {
+				r = br
+			} else {
+				r = base64.NewDecoder(base64.StdEncoding, br)
+			}
+		}
+		sites, err := ParseAutoProxy(r)
+		if err != nil {
+			glog.Errorf("ParseAutoProxy(%#v) error: %v", f.GFWList.Filename, err)
+			return ctx, nil, err
+		}
+
+		sort.Strings(sites)
+		sites = append(sites, "google.com")
+
+		io.WriteString(buf, "var sites = [\n")
+		for _, site := range sites {
+			io.WriteString(buf, "\""+site+"\"\n")
+		}
+		io.WriteString(buf, "]\n")
+
+		io.WriteString(buf, `
+function FindProxyForURL(url, host) {
+    if (isPlainHostName(host) ||
+        host.indexOf('127.') == 0 ||
+        host.indexOf('192.168.') == 0 ||
+        host.indexOf('10.') == 0 ||
+        shExpMatch(host, 'localhost.*')) {
+        return 'DIRECT';
+    }
+
+    proxy = MyFindProxyForURL(url, host)
+    if (proxy != "DIRECT") {
+        return proxy
+    }
+
+    var lastPos;
+    do {
+        if (sites.hasOwnProperty(host)) {
+            return 'PROXY GOPROXY_ADDRESS';
+        }
+        lastPos = host.indexOf('.') + 1;
+        host = host.slice(lastPos);
+    } while (lastPos >= 1);
+    return 'DIRECT';
+}`)
 	} else {
 		io.WriteString(buf, `
 function FindProxyForURL(url, host) {
