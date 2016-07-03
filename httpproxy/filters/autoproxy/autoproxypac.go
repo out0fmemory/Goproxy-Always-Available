@@ -52,12 +52,18 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 		glog.V(2).Infof("AUTOPROXY ProxyPac: generate %#v", filename)
 		s := fmt.Sprintf(`// User-defined FindProxyForURL
 function FindProxyForURL(url, host) {
-    if (shExpMatch(host, '*.google*.*') ||
-       dnsDomainIs(host, '.ggpht.com') ||
-       dnsDomainIs(host, '.gstatic.com') ||
-       host == 'goo.gl') {
+    if (isPlainHostName(host) ||
+        host.indexOf('127.') == 0 ||
+        host.indexOf('192.168.') == 0 ||
+        host.indexOf('10.') == 0 ||
+        shExpMatch(host, 'localhost.*')) {
+        return 'DIRECT';
+    }
+
+    if (shExpMatch(host, '*.google*.*')) {
         return 'PROXY localhost:%s';
     }
+
     return 'DIRECT';
 }
 `, port)
@@ -74,8 +80,10 @@ function FindProxyForURL(url, host) {
 		body := obj.Body()
 		defer body.Close()
 		if b, err := ioutil.ReadAll(body); err == nil {
-			s := strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1)
-			io.WriteString(buf, s)
+			if f.GFWListEnabled {
+				b = []byte(strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1))
+			}
+			buf.Write(b)
 		}
 	}
 
@@ -96,7 +104,7 @@ function FindProxyForURL(url, host) {
 
 		sort.Strings(sites)
 
-		io.WriteString(buf, "var sites = {\n")
+		io.WriteString(buf, "\nvar sites = {\n")
 		for _, site := range sites {
 			io.WriteString(buf, "\""+site+"\":1,\n")
 		}
@@ -105,17 +113,8 @@ function FindProxyForURL(url, host) {
 
 		io.WriteString(buf, `
 function FindProxyForURL(url, host) {
-    if (isPlainHostName(host) ||
-        host.indexOf('127.') == 0 ||
-        host.indexOf('192.168.') == 0 ||
-        host.indexOf('10.') == 0 ||
-        shExpMatch(host, 'localhost.*')) {
-        return 'DIRECT';
-    }
-
-    proxy = MyFindProxyForURL(url, host)
-    if (proxy != "DIRECT") {
-        return proxy
+    if ((p = MyFindProxyForURL(url, host)) != "DIRECT") {
+        return p
     }
 
     var lastPos;
@@ -127,19 +126,6 @@ function FindProxyForURL(url, host) {
         host = host.slice(lastPos);
     } while (lastPos >= 1);
     return 'DIRECT';
-}`)
-	} else {
-		io.WriteString(buf, `
-function FindProxyForURL(url, host) {
-    if (isPlainHostName(host) ||
-        host.indexOf('127.') == 0 ||
-        host.indexOf('192.168.') == 0 ||
-        host.indexOf('10.') == 0 ||
-        shExpMatch(host, 'localhost.*')) {
-        return 'DIRECT';
-    }
-
-    return MyFindProxyForURL(url, host);
 }`)
 	}
 
