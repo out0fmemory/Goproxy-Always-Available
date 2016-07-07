@@ -11,14 +11,14 @@ import (
 	"strings"
 )
 
-type zipStore struct {
+type ZipStore struct {
 	Filename string
 	zfs      map[string]*zip.File
 }
 
-var _ Store = &zipStore{}
+var _ Store = &ZipStore{}
 
-func (s *zipStore) init() error {
+func (s *ZipStore) init() error {
 	if s.zfs != nil {
 		return nil
 	}
@@ -48,7 +48,7 @@ func (s *zipStore) init() error {
 	return nil
 }
 
-func (s *zipStore) Get(name string, start, end int64) (*http.Response, error) {
+func (s *ZipStore) Get(name string, start, end int64) (*http.Response, error) {
 	if err := s.init(); err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (s *zipStore) Get(name string, start, end int64) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *zipStore) Head(name string) (*http.Response, error) {
+func (s *ZipStore) Head(name string) (*http.Response, error) {
 	if err := s.init(); err != nil {
 		return nil, err
 	}
@@ -122,18 +122,18 @@ func (s *zipStore) Head(name string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *zipStore) Put(name string, header http.Header, data io.ReadCloser) (*http.Response, error) {
+func (s *ZipStore) Put(name string, header http.Header, data io.ReadCloser) (*http.Response, error) {
 	return nil, ErrNotImplemented
 }
 
-func (s *zipStore) Copy(dest string, src string) (*http.Response, error) {
+func (s *ZipStore) Copy(dest string, src string) (*http.Response, error) {
 	return nil, ErrNotImplemented
 }
 
-func (s *zipStore) Delete(name string) (*http.Response, error) {
+func (s *ZipStore) Delete(name string) (*http.Response, error) {
 	return nil, ErrNotImplemented
 }
 
-func (s *zipStore) UnmarshallJson(name string, config interface{}) error {
+func (s *ZipStore) UnmarshallJson(name string, config interface{}) error {
 	return readJsonConfig(s, name, config)
 }

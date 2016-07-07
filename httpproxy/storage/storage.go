@@ -31,12 +31,17 @@ func LookupStoreByConfig(name string) Store {
 	for _, dirname := range []string{filepath.Dir(os.Args[0]), ".", "httpproxy", "httpproxy/filters/" + name} {
 		filename := dirname + "/" + name + ".json"
 		if _, err := os.Stat(filename); err == nil {
-			store = &fileStore{dirname}
+			store = &FileStore{dirname}
 			break
 		}
 	}
 	if store == nil {
-		store = &fileStore{"."}
+		store = &FileStore{"."}
 	}
 	return store
+}
+
+func IsExist(store Store, name string) bool {
+	resp, err := store.Head(name)
+	return os.IsNotExist(err) || (resp != nil && resp.StatusCode == http.StatusNotFound)
 }

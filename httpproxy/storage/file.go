@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-type fileStore struct {
+type FileStore struct {
 	Dirname string
 }
 
-var _ Store = &fileStore{}
+var _ Store = &FileStore{}
 
-func (s *fileStore) Get(name string, start, end int64) (*http.Response, error) {
+func (s *FileStore) Get(name string, start, end int64) (*http.Response, error) {
 	if start > 0 || end > 0 {
 		return nil, fmt.Errorf("%T.GetObject do not support start end parameters", s)
 	}
@@ -52,7 +52,7 @@ func (s *fileStore) Get(name string, start, end int64) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *fileStore) Head(name string) (*http.Response, error) {
+func (s *FileStore) Head(name string) (*http.Response, error) {
 	filename := filepath.Join(s.Dirname, name)
 
 	req, _ := http.NewRequest(http.MethodHead, "/"+strings.TrimLeft(name, "/"), nil)
@@ -76,7 +76,7 @@ func (s *fileStore) Head(name string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *fileStore) Put(name string, header http.Header, data io.ReadCloser) (*http.Response, error) {
+func (s *FileStore) Put(name string, header http.Header, data io.ReadCloser) (*http.Response, error) {
 	defer data.Close()
 
 	filename := filepath.Join(s.Dirname, name)
@@ -106,7 +106,7 @@ func (s *fileStore) Put(name string, header http.Header, data io.ReadCloser) (*h
 	return resp, nil
 }
 
-func (s *fileStore) Copy(dest string, src string) (*http.Response, error) {
+func (s *FileStore) Copy(dest string, src string) (*http.Response, error) {
 	data, err := ioutil.ReadFile(filepath.Join(s.Dirname, src))
 	if err != nil {
 		return nil, err
@@ -126,7 +126,7 @@ func (s *fileStore) Copy(dest string, src string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *fileStore) Delete(object string) (*http.Response, error) {
+func (s *FileStore) Delete(object string) (*http.Response, error) {
 	filename := filepath.Join(s.Dirname, object)
 
 	if err := os.Remove(filename); err != nil {
@@ -142,6 +142,6 @@ func (s *fileStore) Delete(object string) (*http.Response, error) {
 	return resp, nil
 }
 
-func (s *fileStore) UnmarshallJson(name string, config interface{}) error {
+func (s *FileStore) UnmarshallJson(name string, config interface{}) error {
 	return readJsonConfig(s, name, config)
 }
