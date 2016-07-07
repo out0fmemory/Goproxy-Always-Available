@@ -1,6 +1,7 @@
 package stripssl
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -9,6 +10,7 @@ import (
 	"encoding/pem"
 	"io/ioutil"
 	"math/big"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -17,11 +19,13 @@ import (
 	"time"
 
 	"../../helpers"
+	"../../storage"
 
 	"github.com/phuslu/glog"
 )
 
 type RootCA struct {
+	store    storage.Store
 	name     string
 	keyFile  string
 	certFile string
@@ -38,14 +42,15 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 	keyFile := name + ".key"
 	certFile := name + ".crt"
 
+	var store storage.Store
 	if portable {
-		rootdir := filepath.Dir(os.Args[0])
-		keyFile = filepath.Join(rootdir, keyFile)
-		certFile = filepath.Join(rootdir, certFile)
-		certDir = filepath.Join(rootdir, certDir)
+		store = &storage.FileStore{filepath.Dir(os.Args[0])}
+	} else {
+		store = &storage.FileStore{"."}
 	}
 
 	rootCA := &RootCA{
+		store:    store,
 		name:     name,
 		keyFile:  keyFile,
 		certFile: certFile,
@@ -54,8 +59,8 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 		mu:       new(sync.Mutex),
 	}
 
-	if _, err := os.Stat(certFile); os.IsNotExist(err) {
-		glog.Infof("Generating RootCA for %s", certFile)
+	if storage.IsNotExist(store, certFile) {
+		glog.Infof("Generating RootCA for %s/%s", keyFile, certFile)
 		template := x509.Certificate{
 			IsCA:         true,
 			SerialNumber: big.NewInt(1),
@@ -102,65 +107,50 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 		rootCA.derBytes = derBytes
 
 		keypem := &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(rootCA.priv)}
-		if err = ioutil.WriteFile(keyFile, pem.EncodeToMemory(keypem), 0755); err != nil {
+		rc := ioutil.NopCloser(bytes.NewReader(pem.EncodeToMemory(keypem)))
+		if _, err = store.Put(keyFile, http.Header{}, rc); err != nil {
 			return nil, err
 		}
 
 		certpem := &pem.Block{Type: "CERTIFICATE", Bytes: rootCA.derBytes}
-		if err = ioutil.WriteFile(certFile, pem.EncodeToMemory(certpem), 0755); err != nil {
+		rc = ioutil.NopCloser(bytes.NewReader(pem.EncodeToMemory(certpem)))
+		if _, err = store.Put(certFile, http.Header{}, rc); err != nil {
 			return nil, err
 		}
 	} else {
-		data, err := ioutil.ReadFile(keyFile)
-		if err != nil {
-			return nil, err
-		}
-
-		var b *pem.Block
-		for {
-			b, data = pem.Decode(data)
-			if b == nil {
-				break
+		for _, name := range []string{keyFile, certFile} {
+			resp, err := store.Get(name, -1, -1)
+			if err != nil {
+				return nil, err
 			}
-			if b.Type == "CERTIFICATE" {
-				rootCA.derBytes = b.Bytes
-				ca, err := x509.ParseCertificate(rootCA.derBytes)
-				if err != nil {
-					return nil, err
-				}
-				rootCA.ca = ca
-			} else if b.Type == "PRIVATE KEY" {
-				priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
-				if err != nil {
-					return nil, err
-				}
-				rootCA.priv = priv
-			}
-		}
 
-		data, err = ioutil.ReadFile(certFile)
-		if err != nil {
-			return nil, err
-		}
-
-		for {
-			b, data = pem.Decode(data)
-			if b == nil {
-				break
+			data, err := ioutil.ReadAll(resp.Body)
+			resp.Body.Close()
+			if err != nil {
+				return nil, err
 			}
-			if b.Type == "CERTIFICATE" {
-				rootCA.derBytes = b.Bytes
-				ca, err := x509.ParseCertificate(rootCA.derBytes)
-				if err != nil {
-					return nil, err
+
+			var b *pem.Block
+			for {
+				b, data = pem.Decode(data)
+				if b == nil {
+					break
 				}
-				rootCA.ca = ca
-			} else if b.Type == "PRIVATE KEY" {
-				priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
-				if err != nil {
-					return nil, err
+				switch b.Type {
+				case "CERTIFICATE":
+					rootCA.derBytes = b.Bytes
+					ca, err := x509.ParseCertificate(rootCA.derBytes)
+					if err != nil {
+						return nil, err
+					}
+					rootCA.ca = ca
+				case "PRIVATE KEY", "PRIVATE RSA KEY":
+					priv, err := x509.ParsePKCS1PrivateKey(b.Bytes)
+					if err != nil {
+						return nil, err
+					}
+					rootCA.priv = priv
 				}
-				rootCA.priv = priv
 			}
 		}
 	}
@@ -178,19 +168,21 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 				glog.Infof("Import RootCA(%s) OK", certFile)
 			}
 
-			if fis, err := ioutil.ReadDir(certDir); err == nil {
-				for _, fi := range fis {
-					if err = os.Remove(certDir + "/" + fi.Name()); err != nil {
-						glog.Errorf("Remove(%#v) error: %v", fi.Name(), err)
+			if fs, err := store.List(certDir); err == nil {
+				for _, f := range fs {
+					if _, err = store.Delete(f); err != nil {
+						glog.Errorf("%T.Delete(%#v) error: %v", store, f, err)
 					}
 				}
 			}
 		}
 	}
 
-	if _, err := os.Stat(certDir); os.IsNotExist(err) {
-		if err = os.Mkdir(certDir, 0755); err != nil {
-			return nil, err
+	if fs, ok := store.(*storage.FileStore); ok {
+		if storage.IsNotExist(store, certDir) {
+			if err := os.Mkdir(filepath.Join(fs.Dirname, certDir), 0755); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -246,13 +238,13 @@ func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) e
 		return err
 	}
 
-	outFile, err := os.Create(certFile)
-	defer outFile.Close()
-	if err != nil {
+	b := new(bytes.Buffer)
+	pem.Encode(b, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+	pem.Encode(b, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
+
+	if _, err = c.store.Put(certFile, http.Header{}, ioutil.NopCloser(b)); err != nil {
 		return err
 	}
-	pem.Encode(outFile, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
-	pem.Encode(outFile, &pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 
 	return nil
 }
@@ -289,12 +281,12 @@ func (c *RootCA) toFilename(commonName, suffix string) string {
 func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (*tls.Certificate, error) {
 	certFile := c.toFilename(commonName, ".crt")
 
-	if _, err := os.Stat(certFile); os.IsNotExist(err) {
+	if storage.IsNotExist(c.store, certFile) {
 		glog.V(2).Infof("Issue %s certificate for %#v...", c.name, commonName)
 		c.mu.Lock()
 		defer c.mu.Unlock()
-		if _, err := os.Stat(certFile); os.IsNotExist(err) {
-			if err = c.issue(commonName, vaildFor, rsaBits); err != nil {
+		if storage.IsNotExist(c.store, certFile) {
+			if err := c.issue(commonName, vaildFor, rsaBits); err != nil {
 				return nil, err
 			}
 		}
