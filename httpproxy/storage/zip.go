@@ -90,6 +90,22 @@ func (s *ZipStore) Get(name string, start, end int64) (*http.Response, error) {
 	return resp, nil
 }
 
+func (s *ZipStore) List(name string) ([]string, error) {
+	if err := s.init(); err != nil {
+		return nil, err
+	}
+
+	prefix := strings.TrimRight(name, "/") + "/"
+	names := make([]string, 0)
+	for key, _ := range s.zfs {
+		if strings.HasPrefix(key, prefix) {
+			names = append(names, key)
+		}
+	}
+
+	return names, nil
+}
+
 func (s *ZipStore) Head(name string) (*http.Response, error) {
 	if err := s.init(); err != nil {
 		return nil, err

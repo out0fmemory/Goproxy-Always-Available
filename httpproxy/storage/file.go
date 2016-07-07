@@ -8,6 +8,7 @@ import (
 	"mime"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 )
@@ -50,6 +51,20 @@ func (s *FileStore) Get(name string, start, end int64) (*http.Response, error) {
 	resp.Header.Set("Content-Type", mime.TypeByExtension(filepath.Ext(filename)))
 
 	return resp, nil
+}
+
+func (s *FileStore) List(name string) ([]string, error) {
+	fis, err := ioutil.ReadDir(filepath.Join(s.Dirname, name))
+	if err != nil {
+		return nil, err
+	}
+
+	names := make([]string, len(fis))
+	for i, fi := range fis {
+		names[i] = path.Join(name, fi.Name())
+	}
+
+	return names, nil
 }
 
 func (s *FileStore) Head(name string) (*http.Response, error) {

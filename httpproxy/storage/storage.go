@@ -18,6 +18,7 @@ var (
 
 type Store interface {
 	Get(name string, start, end int64) (*http.Response, error)
+	List(name string) ([]string, error)
 	Put(name string, header http.Header, data io.ReadCloser) (*http.Response, error)
 	Copy(dest string, src string) (*http.Response, error)
 	Head(name string) (*http.Response, error)
@@ -41,7 +42,7 @@ func LookupStoreByConfig(name string) Store {
 	return store
 }
 
-func IsExist(store Store, name string) bool {
+func IsNotExist(store Store, name string) bool {
 	resp, err := store.Head(name)
 	return os.IsNotExist(err) || (resp != nil && resp.StatusCode == http.StatusNotFound)
 }
