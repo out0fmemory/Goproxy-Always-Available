@@ -52,15 +52,13 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		}, nil
 	}
 
-	obj, err := f.Store.GetObject(filename, -1, -1)
+	resp, err := f.Store.Get(filename, -1, -1)
 	if err != nil {
 		return ctx, nil, err
 	}
+	defer resp.Body.Close()
 
-	body := obj.Body()
-	defer body.Close()
-
-	data, err := ioutil.ReadAll(body)
+	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ctx, nil, err
 	}

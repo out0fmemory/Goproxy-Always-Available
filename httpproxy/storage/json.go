@@ -10,7 +10,56 @@ import (
 	"strings"
 )
 
-func ReadJson(r io.Reader) ([]byte, error) {
+func readJsonConfig(store Store, filename string, config interface{}) error {
+	fileext := path.Ext(filename)
+	filename1 := strings.TrimSuffix(filename, fileext) + ".user" + fileext
+
+	cm := make(map[string]interface{})
+	for i, name := range []string{filename, filename1} {
+		resp, err := store.Get(name, -1, -1)
+		if err != nil {
+			if i == 0 {
+				return err
+			} else {
+				continue
+			}
+		}
+
+		if resp.Body != nil {
+			defer resp.Body.Close()
+
+			data, err := readJson(resp.Body)
+			if err != nil {
+				return err
+			}
+
+			cm1 := make(map[string]interface{})
+
+			d := json.NewDecoder(bytes.NewReader(data))
+			d.UseNumber()
+
+			if err = d.Decode(&cm1); err != nil {
+				return err
+			}
+
+			if err = mergeMap(cm, cm1); err != nil {
+				return err
+			}
+		}
+	}
+
+	data, err := json.Marshal(cm)
+	if err != nil {
+		return err
+	}
+
+	d := json.NewDecoder(bytes.NewReader(data))
+	d.UseNumber()
+
+	return d.Decode(config)
+}
+
+func readJson(r io.Reader) ([]byte, error) {
 
 	s, err := ioutil.ReadAll(r)
 	if err != nil {
@@ -43,59 +92,6 @@ func ReadJson(r io.Reader) ([]byte, error) {
 	}
 
 	return b.Bytes(), nil
-}
-
-func ReadJsonConfig(uri, filename string, config interface{}) error {
-	store, err := OpenURI(uri)
-	if err != nil {
-		return err
-	}
-
-	fileext := path.Ext(filename)
-	filename1 := strings.TrimSuffix(filename, fileext) + ".user" + fileext
-
-	cm := make(map[string]interface{})
-	for i, name := range []string{filename, filename1} {
-		object, err := store.GetObject(name, -1, -1)
-		if err != nil {
-			if i == 0 {
-				return err
-			} else {
-				continue
-			}
-		}
-
-		rc := object.Body()
-		defer rc.Close()
-
-		data, err := ReadJson(rc)
-		if err != nil {
-			return err
-		}
-
-		cm1 := make(map[string]interface{})
-
-		d := json.NewDecoder(bytes.NewReader(data))
-		d.UseNumber()
-
-		if err = d.Decode(&cm1); err != nil {
-			return err
-		}
-
-		if err = mergeMap(cm, cm1); err != nil {
-			return err
-		}
-	}
-
-	data, err := json.Marshal(cm)
-	if err != nil {
-		return err
-	}
-
-	d := json.NewDecoder(bytes.NewReader(data))
-	d.UseNumber()
-
-	return d.Decode(config)
 }
 
 func mergeMap(m1 map[string]interface{}, m2 map[string]interface{}) error {

@@ -20,6 +20,7 @@ import (
 	"github.com/phuslu/glog"
 
 	"../../filters"
+	"../../storage"
 )
 
 func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
@@ -46,9 +47,9 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 
 	buf := new(bytes.Buffer)
 
-	obj, err := f.Store.GetObject(filename, -1, -1)
+	resp, err := f.Store.Get(filename, -1, -1)
 	switch {
-	case os.IsNotExist(err):
+	case os.IsNotExist(err), resp.StatusCode == http.StatusNotFound:
 		glog.V(2).Infof("AUTOPROXY ProxyPac: generate %#v", filename)
 		s := fmt.Sprintf(`// User-defined FindProxyForURL
 function FindProxyForURL(url, host) {
@@ -67,19 +68,16 @@ function FindProxyForURL(url, host) {
     return 'DIRECT';
 }
 `, port)
-		f.Store.PutObject(filename, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
+		f.Store.Put(filename, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
 	case err != nil:
 		return ctx, nil, err
-	case obj != nil:
-		if body := obj.Body(); body != nil {
-			body.Close()
-		}
+	case resp.Body != nil:
+		resp.Body.Close()
 	}
 
-	if obj, err := f.Store.GetObject(filename, -1, -1); err == nil {
-		body := obj.Body()
-		defer body.Close()
-		if b, err := ioutil.ReadAll(body); err == nil {
+	if resp, err := f.Store.Get(filename, -1, -1); err == nil {
+		defer resp.Body.Close()
+		if b, err := ioutil.ReadAll(resp.Body); err == nil {
 			if f.GFWListEnabled {
 				b = []byte(strings.Replace(string(b), "function FindProxyForURL(", "function MyFindProxyForURL(", 1))
 			}
@@ -88,15 +86,14 @@ function FindProxyForURL(url, host) {
 	}
 
 	if f.GFWListEnabled {
-		object, err := f.Store.GetObject(f.GFWList.Filename, -1, -1)
+		resp, err := f.Store.Get(f.GFWList.Filename, -1, -1)
 		if err != nil {
 			glog.Errorf("GetObject(%#v) error: %v", f.GFWList.Filename, err)
 			return ctx, nil, err
 		}
+		defer resp.Body.Close()
 
-		rc := object.Body()
-		defer rc.Close()
-		sites, err := parseAutoProxy(rc)
+		sites, err := parseAutoProxy(resp.Body)
 		if err != nil {
 			glog.Errorf("parseAutoProxy(%#v) error: %v", f.GFWList.Filename, err)
 			return ctx, nil, err
@@ -133,7 +130,7 @@ function FindProxyForURL(url, host) {
 	f.ProxyPacCache.Set(req.RequestURI, s, time.Now().Add(15*time.Minute))
 
 	s = fixProxyPac(s, req)
-	resp := &http.Response{
+	resp = &http.Response{
 		StatusCode:    http.StatusOK,
 		Header:        http.Header{},
 		Request:       req,
@@ -154,19 +151,19 @@ func (f *Filter) pacUpdater() {
 		select {
 		case <-ticker:
 			glog.V(2).Infof("Begin auto gfwlist(%#v) update...", f.GFWList.URL.String())
-			h, err := f.Store.HeadObject(f.GFWList.Filename)
+			resp, err := f.Store.Head(f.GFWList.Filename)
 			if err != nil {
 				glog.Warningf("stat gfwlist(%#v) err: %v", f.GFWList.Filename, err)
 				continue
 			}
 
-			lm := h.Get("Last-Modified")
+			lm := resp.Header.Get("Last-Modified")
 			if lm == "" {
-				glog.Warningf("gfwlist(%#v) header(%#v) does not contains last-modified", f.GFWList.Filename, h)
+				glog.Warningf("gfwlist(%#v) header(%#v) does not contains last-modified", f.GFWList.Filename, resp.Header)
 				continue
 			}
 
-			modTime, err := time.Parse(f.Store.DateFormat(), lm)
+			modTime, err := time.Parse(storage.DateFormat, lm)
 			if err != nil {
 				glog.Warningf("stat gfwlist(%#v) has parse %#v error: %v", f.GFWList.Filename, lm, err)
 				continue
@@ -206,13 +203,13 @@ func (f *Filter) pacUpdater() {
 			continue
 		}
 
-		err = f.Store.DeleteObject(f.GFWList.Filename)
+		_, err = f.Store.Delete(f.GFWList.Filename)
 		if err != nil {
 			glog.Warningf("%T.DeleteObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
 			continue
 		}
 
-		err = f.Store.PutObject(f.GFWList.Filename, http.Header{}, ioutil.NopCloser(bytes.NewReader(data)))
+		_, err = f.Store.Put(f.GFWList.Filename, http.Header{}, ioutil.NopCloser(bytes.NewReader(data)))
 		if err != nil {
 			glog.Warningf("%T.PutObject(%#v) error: %v", f.Store, f.GFWList.Filename, err)
 			continue

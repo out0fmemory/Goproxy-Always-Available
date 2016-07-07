@@ -43,7 +43,7 @@ func init() {
 	rand.Seed(time.Now().UnixNano())
 
 	filename := "httpproxy.json"
-	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI("httpproxy"), filename, &Config)
+	err := storage.LookupStoreByConfig("httpproxy").UnmarshallJson(filename, &Config)
 	if err != nil {
 		fmt.Printf("storage.ReadJsonConfig(%#v) failed: %s\n", filename, err)
 		return

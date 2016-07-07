@@ -40,9 +40,9 @@ type Filter struct {
 func init() {
 	filename := filterName + ".json"
 	config := new(Config)
-	err := storage.ReadJsonConfig(storage.LookupConfigStoreURI(filterName), filename, config)
+	err := storage.LookupStoreByConfig(filterName).UnmarshallJson(filename, config)
 	if err != nil {
-		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
+		glog.Fatalf("UnmarshallJson(%#v) failed: %s", filename, err)
 	}
 
 	err = filters.Register(filterName, &filters.RegisteredFilter{
