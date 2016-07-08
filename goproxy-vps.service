@@ -3,7 +3,8 @@ Description=goproxy-vps
 
 [Service]
 Type=simple
-ExecStart=/opt/goproxy-vps/goproxy-vps -addr=:443 -v=2 -logtostderr=0 -log_dir=/var/log/
+ExecStartPre=/bin/mkdir -p /var/log/goproxy
+ExecStart=/opt/goproxy-vps/goproxy-vps -addr=:443 -v=2 -logtostderr=0 -log_dir=/var/log/goproxy
 WorkingDirectory=/opt/goproxy-vps
 User=root
 Restart=always
