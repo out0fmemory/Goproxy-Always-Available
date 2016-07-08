@@ -404,8 +404,8 @@ func main() {
 		},
 		RetryTimes:     2,
 		RetryDelay:     100 * time.Millisecond,
-		DNSCache:       lrucache.NewLRUCache(8 * 1024),
-		DNSCacheExpiry: 1 * time.Hour,
+		DNSCache:       lrucache.NewLRUCache(1024 * 1024),
+		DNSCacheExpiry: 8 * time.Hour,
 		LoopbackAddrs:  make(map[string]struct{}),
 	}
 
