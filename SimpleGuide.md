@@ -8,7 +8,7 @@
 
 - 使用
 
-  * 下载 goproxy 正式版 https://git.io/goproxy, 复制 gae.json 为 gae.user.json 并填入部署完成的 appid
+  * 下载 goproxy 正式版 [https://git.io/goproxy](https://github.com/phuslu/goproxy/releases), 复制 gae.json 为 gae.user.json 并填入部署完成的 appid
   * Windows 用户推荐使用 goproxy-gui.exe 托盘图标设置 IE 代理(对其它浏览器也有效)。
   * Chrome/Opera 请安装 [SwitchyOmega](https://github.com/FelisCatus/SwitchyOmega/releases) 插件(下载到本地然后拖放文件到扩展设置)，导入 SwitchyOptions.bak
   * Firefox 请安装 [FoxyProxy](https://addons.mozilla.org/zh-cn/firefox/addon/foxyproxy-standard/) ，Firefox需要导入证书，方法请见 FAQ
