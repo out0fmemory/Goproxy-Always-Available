@@ -63,6 +63,10 @@ type Config struct {
 			Level            int
 			Timeout          int
 		}
+		Proxy struct {
+			Enabled bool
+			URL     string
+		}
 		DisableCompression    bool
 		DisableKeepAlives     bool
 		IdleConnTimeout       int
@@ -245,17 +249,27 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
 	}
 
-	t2 := &http2.Transport{
-		DialTLS:            d.DialTLS2,
-		TLSClientConfig:    d.GoogleTLSConfig,
-		DisableCompression: config.Transport.DisableCompression,
+	if config.Transport.Proxy.Enabled {
+		fixedURL, err := url.Parse(config.Transport.Proxy.URL)
+		if err != nil {
+			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
+		}
+		t1.Dial = nil
+		t1.DialTLS = nil
+		t1.Proxy = http.ProxyURL(fixedURL)
 	}
 
 	switch {
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
+	case config.Transport.Proxy.Enabled && config.ForceHTTP2:
+		glog.Fatalf("GAE: Proxy.Enabled=%v and ForceHTTPS=%v is conflict!", config.Transport.Proxy.Enabled, config.ForceHTTP2)
 	case config.ForceHTTP2:
-		tr = t2
+		tr = &http2.Transport{
+			DialTLS:            d.DialTLS2,
+			TLSClientConfig:    d.GoogleTLSConfig,
+			DisableCompression: config.Transport.DisableCompression,
+		}
 	case !config.DisableHTTP2:
 		err := http2.ConfigureTransport(t1)
 		if err != nil {
