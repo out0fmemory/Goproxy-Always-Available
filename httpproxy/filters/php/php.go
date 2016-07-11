@@ -40,6 +40,10 @@ type Config struct {
 			DNSCacheExpiry int
 			DNSCacheSize   uint
 		}
+		Proxy struct {
+			Enabled bool
+			URL     string
+		}
 		DisableKeepAlives   bool
 		DisableCompression  bool
 		TLSHandshakeTimeout int
@@ -136,6 +140,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
+	}
+
+	if config.Transport.Proxy.Enabled {
+		fixedURL, err := url.Parse(config.Transport.Proxy.URL)
+		if err != nil {
+			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
+		}
+		tr.Proxy = http.ProxyURL(fixedURL)
 	}
 
 	if tr.TLSClientConfig != nil {

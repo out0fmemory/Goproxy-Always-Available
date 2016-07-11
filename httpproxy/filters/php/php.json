@@ -20,6 +20,10 @@
 			"DNSCacheExpiry": 3600,
 			"DNSCacheSize": 81920
 		},
+		"Proxy": {
+			"Enabled": false,
+			"URL": "http://127.0.0.1:1080",
+		},
 		"DisableKeepAlives": false,
 		"DisableCompression": false,
 		"TLSHandshakeTimeout": 4,
