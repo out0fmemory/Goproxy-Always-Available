@@ -5,6 +5,7 @@
 			"live.github.com": "direct",
 			"rarbg.to": "direct",
 			"www.slideshare.net": "php",
+			"pastebin.com": "php",
 		},
 	},
 	"IndexFiles": {
