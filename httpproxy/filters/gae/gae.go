@@ -190,10 +190,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		googleTLSConfig.NextProtos = []string{"h2", "h2-14", "http/1.1"}
 	}
 
-	if config.ForceIPv6 && !config.EnableRemoteDNS {
-		glog.Fatalf("GAE: ForceIPv6=%v and EnableRemoteDNS=%v is conflict!", config.ForceIPv6, config.EnableRemoteDNS)
-	}
-
 	if config.Site2Alias == nil {
 		config.Site2Alias = make(map[string]string)
 	}

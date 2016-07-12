@@ -47,13 +47,14 @@ func (d *MultiDialer) ClearCache() {
 }
 
 func (d *MultiDialer) lookupHost1(name string) (addrs []string, err error) {
-	hs, err := net.LookupHost(name)
+	ips, err := helpers.LookupIP(name)
 	if err != nil {
-		return hs, err
+		return nil, err
 	}
 
 	addrs = make([]string, 0)
-	for _, h := range hs {
+	for _, ip := range ips {
+		h := ip.String()
 		if _, ok := d.IPBlackList.GetQuiet(h); ok {
 			continue
 		}
@@ -114,7 +115,7 @@ func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (addrs []string
 }
 
 func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
-	if d.EnableRemoteDNS || d.ForceIPv6 {
+	if d.EnableRemoteDNS {
 		return d.lookupHost2(name, d.DNSServers[0])
 	} else {
 		return d.lookupHost1(name)

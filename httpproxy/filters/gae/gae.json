@@ -8,7 +8,7 @@
 	"DisableHTTP2": false,
 	"ForceHTTP2": false,
 	"EnableDeadProbe": true,
-	"EnableRemoteDNS": true,
+	"EnableRemoteDNS": false,
 	"Sites": [
 		"*"
 	],
