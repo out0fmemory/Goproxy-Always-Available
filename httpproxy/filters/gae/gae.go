@@ -79,7 +79,6 @@ type Config struct {
 
 type Filter struct {
 	Config
-	MultiDialer         *dialer.MultiDialer
 	GAETransport        *Transport
 	DirectTransport     http.RoundTripper
 	ForceHTTPSMatcher   *helpers.HostMatcher
@@ -203,12 +202,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		hostmap[key] = helpers.UniqueStrings(value)
 	}
 
-	d := &dialer.MultiDialer{
-		Dialer: net.Dialer{
-			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
-			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
-			DualStack: config.Transport.Dialer.DualStack,
-		},
+	d := &net.Dialer{
+		KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
+		Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
+		DualStack: config.Transport.Dialer.DualStack,
+	}
+
+	md := &dialer.MultiDialer{
+		Dialer:            *d,
 		ForceIPv6:         config.ForceIPv6,
 		SSLVerify:         config.SSLVerify,
 		EnableRemoteDNS:   config.EnableRemoteDNS,
@@ -230,14 +231,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	for _, ip := range config.IPBlackList {
-		d.IPBlackList.Set(ip, struct{}{}, time.Time{})
+		md.IPBlackList.Set(ip, struct{}{}, time.Time{})
 	}
 
 	var tr http.RoundTripper
 
 	t1 := &http.Transport{
-		Dial:                  d.Dial,
-		DialTLS:               d.DialTLS,
+		Dial:                  md.Dial,
+		DialTLS:               md.DialTLS,
 		DisableKeepAlives:     config.Transport.DisableKeepAlives,
 		DisableCompression:    config.Transport.DisableCompression,
 		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
@@ -250,9 +251,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		if err != nil {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
-		t1.Dial = nil
-		t1.DialTLS = nil
-		t1.Proxy = http.ProxyURL(fixedURL)
+
+		if err = helpers.ConfigureProxy(t1, fixedURL, d); err != nil {
+			glog.Fatalf("helpers.ConfigureProxy(%#v) error: %s", fixedURL.String(), err)
+		}
 	}
 
 	switch {
@@ -262,8 +264,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		glog.Fatalf("GAE: Proxy.Enabled=%v and ForceHTTPS=%v is conflict!", config.Transport.Proxy.Enabled, config.ForceHTTP2)
 	case config.ForceHTTP2:
 		tr = &http2.Transport{
-			DialTLS:            d.DialTLS2,
-			TLSClientConfig:    d.GoogleTLSConfig,
+			DialTLS:            md.DialTLS2,
+			TLSClientConfig:    md.GoogleTLSConfig,
 			DisableCompression: config.Transport.DisableCompression,
 		}
 	case !config.DisableHTTP2:
@@ -328,12 +330,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	helpers.ShuffleStrings(config.AppIDs)
 
-	return &Filter{
-		Config:      *config,
-		MultiDialer: d,
+	f := &Filter{
+		Config: *config,
 		GAETransport: &Transport{
 			RoundTripper: tr,
-			MultiDialer:  d,
+			MultiDialer:  md,
 			Servers: NewServers(config.AppIDs,
 				config.Password,
 				config.SSLVerify,
@@ -350,7 +351,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		FakeOptionsMatcher:  helpers.NewHostMatcherWithStrings(config.FakeOptions),
 		SiteMatcher:         helpers.NewHostMatcher(config.Sites),
 		DirectSiteMatcher:   helpers.NewHostMatcherWithString(config.Site2Alias),
-	}, nil
+	}
+
+	if config.Transport.Proxy.Enabled {
+		f.GAETransport.MultiDialer = nil
+	}
+
+	return f, nil
 }
 
 func (f *Filter) FilterName() string {

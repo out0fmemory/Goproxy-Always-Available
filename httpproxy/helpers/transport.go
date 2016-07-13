@@ -3,6 +3,9 @@ package helpers
 import (
 	"net"
 	"net/http"
+	"net/url"
+
+	"github.com/phuslu/net/proxy"
 )
 
 var (
@@ -81,4 +84,37 @@ func CloneRequest(r *http.Request) *http.Request {
 		r2.Header[k] = append([]string(nil), s...)
 	}
 	return r2
+}
+
+func ConfigureProxy(t *http.Transport, fixedURL *url.URL, forward proxy.Dialer) error {
+	switch fixedURL.Scheme {
+	case "socks", "socks5", "sockv5":
+		var auth *proxy.Auth
+		if fixedURL.User != nil {
+			auth = new(proxy.Auth)
+			auth.User = fixedURL.User.Username()
+			if p, ok := fixedURL.User.Password(); ok {
+				auth.Password = p
+			}
+		}
+
+		if forward == nil {
+			forward = &net.Dialer{}
+		}
+
+		dialer, err := proxy.SOCKS5("tcp", fixedURL.Host, auth, forward)
+		if err != nil {
+			return err
+		}
+
+		t.Dial = dialer.Dial
+		t.DialTLS = nil
+		t.Proxy = nil
+	default:
+		t.Dial = nil
+		t.DialTLS = nil
+		t.Proxy = http.ProxyURL(fixedURL)
+	}
+
+	return nil
 }
