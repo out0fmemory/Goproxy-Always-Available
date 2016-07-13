@@ -253,14 +253,15 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if req.URL.Scheme == "" {
-		req.URL.Scheme = "http"
-	}
 	if req.URL.Host == "" {
 		req.URL.Host = req.Host
 	}
 
 	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+
+	if req.URL.Scheme == "" {
+		req.URL.Scheme = "http"
+	}
 
 	if req.ProtoMajor == 2 && req.ProtoMinor == 0 {
 		req.ProtoMajor = 1
