@@ -59,8 +59,8 @@ func (d *MultiDialer) lookupHost1(name string) (addrs []string, err error) {
 			continue
 		}
 
-		if strings.Contains(h, ":") {
-			if d.ForceIPv6 {
+		if d.ForceIPv6 {
+			if strings.Contains(h, ":") {
 				addrs = append(addrs, h)
 			}
 		} else {
