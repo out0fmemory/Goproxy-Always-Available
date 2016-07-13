@@ -94,12 +94,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		servers = append(servers, server)
 	}
 
+	d0 := &net.Dialer{
+		KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
+		Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
+		DualStack: config.Transport.Dialer.DualStack,
+	}
+
 	d := &dialer.Dialer{
-		Dialer: net.Dialer{
-			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
-			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
-			DualStack: config.Transport.Dialer.DualStack,
-		},
+		Dialer:         *d0,
 		RetryTimes:     config.Transport.Dialer.RetryTimes,
 		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
 		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
@@ -147,7 +149,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		if err != nil {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
-		tr.Proxy = http.ProxyURL(fixedURL)
+		if err = helpers.ConfigureProxy(tr, fixedURL, d0); err != nil {
+			glog.Fatalf("helpers.ConfigureProxy(%#v) error: %s", fixedURL.String(), err)
+		}
 	}
 
 	if tr.TLSClientConfig != nil {
