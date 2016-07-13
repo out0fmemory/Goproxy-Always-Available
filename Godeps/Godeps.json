@@ -1,9 +1,0 @@
-{
-	"ImportPath": "github.com/phuslu/goproxy",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
-	"Packages": [
-		"./..."
-	],
-	"Deps": []
-}

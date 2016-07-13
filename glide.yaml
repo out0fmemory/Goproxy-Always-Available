@@ -1,0 +1,9 @@
+package: .
+import:
+- package: github.com/klauspost/compress
+  subpackages:
+  - flate
+  - gzip
+- package: github.com/valyala/fasthttp
+  subpackages:
+  - reuseport
