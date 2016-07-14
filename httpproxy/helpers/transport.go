@@ -88,21 +88,12 @@ func CloneRequest(r *http.Request) *http.Request {
 
 func ConfigureProxy(t *http.Transport, fixedURL *url.URL, forward proxy.Dialer) error {
 	switch fixedURL.Scheme {
-	case "socks", "socks5", "sockv5":
-		var auth *proxy.Auth
-		if fixedURL.User != nil {
-			auth = new(proxy.Auth)
-			auth.User = fixedURL.User.Username()
-			if p, ok := fixedURL.User.Password(); ok {
-				auth.Password = p
-			}
-		}
-
+	case "socks", "socks5", "sock4":
 		if forward == nil {
-			forward = &net.Dialer{}
+			forward = proxy.Direct
 		}
 
-		dialer, err := proxy.SOCKS5("tcp", fixedURL.Host, auth, forward)
+		dialer, err := proxy.FromURL(fixedURL, forward)
 		if err != nil {
 			return err
 		}
