@@ -300,7 +300,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
-	if config.EnableDeadProbe {
+	if config.EnableDeadProbe && !config.Transport.Proxy.Enabled {
 		go func() {
 			probe := func() {
 				req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
