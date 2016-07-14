@@ -94,7 +94,7 @@ except ImportError:
 try:
     import appindicator
 except ImportError:
-    if platform.dist()[0].lower() == 'ubuntu' or os.getenv('XDG_CURRENT_DESKTOP', '').lower() == 'unity':
+    if os.getenv('XDG_CURRENT_DESKTOP', '').lower() == 'unity':
         sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, u'Please install python-appindicator').run())
     appindicator = None
 try:
