@@ -23,7 +23,7 @@ var (
 	}
 )
 
-type FetchServer struct {
+type Server struct {
 	URL       *url.URL
 	Username  string
 	Password  string
@@ -31,7 +31,7 @@ type FetchServer struct {
 	Transport *http2.Transport
 }
 
-func (f *FetchServer) RoundTrip(req *http.Request) (resp *http.Response, err error) {
+func (f *Server) RoundTrip(req *http.Request) (resp *http.Response, err error) {
 	for key, shouldDelete := range reqWriteExcludeHeader {
 		if shouldDelete && req.Header.Get(key) != "" {
 			req.Header.Del(key)
@@ -48,6 +48,6 @@ func (f *FetchServer) RoundTrip(req *http.Request) (resp *http.Response, err err
 	return resp, nil
 }
 
-func (f *FetchServer) Connect(req *http.Request) (conn net.Conn, err error) {
+func (f *Server) Connect(req *http.Request) (conn net.Conn, err error) {
 	return nil, nil
 }

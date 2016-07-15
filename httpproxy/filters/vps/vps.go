@@ -22,7 +22,7 @@ const (
 )
 
 type Config struct {
-	FetchServers []struct {
+	Servers []struct {
 		URL       string
 		Username  string
 		Password  string
@@ -32,8 +32,8 @@ type Config struct {
 }
 
 type Filter struct {
-	FetchServers []*FetchServer
-	Sites        *helpers.HostMatcher
+	Servers []*Server
+	Sites   *helpers.HostMatcher
 }
 
 func init() {
@@ -56,8 +56,8 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	fetchServers := make([]*FetchServer, 0)
-	for _, fs := range config.FetchServers {
+	servers := make([]*Server, 0)
+	for _, fs := range config.Servers {
 		u, err := url.Parse(fs.URL)
 		if err != nil {
 			return nil, err
@@ -65,7 +65,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 		transport := &http2.Transport{}
 
-		fs := &FetchServer{
+		fs := &Server{
 			URL:       u,
 			Username:  fs.Username,
 			Password:  fs.Password,
@@ -73,12 +73,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Transport: transport,
 		}
 
-		fetchServers = append(fetchServers, fs)
+		servers = append(servers, fs)
 	}
 
 	return &Filter{
-		FetchServers: fetchServers,
-		Sites:        helpers.NewHostMatcher(config.Sites),
+		Servers: servers,
+		Sites:   helpers.NewHostMatcher(config.Sites),
 	}, nil
 }
 
@@ -94,12 +94,12 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	i := 0
 	switch path.Ext(req.URL.Path) {
 	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
-		i = rand.Intn(len(f.FetchServers))
+		i = rand.Intn(len(f.Servers))
 	case "":
 		name := path.Base(req.URL.Path)
 		if strings.Contains(name, "play") ||
 			strings.Contains(name, "video") {
-			i = rand.Intn(len(f.FetchServers))
+			i = rand.Intn(len(f.Servers))
 		}
 	default:
 		if strings.Contains(req.Host, "img.") ||
@@ -113,14 +113,14 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			strings.Contains(req.URL.Path, "static") ||
 			strings.Contains(req.URL.Path, "asset") ||
 			strings.Contains(req.URL.Path, "/cache/") {
-			i = rand.Intn(len(f.FetchServers))
+			i = rand.Intn(len(f.Servers))
 		}
 	}
 
-	fetchServer := f.FetchServers[i]
+	server := f.Servers[i]
 
 	// if req.Method == "CONNECT" {
-	// 	rconn, err := fetchServer.Transport.Connect(req)
+	// 	rconn, err := server.Transport.Connect(req)
 	// 	if err != nil {
 	// 		return ctx, nil, err
 	// 	}
@@ -153,7 +153,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	// 	ctx.Hijack(true)
 	// 	return ctx, nil, nil
 	// }
-	resp, err := fetchServer.RoundTrip(req)
+	resp, err := server.RoundTrip(req)
 	if err != nil {
 		return ctx, nil, err
 	} else {
