@@ -259,9 +259,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	switch {
 	case config.DisableHTTP2 && config.ForceHTTP2:
-		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTPS=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
+		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTP2=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.Transport.Proxy.Enabled && config.ForceHTTP2:
-		glog.Fatalf("GAE: Proxy.Enabled=%v and ForceHTTPS=%v is conflict!", config.Transport.Proxy.Enabled, config.ForceHTTP2)
+		glog.Fatalf("GAE: Proxy.Enabled=%v and ForceHTTP2=%v is conflict!", config.Transport.Proxy.Enabled, config.ForceHTTP2)
 	case config.ForceHTTP2:
 		tr = &http2.Transport{
 			DialTLS:            md.DialTLS2,
