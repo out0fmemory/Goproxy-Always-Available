@@ -110,5 +110,5 @@ if "%localname%" == "%filename%" (
 )
 
 :quit
-    del /f ~* 2>NUL
+    del /f ~* 1>NUL 2>NUL
     pause >NUL
