@@ -75,8 +75,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				if t.MultiDialer != nil {
 					if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
 						if ip, _, err := net.SplitHostPort(addr); err == nil {
-							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for 8 hours", ip, resp.StatusCode)
-							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(8*time.Hour))
+							duration := 8 * time.Hour
+							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
+							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 						}
 						if ok := helpers.TryCloseConnectionByRemoteAddr(t.RoundTripper, addr); !ok {
 							glog.Warningf("GAE: TryCloseConnectionByRemoteAddr(%T, %#v) failed.", t.RoundTripper, addr)
