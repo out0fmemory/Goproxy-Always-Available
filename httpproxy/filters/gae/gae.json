@@ -4,6 +4,7 @@
 	],
 	"Password": "",
 	"SSLVerify": false,
+	"DisableIPv6": true,
 	"ForceIPv6": false,
 	"DisableHTTP2": false,
 	"ForceHTTP2": false,

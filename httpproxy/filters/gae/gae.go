@@ -31,6 +31,7 @@ type Config struct {
 	AppIDs          []string
 	Password        string
 	SSLVerify       bool
+	DisableIPv6     bool
 	ForceIPv6       bool
 	DisableHTTP2    bool
 	ForceHTTP2      bool
@@ -210,6 +211,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	md := &dialer.MultiDialer{
 		Dialer:            *d,
+		DisableIPv6:       config.DisableIPv6,
 		ForceIPv6:         config.ForceIPv6,
 		SSLVerify:         config.SSLVerify,
 		EnableRemoteDNS:   config.EnableRemoteDNS,

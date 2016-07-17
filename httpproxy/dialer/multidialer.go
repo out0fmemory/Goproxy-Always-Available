@@ -20,6 +20,7 @@ import (
 
 type MultiDialer struct {
 	net.Dialer
+	DisableIPv6       bool
 	ForceIPv6         bool
 	SSLVerify         bool
 	EnableRemoteDNS   bool
@@ -59,12 +60,14 @@ func (d *MultiDialer) lookupHost1(name string) (addrs []string, err error) {
 			continue
 		}
 
-		if d.ForceIPv6 {
-			if strings.Contains(h, ":") {
+		if strings.Contains(h, ":") {
+			if d.ForceIPv6 || !d.DisableIPv6 {
 				addrs = append(addrs, h)
 			}
 		} else {
-			addrs = append(addrs, h)
+			if !d.ForceIPv6 {
+				addrs = append(addrs, h)
+			}
 		}
 	}
 
@@ -74,9 +77,12 @@ func (d *MultiDialer) lookupHost1(name string) (addrs []string, err error) {
 func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (addrs []string, err error) {
 	m := &dns.Msg{}
 
-	if d.ForceIPv6 {
+	switch {
+	case d.ForceIPv6:
 		m.SetQuestion(dns.Fqdn(name), dns.TypeAAAA)
-	} else {
+	case d.DisableIPv6:
+		m.SetQuestion(dns.Fqdn(name), dns.TypeA)
+	default:
 		m.SetQuestion(dns.Fqdn(name), dns.TypeANY)
 	}
 
@@ -92,23 +98,24 @@ func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (addrs []string
 	addrs = []string{}
 
 	for _, rr := range r.Answer {
-		if d.ForceIPv6 {
-			if aaaa, ok := rr.(*dns.AAAA); ok {
-				ip := aaaa.AAAA.String()
-				if _, ok := d.IPBlackList.GetQuiet(ip); ok {
-					continue
-				}
-				addrs = append(addrs, ip)
-			}
-		} else {
-			if a, ok := rr.(*dns.A); ok {
-				ip := a.A.String()
-				if _, ok := d.IPBlackList.GetQuiet(ip); ok {
-					continue
-				}
-				addrs = append(addrs, ip)
-			}
+		var addr string
+
+		if aaaa, ok := rr.(*dns.AAAA); ok {
+			addr = aaaa.AAAA.String()
 		}
+		if a, ok := rr.(*dns.A); ok {
+			addr = a.A.String()
+		}
+
+		if addr == "" {
+			continue
+		}
+
+		if _, ok := d.IPBlackList.GetQuiet(addr); ok {
+			continue
+		}
+
+		addrs = append(addrs, addr)
 	}
 
 	return addrs, nil
@@ -266,8 +273,11 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					for i, host := range hosts {
 						addrs[i] = net.JoinHostPort(host, port)
 					}
-					if d.ForceIPv6 {
+					switch {
+					case d.ForceIPv6:
 						network = "tcp6"
+					case d.DisableIPv6:
+						network = "tcp4"
 					}
 					conn, err := d.dialMultiTLS(network, addrs, config)
 					if err != nil {
