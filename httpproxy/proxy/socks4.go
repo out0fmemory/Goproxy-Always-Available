@@ -74,6 +74,12 @@ func (s *socks4) Dial(network, addr string) (net.Conn, error) {
 		return nil, errors.New("proxy: port number out of range: " + portStr)
 	}
 
+	if s.resolver != nil {
+		if hosts, err := s.resolver.LookupHost(host); err == nil && len(hosts) > 0 {
+			host = hosts[0]
+		}
+	}
+
 	ip, err := net.ResolveIPAddr("ip4", host)
 	if err != nil {
 		return nil, err
