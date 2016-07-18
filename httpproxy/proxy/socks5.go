@@ -31,6 +31,7 @@ type socks5 struct {
 	user, password string
 	network, addr  string
 	forward        Dialer
+	resolver       func(host string) string
 }
 
 const socks5Version = 5
@@ -90,6 +91,10 @@ func (s *socks5) Dial(network, addr string) (net.Conn, error) {
 	}
 	if port < 1 || port > 0xffff {
 		return nil, errors.New("proxy: port number out of range: " + portStr)
+	}
+
+	if s.resolver != nil {
+		host = s.resolver(host)
 	}
 
 	// the size here is just an estimate
