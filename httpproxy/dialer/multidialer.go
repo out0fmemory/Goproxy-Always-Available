@@ -459,7 +459,8 @@ type MultiResolver struct {
 func (r *MultiResolver) LookupHost(host string) ([]string, error) {
 	if alias0, ok := r.MultiDialer.SiteToAlias.Lookup(host); ok {
 		alias := alias0.(string)
-		if hosts, err := r.MultiDialer.LookupAlias(alias); err == nil {
+		if hosts, err := r.MultiDialer.LookupAlias(alias); err == nil && len(hosts) > 0 {
+			helpers.ShuffleStrings(hosts)
 			return hosts, nil
 		}
 	}
