@@ -254,6 +254,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
 
+		t1.TLSClientConfig = md.GoogleTLSConfig
 		if err = helpers.ConfigureProxy(t1, fixedURL, d, &dialer.MultiResolver{md}); err != nil {
 			glog.Fatalf("helpers.ConfigureProxy(%#v) error: %s", fixedURL.String(), err)
 		}
