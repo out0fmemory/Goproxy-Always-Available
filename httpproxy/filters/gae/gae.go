@@ -254,7 +254,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
 
-		if err = helpers.ConfigureProxy(t1, fixedURL, d, nil); err != nil {
+		if err = helpers.ConfigureProxy(t1, fixedURL, d, &dialer.MultiResolver{md}); err != nil {
 			glog.Fatalf("helpers.ConfigureProxy(%#v) error: %s", fixedURL.String(), err)
 		}
 	}

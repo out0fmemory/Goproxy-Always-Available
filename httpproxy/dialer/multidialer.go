@@ -451,3 +451,17 @@ func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 
 	return addrs1
 }
+
+type MultiResolver struct {
+	*MultiDialer
+}
+
+func (r *MultiResolver) LookupHost(host string) ([]string, error) {
+	if alias0, ok := r.MultiDialer.SiteToAlias.Lookup(host); ok {
+		alias := alias0.(string)
+		if hosts, err := r.MultiDialer.LookupAlias(alias); err == nil {
+			return hosts, nil
+		}
+	}
+	return []string{host}, nil
+}
