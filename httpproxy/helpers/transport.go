@@ -3,9 +3,6 @@ package helpers
 import (
 	"net"
 	"net/http"
-	"net/url"
-
-	"../proxy"
 )
 
 var (
@@ -84,28 +81,4 @@ func CloneRequest(r *http.Request) *http.Request {
 		r2.Header[k] = append([]string(nil), s...)
 	}
 	return r2
-}
-
-func ConfigureProxy(t *http.Transport, fixedURL *url.URL, forward proxy.Dialer, resolver proxy.Resolver) error {
-	switch fixedURL.Scheme {
-	case "socks", "socks5", "sock4":
-		if forward == nil {
-			forward = proxy.Direct
-		}
-
-		dialer, err := proxy.FromURL(fixedURL, forward, resolver)
-		if err != nil {
-			return err
-		}
-
-		t.Dial = dialer.Dial
-		t.DialTLS = nil
-		t.Proxy = nil
-	default:
-		t.Dial = nil
-		t.DialTLS = nil
-		t.Proxy = http.ProxyURL(fixedURL)
-	}
-
-	return nil
 }

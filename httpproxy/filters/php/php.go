@@ -15,6 +15,7 @@ import (
 	"../../dialer"
 	"../../filters"
 	"../../helpers"
+	"../../proxy"
 	"../../storage"
 )
 
@@ -149,9 +150,15 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		if err != nil {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
-		if err = helpers.ConfigureProxy(tr, fixedURL, d0, nil); err != nil {
-			glog.Fatalf("helpers.ConfigureProxy(%#v) error: %s", fixedURL.String(), err)
+
+		dialer, err := proxy.FromURL(fixedURL, d, nil)
+		if err != nil {
+			glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
 		}
+
+		tr.Dial = dialer.Dial
+		tr.DialTLS = nil
+		tr.Proxy = nil
 	}
 
 	if tr.TLSClientConfig != nil {
