@@ -17,7 +17,9 @@ const (
 )
 
 type Dialer struct {
-	net.Dialer
+	Dialer interface {
+		Dial(network, addr string) (net.Conn, error)
+	}
 
 	RetryTimes     int
 	RetryDelay     time.Duration

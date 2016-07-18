@@ -19,7 +19,9 @@ import (
 )
 
 type MultiDialer struct {
-	net.Dialer
+	Dialer interface {
+		Dial(network, addr string) (net.Conn, error)
+	}
 	DisableIPv6       bool
 	ForceIPv6         bool
 	SSLVerify         bool
@@ -312,7 +314,12 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 	default:
 		break
 	}
-	return tls.DialWithDialer(&d.Dialer, network, address, d.TLSConfig)
+
+	if dialer, ok := d.Dialer.(*net.Dialer); ok {
+		return tls.DialWithDialer(dialer, network, address, d.TLSConfig)
+	} else {
+		return tls.Dial(network, address, d.TLSConfig)
+	}
 }
 
 func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.Config) (net.Conn, error) {

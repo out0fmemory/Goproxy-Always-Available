@@ -210,7 +210,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	md := &dialer.MultiDialer{
-		Dialer:            *d,
+		Dialer:            d,
 		DisableIPv6:       config.DisableIPv6,
 		ForceIPv6:         config.ForceIPv6,
 		SSLVerify:         config.SSLVerify,

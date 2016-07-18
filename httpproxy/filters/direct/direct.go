@@ -73,7 +73,7 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	d := &dialer.Dialer{
-		Dialer: net.Dialer{
+		Dialer: &net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
