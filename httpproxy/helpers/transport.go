@@ -86,14 +86,14 @@ func CloneRequest(r *http.Request) *http.Request {
 	return r2
 }
 
-func ConfigureProxy(t *http.Transport, fixedURL *url.URL, forward proxy.Dialer) error {
+func ConfigureProxy(t *http.Transport, fixedURL *url.URL, forward proxy.Dialer, resolver proxy.Resolver) error {
 	switch fixedURL.Scheme {
 	case "socks", "socks5", "sock4":
 		if forward == nil {
 			forward = proxy.Direct
 		}
 
-		dialer, err := proxy.FromURL(fixedURL, forward)
+		dialer, err := proxy.FromURL(fixedURL, forward, resolver)
 		if err != nil {
 			return err
 		}

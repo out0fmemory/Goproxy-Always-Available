@@ -13,11 +13,12 @@ import (
 )
 
 // SOCKS4 returns a Dialer that makes SOCKSv4 connections to the given address
-func SOCKS4(network, addr string, forward Dialer) (Dialer, error) {
+func SOCKS4(network, addr string, forward Dialer, resolver Resolver) (Dialer, error) {
 	s := &socks4{
-		network: network,
-		addr:    addr,
-		forward: forward,
+		network:  network,
+		addr:     addr,
+		forward:  forward,
+		resolver: resolver,
 	}
 
 	return s, nil
@@ -26,6 +27,7 @@ func SOCKS4(network, addr string, forward Dialer) (Dialer, error) {
 type socks4 struct {
 	network, addr string
 	forward       Dialer
+	resolver      Resolver
 }
 
 const (

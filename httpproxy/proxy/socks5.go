@@ -13,11 +13,12 @@ import (
 
 // SOCKS5 returns a Dialer that makes SOCKSv5 connections to the given address
 // with an optional username and password. See RFC 1928.
-func SOCKS5(network, addr string, auth *Auth, forward Dialer) (Dialer, error) {
+func SOCKS5(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (Dialer, error) {
 	s := &socks5{
-		network: network,
-		addr:    addr,
-		forward: forward,
+		network:  network,
+		addr:     addr,
+		forward:  forward,
+		resolver: resolver,
 	}
 	if auth != nil {
 		s.user = auth.User
@@ -31,7 +32,7 @@ type socks5 struct {
 	user, password string
 	network, addr  string
 	forward        Dialer
-	resolver       func(host string) string
+	resolver       Resolver
 }
 
 const socks5Version = 5
@@ -94,7 +95,10 @@ func (s *socks5) Dial(network, addr string) (net.Conn, error) {
 	}
 
 	if s.resolver != nil {
-		host = s.resolver(host)
+		hosts, err := s.resolver.LookupHost(host)
+		if err == nil && len(hosts) > 0 {
+			host = hosts[0]
+		}
 	}
 
 	// the size here is just an estimate
