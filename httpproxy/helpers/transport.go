@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/phuslu/net/proxy"
+	"../proxy"
 )
 
 var (
