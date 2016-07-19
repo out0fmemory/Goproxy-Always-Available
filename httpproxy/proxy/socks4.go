@@ -5,7 +5,6 @@
 package proxy
 
 import (
-	"encoding/binary"
 	"errors"
 	"io"
 	"net"
@@ -13,10 +12,11 @@ import (
 )
 
 // SOCKS4 returns a Dialer that makes SOCKSv4 connections to the given address
-func SOCKS4(network, addr string, forward Dialer, resolver Resolver) (Dialer, error) {
+func SOCKS4(network, addr string, is4a bool, forward Dialer, resolver Resolver) (Dialer, error) {
 	s := &socks4{
 		network:  network,
 		addr:     addr,
+		is4a:     is4a,
 		forward:  forward,
 		resolver: resolver,
 	}
@@ -26,15 +26,14 @@ func SOCKS4(network, addr string, forward Dialer, resolver Resolver) (Dialer, er
 
 type socks4 struct {
 	network, addr string
+	is4a          bool
 	forward       Dialer
 	resolver      Resolver
 }
 
 const (
 	socks4Version        = 4
-	socks4IP4            = 1
 	socks4Connect        = 1
-	socks4Ident          = "nobody@0.0.0.0"
 	socks4Granted        = 0x5a
 	socks4Rejected       = 0x5b
 	socks4IdentdRequired = 0x5c
@@ -60,6 +59,12 @@ func (s *socks4) Dial(network, addr string) (net.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
+	closeConn := &conn
+	defer func() {
+		if closeConn != nil {
+			(*closeConn).Close()
+		}
+	}()
 
 	host, portStr, err := net.SplitHostPort(addr)
 	if err != nil {
@@ -80,21 +85,21 @@ func (s *socks4) Dial(network, addr string) (net.Conn, error) {
 		}
 	}
 
-	ip, err := net.ResolveIPAddr("ip4", host)
-	if err != nil {
-		return nil, err
+	buf := make([]byte, 0, 1024)
+
+	buf = append(buf, socks4Version, socks4Connect)
+	buf = append(buf, byte(port>>8), byte(port))
+	if s.is4a {
+		buf = append(buf, 0, 0, 0, 1, 0)
+		buf = append(buf, []byte(host+"\x00")...)
+	} else {
+		ip, err := net.ResolveIPAddr("ip4", host)
+		if err != nil {
+			return nil, err
+		}
+		ip4 := ip.IP.To4()
+		buf = append(buf, ip4[0], ip4[1], ip4[2], ip4[3], 0)
 	}
-	ip4 := ip.IP.To4()
-
-	var bport [2]byte
-	binary.BigEndian.PutUint16(bport[:], uint16(port))
-
-	var buf []byte
-	buf = []byte{socks4Version, socks4Connect}
-	buf = append(buf, bport[:]...)
-	buf = append(buf, ip4...)
-	buf = append(buf, socks4Ident...)
-	buf = append(buf, 0)
 
 	_, err = conn.Write(buf)
 	if err != nil {
@@ -109,12 +114,13 @@ func (s *socks4) Dial(network, addr string) (net.Conn, error) {
 
 	switch code := resp[1]; code {
 	case socks4Granted:
-		return conn, nil
+		break
 	case socks4Rejected, socks4IdentdRequired, socks4IdentdFailed:
-		conn.Close()
 		return nil, errors.New("proxy: SOCKS4 proxy at " + s.addr + " failed to connect: " + socks4Errors[code-socks4Granted])
 	default:
-		conn.Close()
 		return nil, errors.New("proxy: SOCKS4 proxy at " + s.addr + " failed to connect: errno 0x" + strconv.FormatInt(int64(code), 16))
 	}
+
+	closeConn = nil
+	return conn, nil
 }

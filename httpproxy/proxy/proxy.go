@@ -86,7 +86,9 @@ func FromURL(u *url.URL, forward Dialer, resolver Resolver) (Dialer, error) {
 	case "socks5", "socks":
 		return SOCKS5("tcp", u.Host, auth, forward, resolver)
 	case "socks4":
-		return SOCKS4("tcp", u.Host, forward, resolver)
+		return SOCKS4("tcp", u.Host, false, forward, resolver)
+	case "socks4a":
+		return SOCKS4("tcp", u.Host, true, forward, resolver)
 	case "http", "http1":
 		return HTTP1("tcp", u.Host, auth, forward, resolver)
 	}
