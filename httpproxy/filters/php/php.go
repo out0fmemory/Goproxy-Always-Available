@@ -151,14 +151,21 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
 
-		dialer, err := proxy.FromURL(fixedURL, d, nil)
-		if err != nil {
-			glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
-		}
+		switch fixedURL.Scheme {
+		case "http":
+			tr.Proxy = http.ProxyURL(fixedURL)
+			tr.Dial = nil
+			tr.DialTLS = nil
+		default:
+			dialer, err := proxy.FromURL(fixedURL, d, nil)
+			if err != nil {
+				glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
+			}
 
-		tr.Dial = dialer.Dial
-		tr.DialTLS = nil
-		tr.Proxy = nil
+			tr.Dial = dialer.Dial
+			tr.DialTLS = nil
+			tr.Proxy = nil
+		}
 	}
 
 	if tr.TLSClientConfig != nil {
