@@ -38,6 +38,25 @@ type http1 struct {
 	resolver       Resolver
 }
 
+type preReaderConn struct {
+	net.Conn
+	data []byte
+}
+
+func (r *preReaderConn) Read(b []byte) (int, error) {
+	if r.data == nil {
+		return r.Conn.Read(b)
+	} else {
+		n := copy(b, r.data)
+		if n < len(r.data) {
+			r.data = r.data[n:]
+		} else {
+			r.data = nil
+		}
+		return n, nil
+	}
+}
+
 // Dial connects to the address addr on the network net via the HTTP1 proxy.
 func (h *http1) Dial(network, addr string) (net.Conn, error) {
 	switch network {
@@ -89,21 +108,26 @@ func (h *http1) Dial(network, addr string) (net.Conn, error) {
 		return nil, errors.New("proxy: failed to write greeting to HTTP proxy at " + h.addr + ": " + err.Error())
 	}
 
-	buf := make([]byte, 0, 2048)
-	b1 := make([]byte, 1)
+	buf := make([]byte, 2048)
+	b0 := buf
+	total := 0
 
 	for {
-		_, err := conn.Read(b1)
+		n, err := conn.Read(buf)
 		if err != nil {
 			return nil, err
 		}
-		buf = append(buf, b1[0])
-		if bytes.HasSuffix(buf, []byte("\r\n\r\n")) {
+		total += n
+		buf = buf[n:]
+
+		if i := bytes.Index(b0, []byte("\r\n\r\n")); i > 0 {
+			conn = &preReaderConn{conn, b0[i+4 : total]}
+			b0 = b0[:i+4]
 			break
 		}
 	}
 
-	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(buf)), nil)
+	resp, err := http.ReadResponse(bufio.NewReader(bytes.NewReader(b0)), nil)
 	if err != nil {
 		return nil, err
 	}
