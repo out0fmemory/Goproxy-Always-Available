@@ -98,6 +98,9 @@ func (s *socks4) Dial(network, addr string) (net.Conn, error) {
 			return nil, err
 		}
 		ip4 := ip.IP.To4()
+		if len(ip4) < 4 {
+			return nil, errors.New("proxy: resolve ip address out of range: " + ip.String())
+		}
 		buf = append(buf, ip4[0], ip4[1], ip4[2], ip4[3], 0)
 	}
 
