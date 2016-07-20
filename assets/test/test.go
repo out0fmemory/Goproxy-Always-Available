@@ -5,5 +5,5 @@ import (
 )
 
 func main() {
-	fmt.Printf("%#v\n", "foo")
+	fmt.Printf("%#v, err=%#v\n", "foo", nil)
 }
