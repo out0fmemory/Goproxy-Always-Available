@@ -5,8 +5,11 @@ package helpers
 import (
 	"net"
 	"os"
+	"strings"
 	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows/registry"
 )
 
 func lookup(name string, family int32) ([]net.IPAddr, error) {
@@ -60,4 +63,27 @@ func LookupIP(host string) ([]net.IP, error) {
 	}
 
 	return addrs1, err
+}
+
+func GetLocalNameServers() ([]string, error) {
+	key, err := registry.OpenKey(registry.LOCAL_MACHINE, `SYSTEM\\CurrentControlSet\\Services\\Tcpip\\Parameters`, registry.QUERY_VALUE)
+	if err != nil {
+		return nil, err
+	}
+	defer key.Close()
+
+	nameservers := make([]string, 0, 4)
+	for _, name := range []string{`NameServer`, `DhcpNameServer`} {
+		s, _, err := key.GetStringValue(name)
+		if err != nil {
+			return nil, err
+		}
+		for _, server := range strings.Split(s, " ") {
+			if server != "" {
+				nameservers = append(nameservers, server)
+			}
+		}
+	}
+
+	return nameservers, nil
 }
