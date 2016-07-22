@@ -3,24 +3,20 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"compress/flate"
+	"compress/gzip"
+	"crypto/tls"
 	"encoding/binary"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"net/url"
 	"os"
-	"reflect"
 	"strconv"
 	"strings"
-	"sync"
 	"time"
-	"unsafe"
-
-	"github.com/klauspost/compress/flate"
-	"github.com/klauspost/compress/gzip"
-	"github.com/valyala/fasthttp"
-	"github.com/valyala/fasthttp/reuseport"
 )
 
 const (
@@ -29,14 +25,30 @@ const (
 )
 
 var (
-	logger          = log.New(os.Stdout, "index.go: ", 0)
-	paramsPreifx    = "X-Urlfetch-"
-	flateReaderPool sync.Pool
-	gzipReaderPool  sync.Pool
-	bytesBufferPool sync.Pool
+	secureTransport *http.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+		},
+		TLSHandshakeTimeout: 30 * time.Second,
+		MaxIdleConnsPerHost: 4,
+		DisableCompression:  false,
+	}
+
+	insecureTransport *http.Transport = &http.Transport{
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+			ClientSessionCache: tls.NewLRUClientSessionCache(1000),
+		},
+		TLSHandshakeTimeout: 30 * time.Second,
+		MaxIdleConnsPerHost: 4,
+		DisableCompression:  false,
+	}
 )
 
 func main() {
+	http.HandleFunc("/", handler)
+
 	parts := []string{"", "8080"}
 
 	for i, keys := range [][]string{{"VCAP_APP_HOST", "HOST"}, {"VCAP_APP_PORT", "PORT"}} {
@@ -49,28 +61,14 @@ func main() {
 
 	addr := strings.Join(parts, ":")
 	fmt.Fprintf(os.Stdout, "Start ListenAndServe on %v\n", addr)
-
-	// windows
-	// if err := fasthttp.ListenAndServe(addr, handler); err != nil {
-	// 	panic(err)
-	// }
-
-	listener, err := reuseport.Listen("tcp4", addr)
+	err := http.ListenAndServe(addr, nil)
 	if err != nil {
-		panic(err)
-	}
-	defer listener.Close()
-
-	if err := fasthttp.Serve(listener, handler); err != nil {
 		panic(err)
 	}
 }
 
-func ReadRequest(li *io.LimitedReader) (req *fasthttp.Request, err error) {
-	req = fasthttp.AcquireRequest()
-
-	r := acquireFlateReader(li)
-	defer releaseFlateReader(r)
+func ReadRequest(r io.Reader) (req *http.Request, err error) {
+	req = new(http.Request)
 
 	scanner := bufio.NewScanner(r)
 	if scanner.Scan() {
@@ -80,15 +78,19 @@ func ReadRequest(li *io.LimitedReader) (req *fasthttp.Request, err error) {
 			err = fmt.Errorf("Invaild Request Line: %#v", line)
 			return
 		}
-		req.Header.SetMethod(parts[0])
-		req.SetRequestURI(parts[1])
 
-		if u, er := url.Parse(parts[1]); er != nil {
-			logger.Printf("URL Parse error: %#v, when read request.", er)
+		req.Method = parts[0]
+		req.RequestURI = parts[1]
+		req.Proto = "HTTP/1.1"
+		req.ProtoMajor = 1
+		req.ProtoMinor = 1
+
+		if req.URL, err = url.Parse(req.RequestURI); err != nil {
 			return
-		} else {
-			req.Header.Set("Host", u.Host)
 		}
+		req.Host = req.URL.Host
+
+		req.Header = http.Header{}
 	}
 
 	for scanner.Scan() {
@@ -97,180 +99,201 @@ func ReadRequest(li *io.LimitedReader) (req *fasthttp.Request, err error) {
 		if len(parts) != 2 {
 			continue
 		}
+
 		key := strings.TrimSpace(parts[0])
 		value := strings.TrimSpace(parts[1])
-		req.Header.Set(key, value)
+		req.Header.Add(key, value)
 	}
 
 	if err = scanner.Err(); err != nil {
 		// ignore
 	}
+
+	if cl := req.Header.Get("Content-Length"); cl != "" {
+		if req.ContentLength, err = strconv.ParseInt(cl, 10, 64); err != nil {
+			return
+		}
+	}
+
+	req.Host = req.URL.Host
+	if req.Host == "" {
+		req.Host = req.Header.Get("Host")
+	}
+
 	return
 }
 
-func handler(ctx *fasthttp.RequestCtx) {
+func httpError(rw http.ResponseWriter, err string, code int) {
+	rw.WriteHeader(http.StatusOK)
+	fmt.Fprintf(rw, "HTTP/1.1 %d\r\n", code)
+	fmt.Fprintf(rw, "Content-Length: %d\r\n", len(err))
+	fmt.Fprintf(rw, "Content-Type: text/plain\r\n")
+	io.WriteString(rw, "\r\n")
+	io.WriteString(rw, err)
+}
+
+func handler(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
-	body := acquireBytesBuffer()
-	body.Write(ctx.Request.Body())
-	defer releaseBytesBuffer(body)
+	logger := log.New(os.Stdout, "index.go: ", 0)
 
 	var hdrLen uint16
-	if err := binary.Read(body, binary.BigEndian, &hdrLen); err != nil {
-		logger.Printf("binary.Read error :%#v", err)
-		ctx.Error("binary.Read:"+err.Error(), fasthttp.StatusBadRequest)
+	if err := binary.Read(req.Body, binary.BigEndian, &hdrLen); err != nil {
+		parts := strings.Split(req.Host, ".")
+		switch len(parts) {
+		case 1, 2:
+			httpError(rw, "fetchserver:"+err.Error(), http.StatusBadRequest)
+		default:
+			u := *req.URL
+			if u.Scheme == "" {
+				u.Scheme = "http"
+			}
+			u.Host = fmt.Sprintf("phuslu-%d.%s", time.Now().Nanosecond(), strings.Join(parts[1:], "."))
+			if resp, err := http.Get(u.String()); err == nil {
+				defer resp.Body.Close()
+				for key, values := range resp.Header {
+					for _, value := range values {
+						rw.Header().Add(key, value)
+					}
+				}
+				rw.WriteHeader(resp.StatusCode)
+				io.Copy(rw, resp.Body)
+			} else {
+				u.Host = "www." + strings.Join(parts[1:], ".")
+				http.Redirect(rw, req, u.String(), 301)
+			}
+		}
 		return
 	}
 
-	req1, err := ReadRequest(&io.LimitedReader{R: body, N: int64(hdrLen)})
-	req1.SetBody(body.Bytes())
+	req1, err := ReadRequest(flate.NewReader(&io.LimitedReader{R: req.Body, N: int64(hdrLen)}))
+	req1.Body = req.Body
 
-	if ce := b2s(req1.Header.Peek("Content-Encoding")); ce != "" {
+	if ce := req1.Header.Get("Content-Encoding"); ce != "" {
 		var r io.Reader
-		bb := acquireBytesBuffer()
-		bb.Write(req1.Body())
-		defer releaseBytesBuffer(bb)
 		switch ce {
 		case "deflate":
-			r = acquireFlateReader(bb)
-			defer releaseFlateReader(r.(io.ReadCloser))
+			r = flate.NewReader(req1.Body)
 		case "gzip":
-			if r, err = acquireGzipReader(bb); err != nil {
-				ctx.Error("fetchserver:"+err.Error(), fasthttp.StatusBadRequest)
+			if r, err = gzip.NewReader(req1.Body); err != nil {
+				httpError(rw, "fetchserver:"+err.Error(), http.StatusBadRequest)
 				return
 			}
-			defer releaseGzipReader(r.(*gzip.Reader))
 		default:
-			ctx.Error("fetchserver:"+fmt.Sprintf("Unsupported Content-Encoding: %#v", ce), fasthttp.StatusBadRequest)
+			httpError(rw, "fetchserver:"+fmt.Sprintf("Unsupported Content-Encoding: %#v", ce), http.StatusBadRequest)
 			return
 		}
 		data, err := ioutil.ReadAll(r)
 		if err != nil {
-			req1.ResetBody()
-			ctx.Error("fetchserver:"+err.Error(), fasthttp.StatusBadRequest)
+			req1.Body.Close()
+			httpError(rw, "fetchserver:"+err.Error(), http.StatusBadRequest)
 			return
 		}
-		req1.ResetBody()
-		req1.SetBody(data)
-
-		req1.Header.Set("Content-Length", strconv.FormatInt(int64(len(data)), 10))
+		req1.Body.Close()
+		req1.Body = ioutil.NopCloser(bytes.NewReader(data))
+		req1.ContentLength = int64(len(data))
+		req1.Header.Set("Content-Length", strconv.FormatInt(req1.ContentLength, 10))
 		req1.Header.Del("Content-Encoding")
 	}
-	logger.Printf("%s \"%s %s\" - -", ctx.RemoteAddr(), b2s(req1.Header.Method()), b2s(req1.URI().FullURI()))
 
+	logger.Printf("%s \"%s %s %s\" - -", req.RemoteAddr, req1.Method, req1.URL.String(), req1.Proto)
+
+	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
 	params := map[string]string{}
-	req1.Header.VisitAll(func(key, value []byte) {
-		if strings.HasPrefix(b2s(key), paramsPreifx) {
-			params[strings.ToLower(b2s(key[len(paramsPreifx):]))] = b2s(value)
+	for key, values := range req1.Header {
+		if strings.HasPrefix(key, paramsPreifx) {
+			params[strings.ToLower(key[len(paramsPreifx):])] = values[0]
 		}
-	})
+	}
 
 	for _, key := range params {
 		req1.Header.Del(paramsPreifx + key)
 	}
+
 	if Password != "" {
 		if password, ok := params["password"]; !ok || password != Password {
-			ctx.Error(fmt.Sprintf("fetchserver: wrong password %#v", password), fasthttp.StatusForbidden)
+			httpError(rw, fmt.Sprintf("fetchserver: wrong password %#v", password), http.StatusForbidden)
 			return
 		}
 	}
 
-	var resp = fasthttp.AcquireResponse()
+	transport := insecureTransport
+	if v, ok := params["sslverify"]; ok && v == "1" {
+		transport = secureTransport
+	}
+
+	var resp *http.Response
 	for i := 0; i < 2; i++ {
-		err = fasthttp.Do(req1, resp)
+		resp, err = transport.RoundTrip(req1)
 		if err == nil {
 			break
 		}
-		if err != nil {
-			logger.Printf("fasthttp Do error :%#v", err)
+
+		if resp != nil && resp.Body != nil {
+			resp.Body.Close()
+		}
+
+		if err1, ok := err.(interface {
+			Temporary() bool
+		}); ok && err1.Temporary() {
 			time.Sleep(1 * time.Second)
 			continue
 		}
-		ctx.Error("fetchserver:"+err.Error(), fasthttp.StatusBadGateway)
+
+		httpError(rw, "fetchserver:"+err.Error(), http.StatusBadGateway)
 		return
 	}
-	go fasthttp.ReleaseRequest(req1)
-	defer fasthttp.ReleaseResponse(resp)
-	ctx.SetStatusCode(fasthttp.StatusOK)
-	ctx.Write(resp.Header.Header())
-	ctx.Write(resp.Body())
-}
+	defer resp.Body.Close()
 
-func acquireBytesBuffer() *bytes.Buffer {
-	b := bytesBufferPool.Get()
-	if b == nil {
-		return bytes.NewBuffer(make([]byte, 0, 512))
+	// rewise resp.Header
+	resp.Header.Del("Transfer-Encoding")
+	if resp.ContentLength > 0 {
+		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
-	return b.(*bytes.Buffer)
-}
 
-func releaseBytesBuffer(b *bytes.Buffer) {
-	b.Reset()
-	bytesBufferPool.Put(b)
-}
-
-func acquireFlateReader(r io.Reader) io.ReadCloser {
-	v := flateReaderPool.Get()
-	if v == nil {
-		fr := flate.NewReader(r)
-		return fr
+	needCrypto := false
+	if v, ok := params["https"]; !ok || v == "0" {
+		switch strings.Split(resp.Header.Get("Content-Type"), "/")[0] {
+		case "image", "audio", "video":
+			break
+		default:
+			needCrypto = true
+		}
 	}
-	fr := v.(io.ReadCloser)
-	if err := resetFlateReader(fr, r); err != nil {
-		return nil
+
+	var w io.Writer = rw
+	if needCrypto {
+		rw.Header().Set("Content-Type", "image/gif")
+		w = newXorWriter(rw, []byte(Password))
+	} else {
+		rw.Header().Set("Content-Type", "image/x-png")
 	}
-	return fr
+
+	rw.WriteHeader(http.StatusOK)
+
+	fmt.Fprintf(w, "%s %s\r\n", resp.Proto, resp.Status)
+	resp.Header.Write(w)
+	io.WriteString(w, "\r\n")
+	io.Copy(w, resp.Body)
 }
 
-func releaseFlateReader(zr io.ReadCloser) {
-	zr.Close()
-	flateReaderPool.Put(zr)
+type xorWriter struct {
+	w   io.Writer
+	key []byte
 }
 
-func resetFlateReader(zr io.ReadCloser, r io.Reader) error {
-	zrr, ok := zr.(flate.Resetter)
-	if !ok {
-		panic("BUG: flate.Reader doesn't implement flate.Resetter???")
+func newXorWriter(w io.Writer, key []byte) io.Writer {
+	x := new(xorWriter)
+	x.w = w
+	x.key = key
+	return x
+}
+
+func (x *xorWriter) Write(p []byte) (n int, err error) {
+	c := x.key[0]
+	for i := 0; i < len(p); i++ {
+		p[i] ^= c
 	}
-	return zrr.Reset(r, nil)
-}
 
-func acquireGzipReader(r io.Reader) (*gzip.Reader, error) {
-	v := gzipReaderPool.Get()
-	if v == nil {
-		return gzip.NewReader(r)
-	}
-	zr := v.(*gzip.Reader)
-	if err := zr.Reset(r); err != nil {
-		return nil, err
-	}
-	return zr, nil
-}
-
-func releaseGzipReader(zr *gzip.Reader) {
-	zr.Close()
-	gzipReaderPool.Put(zr)
-}
-
-// b2s converts byte slice to a string without memory allocation.
-// See https://groups.google.com/forum/#!msg/Golang-Nuts/ENgbUzYvCuU/90yGx7GUAgAJ .
-//
-// Note it may break if string and/or slice header will change
-// in the future go versions.
-func b2s(b []byte) string {
-	return *(*string)(unsafe.Pointer(&b))
-}
-
-// s2b converts string to a byte slice without memory allocation.
-//
-// Note it may break if string and/or slice header will change
-// in the future go versions.
-func s2b(s string) []byte {
-	sh := (*reflect.StringHeader)(unsafe.Pointer(&s))
-	bh := reflect.SliceHeader{
-		Data: sh.Data,
-		Len:  sh.Len,
-		Cap:  sh.Len,
-	}
-	return *(*[]byte)(unsafe.Pointer(&bh))
+	return x.w.Write(p)
 }
