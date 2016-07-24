@@ -22,7 +22,7 @@
 		},
 		"Proxy": {
 			"Enabled": false,
-			"URL": "http://127.0.0.1:1080",
+			"URL": "http://127.0.0.1:8087",
 		},
 		"DisableKeepAlives": false,
 		"DisableCompression": false,

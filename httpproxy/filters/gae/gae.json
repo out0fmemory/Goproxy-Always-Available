@@ -137,7 +137,7 @@
 		},
 		"Proxy": {
 			"Enabled": false,
-			"URL": "http://127.0.0.1:1080",
+			"URL": "socks5://127.0.0.1:1080",
 		},
 		"DisableCompression": false,
 		"DisableKeepAlives": false,
