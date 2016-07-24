@@ -1,7 +1,7 @@
 {
 	"Servers": [
 		{
-			"Url": "http://yourapp.com/",
+			"Url": "https://example.com/",
 			"Password": "123456",
 			"SSLVerify": false,
 			"Host": "",
