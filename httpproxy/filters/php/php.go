@@ -152,7 +152,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 
 		switch fixedURL.Scheme {
-		case "http":
+		case "http", "https":
 			tr.Proxy = http.ProxyURL(fixedURL)
 			tr.Dial = nil
 			tr.DialTLS = nil
