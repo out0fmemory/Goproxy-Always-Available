@@ -75,8 +75,9 @@ if [ x"$LOCALVERSION" == x"$REMOTEVERSION" ]; then
 	exit -1
 fi
 
-echo "2. Downloading ${FILENAME}"
 FILENAME=${FILENAME_PREFIX}${REMOTEVERSION}${FILENAME_SUFFIX}
+
+echo "2. Downloading ${FILENAME}"
 curl -kL https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} | ([[ "${FILENAME_SUFFIX}" == *.xz ]] && xz -d || bzip2 -d)  | tar xvp --strip-components=1
 
 echo "3. Done"
