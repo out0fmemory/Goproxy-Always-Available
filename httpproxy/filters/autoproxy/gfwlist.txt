@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 4GJkZSgBWf1EY+rgnVWXGg
+! Checksum: 8GAowVwYZ4oa/Wi/vYI4Ww
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 19 Jul 2016 18:16:49 +0800
+! Last Modified: Tue, 26 Jul 2016 09:39:16 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -35,6 +35,8 @@
 .casinobellini.com
 ||casinobellini.com
 ||centauro.com.br
+||images.comico.tw
+||static.comico.tw
 ||crossfire.co.kr
 ||darpa.mil
 ||desipro.de
@@ -90,6 +92,7 @@
 ||khatrimaza.org
 ||leisurepro.com
 ||longtoes.com
+||lovetvshow.com
 |http://www.m-sport.co.uk
 ||macgamestore.com
 ||madonna-av.com
@@ -365,6 +368,7 @@ china-mmm.sa.com
 .1688.com.au
 .173ng.com
 ||173ng.com
+.177pic.info
 .17t17p.com
 18onlygirls.com
 .18virginsex.com
@@ -1766,6 +1770,8 @@ filmingfortibet.org
 findmespot.com
 .fingerdaily.com
 finler.net
+.firefoxfan.cc
+|http://firefoxfan.cc
 .fireofliberty.org
 ||fireofliberty.org
 .firetweet.io
@@ -2431,7 +2437,14 @@ guruonline.hk
 .h-moe.com
 |http://h-moe.com
 h1n1china.org
+.hacg.club
+||hacg.club
+.hacg.in
+|http://hacg.in
+.hacg.li
+|http://hacg.li
 .hacg.red
+|http://hacg.red
 .hacken.cc/bbs
 ||hackthatphone.net
 hahlo.com
@@ -2578,6 +2591,8 @@ china.hket.com
 ||hkfaa.com
 hkfreezone.com
 hkfront.org
+m.hkgalden.com
+|https://m.hkgalden.com
 hkgolden.com
 .hkgreenradio.org/home
 .hkheadline.com*blog
@@ -3116,6 +3131,7 @@ abitno.linpie.com/use-ipv6-to-fuck-gfw
 linuxtoy.org/archives/installing-west-chamber-on-ubuntu
 .lionsroar.com
 .lipuman.com
+||greatfire.us7.list-manage.com
 ||listentoyoutube.com
 listorious.com
 ||liudejun.com
@@ -3283,6 +3299,7 @@ metacafe.com/watch
 .metroradio.com.hk
 |http://metroradio.com.hk
 meyou.jp
+.meyul.com
 ||mgoon.com
 ||mgstage.com
 ||mh4u.org
@@ -4144,6 +4161,7 @@ savevid.com
 ||scihub.org
 .scmp.com
 .scmpchinese.com
+||scramble.io
 .scribd.com
 ||scriptspot.com
 seapuff.com
@@ -4360,6 +4378,7 @@ sokamonline.com
 .sopcast.org
 .sorazone.net
 ||sos.org
+bbs.sou-tong.org
 .soubory.com
 |http://soubory.com
 .soul-plus.net
@@ -4413,6 +4432,7 @@ usinfo.state.gov
 .state168.com
 ||static-economist.com
 ||stc.com.sa
+|http://steamcommunity.com/groups/LibetTibet
 ||steel-storm.com
 .stepchina.com
 ||stepmania.com
@@ -4521,6 +4541,7 @@ tahr.org.tw
 taiwankiss.com
 taiwannation.com
 taiwannation.com.tw
+||taiwanncf.org.tw
 ||taiwannews.com.tw
 |http://www.taiwanonline.cc/
 ||taiwantoday.tw
@@ -4621,6 +4642,7 @@ thevivekspot.com
 .thinkingtaiwan.com
 .thisav.com
 |http://thisav.com
+.thlib.org
 ||thomasbernhard.org
 threatchaos.com
 ||throughnightsfire.com
@@ -4649,6 +4671,7 @@ tibet.nu
 .tibet.org
 ||tibet.org
 tibet.org.tw
+.tibet.to
 .tibet-envoy.eu
 ||tibet-envoy.eu
 .tibet-foundation.org
@@ -4688,6 +4711,7 @@ tibetanfeministcollective.org
 ||tibetanyouthcongress.org
 .tibetcharity.dk
 tibetcharity.in
+.tibetchild.org
 .tibetcity.com
 .tibetcorps.org
 .tibetexpress.net
@@ -4727,6 +4751,7 @@ tibetsites.com
 .tibetsun.com
 .tibetsupportgroup.org
 |http://tibetsupportgroup.org
+.tibettelegraph.com
 tibettimes.net
 ||tibetwrites.org
 .ticket.com.tw
@@ -4823,6 +4848,8 @@ trulyergonomic.com
 .truth101.co.tv
 |http://truth101.co.tv
 ||truthcn.com
+.truthontour.org
+|http://truthontour.org
 .truveo.com
 .tsctv.net
 .tsemtulku.com
@@ -5062,6 +5089,8 @@ twurl.nl
 ||embr.in
 
 !--------------------UU-------------------------
+.ubddns.org
+|http://ubddns.org
 ||uberproxy.net
 .uc-japan.org
 ||uc-japan.org
@@ -5070,8 +5099,8 @@ twurl.nl
 ||ucdc1998.org
 |http://hum*.uchicago.edu/faculty/ywang/history
 ||uderzo.it
-||udn.com
 .udn.com
+||udn.com
 udnbkk.com/bbs
 ||uforadio.com.tw
 ufreevpn.com
@@ -5151,6 +5180,8 @@ usus.cc
 .utopianpal.com
 ||utopianpal.com
 .uu-gg.com
+.uvwxyz.xyz
+|http://uvwxyz.xyz
 .uwants.com
 .uwants.net
 uyghur.co.uk
