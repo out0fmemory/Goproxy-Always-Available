@@ -206,7 +206,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	for _, key := range params {
+	for key, _  := range params {
 		req1.Header.Del(paramsPreifx + key)
 	}
 
