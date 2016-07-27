@@ -32,8 +32,9 @@ type Config struct {
 		RsaBits  int
 		Portable bool
 	}
-	Ports []int
-	Sites []string
+	Ports   []int
+	Ignores []string
+	Sites   []string
 }
 
 type Filter struct {
@@ -42,6 +43,7 @@ type Filter struct {
 	CAExpiry       time.Duration
 	TLSConfigCache lrucache.Cache
 	Ports          map[string]struct{}
+	Ignores        map[string]struct{}
 	Sites          *helpers.HostMatcher
 }
 
@@ -87,11 +89,16 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
 		Ports:          make(map[string]struct{}),
+		Ignores:        make(map[string]struct{}),
 		Sites:          helpers.NewHostMatcher(config.Sites),
 	}
 
 	for _, port := range config.Ports {
 		f.Ports[strconv.Itoa(port)] = struct{}{}
+	}
+
+	for _, ignore := range config.Ignores {
+		f.Ignores[ignore] = struct{}{}
 	}
 
 	return f, nil
@@ -106,9 +113,8 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		return ctx, req, nil
 	}
 
-	if f := filters.GetRoundTripFilter(ctx); f != nil {
-		switch f.FilterName() {
-		case "direct", "vps":
+	if f1 := filters.GetRoundTripFilter(ctx); f1 != nil {
+		if _, ok := f.Ignores[f1.FilterName()]; ok {
 			return ctx, req, nil
 		}
 	}
