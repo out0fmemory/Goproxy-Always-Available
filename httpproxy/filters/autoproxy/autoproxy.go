@@ -74,8 +74,7 @@ type Filter struct {
 	RegionFiltersEnabled bool
 	RegionFiltersRules   map[string]filters.RoundTripFilter
 	RegionLocator        *ip17mon.Locator
-	RegionDNSCache1      lrucache.Cache
-	RegionDNSCache2      lrucache.Cache
+	RegionFilterCache    lrucache.Cache
 	Transport            *http.Transport
 }
 
@@ -183,8 +182,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		}
 		f.RegionFiltersRules = fm
 
-		f.RegionDNSCache1 = lrucache.NewLRUCache(uint(f.Config.RegionFilters.DNSCacheSize))
-		f.RegionDNSCache2 = lrucache.NewLRUCache(uint(f.Config.RegionFilters.DNSCacheSize))
+		f.RegionFilterCache = lrucache.NewLRUCache(uint(f.Config.RegionFilters.DNSCacheSize))
 	}
 
 	if f.GFWListEnabled {
@@ -204,52 +202,33 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		host = h
 	}
 
-	switch {
-	case f.SiteFiltersEnabled:
+	if f.SiteFiltersEnabled {
 		if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
 			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
 		}
-	case f.RegionFiltersEnabled:
-		var ips []string
-		if v, ok := f.RegionDNSCache1.Get(host); ok {
-			ips = v.([]string)
-		} else {
-			ips1, err := net.LookupHost(host)
-			if err != nil {
-				glog.Warningf("%s \"AUTOPROXY RegionFilters net.LookupHost(%#v) error: %v", req.RemoteAddr, host, err)
-			} else {
-				ips = ips1
-				f.RegionDNSCache1.Set(host, ips, time.Now().Add(time.Hour))
-			}
-		}
-		if ips != nil {
+	}
+
+	if f.RegionFiltersEnabled {
+		if f1, ok := f.RegionFilterCache.Get(host); ok {
+			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
+		} else if ips, err := net.LookupHost(host); err == nil {
 			ip := ips[0]
+
 			if strings.Contains(ip, ":") {
 				if f1, ok := f.RegionFiltersRules["ipv6"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPv6 %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
+					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
-			}
-
-			var li *ip17mon.LocationInfo
-			if v, ok := f.RegionDNSCache2.Get(ip); ok {
-				li = v.(*ip17mon.LocationInfo)
-			} else {
-				li1, err := f.RegionLocator.Find(ip)
-				if err != nil {
-					glog.Warningf("%s \"AUTOPROXY RegionFilters f.RegionLocator.Find(%#v) error: %v", req.RemoteAddr, ip, err)
-				} else {
-					li = li1
-					f.RegionDNSCache2.Set(host, li, time.Now().Add(24*time.Hour))
-				}
-			}
-			if li != nil {
+			} else if li, err := f.RegionLocator.Find(ip); err == nil {
 				if f1, ok := f.RegionFiltersRules[li.Country]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, li.Country, req.Method, req.URL.String(), req.Proto, f1)
+					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				} else if f1, ok := f.RegionFiltersRules["default"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Default %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
+					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
 			}
