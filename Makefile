@@ -38,6 +38,7 @@ SOURCES += $(REPO)/README.md
 SOURCES += $(REPO)/httpproxy/httpproxy.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
+SOURCES += $(REPO)/httpproxy/filters/autoproxy/17monipdb.dat
 
 ifeq ($(GOOS)_$(GOARCH), windows_amd64)
 	SOURCES += $(REPO)/assets/packaging/goproxy-gui.exe
