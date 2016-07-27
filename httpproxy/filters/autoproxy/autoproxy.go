@@ -206,6 +206,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
 			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
+			return ctx, req, nil
 		}
 	}
 
