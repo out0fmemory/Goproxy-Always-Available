@@ -106,6 +106,13 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		return ctx, req, nil
 	}
 
+	if f := filters.GetRoundTripFilter(ctx); f != nil {
+		switch f.FilterName() {
+		case "direct", "vps":
+			return ctx, req, nil
+		}
+	}
+
 	host, port, err := net.SplitHostPort(req.RequestURI)
 	if err != nil {
 		return ctx, req, nil

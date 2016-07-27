@@ -198,25 +198,29 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if f.SiteFiltersEnabled {
-		if f1, ok := f.SiteFiltersRules.Lookup(req.Host); ok {
-			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
-			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
-		}
+func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
+	host := req.Host
+	if h, _, err := net.SplitHostPort(req.Host); err == nil {
+		host = h
 	}
 
-	if f.RegionFiltersEnabled {
+	switch {
+	case f.SiteFiltersEnabled:
+		if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
+			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
+			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
+		}
+	case f.RegionFiltersEnabled:
 		var ips []string
-		if v, ok := f.RegionDNSCache1.Get(req.Host); ok {
+		if v, ok := f.RegionDNSCache1.Get(host); ok {
 			ips = v.([]string)
 		} else {
-			ips1, err := net.LookupHost(req.Host)
+			ips1, err := net.LookupHost(host)
 			if err != nil {
-				glog.Warningf("%s \"AUTOPROXY RegionFilters net.LookupHost(%#v) error: %v", req.RemoteAddr, req.Host, err)
+				glog.Warningf("%s \"AUTOPROXY RegionFilters net.LookupHost(%#v) error: %v", req.RemoteAddr, host, err)
 			} else {
 				ips = ips1
-				f.RegionDNSCache1.Set(req.Host, ips, time.Now().Add(time.Hour))
+				f.RegionDNSCache1.Set(host, ips, time.Now().Add(time.Hour))
 			}
 		}
 		if ips != nil {
@@ -224,7 +228,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			if strings.Contains(ip, ":") {
 				if f1, ok := f.RegionFiltersRules["ipv6"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPv6 %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
-					return f1.RoundTrip(ctx, req)
+					filters.SetRoundTripFilter(ctx, f1)
 				}
 			}
 
@@ -237,19 +241,27 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					glog.Warningf("%s \"AUTOPROXY RegionFilters f.RegionLocator.Find(%#v) error: %v", req.RemoteAddr, ip, err)
 				} else {
 					li = li1
-					f.RegionDNSCache2.Set(req.Host, li, time.Now().Add(24*time.Hour))
+					f.RegionDNSCache2.Set(host, li, time.Now().Add(24*time.Hour))
 				}
 			}
 			if li != nil {
 				if f1, ok := f.RegionFiltersRules[li.Country]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, li.Country, req.Method, req.URL.String(), req.Proto, f1)
-					return f1.RoundTrip(ctx, req)
+					filters.SetRoundTripFilter(ctx, f1)
 				} else if f1, ok := f.RegionFiltersRules["default"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Default %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
-					return f1.RoundTrip(ctx, req)
+					filters.SetRoundTripFilter(ctx, f1)
 				}
 			}
 		}
+	}
+
+	return ctx, req, nil
+}
+
+func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	if f := filters.GetRoundTripFilter(ctx); f != nil {
+		return f.RoundTrip(ctx, req)
 	}
 
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {

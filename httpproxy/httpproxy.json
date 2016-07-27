@@ -8,6 +8,7 @@
 		"RequestFilters": [
 			// "auth",
 			// "rewrite",
+			"autoproxy",
 			"stripssl",
 			"autorange",
 		],
