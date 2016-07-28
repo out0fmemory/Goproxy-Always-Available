@@ -1,9 +1,51 @@
 {
 	"ImportPath": "github.com/phuslu/goproxy",
-	"GoVersion": "go1.6",
-	"GodepVersion": "v62",
-	"Packages": [
-		"./..."
-	],
-	"Deps": []
+	"GoVersion": "go1.6.3",
+	"GodepVersion": "v74",
+	"Deps": [
+		{
+			"ImportPath": "github.com/klauspost/compress/flate",
+			"Comment": "v1.0-12-g14eb9c4",
+			"Rev": "14eb9c4951195779ecfbec34431a976de7335b0a"
+		},
+		{
+			"ImportPath": "github.com/klauspost/compress/gzip",
+			"Comment": "v1.0-12-g14eb9c4",
+			"Rev": "14eb9c4951195779ecfbec34431a976de7335b0a"
+		},
+		{
+			"ImportPath": "github.com/klauspost/compress/zlib",
+			"Comment": "v1.0-12-g14eb9c4",
+			"Rev": "14eb9c4951195779ecfbec34431a976de7335b0a"
+		},
+		{
+			"ImportPath": "github.com/klauspost/cpuid",
+			"Comment": "v1.0",
+			"Rev": "09cded8978dc9e80714c4d85b0322337b0a1e5e0"
+		},
+		{
+			"ImportPath": "github.com/klauspost/crc32",
+			"Comment": "v1.0",
+			"Rev": "19b0b332c9e4516a6370a0456e6182c3b5036720"
+		},
+		{
+			"ImportPath": "github.com/valyala/bytebufferpool",
+			"Rev": "8ebd0474e5a2f0a5c7a74ad2bf421a1d1a90264f"
+		},
+		{
+			"ImportPath": "github.com/valyala/fasthttp",
+			"Comment": "v20160617-26-g45697fe",
+			"Rev": "45697fe30a130ec6a54426a069c82f3abe76b63d"
+		},
+		{
+			"ImportPath": "github.com/valyala/fasthttp/fasthttputil",
+			"Comment": "v20160617-26-g45697fe",
+			"Rev": "45697fe30a130ec6a54426a069c82f3abe76b63d"
+		},
+		{
+			"ImportPath": "github.com/valyala/fasthttp/reuseport",
+			"Comment": "v20160617-26-g45697fe",
+			"Rev": "45697fe30a130ec6a54426a069c82f3abe76b63d"
+		}
+	]
 }
