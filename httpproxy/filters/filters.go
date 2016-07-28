@@ -31,11 +31,12 @@ type RegisteredFilter struct {
 
 var (
 	registeredFilters map[string]*RegisteredFilter
-	filters           map[string]Filter
+	newedFilters      map[string]Filter
 )
 
 func init() {
 	registeredFilters = make(map[string]*RegisteredFilter)
+	newedFilters = make(map[string]Filter)
 }
 
 // Register a Filter
@@ -48,20 +49,23 @@ func Register(name string, registeredFilter *RegisteredFilter) error {
 	return nil
 }
 
-// NewFilter creates a new Filter of type "name"
-func NewFilter(name string) (Filter, error) {
-	filter, exists := registeredFilters[name]
-	if !exists {
-		return nil, fmt.Errorf("registeredFilters: Unknown filter %q", name)
-	}
-	return filter.New()
-}
-
 // GetFilter try get a existing Filter of type "name", otherwise create new one
 func GetFilter(name string) (Filter, error) {
-	filter, exists := filters[name]
-	if exists {
-		return filter, nil
+	if f, ok := newedFilters[name]; ok {
+		return f, nil
 	}
-	return NewFilter(name)
+
+	filterNew, ok := registeredFilters[name]
+	if !ok {
+		return nil, fmt.Errorf("registeredFilters: Unknown filter %q", name)
+	}
+
+	filter, err := filterNew.New()
+	if err != nil {
+		return nil, err
+	}
+
+	newedFilters[name] = filter
+
+	return filter, nil
 }
