@@ -13,7 +13,7 @@
 		"DataFile": "17monipdb.dat",
 		"DNSCacheSize": 4096,
 		"Rules": {
-			"default": "gae",
+			"default": "",
 			"ipv6": "direct",
 			"中国": "direct",
 		},

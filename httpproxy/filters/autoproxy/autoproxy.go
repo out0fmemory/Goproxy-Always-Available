@@ -170,6 +170,9 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 		fm := make(map[string]filters.RoundTripFilter)
 		for region, name := range config.RegionFilters.Rules {
+			if name == "" {
+				continue
+			}
 			f, err := filters.GetFilter(name)
 			if err != nil {
 				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, region, err)
@@ -215,6 +218,10 @@ func (f *Filter) FindLocationInfo(ip string) (*ip17mon.LocationInfo, error) {
 }
 
 func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
+	if strings.HasPrefix(req.RequestURI, "/") {
+		return ctx, req, nil
+	}
+
 	host := req.Host
 	if h, _, err := net.SplitHostPort(req.Host); err == nil {
 		host = h
