@@ -128,7 +128,7 @@
 	"Transport": {
 		"Dialer": {
 			"DNSCacheExpiry": 864000,
-			"DNSCacheSize": 81920,
+			"DNSCacheSize": 8192,
 			"SocketReadBuffer": 0,
 			"DualStack": false,
 			"KeepAlive": 180,
