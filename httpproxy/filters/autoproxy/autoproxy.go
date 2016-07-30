@@ -199,10 +199,10 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) FindLocationInfo(ip string) (*ip17mon.LocationInfo, error) {
+func (f *Filter) FindCountryByIP(ip string) (string, error) {
 	li, err := f.RegionLocator.Find(ip)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	//FIXME: Who should be ashamed?
@@ -214,7 +214,7 @@ func (f *Filter) FindLocationInfo(ip string) (*ip17mon.LocationInfo, error) {
 		}
 	}
 
-	return li, nil
+	return li.Country, nil
 }
 
 func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
@@ -247,9 +247,9 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
-			} else if li, err := f.FindLocationInfo(ip); err == nil {
-				if f1, ok := f.RegionFiltersRules[li.Country]; ok {
-					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, li.Country, req.Method, req.URL.String(), req.Proto, f1)
+			} else if country, err := f.FindCountryByIP(ip); err == nil {
+				if f1, ok := f.RegionFiltersRules[country]; ok {
+					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, country, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				} else if f1, ok := f.RegionFiltersRules["default"]; ok {
