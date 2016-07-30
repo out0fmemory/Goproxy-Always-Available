@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 8GAowVwYZ4oa/Wi/vYI4Ww
+! Checksum: 5st6/pLDfXcDu5hn2qdHwA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 26 Jul 2016 09:39:16 +0800
+! Last Modified: Thu, 28 Jul 2016 09:32:24 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -24,6 +24,7 @@
 ||akiba-web.com
 ||alien-ufos.com
 ||altrec.com
+||arena.taipei
 ||asianspiss.com
 ||athenaeizou.com
 ||azubu.tv
@@ -491,6 +492,7 @@ adultfriendfinder.com
 adultkeep.net/peepshow/members/main.htm
 ||advanscene.com
 ||advertfan.com
+.ae.org
 ||aenhancers.com
 ||af.mil
 .afantibbs.com
@@ -1404,6 +1406,8 @@ dharmakara.net
 ||discuss.com.hk
 .discuss4u.com
 disp.cc
+.disqus.com
+||disqus.com
 .dit-inc.us
 ||dit-inc.us
 .dizhidizhi.com
@@ -3464,6 +3468,8 @@ old.nabble.com
 .nakuz.com/bbs
 ||nalandabodhi.org
 ||nalandawest.org
+.namgyal.org
+namgyalmonastery.org
 ||namsisi.com
 .nanyang.com
 ||nanyang.com
@@ -3488,6 +3494,8 @@ news.nationalgeographic.com/news/2014/06/140603-tiananmen-square
 ||navyreserve.navy.mil
 ||nko.navy.mil
 ||usno.navy.mil
+.nbtvpn.com
+|http://nbtvpn.com
 nccwatch.org.tw
 .nch.com.tw
 .ncn.org
@@ -4590,6 +4598,7 @@ tbswd.org
 .tccwonline.org
 .tcewf.org
 tchrd.org
+tcnynj.org
 teamamericany.com
 ||techlifeweb.com
 !--technorati.com
@@ -4751,6 +4760,7 @@ tibetsites.com
 .tibetsun.com
 .tibetsupportgroup.org
 |http://tibetsupportgroup.org
+.tibetswiss.ch
 .tibettelegraph.com
 tibettimes.net
 ||tibetwrites.org
