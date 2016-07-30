@@ -2,9 +2,9 @@
 
 ## 前言   
 
-　　以当前r841正式版为准。以后版本有出入再修改。这是新人入门用的，不是最详细的配置介绍，以能运行能用为准。最主要的配置文件为 gae.json 和 httpproxy.json。没有写到的地方(选项或者配置文件)一般不要修改，如要修改，前提是你理解它的具体作用或者用途。   
+　　以当前r861正式版为准。以后版本有出入再修改。这是新人入门用的，不是最详细的配置介绍，以能运行能用为准。最主要的配置文件为 httpproxy.json 和 gae.json 。没有写到的地方(选项或者配置文件)一般不要修改，如要修改，前提是你理解它的具体作用或者用途。   
 　　注：   
-a．首次运行 GoProxy ，Windows 系统建议用 "右键" --> "以管理员身份运行" ，以解决证书问题(自动寻入证书)。   
+a．首次运行 GoProxy ，Windows 系统建议用 "右键" --> "以管理员身份运行" ，以解决证书问题(自动导入证书)。   
 b．当前版本已支持 autorange 和 http2 。默认配置已开启这两项。   
 c．当前版本格式已较宽松，即末尾有无逗号都可以。如："ID1","ID2","ID3", 和 "ID1","ID2","ID3" 效果一样。   
 d．当前版本支持 xxx.user.json 这种命名格式文件(即，用户配置文件)。升级最新版时可以直接覆盖掉原来的 xxx.json 。   
@@ -27,7 +27,101 @@ d．当前版本支持 xxx.user.json 这种命名格式文件(即，用户配置
 
 e．善用搜索。礼貌提问。提问之前最好搜索一下。没有人有问答你问题的义务。别人都很忙，别人时间都是宝贵的。   
 f．不要使用 Windows 系统自带的“记事本”来修改任何配置文件，容易出错(大多数是编码问题)。推荐用上面两个编辑器来修改。   
-g．当前版本已支持双斜杠 "//" 作为注释符号。   
+g．当前版本已支持双斜杠 "//" 作为注释符号。去掉注释符号即使用，加上注释符号即关闭该功能。   
+
+## httpproxy.json 配置文件
+
+GoProxy 代理设置   
+
+>这里分两大部分。 "Default" 和 "PHP" 。这两种代理模式可同时开启。   
+>
+>	```
+>	"Default" 选项: 即 GAE 代理。此项配合 gae.json 配置文件使用。
+>	"PHP" 选项: 即 PHP 代理。此项配合 php.json 配置文件使用。
+>	```
+>
+
+* "Enabled" 子项
+>参数：   
+>
+>	```
+>	false : 关闭代理("Default" 或者 "PHP")。   
+>	true : 开启代理("Default" 或者 "PHP")。   
+>	```
+
+* "Address" 子项
+>作用：监听地址和端口。这里一般不用改。   
+>
+>	格式：   
+>	```
+>	"IP地址:端口" 
+>	```
+>   
+>这里常用有两种(任选一种)：   
+>
+>	```
+>	"Address": "127.0.0.1:8087",
+>	
+>	"Address": "0.0.0.0:8087",
+>	```
+>    
+>注：   
+>a．第一种是只能本机使用。   
+>b．第二种是多台电脑共享 GoProxy 代理时使用。当然本机也能用。   
+
+* "KeepAlivePeriod" 子项
+>作用：设置持久连接保持的时间(时长)。
+>(httpproxy/httpproxy.go)
+>
+
+* "ReadTimeout" 子项
+>作用：请求的读取操作的超时时间。
+>
+
+* "WriteTimeout" 子项
+>作用：回复的写入操作的超时时间。
+>
+
+* "RequestFilters" 子项
+>作用：请求过滤。   
+>
+>一般不要修改。   
+>
+>	```
+>	"auth": 认证设置？此项配合 auth.json 配置文件使用。要使用此功能就必须先开启，下同。
+>	"rewrite": 重写配置？此项配合 rewrite.json 配置文件使用。
+>	"autoproxy": 自动代理配置。此项配合 autoproxy.json 配置文件使用。
+>	"stripssl": 使用SSL证书。 此项配合 stripssl.json 配置文件使用。
+>	"autorange": 自动分段传输(下载)。 此项配合 autorange.json 配置文件使用。
+>	```
+>
+
+* "RoundTripFilters" 子项
+>作用：往返过滤。   
+>
+>一般不要修改。   
+>
+>	```
+>	"autoproxy": 自动代理配置。此项配合 autoproxy.json 配置文件使用。要使用此功能就必须先开启，下同。
+>	"auth": 认证设置？此项配合 auth.json 配置文件使用。
+>	"vps": vps代理。此项配合 vps.json 配置文件使用。
+>	"php": php代理。此项配合 php.json 配置文件使用。
+>	"gae": gae代理。此项配合 gae.json 配置文件使用。
+>	"direct": 直连。此项配合 direct.json 配置文件使用。
+>	```
+>
+
+* "ResponseFilters" 子项
+>作用：响应过滤。   
+>
+>一般不要修改。   
+>
+>	```
+>	"autorange": 自动分段传输(下载)。 此项配合 autorange.json 配置文件使用。要使用此功能就必须先开启，下同。
+>	"rewrite": 自定义UserAgent。此项配合 rewrite.json 配置文件使用。
+>	"ratelimit": 限速。 此项配合 ratelimit.json 配置文件使用。
+>	```
+>
 
 ## gae.json 配置文件
 
@@ -350,96 +444,6 @@ GAE代理配置。
 >	>作用: 重试次数。   
 >
 
-## httpproxy.json 配置文件
-
-GoProxy 代理设置   
-
->这里分两大部分。 "Default" 和 "PHP" 。这两种代理模式可同时开启。   
->
->	```
->	"Default" 选项: 即 GAE 代理。此项配合 gae.json 配置文件使用。
->	"PHP" 选项: 即 PHP 代理。此项配合 php.json 配置文件使用。
->	```
->
->说明：双斜杠 "//" 是注释符号，取消即使用，加上即关闭该功能。   
-
-* "Enabled" 子项
->参数：   
->
->	```
->	false : 关闭代理("Default" 或者 "PHP")。   
->	true : 开启代理("Default" 或者 "PHP")。   
->	```
-
-* "Address" 子项
->作用：监听地址和端口。这里一般不用改。   
->
->	格式：   
->	```
->	"IP地址:端口" 
->	```
->   
->这里常用有两种(任选一种)：   
->
->	```
->	"Address": "127.0.0.1:8087",
->	
->	"Address": "0.0.0.0:8087",
->	```
->    
->注：   
->a．第一种是只能本机使用。   
->b．第二种是多台电脑共享 GoProxy 代理时使用。当然本机也能用。   
-
-* "KeepAlivePeriod" 子项
->作用：设置持久连接保持的时间(时长)。
->(httpproxy/httpproxy.go)
->
-
-* "ReadTimeout" 子项
->作用：请求的读取操作的超时时间。
->
-
-* "WriteTimeout" 子项
->作用：回复的写入操作的超时时间。
->
-
-* "RequestFilters" 子项
->作用：请求过滤。   
->
->一般不要修改。   
->
->	```
->	"auth": 认证设置？此项配合 auth.json 配置文件使用。
->	"rewrite": 自定义UserAgent。此项配合 rewrite.json 配置文件使用。
->	"stripssl": 使用SSL证书。 此项配合 stripssl.json 配置文件使用。
->	"autorange": 自动分段传输(下载)。 此项配合 autorange.json 配置文件使用。
->	```
-
-* "RoundTripFilters" 子项
->作用：往返过滤。   
->
->一般不要修改。   
->
->	```
->	"autoproxy": 自动代理配置。此项配合 autoproxy.json 配置文件使用。
->	"auth": 认证设置？此项配合 auth.json 配置文件使用。
->	"vps": vps代理。此项配合 vps.json 配置文件使用。
->	"php": php代理。此项配合 php.json 配置文件使用。
->	"gae": gae代理。此项配合 gae.json 配置文件使用。
->	"direct": 直连。此项配合 direct.json 配置文件使用。
->	```
-
-* "ResponseFilters" 子项
->作用：响应过滤。   
->
->一般不要修改。   
->
->	```
->	"autorange": 自动分段传输(下载)。 此项配合 autorange.json 配置文件使用。
->	"ratelimit": 限速。 此项配合 ratelimit.json 配置文件使用。
->	```
-
 ## php.json 配置文件
 
 PHP 代理配置。   
@@ -459,19 +463,19 @@ PHP 代理配置。
 >	```
 >	"Servers": [
 >		{
->			"Url": "http://yourapp1.com/",
+>			"Url": "http://yourapp.com/",
 >			"Password": "123456",
 >			"SSLVerify": true,
 >			"Host": "xxx.xxx.xxx.xxx",
 >		},
 >		{
->			"Url": "http://yourapp2.com/",
+>			"Url": "https://yourapp.com/",
 >			"Password": "123456",
 >			"SSLVerify": false,
 >			"Host": "",
 >		},
 >		{
->			"Url": "http://yourapp3.com/",
+>			"Url": "https://example.com/",
 >			"Password": "123456",
 >			"SSLVerify": false,
 >			"Host": "",
@@ -506,7 +510,7 @@ PHP 代理配置。
 >	>
 >
 >	* "Proxy" 子项
->	>作用：PHP 代理的前置代理设置。前置代理支持 http、socks4 和 socks5 。   
+>	>作用：PHP 代理的前置代理设置。前置代理支持 http、https、socks4 和 socks5 。   
 >	>
 >	>	```
 >	>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
@@ -518,6 +522,7 @@ PHP 代理配置。
 >	>	
 >	>	http://XXX.XXX.XXX.XXX:1080         http1代理(http代理)
 >	>	http1://XXX.XXX.XXX.XXX:1080         http1代理(http代理)
+>	>	https://XXX.XXX.XXX.XXX:1080         https代理
 >	>	socks4://XXX.XXX.XXX.XXX:1080       socks4代理
 >	>	socks4a://XXX.XXX.XXX.XXX:1080       socks4a代理
 >	>	socks://XXX.XXX.XXX.XXX:1080       socks5代理
@@ -557,14 +562,6 @@ PHP 代理配置。
 >	* "MaxIdleConnsPerHost" 子项
 >	>作用：最大闲置连接数目。   
 >
-    
-## addto-startup.vbs 脚本文件
-
->用途：设置 GoProxy 开机启动。(Windows系统)   
-
-## get-latest-goproxy.cmd 批处理文件
-
->用途：升级到最新版。(Windows系统)   
 
 ## auth.json 配置文件
 
@@ -585,20 +582,34 @@ PHP 代理配置。
 ## autoproxy.json 配置文件
 
 自动代理配置。包含 SiteFilters 、 pac 和 gfwlist 三种模式。   
+强调：默认情况下，autoproxy 在 GoProxy 中优先级最高(即，httpproxy.json --> RequestFilters --> autoproxy 开启的情况下)。   
 
 * "SiteFilters" 选项
 >作用：指定某个域名使用特定代理或者直连。   
->强调：SiteFilters 默认情况下，在 GoProxy 中优先级最高(即，RoundTripFilters --> autoproxy 开启的情况下)。
+>注：要使用 "RegionFilters" 功能，必须开启 httpproxy.json --> Default --> RoundTripFilters --> autoproxy 。   
 >
 >	```
 >	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
->	"Rules": 指定某个域名使用特定代理或者直连。
+>	"Rules": 指定某个域名使用特定代理或者直连(gae/php/direct)。
+>	```
+>
+
+* "RegionFilters" 选项
+>作用：针对目的 IP 归属地选择 gae/php/direct, 可以实现 APN 功能。   
+>注：要使用 "RegionFilters" 功能，必须开启 httpproxy.json --> Default --> RequestFilters --> autoproxy 。   
+>
+>	```
+>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
+>	"DataFile": IP 数据库。
+>	"DNSCacheSize": DNS 缓存大小。
+>	"Rules": 针对目的 IP 归属地选择 gae/php/direct 。
 >	```
 >
 
 * "IndexFiles" 选项
 >作用：自定义 pac 和下载证书。   
 >用浏览器打开地址 http://127.0.0.1:8087/ ，可以看到 "proxy.pac" 和 "GoProxy.crt" 。具体用途下面介绍。   
+>注：要使用 "RegionFilters" 功能，必须开启 httpproxy.json --> Default --> RoundTripFilters --> autoproxy 。   
 >
 >	* "Enabled" 子项
 >	>注意: "Enabled" 子项同时控制 "IndexFiles" 选项和 "GFWList" 选项。   
@@ -634,12 +645,14 @@ PHP 代理配置。
 >	>	>	```
 >	>
 >	>c．Linux 系统导入证书。   
->	>	>以 Debian8 发行版为例，其它发行版可能不适用，请自行 Google 。   
+>	>	>首次运行，以 root 用户(权限)运行，会自动导入证书。   
+>	>	>非本机安装有 GoProxy 情况，以 Debian8 发行版为例，其它发行版可能不适用，请自行 Google 。   
+>	>	>注：10.0.1.5 为安装有 GoProxy 电脑的 IP ，并且其开启局域网共享。
 >	>	>
 >	>	>	```
->	>	>	cd GoProxy安装目录/
+>	>	>	用浏览器打开地址 http://10.0.1.5:8087/ ，下载 GoProxy.crt 证书。
 >	>	>	
->	>	>	sudo cp GoProxy.crt /usr/local/share/ca-certificates/
+>	>	>	sudo mv GoProxy.crt /usr/local/share/ca-certificates/
 >	>	>	
 >	>	>	sudo update-ca-certificates
 >	>	>	```
@@ -731,7 +744,7 @@ PHP 代理配置。
 >	>	false : 开启持久连接。   
 >	>	true : 关闭持久连接。   
 >	>	```
->	>
+>
 >	* "DisableCompression" 子项
 >	>作用：是否关闭压缩。(Accept-Encoding)   
 >	>
@@ -741,7 +754,7 @@ PHP 代理配置。
 >	>	false : 开启压缩。   
 >	>	true : 关闭压缩。   
 >	>	```
->	>
+>
 >	* "TLSHandshakeTimeout" 子项
 >	>作用：TLS握手超时。   
 >
@@ -842,3 +855,12 @@ VPS 代理配置。
 >
 >如需自定义，可以在这修改。格式参考 autorange.json 配置文件 "Sites" 选项。   
 >
+
+## addto-startup.vbs 脚本文件
+
+>用途：设置 GoProxy 开机启动。(Windows系统)   
+
+## get-latest-goproxy.cmd 批处理文件
+
+>用途：升级到最新版。(Windows系统)   
+
