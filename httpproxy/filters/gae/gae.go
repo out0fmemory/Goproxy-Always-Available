@@ -219,7 +219,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		LogToStderr:       flag.Lookup("logtostderr") != nil,
 		TLSConfig:         nil,
 		SiteToAlias:       helpers.NewHostMatcherWithString(config.SiteToAlias),
-		IPBlackList:       lrucache.NewLRUCache(8192),
+		IPBlackList:       lrucache.NewLRUCache(1024),
 		HostMap:           hostmap,
 		GoogleTLSConfig:   googleTLSConfig,
 		GoogleG2PKP:       GoogleG2PKP,
