@@ -1,4 +1,4 @@
-REVSION = $(shell git rev-list HEAD | wc -l | xargs)
+REVSION = $(shell git rev-list --count HEAD)
 HTTP2REV = $(shell (cd $$GOPATH/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h"))
 
 PACKAGE = goproxy
