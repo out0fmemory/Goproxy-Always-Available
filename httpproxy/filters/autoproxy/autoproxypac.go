@@ -54,9 +54,11 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 		s := fmt.Sprintf(`// User-defined FindProxyForURL
 function FindProxyForURL(url, host) {
     if (isPlainHostName(host) ||
-        host.indexOf('127.') == 0 ||
-        host.indexOf('192.168.') == 0 ||
-        host.indexOf('10.') == 0 ||
+        isInNet(host, "10.0.0.0", "255.0.0.0") ||
+        isInNet(host, "172.16.0.0",  "255.240.0.0") ||
+        isInNet(host, "192.168.0.0",  "255.255.0.0") ||
+        isInNet(host, "127.0.0.0", "255.255.255.0")) ||
+        shExpMatch(host, "*.local") ||
         shExpMatch(host, 'localhost.*')) {
         return 'DIRECT';
     }
