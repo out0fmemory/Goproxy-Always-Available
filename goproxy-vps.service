@@ -4,10 +4,10 @@ Description=goproxy-vps
 [Service]
 Type=simple
 User=nobody
-Group=nobody
+Group=nogroup
 PermissionsStartOnly=true
 ExecStartPre=/bin/mkdir -p /var/log/goproxy
-ExecStartPre=/bin/chown -R nobody:nobody /var/log/goproxy
+ExecStartPre=/bin/chown -R nobody:nogroup /var/log/goproxy
 ExecStartPre=/sbin/setcap 'cap_net_bind_service=+ep' ./goproxy-vps
 ExecStart=/opt/goproxy-vps/goproxy-vps -addr=:443 -v=2 -logtostderr=0 -log_dir=/var/log/goproxy
 WorkingDirectory=/opt/goproxy-vps
