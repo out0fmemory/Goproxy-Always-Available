@@ -283,6 +283,9 @@ func parseAutoProxy(r io.Reader) ([]string, error) {
 			}
 		case strings.HasPrefix(s, "."):
 			site := strings.Split(strings.Split(s[1:], "/")[0], "*")[0]
+			if strings.HasSuffix(site, ".co") {
+				site += "m"
+			}
 			sites[site] = struct{}{}
 		case !strings.ContainsAny(s, "*"):
 			site := strings.Split(s, "/")[0]
