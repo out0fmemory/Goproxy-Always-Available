@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"net"
 	"os"
 	"runtime"
 	"strings"
@@ -49,8 +50,17 @@ Enabled Filters    : %v`,
 		for _, fn := range config.RoundTripFilters {
 			switch fn {
 			case "autoproxy":
+				addr := config.Address
+				if strings.HasPrefix(addr, ":") {
+					ip := "127.0.0.1"
+					port := addr[1:]
+					if ips, err := helpers.LocalInterfaceIPs(); err == nil && len(ips) > 0 {
+						ip = ips[0].String()
+					}
+					addr = net.JoinHostPort(ip, port)
+				}
 				fmt.Fprintf(os.Stderr, `
-Pac Server         : http://%s/proxy.pac`, config.Address)
+Pac Server         : http://%s/proxy.pac`, addr)
 			}
 		}
 		go httpproxy.ServeProfile(profile)
