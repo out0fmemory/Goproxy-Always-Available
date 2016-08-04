@@ -50,7 +50,7 @@ func NewServers(appids []string, password string, sslVerify bool, deadline time.
 
 func (s *Servers) ToggleBadAppID(appid string) {
 	s.muAppID.Lock()
-	defer s.muAppID.Lock()
+	defer s.muAppID.Unlock()
 	appids := make([]string, 0)
 	for _, id := range s.appids1 {
 		if id != appid {
