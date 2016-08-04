@@ -61,6 +61,7 @@
 	},
 	"ForceGAE": [
 		"domains.google.com",
+		"www.google.com/maps",
 		"www.google.com/patents",
 		"plus.google.com/$",
 	],
