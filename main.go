@@ -19,7 +19,12 @@ var (
 
 func main() {
 
-	hint(map[string]string{
+	if os.Args[1] == "-version" {
+		fmt.Print(version)
+		return
+	}
+
+	helpers.HintFlagValues(map[string]string{
 		"logtostderr": "true",
 		"v":           "2",
 	})
@@ -68,27 +73,4 @@ Pac Server         : http://%s/proxy.pac`, addr)
 	fmt.Fprintf(os.Stderr, "\n------------------------------------------------------\n")
 
 	select {}
-}
-
-func hint(v map[string]string) {
-	seen := map[string]struct{}{}
-
-	for i := 1; i < len(os.Args); i++ {
-		if os.Args[i] == "-version" {
-			fmt.Print(version)
-			os.Exit(0)
-		}
-
-		for key, _ := range v {
-			if strings.HasPrefix(os.Args[i], "-"+key+"=") {
-				seen[key] = struct{}{}
-			}
-		}
-	}
-
-	for key, value := range v {
-		if _, ok := seen[key]; !ok {
-			flag.Set(key, value)
-		}
-	}
 }
