@@ -19,7 +19,7 @@ var (
 
 func main() {
 
-	if os.Args[1] == "-version" {
+	if len(os.Args) > 1 && os.Args[1] == "-version" {
 		fmt.Print(version)
 		return
 	}
