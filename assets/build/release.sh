@@ -1,4 +1,6 @@
-#!/bin/bash -xe
+#!/bin/bash
+
+set -ex
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
 export GITHUB_REPO=goproxy
@@ -37,6 +39,18 @@ do
 done
 
 ${GITHUB_RELEASE_BIN} delete --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} || true
+
+git init
+git config user.name "${GITHUB_USER}"
+git config user.email "${GITHUB_USER}@noreply.github.com"
+git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_REPO}
+git fetch origin ${GITHUB_REPO}
+git checkout -b release FETCH_HEAD
+git commit --amend --no-edit --allow-empty
+git tag ${GITHUB_REPO}
+git push -f origin ${GITHUB_REPO}
+rm -rf .git
+
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 
 for FILE in ${RELEASE_FILES}
