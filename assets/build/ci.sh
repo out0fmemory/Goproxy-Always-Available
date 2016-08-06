@@ -227,8 +227,14 @@ function release_repo_ci() {
 }
 
 function clean() {
-	(cd ${WORKING_DIR}/r${RELEASE}/ && ls -lht && sha256sum *)
-	rm -rf ${WORKING_DIR}
+	( set +x ;\
+		cd ${WORKING_DIR}/r${RELEASE}/ ;\
+		ls -lht ;\
+		echo ;\
+		sha1sum * | xargs -n1 -i echo -e "\e[1;32m{}\e[0m" ;\
+		echo ;\
+		rm -rf ${WORKING_DIR} ;\
+	)
 }
 
 init_github
