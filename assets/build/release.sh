@@ -51,6 +51,8 @@ git tag ${GITHUB_REPO}
 git push -f origin ${GITHUB_REPO}
 rm -rf .git
 
+RELEASE_NOTE=$(printf "%s\n\n|sha1|filename|\n|------|------|\n%s" "${RELEASE_NOTE}" "$(sha1sum ${RELEASE_FILES}| awk '{print "|"$1"|"$2"|"}')")
+
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 
 for FILE in ${RELEASE_FILES}
