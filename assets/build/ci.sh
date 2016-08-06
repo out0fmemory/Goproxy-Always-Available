@@ -231,8 +231,8 @@ function clean() {
 		cd ${WORKING_DIR}/r${RELEASE}/ ;\
 		ls -lht ;\
 		echo ;\
+		echo 'sha1sum *' ;\
 		sha1sum * | xargs -n1 -i echo -e "\e[1;32m{}\e[0m" ;\
-		echo ;\
 		rm -rf ${WORKING_DIR} ;\
 	)
 }
