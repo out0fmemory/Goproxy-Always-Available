@@ -18,7 +18,6 @@ import (
 )
 
 type Handler struct {
-	http.Handler
 	Listener         helpers.Listener
 	RequestFilters   []filters.RequestFilter
 	RoundTripFilters []filters.RoundTripFilter
