@@ -47,6 +47,9 @@ type Config struct {
 		Expiry   int
 		Duration int
 	}
+	MobileConfig struct {
+		Enabled bool
+	}
 }
 
 var (
@@ -69,6 +72,7 @@ type Filter struct {
 	ProxyPacCache        lrucache.Cache
 	GFWListEnabled       bool
 	GFWList              *GFWList
+	MobileConfigEnabled  bool
 	SiteFiltersEnabled   bool
 	SiteFiltersRules     *helpers.HostMatcher
 	RegionFiltersEnabled bool
@@ -97,6 +101,7 @@ func init() {
 	}
 
 	mime.AddExtensionType(".crt", "application/x-x509-ca-cert")
+	mime.AddExtensionType(".mobileconfig", "application/x-apple-aspen-config")
 }
 
 func NewFilter(config *Config) (_ filters.Filter, err error) {
@@ -129,6 +134,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		IndexFiles:           make(map[string]struct{}),
 		ProxyPacCache:        lrucache.NewLRUCache(32),
 		GFWListEnabled:       config.GFWList.Enabled,
+		MobileConfigEnabled:  config.MobileConfig.Enabled,
 		GFWList:              &gfwlist,
 		Transport:            transport,
 		SiteFiltersEnabled:   config.SiteFilters.Enabled,
@@ -271,10 +277,14 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
 		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
-			if f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac") {
+			switch {
+			case f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac"):
 				glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
 				return f.ProxyPacRoundTrip(ctx, req)
-			} else {
+			case f.MobileConfigEnabled && strings.HasSuffix(req.URL.Path, ".mobileconfig"):
+				glog.V(2).Infof("%s \"AUTOPROXY ProxyMobileConfig %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+				return f.ProxyMobileConfigRoundTrip(ctx, req)
+			default:
 				glog.V(2).Infof("%s \"AUTOPROXY IndexFiles %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
 				return f.IndexFilesRoundTrip(ctx, req)
 			}
