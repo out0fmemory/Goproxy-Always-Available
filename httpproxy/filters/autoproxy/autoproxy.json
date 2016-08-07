@@ -3,6 +3,7 @@
 		"Enabled": false,
 		"Rules": {
 			"live.github.com": "direct",
+			"m.apkpure.com": "direct",
 			"rarbg.to": "direct",
 			"www.slideshare.net": "php",
 			"pastebin.com": "php",
