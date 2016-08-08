@@ -1,7 +1,6 @@
 package gae
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
@@ -49,13 +48,12 @@ type Config struct {
 		Ciphers                []string
 		ServerName             []string
 	}
-	GoogleG2PKP  string
-	ForceGAE     []string
-	ForceDeflate []string
-	FakeOptions  map[string][]string
-	DNSServers   []string
-	IPBlackList  []string
-	Transport    struct {
+	GoogleG2PKP string
+	ForceGAE    []string
+	FakeOptions map[string][]string
+	DNSServers  []string
+	IPBlackList []string
+	Transport   struct {
 		Dialer struct {
 			DNSCacheExpiry   int
 			DNSCacheSize     uint
@@ -81,16 +79,15 @@ type Config struct {
 
 type Filter struct {
 	Config
-	GAETransport        *Transport
-	DirectTransport     http.RoundTripper
-	ForceHTTPSMatcher   *helpers.HostMatcher
-	ForceGAEStrings     []string
-	ForceGAESuffixs     []string
-	ForceGAEMatcher     *helpers.HostMatcher
-	ForceDeflateMatcher *helpers.HostMatcher
-	FakeOptionsMatcher  *helpers.HostMatcher
-	SiteMatcher         *helpers.HostMatcher
-	DirectSiteMatcher   *helpers.HostMatcher
+	GAETransport       *Transport
+	DirectTransport    http.RoundTripper
+	ForceHTTPSMatcher  *helpers.HostMatcher
+	ForceGAEStrings    []string
+	ForceGAESuffixs    []string
+	ForceGAEMatcher    *helpers.HostMatcher
+	FakeOptionsMatcher *helpers.HostMatcher
+	SiteMatcher        *helpers.HostMatcher
+	DirectSiteMatcher  *helpers.HostMatcher
 }
 
 func init() {
@@ -351,15 +348,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			RetryDelay: time.Duration(config.Transport.RetryDelay*1000) * time.Second,
 			RetryTimes: config.Transport.RetryTimes,
 		},
-		DirectTransport:     tr,
-		ForceHTTPSMatcher:   helpers.NewHostMatcher(forceHTTPSMatcherStrings),
-		ForceGAEMatcher:     helpers.NewHostMatcher(forceGAEMatcherStrings),
-		ForceGAEStrings:     forceGAEStrings,
-		ForceGAESuffixs:     forceGAESuffixs,
-		ForceDeflateMatcher: helpers.NewHostMatcher(config.ForceDeflate),
-		FakeOptionsMatcher:  helpers.NewHostMatcherWithStrings(config.FakeOptions),
-		SiteMatcher:         helpers.NewHostMatcher(config.Sites),
-		DirectSiteMatcher:   helpers.NewHostMatcherWithString(config.Site2Alias),
+		DirectTransport:    tr,
+		ForceHTTPSMatcher:  helpers.NewHostMatcher(forceHTTPSMatcherStrings),
+		ForceGAEMatcher:    helpers.NewHostMatcher(forceGAEMatcherStrings),
+		ForceGAEStrings:    forceGAEStrings,
+		ForceGAESuffixs:    forceGAESuffixs,
+		FakeOptionsMatcher: helpers.NewHostMatcherWithStrings(config.FakeOptions),
+		SiteMatcher:        helpers.NewHostMatcher(config.Sites),
+		DirectSiteMatcher:  helpers.NewHostMatcherWithString(config.Site2Alias),
 	}
 
 	if config.Transport.Proxy.Enabled {
@@ -475,25 +471,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			resp.Body.Close()
 		}
 		return ctx, nil, err
-	}
-
-	if strings.HasPrefix(resp.Header.Get("Content-Type"), "text/") &&
-		resp.Header.Get("Content-Encoding") == "" &&
-		f.ForceDeflateMatcher.Match(req.Host) {
-		buf := make([]byte, 1024)
-		n, err := resp.Body.Read(buf)
-		if err != nil {
-			defer resp.Body.Close()
-			return ctx, nil, err
-		}
-		buf = buf[:n]
-		switch {
-		case helpers.IsGzip(buf):
-			resp.Header.Set("Content-Encoding", "gzip")
-		case helpers.IsBinary(buf):
-			resp.Header.Set("Content-Encoding", "deflate")
-		}
-		resp.Body = helpers.NewMultiReadCloser(bytes.NewReader(buf), resp.Body)
 	}
 
 	if resp != nil && resp.Header != nil {
