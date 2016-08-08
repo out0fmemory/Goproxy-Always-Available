@@ -19,7 +19,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<link rel="icon" href="data:image/ico;base64,">
+<link rel="shortcut icon" type="image/png" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACOElEQVQ4jWWTTUhVQRTHf/e+a+/1RCghSqNN0KYWbVq1aCFIm5AKHtQ2cFOUazdB0CKIiHZKmxbSxkUkiFFEkRGmpW0tIrNMBTU/3r0zb+bM3Bbv3rzqwGFg5vc/5z8fJ2DX6Hnw9pk0zDnvTLvYBmIM0lDaKv3448D1fkADLufD3Qm8k4uj/d3tTizOWrxYvHeVNPA3gWNApcjvSeCs5fydEZzY7bA23+4AqkU+Auh5+P62t/a4WBUYnQwZVY9ExyVnDOG+ci1Nfc6XgdKOBJcffXjtxHalXsB7AqAUtUC5CkEJJ7bIk87XFr2Ntej6/fKpd/dC711X06rZaTuLfIjaGgMskhA6VYnQN4DOKAd9QeQL505Tr52O30w/6R9cme7uRhRIQuhVO9AR7RBbi66vjy1MjDxdmHm1DgiQAmZ+vPvkwVbpwylwCUgCsD8S09BebMWJRW2sDE8O9g1t/rx1pbVy4lLoVOU/LDF5dUThRWsgCJ3IXG79z9TL5/Gvvt62qr8a+qI4KYgTcJokSacAEzodD4gx2onl9/ToerXiLmwLCqKCGGBmVr8AtoLsZ3UAR4FGunhtMoeXl/4Ol7xKm04UOAXAtznz5Wzv2gTwIwIMsARsAmmx2uEDroYIOAtiCc4sdQF1QGX8agj4bGEVWPM20U2rhTj9FZ+mOnuRReB7Nid7eqG+uVGzOv7sTaxzJ3aic3b8k7oLWCDJClogDXYnyO7kEHAEaANaMpdbWdVlmi0NwD8Bv6//isUl3wAAAABJRU5ErkJggg==" />
 <title>Index of /</title>
 </head>
 <body>
