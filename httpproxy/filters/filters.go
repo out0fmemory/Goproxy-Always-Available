@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"sync"
 )
 
 type Filter interface {
@@ -32,6 +33,7 @@ type RegisteredFilter struct {
 var (
 	registeredFilters map[string]*RegisteredFilter
 	newedFilters      map[string]Filter
+	muFilters         sync.Mutex
 )
 
 func init() {
@@ -51,6 +53,9 @@ func Register(name string, registeredFilter *RegisteredFilter) error {
 
 // GetFilter try get a existing Filter of type "name", otherwise create new one
 func GetFilter(name string) (Filter, error) {
+	muFilters.Lock()
+	defer muFilters.Unlock()
+
 	if f, ok := newedFilters[name]; ok {
 		return f, nil
 	}
