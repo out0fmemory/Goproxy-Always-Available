@@ -59,7 +59,7 @@ endif
 
 .PHONY: build
 build: $(GOPROXY_DIST)
-	ls -lht $(DISTDIR)
+	@ls -lht $(DISTDIR)
 
 .PHONY: clean
 clean:
@@ -68,6 +68,9 @@ clean:
 $(GOPROXY_DIST): $(OBJECTS)
 	mkdir -p $(DISTDIR) $(STAGEDIR) $(GOPROXY_STAGEDIR)
 	cp $(OBJECTS) $(SOURCES) $(GOPROXY_STAGEDIR)
+ifeq ($(GOOS)_$(GOARCH), $(shell go env GOOS)_$(shell go env GOARCH))
+	$(GOPROXY_STAGEDIR)/goproxy -version
+endif
 	cd $(STAGEDIR) && $(GOPROXY_DISTCMD) $@ *
 
 $(OBJECTDIR)/$(GOPROXY_EXE):
