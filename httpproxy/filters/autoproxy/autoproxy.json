@@ -17,6 +17,7 @@
 			"default": "",
 			"ipv6": "direct",
 			"中国": "direct",
+			"局域网": "direct",
 		},
 	},
 	"IndexFiles": {
