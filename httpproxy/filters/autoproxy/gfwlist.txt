@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: OPA5gIHwRx62L6EMsKbMMQ
+! Checksum: +agc+6/xVGKoqszmSV+XDA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Fri, 05 Aug 2016 11:30:55 +0800
+! Last Modified: Mon, 08 Aug 2016 11:55:19 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -391,6 +391,7 @@ zhao.1984.city
 |http://1bao.org
 .1eew.com
 .1mobile.com
+|http://*.1mobile.tw
 ||1pondo.tv
 .2-hand.info
 .2000fun.com/bbs
@@ -563,6 +564,8 @@ www1.american.edu/ted/ice/tibet
 |http://www.americorps.gov
 ||amiblockedornot.com
 .amigobbs.net
+.amitabhafoundation.us
+|http://amitabhafoundation.us
 .amnesty.org
 ||amnesty.org
 .amnesty.tw
@@ -864,6 +867,7 @@ boxun.com
 boxunblog.com
 ||boxunblog.com
 .boxunclub.com
+boyangu.com
 .boyfriendtv.com
 .boysfood.com
 ||br.st
@@ -1476,6 +1480,7 @@ dpp.org.tw
 drsunacademy.com
 .drtuber.com
 .dscn.info
+|http://dscn.info
 ||dtiblog.com
 ||dtic.mil
 dtiserv2.com
@@ -2724,6 +2729,8 @@ huyandex.com
 |http://fang-lizhi.hxwk.org/
 hxwq.org
 ||hyperrate.com
+ebook.hyread.com.tw
+||ebook.hyread.com.tw
 
 !--------------------II-------------------------
 ||i1.hk
@@ -2886,6 +2893,7 @@ forum.iset.com.tw
 .islamhouse.com
 ||islamhouse.com
 .islamicity.com
+.islamicpluralism.org
 .islamtoday.net
 .isaacmao.com
 ||isaacmao.com
@@ -2899,6 +2907,7 @@ isohunt.com
 oversea.istarshine.com
 ||oversea.istarshine.com
 blog.istef.info/2007/10/21/myentunnel
+.istiqlalhewer.com
 .istockphoto.com
 isunaffairs.com
 isuntv.com
@@ -3314,6 +3323,8 @@ memorybbs.com
 |http://mercyprophet.org
 .meridian-trust.org
 |http://meridian-trust.org
+.meripet.biz
+|http://meripet.biz
 .meripet.com
 |http://meripet.com
 merit-times.com.tw
@@ -3664,6 +3675,7 @@ nysingtao.com
 observechina.net
 .obutu.com
 ocaspro.com
+occupytiananmen.com
 oclp.hk
 .ocreampies.com
 ||october-review.org
@@ -3893,6 +3905,7 @@ popyard.com
 .porn2.com
 .porn5.com
 .pornbase.org
+.pornerbros.com
 ||pornhd.com
 .pornhost.com
 .pornhub.com
@@ -4080,6 +4093,8 @@ rcinet.ca
 .recovery.org.tw
 |http://online.recoveryversion.org
 ||recoveryversion.com.tw
+.redchinacn.net
+|http://redchinacn.net
 redchinacn.org
 redtube.com
 referer.us
@@ -4140,6 +4155,7 @@ robtex.com
 .rsf-chinese.org
 ||rsf-chinese.org
 .rsgamen.org
+||phosphation13.rssing.com
 .rssmeme.com
 ||rssmeme.com
 ||rtalabel.org
@@ -4338,6 +4354,8 @@ sitetag.us
 sis.xxx
 ||sis001.com
 sis001.us
+.sjrt.org
+|http://sjrt.org
 ||sjum.cn
 ||sketchappsources.com
 ||skimtube.com
@@ -5223,7 +5241,7 @@ usus.cc
 ||utopianpal.com
 .uu-gg.com
 .uvwxyz.xyz
-|http://uvwxyz.xyz
+||uvwxyz.xyz
 .uwants.com
 .uwants.net
 uyghur.co.uk
@@ -5234,6 +5252,8 @@ uyghur.co.uk
 ||uyghurcongress.org
 .uyghurpen.org
 .uyghurpress.com
+.uyghurstudies.org
+|http://uyghurstudies.org
 uygur.org
 |http://uymaarip.com/
 
