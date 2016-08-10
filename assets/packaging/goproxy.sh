@@ -46,11 +46,6 @@ usage() {
     exit 1
 }
 
-if [ "$(id -u)" != "0" ]; then
-    echo "please use sudo to run ${PACKAGE_NAME}"
-    exit 0
-fi
-
 # `readlink -f` won't work on Mac, this hack should work on all systems.
 cd $(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")
 
