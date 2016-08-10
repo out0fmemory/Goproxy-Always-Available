@@ -45,25 +45,26 @@ GoProxy Version    : %s (go/%s http2/%s %s/%s)`,
 		if !config.Enabled {
 			continue
 		}
+		addr := config.Address
+		if ip, port, err := net.SplitHostPort(addr); err == nil {
+			switch ip {
+			case "", "0.0.0.0", "::":
+				if ips, err := helpers.LocalInterfaceIPs(); err == nil && len(ips) > 0 {
+					ip = ips[0].String()
+				}
+			}
+			addr = net.JoinHostPort(ip, port)
+		}
 		fmt.Fprintf(os.Stderr, `
 GoProxy Profile    : %s
 Listen Address     : %s
 Enabled Filters    : %v`,
 			profile,
-			config.Address,
+			addr,
 			fmt.Sprintf("%s|%s|%s", strings.Join(config.RequestFilters, ","), strings.Join(config.RoundTripFilters, ","), strings.Join(config.ResponseFilters, ",")))
 		for _, fn := range config.RoundTripFilters {
 			switch fn {
 			case "autoproxy":
-				addr := config.Address
-				if strings.HasPrefix(addr, ":") {
-					ip := "127.0.0.1"
-					port := addr[1:]
-					if ips, err := helpers.LocalInterfaceIPs(); err == nil && len(ips) > 0 {
-						ip = ips[0].String()
-					}
-					addr = net.JoinHostPort(ip, port)
-				}
 				fmt.Fprintf(os.Stderr, `
 Pac Server         : http://%s/proxy.pac`, addr)
 			}
