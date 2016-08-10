@@ -275,6 +275,23 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return f.RoundTrip(ctx, req)
 	}
 
+	if req.URL.Scheme == "https" {
+		host := req.Host
+		if h, _, err := net.SplitHostPort(req.Host); err == nil {
+			host = h
+		}
+		switch {
+		case f.SiteFiltersEnabled:
+			if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
+				return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
+			}
+		case f.RegionFiltersEnabled:
+			if f1, ok := f.RegionFilterCache.Get(host); ok {
+				return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
+			}
+		}
+	}
+
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
 		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
 			switch {
