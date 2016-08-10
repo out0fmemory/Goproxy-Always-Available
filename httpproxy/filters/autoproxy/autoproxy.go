@@ -228,10 +228,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		return ctx, req, nil
 	}
 
-	host := req.Host
-	if h, _, err := net.SplitHostPort(req.Host); err == nil {
-		host = h
-	}
+	host := helpers.GetHostName(req)
 
 	if f.SiteFiltersEnabled {
 		if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
@@ -275,20 +272,14 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return f.RoundTrip(ctx, req)
 	}
 
-	if req.URL.Scheme == "https" {
-		host := req.Host
-		if h, _, err := net.SplitHostPort(req.Host); err == nil {
-			host = h
+	switch {
+	case f.SiteFiltersEnabled && req.URL.Scheme == "https":
+		if f1, ok := f.SiteFiltersRules.Lookup(helpers.GetHostName(req)); ok {
+			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
 		}
-		switch {
-		case f.SiteFiltersEnabled:
-			if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
-				return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
-			}
-		case f.RegionFiltersEnabled:
-			if f1, ok := f.RegionFilterCache.Get(host); ok {
-				return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
-			}
+	case f.RegionFiltersEnabled && req.URL.Scheme == "https":
+		if f1, ok := f.RegionFilterCache.Get(helpers.GetHostName(req)); ok {
+			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
 		}
 	}
 

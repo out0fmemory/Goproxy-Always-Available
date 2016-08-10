@@ -82,3 +82,11 @@ func CloneRequest(r *http.Request) *http.Request {
 	}
 	return r2
 }
+
+func GetHostName(req *http.Request) string {
+	if host, _, err := net.SplitHostPort(req.Host); err == nil {
+		return host
+	} else {
+		return req.Host
+	}
+}
