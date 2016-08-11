@@ -17,15 +17,15 @@ func (r localips) Less(i, j int) bool {
 		case ip.To4() == nil:
 			return 0
 		case strings.HasPrefix(s, "127."):
-			return 1
+			return 10
 		case strings.HasPrefix(s, "169.254."):
-			return 2
-		case strings.HasPrefix(s, "192.168.1."):
-			return 3
+			return 20
+		case strings.HasPrefix(s, "192.168."):
+			return 30
 		case strings.HasPrefix(s, "172."):
-			return 4
+			return 40
 		case strings.HasPrefix(s, "10."):
-			return 5
+			return 50
 		default:
 			return 100
 		}
