@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-func HintFlagValues(m map[string]string) {
+func SetFlagsIfAbsent(m map[string]string) {
 	seen := map[string]struct{}{}
 
 	for i := 1; i < len(os.Args); i++ {

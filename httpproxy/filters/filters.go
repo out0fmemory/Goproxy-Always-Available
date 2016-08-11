@@ -12,17 +12,17 @@ type Filter interface {
 }
 
 type RequestFilter interface {
-	FilterName() string
+	Filter
 	Request(context.Context, *http.Request) (context.Context, *http.Request, error)
 }
 
 type RoundTripFilter interface {
-	FilterName() string
+	Filter
 	RoundTrip(context.Context, *http.Request) (context.Context, *http.Response, error)
 }
 
 type ResponseFilter interface {
-	FilterName() string
+	Filter
 	Response(context.Context, *http.Response) (context.Context, *http.Response, error)
 }
 

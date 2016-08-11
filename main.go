@@ -24,7 +24,7 @@ func main() {
 		return
 	}
 
-	helpers.HintFlagValues(map[string]string{
+	helpers.SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
 		"v":           "2",
 	})

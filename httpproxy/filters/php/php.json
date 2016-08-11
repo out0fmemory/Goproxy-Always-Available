@@ -1,7 +1,7 @@
 {
 	"Servers": [
 		{
-			"Url": "https://example.com/",
+			"URL": "https://example.com/",
 			"Password": "123456",
 			"SSLVerify": false,
 			"Host": "",

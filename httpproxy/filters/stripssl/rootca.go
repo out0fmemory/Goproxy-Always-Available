@@ -10,8 +10,8 @@ import (
 	"encoding/pem"
 	"io/ioutil"
 	"math/big"
-	"net/http"
 	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -19,10 +19,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/phuslu/glog"
+
 	"../../helpers"
 	"../../storage"
-
-	"github.com/phuslu/glog"
 )
 
 type RootCA struct {
