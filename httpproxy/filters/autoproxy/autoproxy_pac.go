@@ -301,7 +301,7 @@ func parseAutoProxy(r io.Reader) ([]string, error) {
 	}
 
 	sites1 := make([]string, 0)
-	for s, _ := range sites {
+	for s := range sites {
 		sites1 = append(sites1, s)
 	}
 

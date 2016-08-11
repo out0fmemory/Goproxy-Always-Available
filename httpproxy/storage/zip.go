@@ -97,7 +97,7 @@ func (s *ZipStore) List(name string) ([]string, error) {
 
 	prefix := strings.TrimRight(name, "/") + "/"
 	names := make([]string, 0)
-	for key, _ := range s.zfs {
+	for key := range s.zfs {
 		if strings.HasPrefix(key, prefix) {
 			names = append(names, key)
 		}

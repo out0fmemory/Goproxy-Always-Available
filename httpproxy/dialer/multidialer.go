@@ -165,7 +165,7 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	}
 
 	addrs = make([]string, 0)
-	for addr, _ := range seen {
+	for addr := range seen {
 		if _, ok := d.IPBlackList.GetQuiet(addr); ok {
 			continue
 		}
@@ -217,7 +217,7 @@ func (d *MultiDialer) ExpandAlias(alias string) error {
 		}
 
 		addrs := make([]string, 0)
-		for addr, _ := range seen {
+		for addr := range seen {
 			addrs = append(addrs, addr)
 		}
 
@@ -295,7 +295,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
 							if d.GoogleG2PKP != nil {
 								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
-								if bytes.Compare(pkp[:], d.GoogleG2PKP) != 0 {
+								if !bytes.Equal(pkp[:], d.GoogleG2PKP) {
 									defer conn.Close()
 									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
 								}
