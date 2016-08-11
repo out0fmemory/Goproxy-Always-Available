@@ -81,7 +81,7 @@ if "%localname%" == "%filename%" (
 (
     title 2. Downloading 7zCon.sfx for extracting
     echo 2. Downloading 7zCon.sfx for extracting
-    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/raw/master/assets/download/7zCon.sfx ~7zCon.sfx
+    cscript /nologo ~gdownload.vbs https://raw.githubusercontent.com/phuslu/goproxy/master/assets/download/7zCon.sfx ~7zCon.sfx
     if not exist "~7zCon.sfx" (
         echo Cannot download 7zCon.sfx
         goto quit

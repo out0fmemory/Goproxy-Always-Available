@@ -50,7 +50,6 @@ git checkout -b release FETCH_HEAD
 git commit --amend --no-edit --allow-empty
 git tag ${GITHUB_REPO}
 git push -f origin ${GITHUB_REPO}
-rm -rf .git
 popd
 
 export RELEASE_NOTE=$(printf "%s\n\n|sha1|filename|\n|------|------|\n%s" "${RELEASE_NOTE}" "$(sha1sum ${RELEASE_FILES}| awk '{print "|"$1"|"$2"|"}')")
