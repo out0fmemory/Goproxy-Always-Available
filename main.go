@@ -50,7 +50,7 @@ GoProxy Version    : %s (go/%s http2/%s %s/%s)`,
 			switch ip {
 			case "", "0.0.0.0", "::":
 				if ips, err := helpers.LocalInterfaceIPs(); err == nil && len(ips) > 0 {
-					ip = ips[0].String()
+					ip = ips[len(ips)-1].String()
 				}
 			}
 			addr = net.JoinHostPort(ip, port)
