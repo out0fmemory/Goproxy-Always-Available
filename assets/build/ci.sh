@@ -128,6 +128,11 @@ function build_repo() {
 		exit 1
 	fi
 
+	if [ "$(gofmt -l . | tee /dev/tty)" != "" ]; then
+		echo "Please run 'gofmt -s -w .' for go source files"
+		exit 1
+	fi
+
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
 	go test -v ./httpproxy/helpers
