@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: +agc+6/xVGKoqszmSV+XDA
+! Checksum: fwRAANwU3Poc8xaEaWEw6g
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 08 Aug 2016 11:55:19 +0800
+! Last Modified: Thu, 11 Aug 2016 09:54:31 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -54,6 +54,7 @@
 ||extmatrix.com
 ||fakku.net
 ||fastpic.ru
+||filesor.com
 ||financetwitter.com
 ||findmima.com
 ||flipboard.com
@@ -1481,6 +1482,8 @@ drsunacademy.com
 .drtuber.com
 .dscn.info
 |http://dscn.info
+.dstk.dk
+|http://dstk.dk
 ||dtiblog.com
 ||dtic.mil
 dtiserv2.com
@@ -2530,39 +2533,20 @@ hentaitube.tv
 .hentaivideoworld.com
 
 !###########--Heroku--##########
-||date.fm
-||flightcaster.com
-||branch.com
-||awardwinningfjords.com
-||futureme.org
 ||getcloudapp.com
 ||cl.ly
 @@||f.cl.ly
 ||getsmartlinks.com
 ||git-scm.com
-||lesscss.org
-||list.ly
-||maxgif.com
-||overlapr.com
-||peerpong.com
-||pose.com
-!--||rubyinstaller.org
-||samsoff.es
-||sendoid.com
-||speckleapp.com
-||stuffimreading.net
-||tomayko.com
-||twt.fm
-||views.fm
 
 heqinglian.net
-here4news.com
 ||heungkongdiscuss.com
 !--Google employee within Google IP
 ||hexxeh.net
 app.heywire.com
 .heyzo.com
 .hgseav.com
+.hhdcb3office.org
 hi-on.org.tw
 hidden-advent.org
 ||hidden-advent.org
@@ -3039,7 +3023,7 @@ karkhung.com
 ||kebrum.com
 .kechara.com
 .keepandshare.com/visit/visit_page.php?i=688154
-||keepvid.com
+!--||keepvid.com
 .kendincos.net
 .kenengba.com
 ||kenengba.com
@@ -3926,6 +3910,7 @@ popyard.com
 ||poskotanews.com
 .post852.com
 postadult.com
+.postimg.org
 ||powercx.com
 .powerphoto.org
 ||www.powerpointninja.com
@@ -4037,6 +4022,7 @@ blog.qooza.hk*dafengqixi
 .quitccp.net
 ||quitccp.org
 .quitccp.org
+.quran.com
 |http://quran.com
 .quranexplorer.com
 qusi8.net
@@ -4180,6 +4166,7 @@ rutube.ru
 ||s1heng.com
 |http://www.s4miniarchive.com
 ||s8forum.com
+cdn1.lp.saboom.com
 sacom.hk
 ||sacom.hk
 ||sadpanda.us
@@ -4490,10 +4477,11 @@ usinfo.state.gov
 .state168.com
 ||static-economist.com
 ||stc.com.sa
-|http://steamcommunity.com/groups/LibetTibet
+steamcommunity.com/groups/LibetTibet
+steamcommunity.com/id/CJT_Jackton
 ||steel-storm.com
 .stepchina.com
-||stepmania.com
+!--||stepmania.com
 ny.stgloballink.com
 sthoo.com
 ||sthoo.com
@@ -5610,6 +5598,7 @@ wretch.cc
 .wtbn.org
 .wtfpeople.com
 wuerkaixi.com
+||wufafangwen.com
 wufi.org.tw
 ||wuguoguang.com
 wujie.net
