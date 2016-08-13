@@ -41,7 +41,7 @@
 		"Enabled": true,
 	},
 	"BlackList": {
-		"Enabled": true,
+		"Enabled": false,
 		"SiteRules": [
 			"cm.g.doubleclick.net",
 			"googleads.g.doubleclick.net",
