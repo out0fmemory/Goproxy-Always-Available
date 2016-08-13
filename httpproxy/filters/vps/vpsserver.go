@@ -38,7 +38,7 @@ func (f *Server) RoundTrip(req *http.Request) (resp *http.Response, err error) {
 		}
 	}
 
-	req.Header.Set("Proxy-Authorization", base64.StdEncoding.EncodeToString([]byte(f.Username+":"+f.Password)))
+	req.Header.Set("Proxy-Authorization", "Basic "+base64.StdEncoding.EncodeToString([]byte(f.Username+":"+f.Password)))
 
 	resp, err = f.Transport.RoundTrip(req)
 	if err != nil {
