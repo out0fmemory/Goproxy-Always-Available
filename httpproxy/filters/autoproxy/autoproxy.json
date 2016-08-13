@@ -42,7 +42,7 @@
 	},
 	"BlackList": {
 		"Enabled": true,
-		"Rules": [
+		"SiteRules": [
 			"cm.g.doubleclick.net",
 			"googleads.g.doubleclick.net",
 			"news.766ba.net:6578",

@@ -51,8 +51,8 @@ type Config struct {
 		Enabled bool
 	}
 	BlackList struct {
-		Enabled bool
-		Rules   []string
+		Enabled   bool
+		SiteRules []string
 	}
 }
 
@@ -78,7 +78,7 @@ type Filter struct {
 	GFWList              *GFWList
 	MobileConfigEnabled  bool
 	BlackListEnabled     bool
-	BlackListMatcher     *helpers.HostMatcher
+	BlackListSiteMatcher *helpers.HostMatcher
 	SiteFiltersEnabled   bool
 	SiteFiltersRules     *helpers.HostMatcher
 	RegionFiltersEnabled bool
@@ -142,7 +142,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		GFWListEnabled:       config.GFWList.Enabled,
 		MobileConfigEnabled:  config.MobileConfig.Enabled,
 		BlackListEnabled:     config.BlackList.Enabled,
-		BlackListMatcher:     helpers.NewHostMatcher(config.BlackList.Rules),
+		BlackListSiteMatcher: helpers.NewHostMatcher(config.BlackList.SiteRules),
 		GFWList:              &gfwlist,
 		Transport:            transport,
 		SiteFiltersEnabled:   config.SiteFilters.Enabled,
@@ -277,7 +277,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	if f.BlackListEnabled {
-		if f.BlackListMatcher.Match(req.Host) {
+		if f.BlackListSiteMatcher.Match(req.Host) {
 			return ctx, &http.Response{
 				StatusCode: http.StatusOK,
 				Header: http.Header{
