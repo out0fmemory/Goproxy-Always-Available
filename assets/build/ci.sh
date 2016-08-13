@@ -18,7 +18,7 @@ fi
 for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum timeout
 do
 	if ! type -p ${CMD}; then
-		echo "tool ${CMD} is not installed, abort."
+		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
 		exit 1
 	fi
 done
@@ -124,12 +124,12 @@ function build_repo() {
 	fi
 
 	if grep -lr $(printf '\r\n') * | grep '.go$' ; then
-		echo "Please run dos2unix for go source files"
+		echo -e "\e[1;31mPlease run dos2unix for go source files\e[0m"
 		exit 1
 	fi
 
 	if [ "$(gofmt -l . | tee /dev/tty)" != "" ]; then
-		echo "Please run 'gofmt -s -w .' for go source files"
+		echo -e "\e[1;31mPlease run 'gofmt -s -w .' for go source files\e[0m"
 		exit 1
 	fi
 
@@ -189,7 +189,7 @@ function release_repo_ci() {
 	pushd ${WORKING_DIR}
 
 	if [ ${#GITHUB_TOKEN} -eq 0 ]; then
-		echo "\$GITHUB_TOKEN is not set, abort"
+		echo -e "\e[1;31m\$GITHUB_TOKEN is not set, abort\e[0m"
 		exit 1
 	fi
 
