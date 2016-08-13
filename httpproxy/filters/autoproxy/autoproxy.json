@@ -43,7 +43,15 @@
 	"BlackList": {
 		"Enabled": true,
 		"Rules": [
-			"122.225.103.120",
+			"cm.g.doubleclick.net",
+			"googleads.g.doubleclick.net",
+			"news.766ba.net:6578",
+			"pagead2.googlesyndication.com",
+			"static.xihuwoool.cn",
+			"wn.pos.baidu.com",
+			"www.assoc-amazon.cn",
+			"122.225.103.120:8080",
+			"139.129.85.85"
 		],
 	},
 }
