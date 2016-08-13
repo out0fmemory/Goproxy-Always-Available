@@ -39,5 +39,11 @@
 	},
 	"MobileConfig": {
 		"Enabled": true,
-	}
+	},
+	"BlackList": {
+		"Enabled": true,
+		"Rules": [
+			"122.225.103.120",
+		],
+	},
 }

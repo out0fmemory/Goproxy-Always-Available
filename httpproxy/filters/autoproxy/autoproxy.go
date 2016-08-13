@@ -50,6 +50,10 @@ type Config struct {
 	MobileConfig struct {
 		Enabled bool
 	}
+	BlackList struct {
+		Enabled bool
+		Rules   []string
+	}
 }
 
 var (
@@ -73,6 +77,8 @@ type Filter struct {
 	GFWListEnabled       bool
 	GFWList              *GFWList
 	MobileConfigEnabled  bool
+	BlackListEnabled     bool
+	BlackListMatcher     *helpers.HostMatcher
 	SiteFiltersEnabled   bool
 	SiteFiltersRules     *helpers.HostMatcher
 	RegionFiltersEnabled bool
@@ -135,6 +141,8 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		ProxyPacCache:        lrucache.NewLRUCache(32),
 		GFWListEnabled:       config.GFWList.Enabled,
 		MobileConfigEnabled:  config.MobileConfig.Enabled,
+		BlackListEnabled:     config.BlackList.Enabled,
+		BlackListMatcher:     helpers.NewHostMatcher(config.BlackList.Rules),
 		GFWList:              &gfwlist,
 		Transport:            transport,
 		SiteFiltersEnabled:   config.SiteFilters.Enabled,
@@ -268,6 +276,21 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+	if f.BlackListEnabled {
+		if f.BlackListMatcher.Match(req.Host) {
+			return ctx, &http.Response{
+				StatusCode: http.StatusOK,
+				Header: http.Header{
+					"Content-Type": []string{"text/plain"},
+				},
+				Request:       req,
+				Close:         true,
+				ContentLength: 0,
+				Body:          nil,
+			}, nil
+		}
+	}
+
 	if f := filters.GetRoundTripFilter(ctx); f != nil {
 		return f.RoundTrip(ctx, req)
 	}
