@@ -238,6 +238,13 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 	host := helpers.GetHostName(req)
 
+	if f.BlackListEnabled {
+		if f.BlackListSiteMatcher.Match(host) {
+			glog.V(2).Infof("%s \"AUTOPROXY BlackList %s %s %s\"", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+			return ctx, filters.DummyRequest, nil
+		}
+	}
+
 	if f.SiteFiltersEnabled {
 		if f1, ok := f.SiteFiltersRules.Lookup(host); ok {
 			glog.V(2).Infof("%s \"AUTOPROXY SiteFilters %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
@@ -276,21 +283,6 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if f.BlackListEnabled {
-		if f.BlackListSiteMatcher.Match(req.Host) {
-			return ctx, &http.Response{
-				StatusCode: http.StatusOK,
-				Header: http.Header{
-					"Content-Type": []string{"text/plain"},
-				},
-				Request:       req,
-				Close:         true,
-				ContentLength: 0,
-				Body:          nil,
-			}, nil
-		}
-	}
-
 	if f := filters.GetRoundTripFilter(ctx); f != nil {
 		return f.RoundTrip(ctx, req)
 	}

@@ -65,6 +65,9 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for _, f := range h.RequestFilters {
 		ctx, req, err = f.Request(ctx, req)
 		// A roundtrip filter hijacked
+		if req == filters.DummyRequest {
+			return
+		}
 		if filters.GetHijacked(ctx) {
 			return
 		}
