@@ -19,12 +19,18 @@ type Config struct {
 		Enabled bool
 		Value   string
 	}
+	Host struct {
+		Enabled   bool
+		RewriteBy string
+	}
 }
 
 type Filter struct {
 	Config
 	UserAgentEnabled bool
 	UserAgentValue   string
+	HostEnabled      bool
+	HostRewriteBy    string
 }
 
 func init() {
@@ -51,6 +57,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		Config:           *config,
 		UserAgentEnabled: config.UserAgent.Enabled,
 		UserAgentValue:   config.UserAgent.Value,
+		HostEnabled:      config.Host.Enabled,
+		HostRewriteBy:    config.Host.RewriteBy,
 	}
 
 	return f, nil
@@ -64,6 +72,15 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	if f.UserAgentEnabled {
 		glog.V(3).Infof("REWRITE %#v User-Agent=%#v", req.URL.String(), f.UserAgentValue)
 		req.Header.Set("User-Agent", f.UserAgentValue)
+	}
+
+	if f.HostEnabled {
+		if host := req.Header.Get(f.HostRewriteBy); host != "" {
+			glog.V(3).Infof("REWRITE %#v Host=%#v", req.URL.String(), host)
+			req.Host = host
+			req.Header.Set("Host", req.Host)
+			req.Header.Del(f.HostRewriteBy)
+		}
 	}
 
 	return ctx, req, nil
