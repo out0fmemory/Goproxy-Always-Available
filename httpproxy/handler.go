@@ -107,7 +107,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	// Filter Response
 	for _, f := range h.ResponseFilters {
-		if resp == nil {
+		if resp == nil || resp == filters.DummyResponse {
 			return
 		}
 		ctx, resp, err = f.Response(ctx, resp)
