@@ -144,8 +144,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		go helpers.IoCopy(rconn, lconn)
 		helpers.IoCopy(lconn, rconn)
 
-		filters.SetHijacked(ctx, true)
-		return ctx, nil, nil
+		return ctx, filters.DummyResponse, nil
 	default:
 		helpers.FixRequestURL(req)
 		resp, err := f.transport.RoundTrip(req)

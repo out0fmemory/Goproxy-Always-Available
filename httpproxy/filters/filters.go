@@ -7,6 +7,11 @@ import (
 	"sync"
 )
 
+var (
+	DummyRequest  *http.Request  = &http.Request{}
+	DummyResponse *http.Response = &http.Response{}
+)
+
 type Filter interface {
 	FilterName() string
 }

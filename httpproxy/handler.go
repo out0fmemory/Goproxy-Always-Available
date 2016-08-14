@@ -64,11 +64,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	// Filter Request
 	for _, f := range h.RequestFilters {
 		ctx, req, err = f.Request(ctx, req)
-		// A roundtrip filter hijacked
 		if req == filters.DummyRequest {
-			return
-		}
-		if filters.GetHijacked(ctx) {
 			return
 		}
 		if err != nil {
@@ -89,8 +85,7 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var resp *http.Response
 	for _, f := range h.RoundTripFilters {
 		ctx, resp, err = f.RoundTrip(ctx, req)
-		// A roundtrip filter hijacked
-		if filters.GetHijacked(ctx) {
+		if resp == filters.DummyResponse {
 			return
 		}
 		// Unexcepted errors

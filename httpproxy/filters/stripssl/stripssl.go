@@ -173,8 +173,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 	if ln1, ok := filters.GetListener(ctx).(helpers.Listener); ok {
 		ln1.Add(c)
-		filters.SetHijacked(ctx, true)
-		return ctx, nil, nil
+		return ctx, filters.DummyRequest, nil
 	}
 
 	loConn, err := net.Dial("tcp", filters.GetListener(ctx).Addr().String())
@@ -185,8 +184,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	go helpers.IoCopy(loConn, c)
 	go helpers.IoCopy(c, loConn)
 
-	filters.SetHijacked(ctx, true)
-	return ctx, nil, nil
+	return ctx, filters.DummyRequest, nil
 }
 
 func (f *Filter) issue(host string) (_ *tls.Config, err error) {
