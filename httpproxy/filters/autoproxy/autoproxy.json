@@ -4,9 +4,10 @@
 		"Rules": {
 			"live.github.com": "direct",
 			"m.apkpure.com": "direct",
-			"rarbg.to": "direct",
-			"www.slideshare.net": "php",
 			"pastebin.com": "php",
+			"rarbg.to": "direct",
+			"www.rfa.org": "php",
+			"www.slideshare.net": "php",
 		},
 	},
 	"RegionFilters": {
