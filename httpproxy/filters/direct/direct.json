@@ -9,6 +9,10 @@
 			"DNSCacheExpiry": 3600,
 			"DNSCacheSize": 8192
 		},
+		"Proxy": {
+			"Enabled": false,
+			"URL": "socks5://127.0.0.1:1080",
+		},
 		"TLSClientConfig": {
 			"InsecureSkipVerify": false,
 			"ClientSessionCacheSize": 1000

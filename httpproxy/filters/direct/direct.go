@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
@@ -16,6 +17,7 @@ import (
 	"../../dialer"
 	"../../filters"
 	"../../helpers"
+	"../../proxy"
 	"../../storage"
 )
 
@@ -33,6 +35,10 @@ type Config struct {
 			RetryDelay     float32
 			DNSCacheExpiry int
 			DNSCacheSize   uint
+		}
+		Proxy struct {
+			Enabled bool
+			URL     string
 		}
 		TLSClientConfig struct {
 			InsecureSkipVerify     bool
@@ -99,6 +105,29 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		TLSHandshakeTimeout: time.Duration(config.Transport.TLSHandshakeTimeout) * time.Second,
 		MaxIdleConnsPerHost: config.Transport.MaxIdleConnsPerHost,
 		DisableCompression:  config.Transport.DisableCompression,
+	}
+
+	if config.Transport.Proxy.Enabled {
+		fixedURL, err := url.Parse(config.Transport.Proxy.URL)
+		if err != nil {
+			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
+		}
+
+		switch fixedURL.Scheme {
+		case "http", "https":
+			tr.Proxy = http.ProxyURL(fixedURL)
+			tr.Dial = nil
+			tr.DialTLS = nil
+		default:
+			dialer, err := proxy.FromURL(fixedURL, d, nil)
+			if err != nil {
+				glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
+			}
+
+			tr.Dial = dialer.Dial
+			tr.DialTLS = nil
+			tr.Proxy = nil
+		}
 	}
 
 	return &Filter{
