@@ -9,7 +9,7 @@ export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
-export GOSHA=${GOSHA:-upstream/master}
+export GOBRANCH=${GOBRANCH:-master}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
@@ -56,12 +56,12 @@ function build_go() {
 	curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
 	mv go go1.6
 
-	git clone https://github.com/phuslu/go
+	git clone --branch ${GOBRANCH} https://github.com/phuslu/go
 	cd go/src
 	git remote add -f upstream https://github.com/golang/go
-	git rebase ${GOSHA}
+	git rebase upstream/${GOBRANCH}
 	bash ./make.bash
-	grep -q 'machine github.com' ~/.netrc && git push -f origin master
+	grep -q 'machine github.com' ~/.netrc && git push -f origin ${GOBRANCH}
 
 	(set +x; \
 		echo '================================================================================' ;\

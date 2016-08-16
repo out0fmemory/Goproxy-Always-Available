@@ -2,6 +2,10 @@ sudo: false
 
 language: bash
 
+env:
+  global:
+    - GOBRANCH=release-branch.go1.7
+
 script:
   - cd /tmp
   - bash -xe < <(curl -kL https://github.com/phuslu/goproxy/raw/master/assets/build/ci.sh)
