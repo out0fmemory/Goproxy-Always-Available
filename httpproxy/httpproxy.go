@@ -20,6 +20,7 @@ import (
 	_ "./filters/php"
 	_ "./filters/ratelimit"
 	_ "./filters/rewrite"
+	_ "./filters/ssh2"
 	_ "./filters/stripssl"
 	_ "./filters/vps"
 )

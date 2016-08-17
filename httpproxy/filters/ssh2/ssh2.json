@@ -1,0 +1,15 @@
+{
+	"Servers": [
+		{
+			"Addr": "example.com:22",
+			"Username": "user",
+			"Password": "123456",
+		}
+	],
+	"Transport": {
+		"DisableKeepAlives": false,
+		"DisableCompression": false,
+		"TLSHandshakeTimeout": 4,
+		"MaxIdleConnsPerHost": 16
+	}
+}
