@@ -7,7 +7,4 @@
 			"SSLVerify": false
 		}
 	],
-	"Sites": [
-		"*"
-	]
 }

@@ -28,7 +28,6 @@ type Config struct {
 		Password  string
 		SSLVerify bool
 	}
-	Sites []string
 }
 
 type Filter struct {
@@ -78,7 +77,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	return &Filter{
 		Servers: servers,
-		Sites:   helpers.NewHostMatcher(config.Sites),
 	}, nil
 }
 
@@ -87,10 +85,6 @@ func (p *Filter) FilterName() string {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if !f.Sites.Match(req.Host) {
-		return ctx, nil, nil
-	}
-
 	i := 0
 	switch path.Ext(req.URL.Path) {
 	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":

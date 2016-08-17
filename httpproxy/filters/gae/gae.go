@@ -37,7 +37,6 @@ type Config struct {
 	ForceHTTP2      bool
 	EnableDeadProbe bool
 	EnableRemoteDNS bool
-	Sites           []string
 	SiteToAlias     map[string]string
 	Site2Alias      map[string]string
 	HostMap         map[string][]string
@@ -354,7 +353,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		ForceGAEStrings:    forceGAEStrings,
 		ForceGAESuffixs:    forceGAESuffixs,
 		FakeOptionsMatcher: helpers.NewHostMatcherWithStrings(config.FakeOptions),
-		SiteMatcher:        helpers.NewHostMatcher(config.Sites),
 		DirectSiteMatcher:  helpers.NewHostMatcherWithString(config.Site2Alias),
 	}
 
@@ -370,10 +368,6 @@ func (f *Filter) FilterName() string {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if !f.SiteMatcher.Match(req.Host) {
-		return ctx, nil, nil
-	}
-
 	var tr http.RoundTripper = f.GAETransport
 
 	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) {

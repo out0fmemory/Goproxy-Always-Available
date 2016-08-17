@@ -10,9 +10,6 @@
 	"ForceHTTP2": false,
 	"EnableDeadProbe": true,
 	"EnableRemoteDNS": false,
-	"Sites": [
-		"*"
-	],
 	"HostMap" : {
 		"google_hk": [
 			"mail.google.com",

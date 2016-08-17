@@ -7,9 +7,6 @@
 			"Host": "",
 		}
 	],
-	"Sites": [
-		"*"
-	],
 	"Transport": {
 		"Dialer": {
 			"Timeout": 10,

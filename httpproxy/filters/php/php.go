@@ -14,7 +14,6 @@ import (
 
 	"../../dialer"
 	"../../filters"
-	"../../helpers"
 	"../../proxy"
 	"../../storage"
 )
@@ -30,7 +29,6 @@ type Config struct {
 		SSLVerify bool
 		Host      string
 	}
-	Sites     []string
 	Transport struct {
 		Dialer struct {
 			Timeout        int
@@ -55,7 +53,6 @@ type Config struct {
 type Filter struct {
 	Config
 	Transport *Transport
-	Sites     *helpers.HostMatcher
 }
 
 func init() {
@@ -181,7 +178,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			RoundTripper: tr,
 			Servers:      servers,
 		},
-		Sites: helpers.NewHostMatcher(config.Sites),
 	}, nil
 }
 
@@ -190,10 +186,6 @@ func (p *Filter) FilterName() string {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	if !f.Sites.Match(req.Host) {
-		return ctx, nil, nil
-	}
-
 	resp, err := f.Transport.RoundTrip(req)
 	if err != nil {
 		return ctx, nil, err
