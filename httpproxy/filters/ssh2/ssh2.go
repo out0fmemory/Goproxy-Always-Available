@@ -1,11 +1,9 @@
 package ssh2
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -140,22 +138,13 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		resp, err := f.Transport.RoundTrip(req)
 
 		if err != nil {
-			glog.Errorf("%s \"SSH2 %s %s %s\" error: %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, err)
-			data := err.Error()
-			resp = &http.Response{
-				StatusCode:    http.StatusBadGateway,
-				Header:        http.Header{},
-				Request:       req,
-				Close:         true,
-				ContentLength: int64(len(data)),
-				Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
-			}
-			err = nil
-		} else {
-			if req.RemoteAddr != "" {
-				glog.V(2).Infof("%s \"SSH2 %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
-			}
+			return ctx, nil, err
 		}
+
+		if req.RemoteAddr != "" {
+			glog.V(2).Infof("%s \"SSH2 %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+		}
+
 		return ctx, resp, err
 	}
 }
