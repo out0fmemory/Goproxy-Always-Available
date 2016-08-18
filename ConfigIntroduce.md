@@ -1,33 +1,41 @@
-配置介绍
+配置介绍(非官方)
 
 ## 前言   
 
-　　以当前r861正式版为准。以后版本有出入再修改。这是新人入门用的，不是最详细的配置介绍，以能运行能用为准。最主要的配置文件为 httpproxy.json 和 gae.json 。没有写到的地方(选项或者配置文件)一般不要修改，如要修改，前提是你理解它的具体作用或者用途。   
+　　以r937版为准。以后版本有出入再修改。这是新人入门用的，不是最详细的配置介绍，以能运行能用为准。最主要的配置文件为 httpproxy.json 和 gae.json 。没有写到的地方(选项或者配置文件)一般不要修改，如要修改，前提是你理解它的具体作用或者用途。   
 　　注：   
 a．首次运行 GoProxy ，Windows 系统建议用 "右键" --> "以管理员身份运行" ，以解决证书问题(自动导入证书)。   
-b．当前版本已支持 autorange 和 http2 。默认配置已开启这两项。   
+b．当前版本已支持 autorange 和 HTTP/2 。默认配置已开启这两项(有时默认配置会关闭这两项，具体以实际情况为准)。   
 c．当前版本格式已较宽松，即末尾有无逗号都可以。如："ID1","ID2","ID3", 和 "ID1","ID2","ID3" 效果一样。   
 d．当前版本支持 xxx.user.json 这种命名格式文件(即，用户配置文件)。升级最新版时可以直接覆盖掉原来的 xxx.json 。   
 >方法一：如 gae.json，复制 gae.json 为 gae.user.json 修改并保存。   
 >
->方法二：如 gae.json，使用 [notepad++](http://notepad-plus-plus.org/) 或者 [notepad2](http://www.flos-freeware.ch/notepad2.html) 新建名为 gae.user.json 的文件，文件格式选 UTF-8, 内容举例如下：   
+>方法二：如 gae.json，使用 [notepad++](http://notepad-plus-plus.org/) 或者 [notepad2](http://www.flos-freeware.ch/notepad2.html) 新建名为 gae.user.json 的文件，文件格式选 "UTF-8", 内容举例如下：   
 >
 >	```
 >	{
 >		"AppIDs": [
->			"ID1",
->			"ID2",
->			"ID3",
+>			"AppID1",
+>			"AppID2",
+>			"AppID3",
 >			],
 >		"Password": "123456",
 >	}
 >	```
 >
->即：在新的 gae.user.json 文件里只加上你想要修改的内容(选项)。不要忘了外层大括号"{}"。   
+>即：在新的 gae.user.json 文件里只须加上你想要修改的内容(选项)。不要忘了外层大括号"{}"。   
+>
+>补充：   
+>这里的 UTF-8 编码 在不同编辑器有不同的叫法，所以要以你所用的编辑器为准。具体Google 。   
+>notepad++ 中是 "UTF-8 无BOM格式" (UTF-8 without BOM)。   
+>notepad2 中是 "UTF-8" 。   
+>EditPlus 中是 "UTF-8" 。   
+>
 
 e．善用搜索。礼貌提问。提问之前最好搜索一下。没有人有问答你问题的义务。别人都很忙，别人时间都是宝贵的。   
-f．不要使用 Windows 系统自带的“记事本”来修改任何配置文件，容易出错(大多数是编码问题)。推荐用上面两个编辑器来修改。   
+f．不要使用 Windows 系统自带的 "记事本" 来修改任何配置文件，容易出错(大多数是编码问题)。推荐用上面两个编辑器来修改。   
 g．当前版本已支持双斜杠 "//" 作为注释符号。去掉注释符号即使用，加上注释符号即关闭该功能。   
+h．有很多功能的开启都是跨越几个配置文件，且有好多个参数影响。切记。   
 
 ## httpproxy.json 配置文件
 
@@ -36,8 +44,8 @@ GoProxy 代理设置
 >这里分两大部分。 "Default" 和 "PHP" 。这两种代理模式可同时开启。   
 >
 >	```
->	"Default" 选项: 即 GAE 代理。此项配合 gae.json 配置文件使用。
->	"PHP" 选项: 即 PHP 代理。此项配合 php.json 配置文件使用。
+>	"Default" 选项: 即 GAE 代理设置。此项配合 gae.json 配置文件使用。
+>	"PHP" 选项: 即 PHP 代理设置。此项配合 php.json 配置文件使用。
 >	```
 >
 
@@ -67,7 +75,7 @@ GoProxy 代理设置
 >    
 >注：   
 >a．第一种是只能本机使用。   
->b．第二种是多台电脑共享 GoProxy 代理时使用。当然本机也能用。   
+>b．第二种是多台电脑共享 GoProxy 代理时使用。本机也能使用。   
 
 * "KeepAlivePeriod" 子项
 >作用：设置持久连接保持的时间(时长)。
@@ -83,43 +91,43 @@ GoProxy 代理设置
 >
 
 * "RequestFilters" 子项
->作用：请求过滤。   
+>作用：请求筛选。   
 >
 >一般不要修改。   
 >
 >	```
 >	"auth": 认证设置？此项配合 auth.json 配置文件使用。要使用此功能就必须先开启，下同。
->	"rewrite": 重写配置？此项配合 rewrite.json 配置文件使用。
->	"autoproxy": 自动代理配置。此项配合 autoproxy.json 配置文件使用。
->	"stripssl": 使用SSL证书。 此项配合 stripssl.json 配置文件使用。
->	"autorange": 自动分段传输(下载)。 此项配合 autorange.json 配置文件使用。
+>	"rewrite": 重写设置(自定义UserAgent)。此项配合 rewrite.json 配置文件使用。
+>	"autoproxy": 自动代理设置。此项配合 autoproxy.json 配置文件使用。
+>	"stripssl": 伪造SSL证书设置。 此项配合 stripssl.json 配置文件使用。
+>	"autorange": 自动分段传输(下载)设置。 此项配合 autorange.json 配置文件使用。
 >	```
 >
 
 * "RoundTripFilters" 子项
->作用：往返过滤。   
+>作用：往返筛选。   
 >
 >一般不要修改。   
 >
 >	```
->	"autoproxy": 自动代理配置。此项配合 autoproxy.json 配置文件使用。要使用此功能就必须先开启，下同。
+>	"autoproxy": 自动代理设置。此项配合 autoproxy.json 配置文件使用。要使用此功能就必须先开启，下同。
 >	"auth": 认证设置？此项配合 auth.json 配置文件使用。
->	"vps": vps代理。此项配合 vps.json 配置文件使用。
->	"php": php代理。此项配合 php.json 配置文件使用。
->	"gae": gae代理。此项配合 gae.json 配置文件使用。
->	"direct": 直连。此项配合 direct.json 配置文件使用。
+>	"vps": vps代理设置。此项配合 vps.json 配置文件使用。
+>	"php": php代理设置。此项配合 php.json 配置文件使用。
+>	"gae": gae代理设置。此项配合 gae.json 配置文件使用。
+>	"direct": 直连设置。此项配合 direct.json 配置文件使用。
 >	```
 >
 
 * "ResponseFilters" 子项
->作用：响应过滤。   
+>作用：响应筛选。   
 >
 >一般不要修改。   
 >
 >	```
->	"autorange": 自动分段传输(下载)。 此项配合 autorange.json 配置文件使用。要使用此功能就必须先开启，下同。
->	"rewrite": 自定义UserAgent。此项配合 rewrite.json 配置文件使用。
->	"ratelimit": 限速。 此项配合 ratelimit.json 配置文件使用。
+>	"autorange": 自动分段传输(下载)设置。 此项配合 autorange.json 配置文件使用。要使用此功能就必须先开启，下同。
+>	"rewrite": 重写设置。此项配合 rewrite.json 配置文件使用。
+>	"ratelimit": 限速设置。 此项配合 ratelimit.json 配置文件使用。
 >	```
 >
 
@@ -176,6 +184,7 @@ GAE代理配置。
 
 * "SSLVerify" 选项
 >作用：验证服务器的SSL证书。检查服务器的SSL证书是否是 Google 证书。   
+>[Google 证书](https://pki.google.com/GIAG2.crt)   
 >此项配合 "GoogleG2KeyID" 选项使用。   
 >
 >参数：   
@@ -210,25 +219,25 @@ GAE代理配置。
 >	```
 
 * "DisableHTTP2" 选项
->作用：是否关闭 http2 模式，使用 http1 模式。不懂或者不理解 http1 和 http2 的区别不要修改。   
+>作用：是否关闭 HTTP/2 模式，使用 HTTP/1.1 模式。不懂或者不理解 HTTP/1.1 和 HTTP/2 的区别不要修改。   
 >
 >参数：   
 >
 >	```
->	false : 开启 http2 模式。先验证IP是否支持http2，否则使用http1。   
->	true : 关闭 http2 模式，所有IP都使用 http1 模式。   
+>	false : 开启 HTTP/2 模式。先验证IP是否支持 HTTP/2 ，否则使用 HTTP/1.1 。   
+>	true : 关闭 HTTP/2 模式，所有IP都使用 HTTP/1.1 模式。   
 >	```
 >
 >此项配合 "HostMap" 选项使用。   
 
 * "ForceHTTP2" 选项
->作用：强制开启 http2 模式。不懂或者不理解 http1 和 http2 的区别不要修改。   
+>作用：强制开启 HTTP/2 模式。不懂或者不理解 HTTP/1.1 和 HTTP/2 的区别不要修改。   
 >
 >参数：   
 >
 >	```
 >	false : 默认。   
->	true : 强制开启 http2 模式。所有IP都使用 http2 模式。   
+>	true : 强制开启 HTTP/2 模式。所有IP都使用 HTTP/2 模式。   
 >	```
 >
 >注：   
@@ -260,15 +269,9 @@ GAE代理配置。
 >	true : 开启。   
 >	```
 
-* "Sites" 选项
->作用：域名过滤。   
->
->	```
->	"*" 号表示所有的网址(网站)都走 GAE 代理，即，不做任何过滤。这里一般不用改。
->	```
-
 * "HostMap" 选项
->这里填写你找到的IP。格式如下：   
+>hosts映射。即，把所有的 "Google" 域名映射到下面的IP地址(或者是DNS解析得到的IP地址)。   
+>这里填写你找到的IP。对多IP有很好的支持，推荐填入N多个IP。格式如下：   
 >
 >	```
 >	"HostMap" : {
@@ -294,11 +297,13 @@ GAE代理配置。
 >d．此项配合 "SiteToAlias" 选项使用。   
 
 * "SiteToAlias" 选项
+>"Google" 网站别名。即，"Google" 域名映射到("HostMap" 里的)哪一个上面("google_hk" 或者 "google_cn")。   
+>支持通配符 "*" 。   
 >此项配合 "HostMap" 选项使用。   
 >
 >作用：   
 >a．简单说是让哪些谷歌服务(搜索、广告、视频)翻不翻墙(使用谷歌中国IP还是使用谷歌国外IP)。   
->b．添加在这里的表示直连。相应的，不添加在这里的表示走 GAE 代理。   
+>b．添加在这里的表示直连("HostMap")。相应的，不添加在这里的表示走 GAE 代理。   
 >
 >常用例子：   
 >
@@ -317,11 +322,10 @@ GAE代理配置。
 >注：使用 youtube 直连，可以解决"上传用户已禁止在您的国家/地区播放此视频"问题。但也可能会导致某些视频无法播放，如果是这样，再改回来(注释掉)。
 
 * "ForceGAE" 选项
->作用：哪些网址强制走GAE代理。只支持 Google 域名？   
-
-* "ForceDeflate" 选项
->作用：哪些网址强制使用"压缩"功能？   
->说明：HTTP协议 -- Accept-Encoding/Content-Encoding    
+>作用：哪些网址强制走GAE代理。只支持 "Google" 域名。   
+>一些 "SiteToAlias" 里的 "Google" 网站直连 "HostMap" IP会出现问题，所以让其强制走 GAE 代理来排除。   
+>此项配合 "SiteToAlias" 和 "HostMap" 选项使用。   
+>
 
 * "TLSConfig" 选项
 >作用：TLS协议配置。   
@@ -340,7 +344,7 @@ GAE代理配置。
 >
 
 * "GoogleG2KeyID" 选项
->作用：Google 证书。(base64编码)   
+>作用：Google 证书。(Base64编码)   
 >此项配合 "SSLVerify" 选项使用。   
 
 * "FakeOptions" 选项
@@ -383,7 +387,7 @@ GAE代理配置。
 >	>
 >
 >	* "Proxy" 子项
->	>作用: GAE 代理的前置代理设置。前置代理支持 http、socks4 和 socks5 。   
+>	>作用: GAE 代理的前置代理设置。前置代理支持 http、ssh、socks4 和 socks5 。   
 >	>
 >	>	```
 >	>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
@@ -399,9 +403,12 @@ GAE代理配置。
 >	>	socks4a://XXX.XXX.XXX.XXX:1080       socks4a代理
 >	>	socks://XXX.XXX.XXX.XXX:1080       socks5代理
 >	>	socks5://XXX.XXX.XXX.XXX:1080       socks5代理
+>	>	ssh://XXX.XXX.XXX.XXX:1080       ssh代理
+>	>	ssh://XXX.XXX.XXX.XXX:1080       ssh代理
 >	>	```
 >	>
 >	> (r833 httpproxy/proxy/proxy.go#L86-L90)   
+>	> (r932 httpproxy/filters/gae/gae.go#L249-L264)   
 >	>
 >	>使用前置代理时，关闭以下选项：   
 >	>a．关闭 "ForceHTTP2" 选项。   
@@ -409,7 +416,7 @@ GAE代理配置。
 >	>
 >
 >	* "DisableCompression" 子项
->	>作用: 是否关闭压缩。   
+>	>作用: 是否关闭压缩。(Accept-Encoding/Accept: Gzip)   
 >	>
 >	>参数：   
 >	>
@@ -484,14 +491,6 @@ PHP 代理配置。
 >	
 >	```
 
-* "Sites" 选项
->作用：域名过滤。   
->
->	```
->	"*" 号表示所有的网址(网站)都走 PHP 代理，即，不做任何过滤。这里一般不用改。
->	```
->
-
 * "Transport" 选项
 >作用：传输设置。   
 >
@@ -510,7 +509,7 @@ PHP 代理配置。
 >	>
 >
 >	* "Proxy" 子项
->	>作用：PHP 代理的前置代理设置。前置代理支持 http、https、socks4 和 socks5 。   
+>	>作用：PHP 代理的前置代理设置。前置代理支持 http、https、ssh、socks4 和 socks5 。   
 >	>
 >	>	```
 >	>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
@@ -527,9 +526,12 @@ PHP 代理配置。
 >	>	socks4a://XXX.XXX.XXX.XXX:1080       socks4a代理
 >	>	socks://XXX.XXX.XXX.XXX:1080       socks5代理
 >	>	socks5://XXX.XXX.XXX.XXX:1080       socks5代理
+>	>	ssh://XXX.XXX.XXX.XXX:1080       ssh代理
+>	>	ssh2://XXX.XXX.XXX.XXX:1080       ssh代理
 >	>	```
 >	>
 >	> (r833 httpproxy/proxy/proxy.go#L86-L90)   
+>	> (r932 httpproxy/filters/php/php.go#L154-L169)   
 >	>
 >	>使用前置代理时，关闭以下选项：   
 >	>a．关闭配置文件 gae.json 里的 "ForceHTTP2" 选项。   
@@ -581,8 +583,7 @@ PHP 代理配置。
 
 ## autoproxy.json 配置文件
 
-自动代理配置。包含 SiteFilters 、 pac 和 gfwlist 三种模式。   
-强调：默认情况下，autoproxy 在 GoProxy 中优先级最高(即，httpproxy.json --> RequestFilters --> autoproxy 开启的情况下)。   
+自动代理配置。包含 SiteFilters 、 pac 和 gfwlist 等模式。   
 
 * "SiteFilters" 选项
 >作用：指定某个域名使用特定代理或者直连。   
@@ -629,6 +630,8 @@ PHP 代理配置。
 >	>	```
 >	>	"proxy.pac": 自定义 PAC 文件名。默认没有此文件，第一次使用 PAC 模式时才会自动生成。可自定义此 PAC 文件。
 >	>	
+>	>	"GoProxyAPN.mobileconfig": iOS APN 配置文件。此项配合 "MobileConfig" 选项使用。
+>	>	
 >	>	"GoProxy.crt": 证书下载。用浏览器打开地址 http://127.0.0.1:8087/ ，下载此证书，导入到你的操作系统或浏览器。
 >	>	
 >	>	```
@@ -641,8 +644,19 @@ PHP 代理配置。
 >	>	>具体步骤如下：   
 >	>	>
 >	>	>	```
->	>	>	打开 FireFox-->选项-->高级-->加密-->查看证书-->证书机构-->导入证书, 选择 GoProxy.crt , 勾选所有项，导入。
+>	>	>	方法一：
+>	>	>	1．下载 GoProxy.crt 证书。
+>	>	>	
+>	>	>	2．打开 FireFox-->选项-->高级-->加密-->查看证书-->证书机构-->导入证书, 选择 GoProxy.crt , 勾选所有项，导入。
 >	>	>	```
+>	>	>
+>	>	>	```
+>	>	>	方法二(快捷方法)：
+>	>	>	1．用浏览器打开地址 http://127.0.0.1:8087/ ， 单击 "GoProxy.crt" 。
+>	>	>	
+>	>	>	2．弹出"下载证书"窗口，勾选所有项，按"确定"导入。
+>	>	>	```
+>	>	>
 >	>
 >	>c．Linux 系统导入证书。   
 >	>	>首次运行，以 root 用户(权限)运行，会自动导入证书。   
@@ -671,6 +685,27 @@ PHP 代理配置。
 >	```
 >
 
+* "MobileConfig" 选项
+>作用：移动设备(手机/平板) APN 配置(开关)。   
+>此项配合 "GoProxyAPN.mobileconfig" 参数 和 rewrite.json 配置文件里的 "Host" 选项 使用。   
+>
+>	```
+>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
+>	```
+>
+
+* "BlackList" 选项
+>作用：网站黑名单列表(或者说去广告)。   
+>
+>	```
+>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
+>	```
+>
+>	```
+>	"SiteRules": 屏蔽网站(网址/IP)列表。
+>	```
+>
+
 ## autorange.json 配置文件
 
 文件(特定范围)自动分段传输(下载)。   
@@ -686,7 +721,7 @@ PHP 代理配置。
 >
 
 * "Sites" 选项
->作用：域名过滤。即，自定义哪些网址(网站)使用 autorange 功能。   
+>作用：域名筛选。即，自定义哪些网站(网址)使用 autorange 功能。   
 >此项配合 "SupportFilters" 选项使用。   
 
 * "SupportFilters" 选项
@@ -710,7 +745,7 @@ PHP 代理配置。
 直连配置。   
 
 * "Transport" 选项
-> 作用：传输设置。
+> 作用：传输设置。   
 >
 >	* "Dialer" 子项
 >	>作用：连接配置。
@@ -724,6 +759,36 @@ PHP 代理配置。
 >	>	"DNSCacheExpiry": DNS缓存时间(TTL)。
 >	>	"DNSCacheSize": DNS缓存大小。
 >	>	```
+>	>
+>
+>	* "Proxy" 子项
+>	>作用：direct(直连) 的前置代理设置。前置代理支持 http、https、ssh、socks4 和 socks5 。   
+>	>
+>	>	```
+>	>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
+>	>	```
+>	>	```
+>	>	"URL": 前置代理地址。
+>	>	
+>	>	具体格式如下：
+>	>	
+>	>	http://XXX.XXX.XXX.XXX:1080         http1代理(http代理)
+>	>	http1://XXX.XXX.XXX.XXX:1080         http1代理(http代理)
+>	>	https://XXX.XXX.XXX.XXX:1080         https代理
+>	>	socks4://XXX.XXX.XXX.XXX:1080       socks4代理
+>	>	socks4a://XXX.XXX.XXX.XXX:1080       socks4a代理
+>	>	socks://XXX.XXX.XXX.XXX:1080       socks5代理
+>	>	socks5://XXX.XXX.XXX.XXX:1080       socks5代理
+>	>	ssh://XXX.XXX.XXX.XXX:1080       ssh代理
+>	>	ssh2://XXX.XXX.XXX.XXX:1080       ssh代理
+>	>	```
+>	>
+>	> (r833 httpproxy/proxy/proxy.go#L86-L90)   
+>	> (r932 httpproxy/filters/direct/direct.go#L110-L132)   
+>	>
+>	>使用前置代理时，关闭以下选项：   
+>	>a．关闭配置文件 gae.json 里的 "ForceHTTP2" 选项。   
+>	>b．关闭配置文件 gae.json 里的 "EnableDeadProbe" 选项。   
 >	>
 >
 >	* "TLSClientConfig" 子项
@@ -746,7 +811,7 @@ PHP 代理配置。
 >	>	```
 >
 >	* "DisableCompression" 子项
->	>作用：是否关闭压缩。(Accept-Encoding)   
+>	>作用：是否关闭压缩。(Accept-Encoding/Accept: Gzip)   
 >	>
 >	>参数：   
 >	>
@@ -779,10 +844,10 @@ PHP 代理配置。
 
 ## rewrite.json 配置文件
 
-重写配置？
+(http头域)重写配置。   
 
 * "UserAgent" 选项
->作用：自定义(伪装)用户代理请求头(UserAgent)。   
+>作用：http头域User-Agent重写。即，自定义(或伪装)用户代理请求头(UserAgent)。   
 >
 >	* "Enabled" 子项
 >	>作用：选项开关。   
@@ -797,7 +862,7 @@ PHP 代理配置。
 >	>开启 "UserAgent" 的步骤具体如下：   
 >	>
 >	>	```
->	>	1. httpproxy.json 配置文件 --> "Default" 选项 --> "ResponseFilters" 子项，去掉 "rewrite" 前面的双斜杠 "//" 注释符号。
+>	>	1. httpproxy.json 配置文件 --> "Default" 选项 --> "RequestFilters" 子项，去掉 "rewrite" 前面的双斜杠 "//" 注释符号。
 >	>	
 >	>	2. 此配置文件里 "Enabled" 子项的参数修改为 "true"。
 >	>	```
@@ -807,11 +872,22 @@ PHP 代理配置。
 >	>
 >
 
-* (无用项--只作格式化用)
+* "Host" 选项
+>作用：http头域Host重写。   
+>
+>	```
+>	"Enabled": 选项开关。参数: true(开启) 或者 false(关闭)。
+>	
+>	"RewriteBy": 重写的具体字段(或者值)。"X-Online-Host" 这个主要用于移动平台(wap方式)，是一个私有协议字段。
+>	```
+>
+>补充：   
+>"X-Online-Host" 字段 配合 autoproxy.json 配置文件里的 "MobileConfig" 选项 使用。
+>
 
 ## stripssl.json 配置文件
 
-替换https/ssl证书？   
+替换或伪造https/ssl证书。   
 
 * "RootCA" 选项
 >作用：SSL根证书生成设置。   
@@ -829,7 +905,32 @@ PHP 代理配置。
 >作用：ssl strip (尝试的)特定端口。(tlsConn.Handshake)   
 
 * "Sites" 选项
->作用：域名过滤。   
+>作用：域名筛选。   
+
+## ssh2.json 配置文件
+
+ssh2 代理配置。   
+
+* "servers" 选项
+>服务器端配置。   
+>
+>	```
+>	"Addr": ssh2代理地址。
+>	"Username": 用户名。
+>	"Password": 密码。
+>	```
+>
+
+* "Transport" 选项
+> 作用：传输设置。   
+>
+>	```
+>	"DisableKeepAlives": 是否关闭持久连接。
+>	"DisableCompression": 是否关闭压缩。
+>	"TLSHandshakeTimeout": TLS握手超时。   
+>	"MaxIdleConnsPerHost": 最大闲置连接数目。   
+>	```
+>
 
 ## vps.json 配置文件
 
@@ -839,22 +940,14 @@ VPS 代理配置。
 >服务器端配置。   
 >
 >	```
->	"Url": VPS代理地址(网址)
->	"Username": 用户名
->	"Password": 密码
->	"SSLVerify": ssl证书验证
+>	"Url": VPS代理地址(网址)。
+>	"Username": 用户名。
+>	"Password": 密码。
+>	"SSLVerify": ssl证书验证。
 >	```
 >
 
-* "Sites" 选项
->本地端配置。即，域名过滤。   
->
->	```
->	"*" 号表示所有的网址(网站)都走 VPS 代理，即，不做任何过滤。这里一般不用改。
->	```
->
->如需自定义，可以在这修改。格式参考 autorange.json 配置文件 "Sites" 选项。   
->
+* (无用项--只作格式化用)
 
 ## addto-startup.vbs 脚本文件
 
