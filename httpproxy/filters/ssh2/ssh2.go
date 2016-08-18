@@ -1,8 +1,11 @@
 package ssh2
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"time"
 
@@ -11,6 +14,7 @@ import (
 	"golang.org/x/crypto/ssh"
 
 	"../../filters"
+	"../../helpers"
 	"../../storage"
 )
 
@@ -98,11 +102,60 @@ func (p *Filter) FilterName() string {
 }
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
-	resp, err := f.Transport.RoundTrip(req)
-	if err != nil {
-		return ctx, nil, err
-	} else {
-		glog.V(2).Infof("%s \"PHP %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+	switch req.Method {
+	case "CONNECT":
+		glog.V(2).Infof("%s \"SSH2 %s %s %s\" - -", req.RemoteAddr, req.Method, req.Host, req.Proto)
+		rconn, err := f.Transport.Dial("tcp", req.Host)
+		if err != nil {
+			return ctx, nil, err
+		}
+
+		rw := filters.GetResponseWriter(ctx)
+
+		hijacker, ok := rw.(http.Hijacker)
+		if !ok {
+			return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Hijacker", rw)
+		}
+
+		flusher, ok := rw.(http.Flusher)
+		if !ok {
+			return ctx, nil, fmt.Errorf("http.ResponseWriter(%#v) does not implments http.Flusher", rw)
+		}
+
+		rw.WriteHeader(http.StatusOK)
+		flusher.Flush()
+
+		lconn, _, err := hijacker.Hijack()
+		if err != nil {
+			return ctx, nil, fmt.Errorf("%#v.Hijack() error: %v", hijacker, err)
+		}
+		defer lconn.Close()
+
+		go helpers.IoCopy(rconn, lconn)
+		helpers.IoCopy(lconn, rconn)
+
+		return ctx, filters.DummyResponse, nil
+	default:
+		helpers.FixRequestURL(req)
+		resp, err := f.Transport.RoundTrip(req)
+
+		if err != nil {
+			glog.Errorf("%s \"SSH2 %s %s %s\" error: %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, err)
+			data := err.Error()
+			resp = &http.Response{
+				StatusCode:    http.StatusBadGateway,
+				Header:        http.Header{},
+				Request:       req,
+				Close:         true,
+				ContentLength: int64(len(data)),
+				Body:          ioutil.NopCloser(bytes.NewReader([]byte(data))),
+			}
+			err = nil
+		} else {
+			if req.RemoteAddr != "" {
+				glog.V(2).Infof("%s \"SSH2 %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			}
+		}
+		return ctx, resp, err
 	}
-	return ctx, resp, nil
 }
