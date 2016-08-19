@@ -11,8 +11,8 @@
 # Should-Stop:       $local_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Monitor for goproxy activity
-# Description:       goproxy is a go proxy
+# Short-Description: goproxy
+# Description:       a go proxy
 ### END INIT INFO
 
 # **NOTE** bash will exit immediately if any command exits with non-zero.
@@ -24,7 +24,8 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=/var/log/ &
+    mkdir -p /var/log/goproxy
+    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=/var/log/goproxy &
     echo "${PACKAGE_NAME}."
 }
 
