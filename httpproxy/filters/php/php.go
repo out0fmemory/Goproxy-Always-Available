@@ -104,7 +104,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
 		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
-		LoopbackAddrs:  nil,
+		BlackList:      nil,
 		Level:          2,
 	}
 

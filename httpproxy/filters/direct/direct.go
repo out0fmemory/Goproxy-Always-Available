@@ -85,12 +85,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
 		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
-		LoopbackAddrs:  make(map[string]struct{}),
+		BlackList:      lrucache.NewLRUCache(1024),
 	}
 
 	if ips, err := helpers.LocalInterfaceIPs(); err == nil {
 		for _, ip := range ips {
-			d.LoopbackAddrs[ip.String()] = struct{}{}
+			d.BlackList.Set(ip.String(), struct{}{}, time.Time{})
 		}
 	}
 

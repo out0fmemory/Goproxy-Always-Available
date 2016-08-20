@@ -25,7 +25,7 @@ type Dialer struct {
 	RetryDelay     time.Duration
 	DNSCache       lrucache.Cache
 	DNSCacheExpiry time.Duration
-	LoopbackAddrs  map[string]struct{}
+	BlackList      lrucache.Cache
 	Level          int
 }
 
@@ -41,8 +41,8 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 				if host, port, err := net.SplitHostPort(address); err == nil {
 					if ips, err := net.LookupIP(host); err == nil && len(ips) > 0 {
 						ip := ips[0].String()
-						if d.LoopbackAddrs != nil {
-							if _, ok := d.LoopbackAddrs[ip]; ok {
+						if d.BlackList != nil {
+							if _, ok := d.BlackList.Get(ip); ok {
 								return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%s)", host, ip))
 							}
 						}
