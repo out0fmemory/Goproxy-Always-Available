@@ -4,7 +4,7 @@ language: bash
 
 env:
   global:
-    - GOBRANCH=release-branch.go1.7
+    - GOBRANCH=master
 
 script:
   - cd /tmp
