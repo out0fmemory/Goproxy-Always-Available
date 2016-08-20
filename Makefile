@@ -1,8 +1,8 @@
 REVSION = $(shell git rev-list --count HEAD)
 HTTP2REV = $(shell (cd $$GOPATH/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h"))
 
-PACKAGE = goproxy
 REPO = $(shell git rev-parse --show-toplevel)
+PACKAGE = $(shell basename $(REPO))
 BUILDROOT = $(REPO)/build
 STAGEDIR = $(BUILDROOT)/stage
 OBJECTDIR = $(BUILDROOT)/obj
@@ -23,7 +23,7 @@ else ifeq ($(GOOS), darwin)
 	GOPROXY_DISTEXT = .tar.bz2
 else
 	GOPROXY_EXE = $(PACKAGE)
-	GOPROXY_STAGEDIR = $(STAGEDIR)/goproxy
+	GOPROXY_STAGEDIR = $(STAGEDIR)/$(PACKAGE)
 	GOPROXY_DISTCMD = XZ_OPT=-9 tar cvJpf
 	GOPROXY_DISTEXT = .tar.xz
 endif
@@ -69,7 +69,7 @@ $(GOPROXY_DIST): $(OBJECTS)
 	mkdir -p $(DISTDIR) $(STAGEDIR) $(GOPROXY_STAGEDIR)
 	cp $(OBJECTS) $(SOURCES) $(GOPROXY_STAGEDIR)
 ifeq ($(GOOS)_$(GOARCH), $(shell go env GOOS)_$(shell go env GOARCH))
-	$(GOPROXY_STAGEDIR)/goproxy -version
+	$(GOPROXY_STAGEDIR)/$(GOPROXY_EXE) -version
 endif
 	cd $(STAGEDIR) && $(GOPROXY_DISTCMD) $@ *
 
