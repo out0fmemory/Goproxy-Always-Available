@@ -31,14 +31,30 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	switch network {
 	case "tcp", "tcp4", "tcp6":
 		if d.DNSCache != nil {
-			if addr, ok := d.DNSCache.Get(address); ok {
-				address = addr.(string)
-			} else {
-				if host, port, err := net.SplitHostPort(address); err == nil {
-					if ips, err := net.LookupIP(host); err == nil && len(ips) > 0 {
-						return d.dialMulti(network, address, ips, port)
+			if host, port, err := net.SplitHostPort(address); err == nil {
+				var ips []net.IP
+				if ips0, ok := d.DNSCache.Get(host); ok {
+					ips = ips0.([]net.IP)
+				} else {
+					ips0, err := net.LookupIP(host)
+					if err != nil {
+						return nil, err
 					}
+
+					ips = ips[:0]
+					for _, ip := range ips0 {
+						if !d.inBlackList(ip.String()) {
+							ips = append(ips, ip)
+						}
+					}
+
+					if len(ips) == 0 {
+						return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%+v)", address, ips0))
+					}
+
+					d.DNSCache.Set(host, ips, time.Now().Add(d.DNSCacheExpiry))
 				}
+				return d.dialMulti(network, address, ips, port)
 			}
 		}
 	}
@@ -49,18 +65,16 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 func (d *Dialer) dialMulti(network, address string, ips []net.IP, port string) (conn net.Conn, err error) {
 	if d.Level <= 1 || len(ips) == 1 {
 		for i, ip := range ips {
-			ipstr := ip.String()
-			if d.BlackList != nil {
-				if _, ok := d.BlackList.Get(ipstr); ok {
-					if i < len(ips)-1 {
-						continue
-					} else {
-						return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%+v)", address, ipstr))
-					}
+			addr := net.JoinHostPort(ip.String(), port)
+			conn, err := d.Dialer.Dial(network, addr)
+			if err != nil {
+				if i < len(ips)-1 {
+					continue
+				} else {
+					return nil, err
 				}
 			}
-			addr := net.JoinHostPort(ipstr, port)
-			return d.Dialer.Dial(network, addr)
+			return conn, nil
 		}
 	} else {
 		type racer struct {
@@ -101,4 +115,12 @@ func (d *Dialer) dialMulti(network, address string, ips []net.IP, port string) (
 	}
 
 	return nil, net.UnknownNetworkError("Unkown transport/direct error")
+}
+
+func (d *Dialer) inBlackList(host string) bool {
+	if d.BlackList == nil {
+		return false
+	}
+	_, ok := d.BlackList.Get(host)
+	return ok
 }
