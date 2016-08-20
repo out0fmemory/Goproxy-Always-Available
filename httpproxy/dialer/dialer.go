@@ -10,8 +10,6 @@ import (
 )
 
 const (
-	DefaultRetryTimes     int           = 2
-	DefaultRetryDelay     time.Duration = 100 * time.Millisecond
 	DefaultDNSCacheExpiry time.Duration = time.Hour
 	DefaultDNSCacheSize   uint          = 8 * 1024
 )
@@ -21,8 +19,6 @@ type Dialer struct {
 		Dial(network, addr string) (net.Conn, error)
 	}
 
-	RetryTimes     int
-	RetryDelay     time.Duration
 	DNSCache       lrucache.Cache
 	DNSCacheExpiry time.Duration
 	BlackList      lrucache.Cache

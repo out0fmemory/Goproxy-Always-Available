@@ -12,8 +12,6 @@
 			"Timeout": 10,
 			"KeepAlive": 180,
 			"DualStack": false,
-			"RetryTimes": 2,
-			"RetryDelay": 0.05,
 			"DNSCacheExpiry": 3600,
 			"DNSCacheSize": 8192
 		},

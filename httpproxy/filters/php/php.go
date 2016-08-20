@@ -34,8 +34,6 @@ type Config struct {
 			Timeout        int
 			KeepAlive      int
 			DualStack      bool
-			RetryTimes     int
-			RetryDelay     float32
 			DNSCacheExpiry int
 			DNSCacheSize   uint
 		}
@@ -100,8 +98,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	d := &dialer.Dialer{
 		Dialer:         d0,
-		RetryTimes:     config.Transport.Dialer.RetryTimes,
-		RetryDelay:     time.Duration(config.Transport.Dialer.RetryDelay*1000) * time.Second,
 		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
 		BlackList:      nil,
