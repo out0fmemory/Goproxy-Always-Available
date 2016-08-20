@@ -40,12 +40,21 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 			} else {
 				if host, port, err := net.SplitHostPort(address); err == nil {
 					if ips, err := net.LookupIP(host); err == nil && len(ips) > 0 {
-						ip := ips[0].String()
+						var ip string
 						if d.BlackList != nil {
-							if _, ok := d.BlackList.Get(ip); ok {
-								return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%s)", host, ip))
+							for _, ip1 := range ips {
+								if _, ok := d.BlackList.Get(ip1.String()); !ok {
+									ip = ip1.String()
+								}
 							}
+						} else {
+							ip = ips[0].String()
 						}
+
+						if ip == "" {
+							return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%+v)", host, ips))
+						}
+
 						addr := net.JoinHostPort(ip, port)
 						expiry := d.DNSCacheExpiry
 						if expiry == 0 {
@@ -72,6 +81,11 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 			conn, err = d.Dialer.Dial(network, address)
 			if err == nil || i == retry-1 {
 				break
+			}
+			if ne, ok := err.(interface {
+				Timeout() bool
+			}); ok && ne.Timeout() {
+				d.BlackList.Set(address, struct{}{}, time.Now().Add(5*time.Hour))
 			}
 			retryDelay := d.RetryDelay
 			if retryDelay == 0 {
