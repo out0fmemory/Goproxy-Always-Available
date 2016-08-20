@@ -5,7 +5,7 @@ export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
 export WORKING_DIR=$(pwd)/${GITHUB_REPO}.$(date "+%Y%m%d").${RANDOM:-$$}
-export GOROOT_BOOTSTRAP=${WORKING_DIR}/go1.6
+export GOROOT_BOOTSTRAP=${WORKING_DIR}/goroot_bootstrap
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
@@ -53,8 +53,8 @@ function init_github() {
 function build_go() {
 	pushd ${WORKING_DIR}
 
-	curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
-	mv go go1.6
+	curl -k https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz | tar xz
+	mv go goroot_bootstrap
 
 	git clone --branch ${GOBRANCH} https://github.com/phuslu/go
 	cd go/src
