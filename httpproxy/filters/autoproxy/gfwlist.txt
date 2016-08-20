@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: fwRAANwU3Poc8xaEaWEw6g
+! Checksum: tp4EDwxN5ndSRBFYOgF4ZA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 11 Aug 2016 09:54:31 +0800
+! Last Modified: Fri, 19 Aug 2016 09:23:01 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -231,6 +231,7 @@ china-mmm.sa.com
 ||facebook.nl
 ||facebook.se
 ||messenger.com
+||oculus.com
 
 !!---Google---
 !###https://www.google.com/supported_domains###
@@ -3043,6 +3044,7 @@ bbs.kimy.com.tw
 kinghost.com
 !--.kingstone.com.tw/book/
 ||kingstone.com.tw
+.kink.com
 killwall.com
 ||killwall.com
 .kir.jp
@@ -5825,6 +5827,7 @@ zhongguotese.net
 ||zhongguotese.net
 ||zhongmeng.org
 ||zhreader.com
+zhuangbi.me/account/login/url-Lw==
 .zhuanxing.cn
 ||zhuatieba.com
 zhuichaguoji.org
