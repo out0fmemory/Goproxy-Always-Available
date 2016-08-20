@@ -25,113 +25,9 @@ import (
 	"github.com/phuslu/net/http2"
 )
 
-var version = "r9999"
-
-type tcpKeepAliveListener struct {
-	*net.TCPListener
-}
-
-func (ln tcpKeepAliveListener) Accept() (c net.Conn, err error) {
-	tc, err := ln.AcceptTCP()
-	if err != nil {
-		return
-	}
-	tc.SetKeepAlive(true)
-	tc.SetKeepAlivePeriod(3 * time.Minute)
-	return tc, nil
-}
-
-type Dialer struct {
-	net.Dialer
-
-	RetryTimes     int
-	RetryDelay     time.Duration
-	DNSCache       lrucache.Cache
-	DNSCacheExpiry time.Duration
-	LoopbackAddrs  map[string]struct{}
-	Level          int
-}
-
-func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
-	glog.V(3).Infof("Dail(%#v, %#v)", network, address)
-
-	switch network {
-	case "tcp", "tcp4", "tcp6":
-		if d.DNSCache != nil {
-			if addr, ok := d.DNSCache.Get(address); ok {
-				address = addr.(string)
-			} else {
-				if host, port, err := net.SplitHostPort(address); err == nil {
-					if ips, err := net.LookupIP(host); err == nil && len(ips) > 0 {
-						ip := ips[0].String()
-						if d.LoopbackAddrs != nil {
-							if _, ok := d.LoopbackAddrs[ip]; ok {
-								return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%s)", host, ip))
-							}
-						}
-						addr := net.JoinHostPort(ip, port)
-						d.DNSCache.Set(address, addr, time.Now().Add(d.DNSCacheExpiry))
-						glog.V(3).Infof("direct Dial cache dns %#v=%#v", address, addr)
-						address = addr
-					}
-				}
-			}
-		}
-	default:
-		break
-	}
-
-	if d.Level <= 1 {
-		retry := d.RetryTimes
-		for i := 0; i < retry; i++ {
-			conn, err = d.Dialer.Dial(network, address)
-			if err == nil || i == retry-1 {
-				break
-			}
-			time.Sleep(d.RetryDelay)
-		}
-		return conn, err
-	} else {
-		type racer struct {
-			c net.Conn
-			e error
-		}
-
-		lane := make(chan racer, d.Level)
-		retry := (d.RetryTimes + d.Level - 1) / d.Level
-		for i := 0; i < retry; i++ {
-			for j := 0; j < d.Level; j++ {
-				go func(addr string, c chan<- racer) {
-					conn, err := d.Dialer.Dial(network, addr)
-					lane <- racer{conn, err}
-				}(address, lane)
-			}
-
-			var r racer
-			for k := 0; k < d.Level; k++ {
-				r = <-lane
-				if r.e == nil {
-					go func(count int) {
-						var r1 racer
-						for ; count > 0; count-- {
-							r1 = <-lane
-							if r1.c != nil {
-								r1.c.Close()
-							}
-						}
-					}(d.Level - 1 - k)
-					return r.c, nil
-				}
-			}
-
-			if i == retry-1 {
-				return nil, r.e
-			}
-		}
-	}
-
-	return nil, net.UnknownNetworkError("Unkown transport/direct error")
-}
+var (
+	version = "r9999"
+)
 
 type Handler struct {
 	AuthMap map[string]string
@@ -161,7 +57,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	for key, _ := range params {
+	for key := range params {
 		req.Header.Del(key)
 	}
 
@@ -289,23 +185,18 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	io.Copy(rw, resp.Body)
 }
 
-func hint(v map[string]string) {
+func SetFlagsIfAbsent(m map[string]string) {
 	seen := map[string]struct{}{}
 
 	for i := 1; i < len(os.Args); i++ {
-		if os.Args[i] == "-version" {
-			fmt.Print(version)
-			os.Exit(0)
-		}
-
-		for key, _ := range v {
+		for key := range m {
 			if strings.HasPrefix(os.Args[i], "-"+key+"=") {
 				seen[key] = struct{}{}
 			}
 		}
 	}
 
-	for key, value := range v {
+	for key, value := range m {
 		if _, ok := seen[key]; !ok {
 			flag.Set(key, value)
 		}
@@ -351,6 +242,11 @@ func genCertificates(hostname string) (tls.Certificate, error) {
 func main() {
 	var err error
 
+	if len(os.Args) > 1 && os.Args[1] == "-version" {
+		fmt.Print(version)
+		return
+	}
+
 	addr := ":443"
 	auth := ""
 	keyFile := "goproxy-vps.key"
@@ -363,7 +259,7 @@ func main() {
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
 	flag.StringVar(&auth, "auth", auth, "goproxy vps auth user:pass list")
 
-	hint(map[string]string{
+	SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
 		"v":           "2",
 	})
@@ -398,16 +294,14 @@ func main() {
 	}
 
 	dialer := &Dialer{
-		Dialer: net.Dialer{
+		Dialer: &net.Dialer{
 			KeepAlive: 0,
 			Timeout:   16 * time.Second,
 			DualStack: true,
 		},
-		RetryTimes:     2,
-		RetryDelay:     100 * time.Millisecond,
-		DNSCache:       lrucache.NewLRUCache(1024 * 1024),
+		DNSCache:       lrucache.NewLRUCache(16 * 1024),
 		DNSCacheExpiry: 8 * time.Hour,
-		LoopbackAddrs:  make(map[string]struct{}),
+		BlackList:      lrucache.NewLRUCache(8 * 1024),
 	}
 
 	if addrs, err := net.InterfaceAddrs(); err == nil {
@@ -417,7 +311,7 @@ func main() {
 			case "ip+net":
 				addr1 = strings.Split(addr1, "/")[0]
 			}
-			dialer.LoopbackAddrs[addr1] = struct{}{}
+			dialer.BlackList.Set(addr1, struct{}{}, time.Time{})
 		}
 	}
 
