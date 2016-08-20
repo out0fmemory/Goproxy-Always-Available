@@ -11,7 +11,6 @@ GOPROXY_VPS_DISTEXT = .tar.xz
 GOPROXY_VPS_DIST = $(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT)
 
 SOURCES =
-SOURCES += goproxy-vps.go
 SOURCES += goproxy-vps.service
 
 .PHONY: build
