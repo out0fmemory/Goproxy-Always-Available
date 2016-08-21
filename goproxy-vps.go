@@ -340,6 +340,6 @@ func main() {
 
 	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
-	glog.Infof("goproxy %s ListenAndServe on %s\n", version, ln.Addr().String())
+	glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
 	srv.Serve(tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 }
