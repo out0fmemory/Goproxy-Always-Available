@@ -17,6 +17,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/phuslu/glog"
+
 	"../../helpers"
 )
 
@@ -152,6 +154,7 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 		}
 
 		if len(parts1) > 1 {
+			glog.Warningf("FetchServer(%+v) is not a goproxy GAE server, please upgrade!", resp.Request.Host)
 			resp1.Header.Del(cookieKey)
 			for i := 0; i < len(parts1); i++ {
 				resp1.Header.Add(cookieKey, parts1[i])

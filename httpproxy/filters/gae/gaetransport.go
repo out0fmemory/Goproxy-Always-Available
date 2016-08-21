@@ -8,10 +8,10 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/phuslu/glog"
+
 	"../../dialer"
 	"../../helpers"
-
-	"github.com/phuslu/glog"
 )
 
 type Transport struct {
