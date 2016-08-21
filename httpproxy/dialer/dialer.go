@@ -34,7 +34,11 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 			if host, port, err := net.SplitHostPort(address); err == nil {
 				var ips []net.IP
 				if ips0, ok := d.DNSCache.Get(host); ok {
-					ips = ips0.([]net.IP)
+					ips, ok = ips0.([]net.IP)
+					if !ok {
+						glog.Warningf("DIALER: resolve %#v to %+v is %T, not []net.IP", host, ips0, ips0)
+						break
+					}
 				} else {
 					ips0, err := net.LookupIP(host)
 					if err != nil {

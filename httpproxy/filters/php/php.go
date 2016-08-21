@@ -106,25 +106,16 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	for _, server := range servers {
 		if server.Host != "" {
+			ip := net.ParseIP(server.Host)
+			if ip == nil {
+				glog.Warningf("PHP: the Host(%s) for %s is not a vaild IP", server.Host, server.URL.String())
+				continue
+			}
 			host := server.URL.Host
-			if _, _, err := net.SplitHostPort(host); err != nil {
-				if server.URL.Scheme == "https" {
-					host += ":443"
-				} else {
-					host += ":80"
-				}
+			if h, _, err := net.SplitHostPort(host); err == nil {
+				host = h
 			}
-
-			host1 := server.Host
-			if _, _, err := net.SplitHostPort(host1); err != nil {
-				if server.URL.Scheme == "https" {
-					host1 += ":443"
-				} else {
-					host1 += ":80"
-				}
-			}
-
-			d.DNSCache.Set(host, host1, time.Time{})
+			d.DNSCache.Set(host, []net.IP{ip}, time.Time{})
 		}
 	}
 
