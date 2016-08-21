@@ -32,14 +32,16 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	case "tcp", "tcp4", "tcp6":
 		if d.DNSCache != nil {
 			if host, port, err := net.SplitHostPort(address); err == nil {
-				var ips []net.IP
-				if ips0, ok := d.DNSCache.Get(host); ok {
-					ips, ok = ips0.([]net.IP)
-					if !ok {
-						glog.Warningf("DIALER: resolve %#v to %+v is %T, not []net.IP", host, ips0, ips0)
-						break
+				v, ok1 := d.DNSCache.Get(host)
+				ips, ok2 := v.([]net.IP)
+
+				if !ok2 {
+					if ok1 {
+						if host1, ok3 := v.(string); ok3 {
+							host = host1
+						}
 					}
-				} else {
+
 					ips0, err := net.LookupIP(host)
 					if err != nil {
 						return nil, err

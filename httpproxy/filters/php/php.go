@@ -106,16 +106,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	for _, server := range servers {
 		if server.Host != "" {
-			ip := net.ParseIP(server.Host)
-			if ip == nil {
-				glog.Warningf("PHP: the Host(%s) for %s is not a vaild IP", server.Host, server.URL.String())
-				continue
-			}
 			host := server.URL.Host
 			if h, _, err := net.SplitHostPort(host); err == nil {
 				host = h
 			}
-			d.DNSCache.Set(host, []net.IP{ip}, time.Time{})
+			d.DNSCache.Set(host, server.Host, time.Time{})
 		}
 	}
 
