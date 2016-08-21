@@ -13,17 +13,21 @@ GOPROXY_VPS_DIST = $(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT
 SOURCES =
 SOURCES += goproxy-vps.service
 
+CHANGELOG = changelog.txt
+
 .PHONY: build
 build: $(GOPROXY_VPS_DIST)
 	ls -lht $^
 
 .PHONY: clean
 clean:
-	$(RM) -rf $(GOPROXY_VPS_EXE)
-	$(RM) -rf $(GOPROXY_VPS_DIST)
+	$(RM) -rf $(GOPROXY_VPS_EXE) $(GOPROXY_VPS_DIST) $(CHANGELOG)
 
-$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT): $(SOURCES) $(GOPROXY_VPS_EXE)
+$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT): $(SOURCES) $(CHANGELOG) $(GOPROXY_VPS_EXE)
 	$(GOPROXY_VPS_DISTCMD) $@ $^
+
+$(CHANGELOG):
+	git log --after="3 months ago" --pretty="%ci (%an) %s" >$@
 
 $(GOPROXY_VPS_EXE): $(SOURCES)
 	go build -v -ldflags="-s -w -X main.version=r$(REVSION)" -o $@ .
