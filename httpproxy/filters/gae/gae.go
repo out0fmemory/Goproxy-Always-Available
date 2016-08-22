@@ -447,6 +447,23 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 	}
 
+	if tr == f.GAETransport {
+		switch strings.ToLower(req.Header.Get("Connection")) {
+		case "upgrade":
+			resp := &http.Response{
+				StatusCode: http.StatusForbidden,
+				Header: http.Header{
+					"X-WebSocket-Reject-Reason": []string{"Unsupported"},
+				},
+				Request:       req,
+				Close:         true,
+				ContentLength: 0,
+			}
+			glog.V(2).Infof("%s \"GAE FAKEWEBSOCKET %s %s %s\" %d %s", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
+			return ctx, resp, nil
+		}
+	}
+
 	prefix := "FETCH"
 	if tr == f.DirectTransport {
 		prefix = "DIRECT"
