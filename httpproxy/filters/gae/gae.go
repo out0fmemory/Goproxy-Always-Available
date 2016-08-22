@@ -469,11 +469,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return ctx, nil, err
 	}
 
-	switch resp.StatusCode {
-	case http.StatusBadGateway:
-		if tr == f.DirectTransport {
-			md := f.GAETransport.MultiDialer
-			if md != nil {
+	if resp.StatusCode == http.StatusBadGateway && tr == f.DirectTransport && f.GAETransport.MultiDialer != nil {
+		if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
+			if ip, _, err := net.SplitHostPort(addr); err == nil {
 				body, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					resp.Body.Close()
@@ -482,16 +480,13 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				resp.Body.Close()
 				resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 				switch {
-				case bytes.Contains(body, []byte("lease try again in 30 seconds")):
-					if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
-						if ip, _, err := net.SplitHostPort(addr); err == nil {
-							duration := 1 * time.Hour
-							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
-							md.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-						}
-						if ok := helpers.TryCloseConnectionByRemoteAddr(tr, addr); !ok {
-							glog.Warningf("GAE: TryCloseConnectionByRemoteAddr(%T, %#v) failed.", tr, addr)
-						}
+				case bytes.Contains(body, []byte("Please try again in 30 seconds.")):
+					duration := 1 * time.Hour
+					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
+					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+
+					if ok := helpers.TryCloseConnectionByRemoteAddr(tr, addr); !ok {
+						glog.Warningf("GAE: TryCloseConnectionByRemoteAddr(%T, %#v) failed.", tr, addr)
 					}
 				}
 			}
