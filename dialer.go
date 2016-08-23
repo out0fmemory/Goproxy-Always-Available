@@ -27,10 +27,16 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 	case "tcp", "tcp4", "tcp6":
 		if d.DNSCache != nil {
 			if host, port, err := net.SplitHostPort(address); err == nil {
-				var ips []net.IP
-				if ips0, ok := d.DNSCache.Get(host); ok {
-					ips = ips0.([]net.IP)
-				} else {
+				v, ok1 := d.DNSCache.Get(host)
+				ips, ok2 := v.([]net.IP)
+
+				if !ok2 {
+					if ok1 {
+						if host1, ok3 := v.(string); ok3 {
+							host = host1
+						}
+					}
+
 					ips0, err := net.LookupIP(host)
 					if err != nil {
 						return nil, err
