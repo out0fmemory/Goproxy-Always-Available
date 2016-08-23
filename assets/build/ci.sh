@@ -1,6 +1,7 @@
 #!/bin/bash -xe
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
+export GITHUB_EMAIL=${GITHUB_EMAIL:-${GITHUB_USER}@noreply.github.com}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
@@ -38,8 +39,8 @@ function rename() {
 function init_github() {
 	pushd ${WORKING_DIR}
 
-	git config --global user.name ${GITHUB_USER}
-	git config --global user.email "${GITHUB_USER}@noreply.github.com"
+	git config --global user.name "${GITHUB_USER}"
+	git config --global user.email "${GITHUB_EMAIL}"
 
 	if ! grep -q 'machine github.com' ~/.netrc; then
 		if [ ${#GITHUB_TOKEN} -gt 0 ]; then
