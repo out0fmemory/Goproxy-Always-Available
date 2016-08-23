@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -24,8 +25,16 @@ var (
 	version = "r9999"
 )
 
+const (
+	PWAUTH_PATH = "/usr/sbin/pwauth"
+)
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
+
 type Handler struct {
-	AuthMap map[string]string
+	PWAuthEnabled bool
 	*http.Transport
 }
 
@@ -44,10 +53,10 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	if len(h.AuthMap) > 0 {
+	if h.PWAuthEnabled {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
-			http.Error(rw, "403 Forbidden", http.StatusForbidden)
+			http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
 			return
 		}
 		parts := strings.SplitN(auth, " ", 2)
@@ -56,11 +65,17 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			case "Basic":
 				if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
 					parts := strings.Split(string(userpass), ":")
-					user := parts[0]
-					pass := parts[1]
-					glog.Infof("username=%v password=%v", user, pass)
-					if pass1, ok := h.AuthMap[user]; !ok || pass != pass1 {
-						http.Error(rw, "403 Forbidden", http.StatusForbidden)
+					username := parts[0]
+					password := parts[1]
+					glog.Infof("pwauth: username=%v password=%v", username, password)
+
+					cmd := exec.Command(PWAUTH_PATH)
+					cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
+					err = cmd.Run()
+
+					if err != nil {
+						time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+						http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
 						return
 					}
 				}
@@ -177,7 +192,7 @@ func main() {
 	}
 
 	addr := ":443"
-	auth := ""
+	pwauth := false
 	keyFile := "goproxy-vps.key"
 	certFile := "goproxy-vps.crt"
 	http2verbose := false
@@ -186,7 +201,7 @@ func main() {
 	flag.StringVar(&keyFile, "keyfile", keyFile, "goproxy vps keyfile")
 	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
-	flag.StringVar(&auth, "auth", auth, "goproxy vps auth user:pass list")
+	flag.BoolVar(&pwauth, "pwauth", pwauth, "goproxy vps enable pwauth")
 
 	SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
@@ -194,13 +209,9 @@ func main() {
 	})
 	flag.Parse()
 
-	authMap := map[string]string{}
-	for _, pair := range strings.Split(auth, " ") {
-		parts := strings.Split(pair, ":")
-		if len(parts) == 2 {
-			username := strings.TrimSpace(parts[0])
-			password := strings.TrimSpace(parts[1])
-			authMap[username] = password
+	if pwauth {
+		if _, err := os.Stat(PWAUTH_PATH); err != nil {
+			glog.Fatalf("Find %+v error: %+v, please install pwauth", PWAUTH_PATH, err)
 		}
 	}
 
@@ -262,8 +273,8 @@ func main() {
 
 	srv := &http.Server{
 		Handler: &Handler{
-			AuthMap:   authMap,
-			Transport: transport,
+			PWAuthEnabled: pwauth,
+			Transport:     transport,
 		},
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
