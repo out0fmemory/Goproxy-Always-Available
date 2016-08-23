@@ -3,20 +3,15 @@
 package main
 
 import (
-	"crypto/rand"
-	"crypto/rsa"
 	"crypto/tls"
-	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/base64"
-	"encoding/pem"
 	"flag"
 	"fmt"
 	"io"
-	"math/big"
 	"net"
 	"net/http"
 	"os"
+	"os/exec"
 	"strings"
 	"time"
 
@@ -32,18 +27,6 @@ var (
 type Handler struct {
 	AuthMap map[string]string
 	*http.Transport
-}
-
-type flushWriter struct {
-	w io.Writer
-}
-
-func (fw flushWriter) Write(p []byte) (n int, err error) {
-	n, err = fw.w.Write(p)
-	if f, ok := fw.w.(http.Flusher); ok {
-		f.Flush()
-	}
-	return
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -119,7 +102,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 		switch req.ProtoMajor {
 		case 2:
-			w = flushWriter{rw}
+			w = FlushWriter{rw}
 			r = req.Body
 		default:
 			hijacker, ok := rw.(http.Hijacker)
@@ -185,60 +168,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	io.Copy(rw, resp.Body)
 }
 
-func SetFlagsIfAbsent(m map[string]string) {
-	seen := map[string]struct{}{}
-
-	for i := 1; i < len(os.Args); i++ {
-		for key := range m {
-			if strings.HasPrefix(os.Args[i], "-"+key+"=") {
-				seen[key] = struct{}{}
-			}
-		}
-	}
-
-	for key, value := range m {
-		if _, ok := seen[key]; !ok {
-			flag.Set(key, value)
-		}
-	}
-}
-
-func genCertificates(hostname string) (tls.Certificate, error) {
-	if hostname == "" {
-		return tls.Certificate{}, fmt.Errorf("genCertificates: Invalid hostname(%#v)", hostname)
-	}
-
-	glog.V(2).Infof("Generating RootCA for %v", hostname)
-	template := x509.Certificate{
-		IsCA:         true,
-		SerialNumber: big.NewInt(1),
-		Subject: pkix.Name{
-			Organization: []string{hostname},
-		},
-		NotBefore: time.Now().Add(-time.Duration(24 * time.Hour)),
-		NotAfter:  time.Now().Add(180 * 24 * time.Hour),
-
-		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
-		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-		BasicConstraintsValid: true,
-	}
-
-	priv, err := rsa.GenerateKey(rand.Reader, 1024)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &priv.PublicKey, priv)
-	if err != nil {
-		return tls.Certificate{}, err
-	}
-
-	certPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-	keyPEMBlock := pem.EncodeToMemory(&pem.Block{Type: "PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
-
-	return tls.X509KeyPair(certPEMBlock, keyPEMBlock)
-}
-
 func main() {
 	var err error
 
@@ -281,16 +210,25 @@ func main() {
 		glog.Fatalf("Listen(%s) error: %s", addr, err)
 	}
 
+	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+		cmd := exec.Command("openssl",
+			"req",
+			"-subj", "/CN=github.com/O=GitHub, Inc./C=US",
+			"-new",
+			"-newkey", "rsa:2048",
+			"-days", "365",
+			"-nodes",
+			"-x509",
+			"-keyout", keyFile,
+			"-out", certFile)
+		if err = cmd.Run(); err != nil {
+			glog.Fatalf("openssl: %+v error: %+v", cmd.Args, err)
+		}
+	}
+
 	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
 	if err != nil {
-		glog.Warningf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
-		hostname := "www.apple.com"
-		cert, err = genCertificates(hostname)
-		if err != nil {
-			glog.Fatalf("genCertificates(%#v) error: %+v", hostname, err)
-		} else {
-			glog.V(2).Infof("genCertificates(%#v) OK", hostname)
-		}
+		glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
 	}
 
 	dialer := &Dialer{
@@ -304,14 +242,9 @@ func main() {
 		BlackList:      lrucache.NewLRUCache(8 * 1024),
 	}
 
-	if addrs, err := net.InterfaceAddrs(); err == nil {
-		for _, addr := range addrs {
-			addr1 := addr.String()
-			switch addr.Network() {
-			case "ip+net":
-				addr1 = strings.Split(addr1, "/")[0]
-			}
-			dialer.BlackList.Set(addr1, struct{}{}, time.Time{})
+	if ips, err := LocalInterfaceIPs(); err == nil {
+		for _, ip := range ips {
+			dialer.BlackList.Set(ip.String(), struct{}{}, time.Time{})
 		}
 	}
 
