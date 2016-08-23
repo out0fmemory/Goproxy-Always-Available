@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: tp4EDwxN5ndSRBFYOgF4ZA
+! Checksum: CXbAcwBkTUp9Dp83Njepaw
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Fri, 19 Aug 2016 09:23:01 +0800
+! Last Modified: Tue, 23 Aug 2016 13:43:03 +0800
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -349,8 +349,10 @@ blogspot.com
 @@|http://hk.v2ex.com
 @@|http://i.v2ex.com
 @@|http://lax.v2ex.com
+@@|http://neue.v2ex.com
 @@|http://pagespeed.v2ex.com
 @@|http://static.v2ex.com
+@@|http://workspace.v2ex.com
 @@|http://www.v2ex.com
 
 !------------------Numerics---------------------
@@ -1765,6 +1767,7 @@ video.fdbox.com
 !--feedbooks.mobi
 ||feelssh.com
 feer.com
+.feifeiss.com
 |http://feitianacademy.org
 .feitian-california.org
 ||feministteacher.com
@@ -2041,6 +2044,7 @@ fzlm.com
 .gaforum.org
 .galaxymacau.com
 ||galenwu.com
+.galstars.net
 ||game735.com
 gamebase.com.tw
 gamejolt.com
@@ -3611,6 +3615,7 @@ noodlevpn.com
 nordvpn.com
 ||nordvpn.com
 ||novelasia.com
+.news.now.com
 |http://news.now.com/home*
 news.now.com%2Fhome
 ||nownews.com
@@ -3917,6 +3922,7 @@ postadult.com
 .powerphoto.org
 ||www.powerpointninja.com
 ||cdn.printfriendly.com
+.pritunl.com
 provpnaccounts.com
 .proxfree.com
 ||proxfree.com
@@ -4485,6 +4491,7 @@ steamcommunity.com/id/CJT_Jackton
 .stepchina.com
 !--||stepmania.com
 ny.stgloballink.com
+hd.stheadline.com/news/realtime
 sthoo.com
 ||sthoo.com
 .stickam.com
@@ -5872,6 +5879,7 @@ freenet
 .google.*facebook
 .google.*falun
 .google.*twitter
+phobos.apple.com*/video
 q=freedom
 q%3Dfreedom
 remembering_tiananmen_20_years
