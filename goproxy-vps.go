@@ -25,10 +25,6 @@ var (
 	version = "r9999"
 )
 
-const (
-	PWAUTH_PATH = "/usr/sbin/pwauth"
-)
-
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -36,6 +32,7 @@ func init() {
 type Handler struct {
 	PWAuthEnabled bool
 	PWAuthCache   lrucache.Cache
+	PWAuthPath    string
 	*http.Transport
 }
 
@@ -71,7 +68,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 						password := parts[1]
 						glog.Infof("pwauth: username=%v password=%v", username, password)
 
-						cmd := exec.Command(PWAUTH_PATH)
+						cmd := exec.Command(h.PWAuthPath)
 						cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
 						err = cmd.Run()
 
@@ -214,12 +211,6 @@ func main() {
 	})
 	flag.Parse()
 
-	if pwauth {
-		if _, err := os.Stat(PWAUTH_PATH); err != nil {
-			glog.Fatalf("Find %+v error: %+v, please install pwauth", PWAUTH_PATH, err)
-		}
-	}
-
 	var ln net.Listener
 	ln, err = net.Listen("tcp", addr)
 	if err != nil {
@@ -283,6 +274,18 @@ func main() {
 
 	if handler.PWAuthEnabled {
 		handler.PWAuthCache = lrucache.NewLRUCache(1024)
+		handler.PWAuthPath, err = exec.LookPath("pwauth")
+		if err != nil {
+			for _, path := range []string{"/sbin/pwauth", "/usr/sbin/pwauth"} {
+				if _, err = os.Stat(path); err == nil {
+					handler.PWAuthPath = path
+					break
+				}
+			}
+		}
+		if err != nil {
+			glog.Fatalf("Please install `pwauth'")
+		}
 	}
 
 	srv := &http.Server{
