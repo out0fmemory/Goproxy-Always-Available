@@ -35,6 +35,7 @@ func init() {
 
 type Handler struct {
 	PWAuthEnabled bool
+	PWAuthCache   lrucache.Cache
 	*http.Transport
 }
 
@@ -59,30 +60,34 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
 			return
 		}
-		parts := strings.SplitN(auth, " ", 2)
-		if len(parts) == 2 {
-			switch parts[0] {
-			case "Basic":
-				if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
-					parts := strings.Split(string(userpass), ":")
-					username := parts[0]
-					password := parts[1]
-					glog.Infof("pwauth: username=%v password=%v", username, password)
+		if _, ok := h.PWAuthCache.Get(auth); !ok {
+			parts := strings.SplitN(auth, " ", 2)
+			if len(parts) == 2 {
+				switch parts[0] {
+				case "Basic":
+					if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
+						parts := strings.Split(string(userpass), ":")
+						username := parts[0]
+						password := parts[1]
+						glog.Infof("pwauth: username=%v password=%v", username, password)
 
-					cmd := exec.Command(PWAUTH_PATH)
-					cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
-					err = cmd.Run()
+						cmd := exec.Command(PWAUTH_PATH)
+						cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
+						err = cmd.Run()
 
-					if err != nil {
-						time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
-						http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
-						return
+						if err != nil {
+							time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+							http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
+							return
+						}
+
+						h.PWAuthCache.Set(auth, struct{}{}, time.Now().Add(2*time.Hour))
 					}
+				default:
+					glog.Errorf("Unrecognized auth type: %#v", parts[0])
+					http.Error(rw, "403 Forbidden", http.StatusForbidden)
+					return
 				}
-			default:
-				glog.Errorf("Unrecognized auth type: %#v", parts[0])
-				http.Error(rw, "403 Forbidden", http.StatusForbidden)
-				return
 			}
 		}
 		req.Header.Del("Proxy-Authorization")
@@ -248,9 +253,9 @@ func main() {
 			Timeout:   16 * time.Second,
 			DualStack: true,
 		},
-		DNSCache:       lrucache.NewLRUCache(16 * 1024),
+		DNSCache:       lrucache.NewLRUCache(8 * 1024),
 		DNSCacheExpiry: 8 * time.Hour,
-		BlackList:      lrucache.NewLRUCache(8 * 1024),
+		BlackList:      lrucache.NewLRUCache(1024),
 	}
 
 	if ips, err := LocalInterfaceIPs(); err == nil {
@@ -271,11 +276,17 @@ func main() {
 		DisableCompression:  false,
 	}
 
+	handler := &Handler{
+		PWAuthEnabled: pwauth,
+		Transport:     transport,
+	}
+
+	if handler.PWAuthEnabled {
+		handler.PWAuthCache = lrucache.NewLRUCache(1024)
+	}
+
 	srv := &http.Server{
-		Handler: &Handler{
-			PWAuthEnabled: pwauth,
-			Transport:     transport,
-		},
+		Handler: handler,
 		TLSConfig: &tls.Config{
 			Certificates: []tls.Certificate{cert},
 			MinVersion:   tls.VersionTLS12,
