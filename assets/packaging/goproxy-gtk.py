@@ -5,70 +5,6 @@
 
 __version__ = '1.6'
 
-GOPROXY_LOGO_DATA = """\
-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
-AAAASUVORK5CYII="""
-
 import sys
 import os
 import re
@@ -124,7 +60,7 @@ Name=GoProxy GTK
 Comment=GoProxy GTK Launcher
 Categories=Network;Proxy;
 Exec=/usr/bin/env python2 "%s"
-Icon=%s/goproxy-logo.png
+Icon=%s/goproxy-gtk.png
 Terminal=false
 StartupNotify=true
 ''' % (filename, dirname)
@@ -132,10 +68,6 @@ StartupNotify=true
     with open(filename1, 'w') as fp:
         fp.write(DESKTOP_FILE)
         os.chmod(filename1, 0o755)
-
-
-def should_visible():
-    return False
 
 #gtk.main_quit = lambda: None
 #appindicator = None
@@ -164,13 +96,9 @@ class GoProxyGTK:
 
         spawn_later(0.5, self.show_startup_notify)
 
-        if should_visible():
-            self.window.show_all()
+        self.window.show_all()
 
-        logo_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'goproxy-logo.png')
-        if not os.path.isfile(logo_filename):
-            with open(logo_filename, 'wb') as fp:
-                fp.write(base64.b64decode(GOPROXY_LOGO_DATA))
+        logo_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'goproxy-gtk.png')
         self.window.set_icon_from_file(logo_filename)
 
         if appindicator:
@@ -272,8 +200,7 @@ def main():
         __file__ = getattr(os, 'readlink', lambda x: x)(__file__)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    if not os.path.exists('goproxy-logo.png'):
-        # first run and drop shortcut to desktop
+    if not os.path.exists('goproxy-gtk.desktop'):
         drop_desktop()
 
     window = gtk.Window()

@@ -53,6 +53,7 @@ else ifeq ($(GOOS), darwin)
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
 else
 	SOURCES += $(REPO)/assets/packaging/goproxy-gtk.py
+	SOURCES += $(REPO)/assets/packaging/goproxy-gtk.png
 	SOURCES += $(REPO)/assets/packaging/goproxy.sh
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
 endif
