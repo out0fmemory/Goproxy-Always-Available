@@ -120,7 +120,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 		}
 	} else {
 		for _, name := range []string{keyFile, certFile} {
-			resp, err := store.Get(name, -1, -1)
+			resp, err := store.Get(name)
 			if err != nil {
 				return nil, err
 			}

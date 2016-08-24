@@ -2,7 +2,6 @@ package storage
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime"
@@ -19,11 +18,7 @@ type FileStore struct {
 
 var _ Store = &FileStore{}
 
-func (s *FileStore) Get(name string, start, end int64) (*http.Response, error) {
-	if start > 0 || end > 0 {
-		return nil, fmt.Errorf("%T.GetObject do not support start end parameters", s)
-	}
-
+func (s *FileStore) Get(name string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, "/"+strings.TrimLeft(name, "/"), nil)
 
 	filename := filepath.Join(s.Dirname, name)

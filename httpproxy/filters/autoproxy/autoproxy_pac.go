@@ -47,7 +47,7 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 
 	buf := new(bytes.Buffer)
 
-	resp, err := f.Store.Get(filename, -1, -1)
+	resp, err := f.Store.Get(filename)
 	switch {
 	case os.IsNotExist(err), resp.StatusCode == http.StatusNotFound:
 		glog.V(2).Infof("AUTOPROXY ProxyPac: generate %#v", filename)
@@ -78,7 +78,7 @@ function FindProxyForURL(url, host) {
 		resp.Body.Close()
 	}
 
-	if resp, err := f.Store.Get(filename, -1, -1); err == nil {
+	if resp, err := f.Store.Get(filename); err == nil {
 		defer resp.Body.Close()
 		if b, err := ioutil.ReadAll(resp.Body); err == nil {
 			if f.GFWListEnabled {
@@ -89,7 +89,7 @@ function FindProxyForURL(url, host) {
 	}
 
 	if f.GFWListEnabled {
-		resp, err := f.Store.Get(f.GFWList.Filename, -1, -1)
+		resp, err := f.Store.Get(f.GFWList.Filename)
 		if err != nil {
 			glog.Errorf("GetObject(%#v) error: %v", f.GFWList.Filename, err)
 			return ctx, nil, err

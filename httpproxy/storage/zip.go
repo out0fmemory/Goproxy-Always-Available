@@ -48,13 +48,9 @@ func (s *ZipStore) init() error {
 	return nil
 }
 
-func (s *ZipStore) Get(name string, start, end int64) (*http.Response, error) {
+func (s *ZipStore) Get(name string) (*http.Response, error) {
 	if err := s.init(); err != nil {
 		return nil, err
-	}
-
-	if start > 0 || end > 0 {
-		return nil, ErrNotImplemented
 	}
 
 	zf, ok := s.zfs[name]

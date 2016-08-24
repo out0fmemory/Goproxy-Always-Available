@@ -169,7 +169,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	}
 
 	if f.RegionFiltersEnabled {
-		resp, err := store.Get(f.Config.RegionFilters.DataFile, -1, -1)
+		resp, err := store.Get(f.Config.RegionFilters.DataFile)
 		if err != nil {
 			glog.Fatalf("AUTOPROXY: store.Get(%#v) error: %v", f.Config.RegionFilters.DataFile, err)
 		}

@@ -53,7 +53,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		}, nil
 	}
 
-	resp, err := f.Store.Get(filename, -1, -1)
+	resp, err := f.Store.Get(filename)
 	if err != nil {
 		return ctx, nil, err
 	}

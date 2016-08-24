@@ -17,7 +17,7 @@ var (
 )
 
 type Store interface {
-	Get(name string, start, end int64) (*http.Response, error)
+	Get(name string) (*http.Response, error)
 	List(name string) ([]string, error)
 	Put(name string, header http.Header, data io.ReadCloser) (*http.Response, error)
 	Copy(dest string, src string) (*http.Response, error)

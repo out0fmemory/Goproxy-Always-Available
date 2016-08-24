@@ -16,7 +16,7 @@ func readJsonConfig(store Store, filename string, config interface{}) error {
 
 	cm := make(map[string]interface{})
 	for i, name := range []string{filename, filename1} {
-		resp, err := store.Get(name, -1, -1)
+		resp, err := store.Get(name)
 		if err != nil {
 			if i == 0 {
 				return err
