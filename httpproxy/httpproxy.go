@@ -51,7 +51,7 @@ func init() {
 	}
 }
 
-func ServeProfile(profile string) error {
+func ServeProfile(profile string, branding string) error {
 	config, ok := Config[profile]
 	if !ok {
 		return fmt.Errorf("profile(%#v) not exists", profile)
@@ -71,6 +71,7 @@ func ServeProfile(profile string) error {
 		RequestFilters:   requestFilters,
 		RoundTripFilters: roundtripFilters,
 		ResponseFilters:  responseFilters,
+		Branding:         branding,
 	}
 
 	s := &http.Server{

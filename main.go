@@ -69,7 +69,7 @@ Enabled Filters    : %v`,
 Pac Server         : http://%s/proxy.pac`, addr)
 			}
 		}
-		go httpproxy.ServeProfile(profile)
+		go httpproxy.ServeProfile(profile, "goproxy "+version)
 	}
 	fmt.Fprintf(os.Stderr, "\n------------------------------------------------------\n")
 
