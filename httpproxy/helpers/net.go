@@ -2,38 +2,10 @@ package helpers
 
 import (
 	"net"
-	"sort"
 	"strings"
 )
 
-type localips []net.IP
-
-func (r localips) Len() int      { return len(r) }
-func (r localips) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
-func (r localips) Less(i, j int) bool {
-	weight := func(ip net.IP) int {
-		s := ip.String()
-		switch {
-		case ip.To4() == nil:
-			return 0
-		case strings.HasPrefix(s, "127."):
-			return 10
-		case strings.HasPrefix(s, "169.254."):
-			return 20
-		case strings.HasPrefix(s, "192.168."):
-			return 30
-		case strings.HasPrefix(s, "172."):
-			return 40
-		case strings.HasPrefix(s, "10."):
-			return 50
-		default:
-			return 100
-		}
-	}
-	return weight(r[i]) < weight(r[j])
-}
-
-func LocalInterfaceIPs() ([]net.IP, error) {
+func LocalIPv4s() ([]net.IP, error) {
 	addrs, err := net.InterfaceAddrs()
 	if err != nil {
 		return nil, err
@@ -46,12 +18,14 @@ func LocalInterfaceIPs() ([]net.IP, error) {
 		case "ip+net":
 			addr1 = strings.Split(addr1, "/")[0]
 		}
-		if ip := net.ParseIP(addr1); ip != nil {
+		if ip := net.ParseIP(addr1); ip != nil && ip.To4() != nil {
+			s := ip.String()
+			if s == "::1" || strings.HasPrefix(s, "127.") || strings.HasPrefix(s, "169.254.") {
+				continue
+			}
 			ips = append(ips, ip)
 		}
 	}
-
-	sort.Sort(localips(ips))
 
 	return ips, nil
 }

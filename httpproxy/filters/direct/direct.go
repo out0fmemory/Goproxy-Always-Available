@@ -83,9 +83,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		BlackList:      lrucache.NewLRUCache(1024),
 	}
 
-	if ips, err := helpers.LocalInterfaceIPs(); err == nil {
+	if ips, err := helpers.LocalIPv4s(); err == nil {
 		for _, ip := range ips {
 			d.BlackList.Set(ip.String(), struct{}{}, time.Time{})
+		}
+		for _, s := range []string{"127.0.0.1", "::1"} {
+			d.BlackList.Set(s, struct{}{}, time.Time{})
 		}
 	}
 
