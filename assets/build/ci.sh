@@ -180,7 +180,11 @@ function build_repo_ex() {
 	pushd ${WORKING_DIR}/${GITHUB_REPO}
 
 	git checkout -f server.vps
+
+	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
+
 	make
+
 	cp -r *.xz ${WORKING_DIR}/r${RELEASE}
 
 	popd
