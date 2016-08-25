@@ -18,6 +18,7 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
+	"github.com/phuslu/goproxy/httpproxy/helpers"
 	"github.com/phuslu/net/http2"
 )
 
@@ -27,6 +28,32 @@ var (
 
 func init() {
 	rand.Seed(time.Now().UnixNano())
+}
+
+type FlushWriter struct {
+	w io.Writer
+}
+
+func (fw FlushWriter) Write(p []byte) (n int, err error) {
+	n, err = fw.w.Write(p)
+	if f, ok := fw.w.(http.Flusher); ok {
+		f.Flush()
+	}
+	return
+}
+
+type TCPKeepAliveListener struct {
+	*net.TCPListener
+}
+
+func (ln TCPKeepAliveListener) Accept() (c net.Conn, err error) {
+	tc, err := ln.AcceptTCP()
+	if err != nil {
+		return
+	}
+	tc.SetKeepAlive(true)
+	tc.SetKeepAlivePeriod(3 * time.Minute)
+	return tc, nil
 }
 
 type Handler struct {
@@ -205,7 +232,7 @@ func main() {
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
 	flag.BoolVar(&pwauth, "pwauth", pwauth, "goproxy vps enable pwauth")
 
-	SetFlagsIfAbsent(map[string]string{
+	helpers.SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
 		"v":           "2",
 	})
@@ -238,7 +265,7 @@ func main() {
 		glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
 	}
 
-	dialer := &Dialer{
+	dialer := &helpers.Dialer{
 		Dialer: &net.Dialer{
 			KeepAlive: 0,
 			Timeout:   16 * time.Second,
@@ -249,7 +276,7 @@ func main() {
 		BlackList:      lrucache.NewLRUCache(1024),
 	}
 
-	if ips, err := LocalInterfaceIPs(); err == nil {
+	if ips, err := helpers.LocalInterfaceIPs(); err == nil {
 		for _, ip := range ips {
 			dialer.BlackList.Set(ip.String(), struct{}{}, time.Time{})
 		}
@@ -299,5 +326,5 @@ func main() {
 	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
 	glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
-	srv.Serve(tls.NewListener(tcpKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+	srv.Serve(tls.NewListener(TCPKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 }
