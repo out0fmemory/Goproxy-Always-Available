@@ -18,7 +18,6 @@ import (
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
 
-	"../../dialer"
 	"../../filters"
 	"../../helpers"
 	"../../proxy"
@@ -208,7 +207,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DualStack: config.Transport.Dialer.DualStack,
 	}
 
-	md := &dialer.MultiDialer{
+	md := &helpers.MultiDialer{
 		Dialer:            d,
 		DisableIPv6:       config.DisableIPv6,
 		ForceIPv6:         config.ForceIPv6,
@@ -253,7 +252,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
 
-		dialer, err := proxy.FromURL(fixedURL, d, &dialer.MultiResolver{md})
+		dialer, err := proxy.FromURL(fixedURL, d, &helpers.MultiResolver{md})
 		if err != nil {
 			glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
 		}

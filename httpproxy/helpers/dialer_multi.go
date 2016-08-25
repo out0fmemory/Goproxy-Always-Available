@@ -1,4 +1,4 @@
-package dialer
+package helpers
 
 import (
 	"bytes"
@@ -14,8 +14,6 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/miekg/dns"
 	"github.com/phuslu/glog"
-
-	"../helpers"
 )
 
 type MultiDialer struct {
@@ -28,7 +26,7 @@ type MultiDialer struct {
 	EnableRemoteDNS   bool
 	LogToStderr       bool
 	TLSConfig         *tls.Config
-	SiteToAlias       *helpers.HostMatcher
+	SiteToAlias       *HostMatcher
 	GoogleTLSConfig   *tls.Config
 	GoogleG2PKP       []byte
 	IPBlackList       lrucache.Cache
@@ -50,7 +48,7 @@ func (d *MultiDialer) ClearCache() {
 }
 
 func (d *MultiDialer) lookupHost1(name string) (addrs []string, err error) {
-	ips, err := helpers.LookupIP(name)
+	ips, err := LookupIP(name)
 	if err != nil {
 		return nil, err
 	}
@@ -237,11 +235,11 @@ func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
 
 func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Conn, error) {
 	if d.LogToStderr {
-		helpers.SetConsoleTextColorGreen()
+		SetConsoleTextColorGreen()
 	}
 	glog.V(2).Infof("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
 	if d.LogToStderr {
-		helpers.SetConsoleTextColorReset()
+		SetConsoleTextColorReset()
 	}
 
 	if cfg == nil {
@@ -390,23 +388,23 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 	return nil, r.e
 }
 
-type racer struct {
+type addrRacer struct {
 	addr     string
 	duration time.Duration
 }
 
-type racers []racer
+type addrRacers []addrRacer
 
-func (r racers) Len() int           { return len(r) }
-func (r racers) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
-func (r racers) Less(i, j int) bool { return r[i].duration < r[j].duration }
+func (r addrRacers) Len() int           { return len(r) }
+func (r addrRacers) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
+func (r addrRacers) Less(i, j int) bool { return r[i].duration < r[j].duration }
 
 func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 	if len(addrs) <= n {
 		return addrs
 	}
 
-	goodAddrs := make([]racer, 0)
+	goodAddrs := make([]addrRacer, 0)
 	unknownAddrs := make([]string, 0)
 	badAddrs := make([]string, 0)
 
@@ -415,7 +413,7 @@ func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 			if d, ok := duration.(time.Duration); !ok {
 				glog.Errorf("%#v for %#v is not a time.Duration", duration, addr)
 			} else {
-				goodAddrs = append(goodAddrs, racer{addr, d})
+				goodAddrs = append(goodAddrs, addrRacer{addr, d})
 			}
 		} else if e, ok := d.TLSConnError.GetQuiet(addr); ok {
 			if _, ok := e.(error); !ok {
@@ -430,7 +428,7 @@ func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 
 	addrs1 := make([]string, 0, n)
 
-	sort.Sort(racers(goodAddrs))
+	sort.Sort(addrRacers(goodAddrs))
 	if len(goodAddrs) > n/2 {
 		goodAddrs = goodAddrs[:n/2]
 	}
@@ -442,7 +440,7 @@ func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 		if len(addrs1) < n && len(addrs2) > 0 {
 			m := n - len(addrs1)
 			if len(addrs2) > m {
-				helpers.ShuffleStringsN(addrs2, m)
+				ShuffleStringsN(addrs2, m)
 				addrs2 = addrs2[:m]
 			}
 			addrs1 = append(addrs1, addrs2...)
@@ -460,7 +458,7 @@ func (r *MultiResolver) LookupHost(host string) ([]string, error) {
 	if alias0, ok := r.MultiDialer.SiteToAlias.Lookup(host); ok {
 		alias := alias0.(string)
 		if hosts, err := r.MultiDialer.LookupAlias(alias); err == nil && len(hosts) > 0 {
-			helpers.ShuffleStrings(hosts)
+			ShuffleStrings(hosts)
 			return hosts, nil
 		}
 	}

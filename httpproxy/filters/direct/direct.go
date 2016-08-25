@@ -12,7 +12,6 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 
-	"../../dialer"
 	"../../filters"
 	"../../helpers"
 	"../../proxy"
@@ -73,7 +72,7 @@ func init() {
 }
 
 func NewFilter(config *Config) (filters.Filter, error) {
-	d := &dialer.Dialer{
+	d := &helpers.Dialer{
 		Dialer: &net.Dialer{
 			KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,

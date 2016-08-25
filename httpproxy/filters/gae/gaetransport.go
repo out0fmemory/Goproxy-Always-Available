@@ -10,13 +10,12 @@ import (
 
 	"github.com/phuslu/glog"
 
-	"../../dialer"
 	"../../helpers"
 )
 
 type Transport struct {
 	http.RoundTripper
-	MultiDialer *dialer.MultiDialer
+	MultiDialer *helpers.MultiDialer
 	Servers     *Servers
 	RetryDelay  time.Duration
 	RetryTimes  int

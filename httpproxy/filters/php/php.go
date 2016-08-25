@@ -12,8 +12,8 @@ import (
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
 
-	"../../dialer"
 	"../../filters"
+	"../../helpers"
 	"../../proxy"
 	"../../storage"
 )
@@ -96,7 +96,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DualStack: config.Transport.Dialer.DualStack,
 	}
 
-	d := &dialer.Dialer{
+	d := &helpers.Dialer{
 		Dialer:         d0,
 		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
