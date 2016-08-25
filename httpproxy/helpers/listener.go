@@ -20,14 +20,14 @@ type Listener interface {
 	Add(net.Conn) error
 }
 
-type racer struct {
+type connRacer struct {
 	conn net.Conn
 	err  error
 }
 
 type listener struct {
 	ln              net.Listener
-	lane            chan racer
+	lane            chan connRacer
 	keepAlivePeriod time.Duration
 	stopped         bool
 	once            sync.Once
@@ -64,7 +64,7 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 
 	l := &listener{
 		ln:              ln,
-		lane:            make(chan racer, backlog),
+		lane:            make(chan connRacer, backlog),
 		stopped:         false,
 		keepAlivePeriod: keepAlivePeriod,
 	}
@@ -79,7 +79,7 @@ func (l *listener) Accept() (c net.Conn, err error) {
 			var tempDelay time.Duration
 			for {
 				conn, err := l.ln.Accept()
-				l.lane <- racer{conn, err}
+				l.lane <- connRacer{conn, err}
 				if err != nil {
 					if ne, ok := err.(net.Error); ok && ne.Temporary() {
 						if tempDelay == 0 {
@@ -138,7 +138,7 @@ func (l *listener) Add(conn net.Conn) error {
 		return fmt.Errorf("%#v already closed", l)
 	}
 
-	l.lane <- racer{conn, nil}
+	l.lane <- connRacer{conn, nil}
 
 	return nil
 }

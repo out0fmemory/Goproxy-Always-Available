@@ -185,7 +185,7 @@ function build_repo_ex() {
 
 	make
 
-	cp -r *.xz ${WORKING_DIR}/r${RELEASE}
+	cp -r *.bz2 ${WORKING_DIR}/r${RELEASE}
 
 	popd
 }
