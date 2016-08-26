@@ -6,7 +6,9 @@ import (
 	"net"
 	"os"
 	"runtime"
+	"strconv"
 	"strings"
+	"time"
 
 	"./httpproxy"
 	"./httpproxy/helpers"
@@ -72,6 +74,13 @@ Pac Server         : http://%s/proxy.pac`, addr)
 		go httpproxy.ServeProfile(profile, "goproxy "+version)
 	}
 	fmt.Fprintf(os.Stderr, "\n------------------------------------------------------\n")
+
+	if ws, ok := os.LookupEnv("GOPROXY_WAIT_SECONDS"); ok {
+		if ws1, err := strconv.Atoi(ws); err == nil {
+			time.Sleep(time.Duration(ws1) * time.Second)
+			return
+		}
+	}
 
 	select {}
 }
