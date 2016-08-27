@@ -220,13 +220,13 @@ func main() {
 		return
 	}
 
-	addr := ":443"
+	addrs := ":443"
 	pwauth := false
 	keyFile := "goproxy-vps.key"
 	certFile := "goproxy-vps.crt"
 	http2verbose := false
 
-	flag.StringVar(&addr, "addr", addr, "goproxy vps listen addr")
+	flag.StringVar(&addrs, "addr", addrs, "goproxy vps listen addrs, i.e. 0.0.0.0:443,0.0.0.0:8443")
 	flag.StringVar(&keyFile, "keyfile", keyFile, "goproxy vps keyfile")
 	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
@@ -237,12 +237,6 @@ func main() {
 		"v":           "2",
 	})
 	flag.Parse()
-
-	var ln net.Listener
-	ln, err = net.Listen("tcp", addr)
-	if err != nil {
-		glog.Fatalf("Listen(%s) error: %s", addr, err)
-	}
 
 	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
 		cmd := exec.Command("openssl",
@@ -328,6 +322,15 @@ func main() {
 
 	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
-	glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
-	srv.Serve(tls.NewListener(TCPKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+
+	for _, addr := range strings.Split(addrs, ",") {
+		ln, err := net.Listen("tcp", addr)
+		if err != nil {
+			glog.Fatalf("Listen(%s) error: %s", addr, err)
+		}
+		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
+		go srv.Serve(tls.NewListener(TCPKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+	}
+
+	select {}
 }
