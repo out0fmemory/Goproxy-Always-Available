@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -298,17 +299,9 @@ func main() {
 
 	if handler.PWAuthEnabled {
 		handler.PWAuthCache = lrucache.NewLRUCache(1024)
-		handler.PWAuthPath, err = exec.LookPath("pwauth")
-		if err != nil {
-			for _, path := range []string{"/sbin/pwauth", "/usr/sbin/pwauth"} {
-				if _, err = os.Stat(path); err == nil {
-					handler.PWAuthPath = path
-					break
-				}
-			}
-		}
-		if err != nil {
-			glog.Fatalf("Please install `pwauth'")
+		handler.PWAuthPath = filepath.Join(filepath.Dir(os.Args[0]), "pwauth")
+		if _, err := os.Stat(handler.PWAuthPath); err != nil {
+			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
 		}
 	}
 
