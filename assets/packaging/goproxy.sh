@@ -1,21 +1,24 @@
 #!/bin/sh
 #
-# goproxy init script
+#       /etc/rc.d/init.d/goproxy
 #
+#       a go proxy
+#
+# chkconfig:   2345 95 05
+# description: a go proxy
 
 ### BEGIN INIT INFO
-# Provides:          goproxy
-# Required-Start:    $syslog
-# Required-Stop:     $syslog
-# Should-Start:      $local_fs
-# Should-Stop:       $local_fs
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: goproxy
-# Description:       a go proxy
+# Provides:       goproxy
+# Required-Start: $network
+# Required-Stop:
+# Should-Start:
+# Should-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop:  0 1 6
+# Short-Description: start and stop goproxy
+# Description: a go proxy
 ### END INIT INFO
 
-# **NOTE** bash will exit immediately if any command exits with non-zero.
 set -e
 
 PACKAGE_NAME=goproxy
@@ -65,4 +68,4 @@ case "$1" in
         ;;
 esac
 
-exit 0
+exit $?
