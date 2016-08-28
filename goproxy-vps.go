@@ -94,13 +94,13 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 						parts := strings.Split(string(userpass), ":")
 						username := parts[0]
 						password := parts[1]
-						glog.Infof("pwauth: username=%v password=%v", username, password)
 
 						cmd := exec.Command(h.PWAuthPath)
 						cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
 						err = cmd.Run()
 
 						if err != nil {
+							glog.Warningf("pwauth: username=%v password=%v error: %+v", username, password, err)
 							time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
 							http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
 							return
