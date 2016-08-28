@@ -13,7 +13,8 @@ import base64
 import platform
 
 if platform.mac_ver()[0] > '10.':
-    sys.exit(os.system('osascript -e \'display dialog "Please run goproxy-macos.command instead." buttons {"OK"} default button 1 with icon caution with title "GoProxy GTK"\''))
+    sys.exit(os.system(
+        'osascript -e \'display dialog "Please click goproxy-macos.command" buttons {"OK"} default button 1 with icon caution with title "GoProxy GTK"\''))
 
 try:
     import pygtk
@@ -21,7 +22,8 @@ try:
     import gtk
     # gtk.gdk.threads_init()
 except Exception:
-    sys.exit(os.system('gdialog --title "GoProxy GTK" --msgbox "Please install python-gtk2" 15 60'))
+    sys.exit(os.system(
+        'gdialog --title "GoProxy GTK" --msgbox "Please install python-gtk2" 15 60'))
 try:
     import pynotify
     pynotify.init('GoProxy Notify')
@@ -31,12 +33,14 @@ try:
     import appindicator
 except ImportError:
     if os.getenv('XDG_CURRENT_DESKTOP', '').lower() == 'unity':
-        sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, u'Please install python-appindicator').run())
+        sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
+                                   gtk.BUTTONS_OK, u'Please install python-appindicator').run())
     appindicator = None
 try:
     import vte
 except ImportError:
-    sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR, gtk.BUTTONS_OK, u'Please install python-vte').run())
+    sys.exit(gtk.MessageDialog(None, gtk.DIALOG_MODAL, gtk.MESSAGE_ERROR,
+                               gtk.BUTTONS_OK, u'Please install python-vte').run())
 
 
 def spawn_later(seconds, target, *args, **kwargs):
@@ -75,21 +79,24 @@ StartupNotify=true
 
 class GoProxyGTK:
 
-    command = [os.path.join(os.path.dirname(os.path.abspath(__file__)), 'goproxy'), '-v=2']
+    command = [
+        os.path.join(os.path.dirname(os.path.abspath(__file__)), 'goproxy'), '-v=2']
     message = u'GoProxy already started.'
-    fail_message = u'GoProxy start failed, refer to terminal for details'
+    fail_message = u'GoProxy start failed, see the terminal'
 
     def __init__(self, window, terminal):
         self.window = window
         self.window.set_size_request(652, 447)
         self.window.set_position(gtk.WIN_POS_CENTER)
-        self.window.connect('delete-event',self.delete_event)
+        self.window.connect('delete-event', self.delete_event)
         self.terminal = terminal
 
         self.window.add(terminal)
-        self.childpid = self.terminal.fork_command(self.command[0], self.command, os.getcwd())
+        self.childpid = self.terminal.fork_command(
+            self.command[0], self.command, os.getcwd())
         if self.childpid > 0:
-            self.childexited = self.terminal.connect('child-exited', self.on_child_exited)
+            self.childexited = self.terminal.connect(
+                'child-exited', self.on_child_exited)
             self.window.connect('delete-event', lambda w, e: gtk.main_quit())
         else:
             self.childexited = None
@@ -98,11 +105,13 @@ class GoProxyGTK:
 
         self.window.show_all()
 
-        logo_filename = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'goproxy-gtk.png')
+        logo_filename = os.path.join(
+            os.path.abspath(os.path.dirname(__file__)), 'goproxy-gtk.png')
         self.window.set_icon_from_file(logo_filename)
 
         if appindicator:
-            self.trayicon = appindicator.Indicator('GoProxy', 'indicator-messages', appindicator.CATEGORY_APPLICATION_STATUS)
+            self.trayicon = appindicator.Indicator(
+                'GoProxy', 'indicator-messages', appindicator.CATEGORY_APPLICATION_STATUS)
             self.trayicon.set_status(appindicator.STATUS_ACTIVE)
             self.trayicon.set_attention_icon('indicator-messages-new')
             self.trayicon.set_icon(logo_filename)
@@ -110,7 +119,8 @@ class GoProxyGTK:
         else:
             self.trayicon = gtk.StatusIcon()
             self.trayicon.set_from_file(logo_filename)
-            self.trayicon.connect('popup-menu', lambda i, b, t: self.make_menu().popup(None, None, gtk.status_icon_position_menu, b, t, self.trayicon))
+            self.trayicon.connect('popup-menu', lambda i, b, t: self.make_menu().popup(
+                None, None, gtk.status_icon_position_menu, b, t, self.trayicon))
             self.trayicon.connect('activate', self.show_hide_toggle)
             self.trayicon.set_tooltip('GoProxy')
             self.trayicon.set_visible(True)
@@ -176,10 +186,12 @@ class GoProxyGTK:
             self.terminal.disconnect(self.childexited)
         os.system('kill -9 %s' % self.childpid)
         self.on_show(widget, data)
-        self.childpid = self.terminal.fork_command(self.command[0], self.command, os.getcwd())
-        self.childexited = self.terminal.connect('child-exited', lambda term: gtk.main_quit())
+        self.childpid = self.terminal.fork_command(
+            self.command[0], self.command, os.getcwd())
+        self.childexited = self.terminal.connect(
+            'child-exited', lambda term: gtk.main_quit())
 
-    def show_hide_toggle(self, widget, data= None):
+    def show_hide_toggle(self, widget, data=None):
         if self.window.get_property('visible'):
             self.on_hide(widget, data)
         else:

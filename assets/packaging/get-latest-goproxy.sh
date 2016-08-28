@@ -61,16 +61,16 @@ case $(uname -s)/$(uname -m) in
 esac
 
 LOCALVERSION=$(./goproxy -version 2>/dev/null || :)
-echo "0. Local Goproxy version $LOCALVERSION"
+echo "0. Local Goproxy version ${LOCALVERSION}"
 
 echo "1. Checking GoProxy Version"
 REMOTEVERSION=$(curl https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oP "<strong>\K${FILENAME_PREFIX}\Kr\d+")
 if [ -z "${REMOTEVERSION}" ]; then
-    echo "Cannot detect $FILENAME_PREFIX version"
+    echo "Cannot detect ${FILENAME_PREFIX} version"
     exit -1
 fi
 
-if [ x"$LOCALVERSION" == x"$REMOTEVERSION" ]; then
+if [ x"${LOCALVERSION}" == x"${REMOTEVERSION}" ]; then
 	echo "Your GoProxy already update to latest"
 	exit -1
 fi
@@ -78,6 +78,6 @@ fi
 FILENAME=${FILENAME_PREFIX}${REMOTEVERSION}${FILENAME_SUFFIX}
 
 echo "2. Downloading ${FILENAME}"
-curl -kL https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} | ([[ "${FILENAME_SUFFIX}" == *.xz ]] && xz -d || bzip2 -d)  | tar xvp --strip-components=1
+curl -L https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} | ([[ "${FILENAME_SUFFIX}" == *.xz ]] && xz -d || bzip2 -d)  | tar xvp --strip-components=1
 
 echo "3. Done"

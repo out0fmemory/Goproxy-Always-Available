@@ -1,1 +1,0 @@
-cd /d %~dp0 && goproxy.exe -v=3 || pause
