@@ -6,6 +6,6 @@ import (
 )
 
 func main() {
-	v, err := net.LookupIP("localhost")
+	v, err := net.InterfaceAddrs()
 	fmt.Printf("%+v, err=%#v\n", v, err)
 }
