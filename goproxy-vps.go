@@ -8,6 +8,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -82,7 +83,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if h.PWAuthEnabled {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
-			http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
+			h.ProxyAuthorizationReqiured(rw, req)
 			return
 		}
 		if _, ok := h.PWAuthCache.Get(auth); !ok {
@@ -102,7 +103,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 						if err != nil {
 							glog.Warningf("pwauth: username=%v password=%v error: %+v", username, password, err)
 							time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
-							http.Error(rw, "407 Proxy Authentication Required", http.StatusProxyAuthRequired)
+							h.ProxyAuthorizationReqiured(rw, req)
 							return
 						}
 
@@ -213,6 +214,26 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	io.Copy(rw, resp.Body)
 }
 
+func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
+	data := "Proxy Authentication Required"
+	resp := &http.Response{
+		StatusCode: http.StatusProxyAuthRequired,
+		Header: http.Header{
+			"Proxy-Authenticate": []string{"Basic realm=\"Proxy Authentication Required\""},
+		},
+		Request:       req,
+		ContentLength: int64(len(data)),
+		Body:          ioutil.NopCloser(strings.NewReader(data)),
+	}
+	for key, values := range resp.Header {
+		for _, value := range values {
+			rw.Header().Add(key, value)
+		}
+	}
+	rw.WriteHeader(resp.StatusCode)
+	io.Copy(rw, resp.Body)
+}
+
 func main() {
 	var err error
 
@@ -299,7 +320,7 @@ func main() {
 
 	if handler.PWAuthEnabled {
 		handler.PWAuthCache = lrucache.NewLRUCache(1024)
-		handler.PWAuthPath = filepath.Join(filepath.Dir(os.Args[0]), "pwauth")
+		handler.PWAuthPath = filepath.Join(filepath.Dir(os.Args[0]), "./pwauth")
 		if _, err := os.Stat(handler.PWAuthPath); err != nil {
 			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
 		}
