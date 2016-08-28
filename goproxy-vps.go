@@ -44,17 +44,19 @@ func (fw FlushWriter) Write(p []byte) (n int, err error) {
 	return
 }
 
-type TCPKeepAliveListener struct {
+type TCPListener struct {
 	*net.TCPListener
 }
 
-func (ln TCPKeepAliveListener) Accept() (c net.Conn, err error) {
+func (ln TCPListener) Accept() (c net.Conn, err error) {
 	tc, err := ln.AcceptTCP()
 	if err != nil {
 		return
 	}
 	tc.SetKeepAlive(true)
 	tc.SetKeepAlivePeriod(3 * time.Minute)
+	tc.SetReadBuffer(32 * 1024)
+	tc.SetWriteBuffer(32 * 1024)
 	return tc, nil
 }
 
@@ -343,7 +345,7 @@ func main() {
 			glog.Fatalf("Listen(%s) error: %s", addr, err)
 		}
 		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
-		go srv.Serve(tls.NewListener(TCPKeepAliveListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 	}
 
 	select {}
