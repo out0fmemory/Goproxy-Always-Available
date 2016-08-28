@@ -29,6 +29,8 @@ type listener struct {
 	ln              net.Listener
 	lane            chan connRacer
 	keepAlivePeriod time.Duration
+	readBufferSize  int
+	writeBufferSize int
 	stopped         bool
 	once            sync.Once
 	mu              sync.Mutex
@@ -37,6 +39,8 @@ type listener struct {
 type ListenOptions struct {
 	TLSConfig       *tls.Config
 	KeepAlivePeriod time.Duration
+	ReadBufferSize  int
+	WriteBufferSize int
 }
 
 func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
@@ -58,8 +62,17 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 	}
 
 	var keepAlivePeriod time.Duration
-	if opts != nil && opts.KeepAlivePeriod > 0 {
-		keepAlivePeriod = opts.KeepAlivePeriod
+	var readBufferSize, writeBufferSize int
+	if opts != nil {
+		if opts.KeepAlivePeriod > 0 {
+			keepAlivePeriod = opts.KeepAlivePeriod
+		}
+		if opts.ReadBufferSize > 0 {
+			readBufferSize = opts.ReadBufferSize
+		}
+		if opts.WriteBufferSize > 0 {
+			writeBufferSize = opts.WriteBufferSize
+		}
 	}
 
 	l := &listener{
@@ -67,6 +80,8 @@ func ListenTCP(network, addr string, opts *ListenOptions) (Listener, error) {
 		lane:            make(chan connRacer, backlog),
 		stopped:         false,
 		keepAlivePeriod: keepAlivePeriod,
+		readBufferSize:  readBufferSize,
+		writeBufferSize: writeBufferSize,
 	}
 
 	return l, nil
@@ -105,10 +120,18 @@ func (l *listener) Accept() (c net.Conn, err error) {
 		return r.conn, r.err
 	}
 
-	if l.keepAlivePeriod > 0 {
+	if l.keepAlivePeriod > 0 || l.readBufferSize > 0 || l.writeBufferSize > 0 {
 		if tc, ok := r.conn.(*net.TCPConn); ok {
-			tc.SetKeepAlive(true)
-			tc.SetKeepAlivePeriod(l.keepAlivePeriod)
+			if l.keepAlivePeriod > 0 {
+				tc.SetKeepAlive(true)
+				tc.SetKeepAlivePeriod(l.keepAlivePeriod)
+			}
+			if l.readBufferSize > 0 {
+				tc.SetReadBuffer(l.readBufferSize)
+			}
+			if l.writeBufferSize > 0 {
+				tc.SetWriteBuffer(l.writeBufferSize)
+			}
 		}
 	}
 
