@@ -169,8 +169,8 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			r = lconn
 		}
 
-		go io.Copy(conn, r)
-		io.Copy(w, conn)
+		go helpers.IOCopy(conn, r)
+		helpers.IOCopy(w, conn)
 
 		return
 	}
@@ -213,7 +213,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 	rw.WriteHeader(resp.StatusCode)
-	io.Copy(rw, resp.Body)
+	helpers.IOCopy(rw, resp.Body)
 }
 
 func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
@@ -233,7 +233,7 @@ func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.R
 		}
 	}
 	rw.WriteHeader(resp.StatusCode)
-	io.Copy(rw, resp.Body)
+	helpers.IOCopy(rw, resp.Body)
 }
 
 func main() {
