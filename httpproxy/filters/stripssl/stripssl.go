@@ -181,8 +181,8 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		return ctx, nil, err
 	}
 
-	go helpers.IoCopy(loConn, c)
-	go helpers.IoCopy(c, loConn)
+	go helpers.IOCopy(loConn, c)
+	go helpers.IOCopy(c, loConn)
 
 	return ctx, filters.DummyRequest, nil
 }

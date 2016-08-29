@@ -220,9 +220,9 @@ func (f *Filter) Response(ctx context.Context, resp *http.Response) (context.Con
 				defer w.ThreadBye() // TODO: launch it as soon as iocopy over?
 
 				piper := w.NewPiper(index)
-				_, err := helpers.IoCopy(piper, resp.Body)
+				_, err := helpers.IOCopy(piper, resp.Body)
 				if err != nil {
-					glog.Warningf("AUTORANGE helpers.IoCopy(%#v) error: %#v", resp.Body, err)
+					glog.Warningf("AUTORANGE helpers.IOCopy(%#v) error: %#v", resp.Body, err)
 					piper.EIndex()
 				}
 				piper.WClose()

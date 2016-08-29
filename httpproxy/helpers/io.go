@@ -18,7 +18,7 @@ var (
 	}
 )
 
-func IoCopy(dst io.Writer, src io.Reader) (written int64, err error) {
+func IOCopy(dst io.Writer, src io.Reader) (written int64, err error) {
 	// If the reader has a WriteTo method, use it to do the copy.
 	// Avoids an allocation and a copy.
 	if wt, ok := src.(io.WriterTo); ok {

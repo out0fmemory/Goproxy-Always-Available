@@ -129,8 +129,8 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 		defer lconn.Close()
 
-		go helpers.IoCopy(rconn, lconn)
-		helpers.IoCopy(lconn, rconn)
+		go helpers.IOCopy(rconn, lconn)
+		helpers.IOCopy(lconn, rconn)
 
 		return ctx, filters.DummyResponse, nil
 	default:

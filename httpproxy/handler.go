@@ -135,12 +135,12 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	rw.WriteHeader(resp.StatusCode)
 	if resp.Body != nil {
 		defer resp.Body.Close()
-		n, err := helpers.IoCopy(rw, resp.Body)
+		n, err := helpers.IOCopy(rw, resp.Body)
 		if err != nil {
 			if isClosedConnError(err) {
-				glog.Infof("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
+				glog.Infof("IOCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
 			} else {
-				glog.Warningf("IoCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
+				glog.Warningf("IOCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
 			}
 		}
 	}
