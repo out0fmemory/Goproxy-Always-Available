@@ -176,7 +176,7 @@ if __name__ == "__main__":
         pairs = [tuple(x.split()) for x in lines if not x.strip().startswith('#')]
         if (username, password) in pairs:
             sys.exit(0)
-    except:
+    except Exception:
         pass
     if authenticate(username, password):
         sys.exit(0)
