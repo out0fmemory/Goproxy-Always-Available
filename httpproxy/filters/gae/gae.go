@@ -316,7 +316,16 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				resp, err := tr.RoundTrip(req)
 				if resp != nil && resp.Body != nil {
 					glog.V(3).Infof("GAE EnableDeadProbe \"%s %s\" %d -", req.Method, req.URL.String(), resp.StatusCode)
-					resp.Body.Close()
+					defer resp.Body.Close()
+					if resp.StatusCode == http.StatusBadGateway {
+						if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
+							if ip, _, err := net.SplitHostPort(addr); err == nil {
+								duration := 1 * time.Hour
+								glog.Warningf("GAE EnableDeadProbe: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
+								md.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+							}
+						}
+					}
 				}
 				if err != nil {
 					glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
