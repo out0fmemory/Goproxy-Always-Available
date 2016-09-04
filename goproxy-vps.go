@@ -289,17 +289,19 @@ func main() {
 			Timeout:   16 * time.Second,
 			DualStack: true,
 		},
-		DNSCache:       lrucache.NewLRUCache(8 * 1024),
-		DNSCacheExpiry: 8 * time.Hour,
-		BlackList:      lrucache.NewLRUCache(1024),
+		Resolver: &helpers.Resolver{
+			LRUCache:  lrucache.NewLRUCache(8 * 1024),
+			BlackList: lrucache.NewLRUCache(1024),
+			DNSExpiry: 8 * time.Hour,
+		},
 	}
 
 	if ips, err := helpers.LocalIPv4s(); err == nil {
 		for _, ip := range ips {
-			dialer.BlackList.Set(ip.String(), struct{}{}, time.Time{})
+			dialer.Resolver.BlackList.Set(ip.String(), struct{}{}, time.Time{})
 		}
 		for _, s := range []string{"127.0.0.1", "::1"} {
-			dialer.BlackList.Set(s, struct{}{}, time.Time{})
+			dialer.Resolver.BlackList.Set(s, struct{}{}, time.Time{})
 		}
 	}
 
