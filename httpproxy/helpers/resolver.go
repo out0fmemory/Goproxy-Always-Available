@@ -85,6 +85,10 @@ func (r *Resolver) lookupIP1(name string) ([]net.IP, error) {
 }
 
 func (r *Resolver) lookupIP2(name string) ([]net.IP, error) {
+	if ip := net.ParseIP(name); ip != nil {
+		return []net.IP{ip}, nil
+	}
+
 	m := &dns.Msg{}
 
 	switch {
