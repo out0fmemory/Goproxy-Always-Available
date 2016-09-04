@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-RUN apk add --update curl xz tar && rm -rf /var/cache/apk/* && \
+RUN apk add --no-cache curl xz tar && \
 	mkdir -p /opt/ && \
 	goproxy_dist=$(curl -Ls https://git.io/goproxy | grep -oE 'goproxy_linux_amd64-r[0-9]+.tar.xz' | head -1) && \
 	curl -L https://github.com/phuslu/goproxy/releases/download/goproxy/${goproxy_dist} | xz -d | tar xvf - -C /opt/ && \
@@ -11,4 +11,4 @@ RUN apk add --update curl xz tar && rm -rf /var/cache/apk/* && \
 
 EXPOSE 10
 
-ENTRYPOINT ["/opt/goproxy/goproxy"]
+ENTRYPOINT ["/opt/goproxy/goproxy", "-v=1"]
