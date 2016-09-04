@@ -44,8 +44,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			}
 
 			if isTimeoutError {
-				glog.Warningf("GAE: \"%s %s\" timeout: %v, helpers.TryCloseConnections(%T)", req.Method, req.URL.String(), err, t.RoundTripper)
-				helpers.TryCloseConnections(t.RoundTripper)
+				glog.Warningf("GAE: \"%s %s\" timeout: %v, helpers.CloseConnections(%T)", req.Method, req.URL.String(), err, t.RoundTripper)
+				helpers.CloseConnections(t.RoundTripper)
 			}
 
 			if i == t.RetryTimes-1 {
@@ -78,7 +78,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
 							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 						}
-						if ok := helpers.TryCloseConnectionByRemoteAddr(t.RoundTripper, addr); !ok {
+						if ok := helpers.CloseConnectionByRemoteAddr(t.RoundTripper, addr); !ok {
 							glog.Warningf("GAE: TryCloseConnectionByRemoteAddr(%T, %#v) failed.", t.RoundTripper, addr)
 						}
 					}

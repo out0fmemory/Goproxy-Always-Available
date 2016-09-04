@@ -19,36 +19,19 @@ var (
 	}
 )
 
-func alwaysClose(conn net.Conn, idle bool) bool {
-	return true
-}
-
-func TryCloseConnections(tr http.RoundTripper) bool {
-	type closer1 interface {
-		CloseConnections(func(conn net.Conn, idle bool) bool)
-	}
-
-	type closer2 interface {
-		CloseIdleConnections()
-	}
-
-	if t, ok := tr.(closer1); ok {
-		t.CloseConnections(alwaysClose)
+func CloseConnections(tr http.RoundTripper) bool {
+	if t, ok := tr.(*http.Transport); ok {
+		f := func(conn net.Conn, idle bool) bool {
+			return true
+		}
+		t.CloseConnections(f)
 		return true
 	}
-
-	if t, ok := tr.(closer2); ok {
-		t.CloseIdleConnections()
-	}
-
 	return false
 }
 
-func TryCloseConnectionByRemoteAddr(tr http.RoundTripper, addr string) bool {
-	type closer1 interface {
-		CloseConnections(func(conn net.Conn, idle bool) bool)
-	}
-	if t, ok := tr.(closer1); ok {
+func CloseConnectionByRemoteAddr(tr http.RoundTripper, addr string) bool {
+	if t, ok := tr.(*http.Transport); ok {
 		f := func(conn net.Conn, idle bool) bool {
 			return conn != nil && conn.RemoteAddr().String() == addr
 		}

@@ -6,8 +6,8 @@ import (
 	"testing"
 )
 
-func TestTryCloseConnections(t *testing.T) {
-	if !TryCloseConnections(http.DefaultTransport) {
+func TestCloseConnections(t *testing.T) {
+	if !CloseConnections(http.DefaultTransport) {
 		t.Errorf("go %+v net/http does not support CloseConnections()", runtime.Version())
 	}
 }
