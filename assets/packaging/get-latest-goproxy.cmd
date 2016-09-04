@@ -43,7 +43,7 @@ if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
 
 if exist "goproxy.exe" (
     for /f "usebackq" %%I in (`goproxy.exe -version`) do (
-        echo %%I | findstr /r "r[0-9][0-9][0-9][0-9]*" >NUL && (
+        echo %%I | findstr /r "r[0-9][0-9][0-9][0-9][0-9]*" >NUL && (
             set localversion=%%I
         )
     )
