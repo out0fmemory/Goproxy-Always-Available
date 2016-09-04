@@ -14,6 +14,14 @@ if [ -z "$GITHUB_TOKEN" ]; then
 	exit 1
 fi
 
+for CMD in curl tar head git awk sha1sum
+do
+	if ! type -p ${CMD}; then
+		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
+		exit 1
+	fi
+done
+
 trap 'rm -rf $HOME/tmp.*.${GITHUB_REPO}; exit' SIGINT SIGQUIT SIGTERM
 
 WORKING_DIR=${HOME}/tmp.$$.${GITHUB_REPO}

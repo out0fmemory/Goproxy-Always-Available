@@ -17,7 +17,7 @@ if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc make md5sum timeout
+for CMD in curl awk git tar bzip2 xz 7za gcc make sha1sum timeout
 do
 	if ! type -p ${CMD}; then
 		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
