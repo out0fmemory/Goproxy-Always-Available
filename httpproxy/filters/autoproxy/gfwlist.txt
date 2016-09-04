@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: EFpOyG/lXjwSG9DKpm8l/A
+! Checksum: QhzQz6baFEpnMmeL40Cn+A
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 01 Sep 2016 06:00:53 +0200
+! Last Modified: Fri, 02 Sep 2016 17:02:16 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -499,6 +499,7 @@ blogspot.com
 ||recaptcha.net
 ||redhotlabs.com
 ||registry.google
+||schema.org
 |http://sipml5.org/
 ||stories.google
 ||synergyse.com
@@ -4556,6 +4557,7 @@ forum.slime.com.tw
 .slinkset.com
 ||slickvpn.com
 .slutload.com
+||smartdnsproxy.com
 smchbooks.com
 .smh.com.au/world/death-of-chinese-playboy-leaves-fresh-scratches-in-party-paintwork-20120903-25a8v
 smhric.org
