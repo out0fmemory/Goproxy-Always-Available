@@ -97,11 +97,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	d := &helpers.Dialer{
-		Dialer:         d0,
-		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
-		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
-		BlackList:      nil,
-		Level:          2,
+		Dialer: d0,
+		Resolver: &helpers.Resolver{
+			LRUCache:  lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+			DNSExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
+		},
+		Level: 2,
 	}
 
 	for _, server := range servers {
@@ -110,7 +111,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			if h, _, err := net.SplitHostPort(host); err == nil {
 				host = h
 			}
-			d.DNSCache.Set(host, server.Host, time.Time{})
+			d.Resolver.LRUCache.Set(host, server.Host, time.Time{})
 		}
 	}
 

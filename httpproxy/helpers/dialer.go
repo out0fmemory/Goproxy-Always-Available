@@ -5,7 +5,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 )
 
@@ -19,10 +18,8 @@ type Dialer struct {
 		Dial(network, addr string) (net.Conn, error)
 	}
 
-	DNSCache       lrucache.Cache
-	DNSCacheExpiry time.Duration
-	BlackList      lrucache.Cache
-	Level          int
+	Resolver *Resolver
+	Level    int
 }
 
 func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
@@ -30,37 +27,14 @@ func (d *Dialer) Dial(network, address string) (conn net.Conn, err error) {
 
 	switch network {
 	case "tcp", "tcp4", "tcp6":
-		if d.DNSCache != nil {
+		if d.Resolver != nil {
 			if host, port, err := net.SplitHostPort(address); err == nil {
-				v, ok1 := d.DNSCache.Get(host)
-				ips, ok2 := v.([]net.IP)
-
-				if !ok2 {
-					if ok1 {
-						if host1, ok3 := v.(string); ok3 {
-							host = host1
-						}
-					}
-
-					ips0, err := net.LookupIP(host)
-					if err != nil {
-						return nil, err
-					}
-
-					ips = ips[:0]
-					for _, ip := range ips0 {
-						if !d.inBlackList(ip.String()) {
-							ips = append(ips, ip)
-						}
-					}
-
+				if ips, err := d.Resolver.LookupIP(host); err == nil {
 					if len(ips) == 0 {
-						return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s(%+v)", address, ips0))
+						return nil, net.InvalidAddrError(fmt.Sprintf("Invaid DNS Record: %s", address))
 					}
-
-					d.DNSCache.Set(host, ips, time.Now().Add(d.DNSCacheExpiry))
+					return d.dialMulti(network, address, ips, port)
 				}
-				return d.dialMulti(network, address, ips, port)
 			}
 		}
 	}
@@ -121,12 +95,4 @@ func (d *Dialer) dialMulti(network, address string, ips []net.IP, port string) (
 	}
 
 	return nil, net.UnknownNetworkError("Unkown transport/direct error")
-}
-
-func (d *Dialer) inBlackList(host string) bool {
-	if d.BlackList == nil {
-		return false
-	}
-	_, ok := d.BlackList.Get(host)
-	return ok
 }

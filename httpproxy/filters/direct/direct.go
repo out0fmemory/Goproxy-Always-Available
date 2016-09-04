@@ -78,17 +78,19 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
 			DualStack: config.Transport.Dialer.DualStack,
 		},
-		DNSCache:       lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
-		DNSCacheExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
-		BlackList:      lrucache.NewLRUCache(1024),
+		Resolver: &helpers.Resolver{
+			LRUCache:  lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+			DNSExpiry: time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
+			BlackList: lrucache.NewLRUCache(1024),
+		},
 	}
 
 	if ips, err := helpers.LocalIPv4s(); err == nil {
 		for _, ip := range ips {
-			d.BlackList.Set(ip.String(), struct{}{}, time.Time{})
+			d.Resolver.BlackList.Set(ip.String(), struct{}{}, time.Time{})
 		}
 		for _, s := range []string{"127.0.0.1", "::1"} {
-			d.BlackList.Set(s, struct{}{}, time.Time{})
+			d.Resolver.BlackList.Set(s, struct{}{}, time.Time{})
 		}
 	}
 
