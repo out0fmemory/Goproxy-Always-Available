@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"crypto/tls"
-	"errors"
 	"fmt"
 	"net"
 	"sort"
@@ -12,7 +11,6 @@ import (
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
-	"github.com/miekg/dns"
 	"github.com/phuslu/glog"
 )
 
@@ -20,10 +18,8 @@ type MultiDialer struct {
 	Dialer interface {
 		Dial(network, addr string) (net.Conn, error)
 	}
-	DisableIPv6       bool
-	ForceIPv6         bool
+	Resolver          *Resolver
 	SSLVerify         bool
-	EnableRemoteDNS   bool
 	LogToStderr       bool
 	TLSConfig         *tls.Config
 	SiteToAlias       *HostMatcher
@@ -31,9 +27,6 @@ type MultiDialer struct {
 	GoogleG2PKP       []byte
 	IPBlackList       lrucache.Cache
 	HostMap           map[string][]string
-	DNSServers        []net.IP
-	DNSCache          lrucache.Cache
-	DNSCacheExpiry    time.Duration
 	TLSConnDuration   lrucache.Cache
 	TLSConnError      lrucache.Cache
 	TLSConnReadBuffer int
@@ -47,86 +40,18 @@ func (d *MultiDialer) ClearCache() {
 	d.TLSConnError.Clear()
 }
 
-func (d *MultiDialer) lookupHost1(name string) (addrs []string, err error) {
-	ips, err := LookupIP(name)
-	if err != nil {
-		return nil, err
-	}
-
-	addrs = make([]string, 0)
-	for _, ip := range ips {
-		h := ip.String()
-		if _, ok := d.IPBlackList.GetQuiet(h); ok {
-			continue
-		}
-
-		if strings.Contains(h, ":") {
-			if d.ForceIPv6 || !d.DisableIPv6 {
-				addrs = append(addrs, h)
-			}
-		} else {
-			if !d.ForceIPv6 {
-				addrs = append(addrs, h)
-			}
-		}
-	}
-
-	return addrs, nil
-}
-
-func (d *MultiDialer) lookupHost2(name string, dnsserver net.IP) (addrs []string, err error) {
-	m := &dns.Msg{}
-
-	switch {
-	case d.ForceIPv6:
-		m.SetQuestion(dns.Fqdn(name), dns.TypeAAAA)
-	case d.DisableIPv6:
-		m.SetQuestion(dns.Fqdn(name), dns.TypeA)
-	default:
-		m.SetQuestion(dns.Fqdn(name), dns.TypeANY)
-	}
-
-	r, err := dns.Exchange(m, net.JoinHostPort(dnsserver.String(), "53"))
-	if err != nil {
-		return nil, err
-	}
-
-	if len(r.Answer) < 1 {
-		return nil, errors.New("no Answer")
-	}
-
-	addrs = []string{}
-
-	for _, rr := range r.Answer {
-		var addr string
-
-		if aaaa, ok := rr.(*dns.AAAA); ok {
-			addr = aaaa.AAAA.String()
-		}
-		if a, ok := rr.(*dns.A); ok {
-			addr = a.A.String()
-		}
-
-		if addr == "" {
-			continue
-		}
-
-		if _, ok := d.IPBlackList.GetQuiet(addr); ok {
-			continue
-		}
-
-		addrs = append(addrs, addr)
-	}
-
-	return addrs, nil
-}
-
 func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
-	if d.EnableRemoteDNS {
-		return d.lookupHost2(name, d.DNSServers[0])
-	} else {
-		return d.lookupHost1(name)
+	ips, err := d.Resolver.LookupIP(name)
+	if err != nil {
+		return nil, err
 	}
+
+	addrs = make([]string, len(ips))
+	for i, ip := range ips {
+		addrs[i] = ip.String()
+	}
+
+	return addrs, nil
 }
 
 func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
@@ -136,14 +61,10 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	}
 
 	seen := make(map[string]struct{}, 0)
-	expiry := time.Now().Add(d.DNSCacheExpiry)
 	for _, name := range names {
 		var addrs0 []string
 		if net.ParseIP(name) != nil {
 			addrs0 = []string{name}
-			expiry = time.Time{}
-		} else if addrs1, ok := d.DNSCache.Get(name); ok {
-			addrs0 = addrs1.([]string)
 		} else {
 			addrs0, err = d.LookupHost(name)
 			if err != nil {
@@ -151,7 +72,6 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 				addrs0 = []string{}
 			}
 			glog.V(2).Infof("LookupHost(%#v) return %v", name, addrs0)
-			d.DNSCache.Set(name, addrs0, expiry)
 		}
 		for _, addr := range addrs0 {
 			seen[addr] = struct{}{}
@@ -227,9 +147,9 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 						addrs[i] = net.JoinHostPort(host, port)
 					}
 					switch {
-					case d.ForceIPv6:
+					case d.Resolver.ForceIPv6:
 						network = "tcp6"
-					case d.DisableIPv6:
+					case d.Resolver.DisableIPv6:
 						network = "tcp4"
 					}
 					conn, err := d.dialMultiTLS(network, addrs, config)

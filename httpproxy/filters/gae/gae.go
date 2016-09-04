@@ -207,12 +207,24 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		DualStack: config.Transport.Dialer.DualStack,
 	}
 
+	r := &helpers.Resolver{
+		LRUCache:    lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
+		DNSExpiry:   time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
+		DisableIPv6: config.DisableIPv6,
+		ForceIPv6:   config.ForceIPv6,
+	}
+
+	if config.EnableRemoteDNS {
+		r.DNSServer = net.ParseIP(config.DNSServers[0])
+		if r.DNSServer == nil {
+			glog.Fatalf("net.ParseIP(%+v) failed: %s", config.DNSServers[0], err)
+		}
+	}
+
 	md := &helpers.MultiDialer{
 		Dialer:            d,
-		DisableIPv6:       config.DisableIPv6,
-		ForceIPv6:         config.ForceIPv6,
+		Resolver:          r,
 		SSLVerify:         config.SSLVerify,
-		EnableRemoteDNS:   config.EnableRemoteDNS,
 		LogToStderr:       flag.Lookup("logtostderr") != nil,
 		TLSConfig:         nil,
 		SiteToAlias:       helpers.NewHostMatcherWithString(config.SiteToAlias),
@@ -220,9 +232,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		HostMap:           hostmap,
 		GoogleTLSConfig:   googleTLSConfig,
 		GoogleG2PKP:       GoogleG2PKP,
-		DNSServers:        dnsServers,
-		DNSCache:          lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
-		DNSCacheExpiry:    time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
 		TLSConnDuration:   lrucache.NewLRUCache(8192),
 		TLSConnError:      lrucache.NewLRUCache(8192),
 		TLSConnReadBuffer: config.Transport.Dialer.SocketReadBuffer,
