@@ -178,53 +178,6 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	return addrs, nil
 }
 
-func (d *MultiDialer) ExpandAlias(alias string) error {
-	names, ok := d.HostMap[alias]
-	if !ok {
-		return fmt.Errorf("alias %#v not exists", alias)
-	}
-
-	expire := time.Now().Add(24 * time.Hour)
-	for _, name := range names {
-		seen := make(map[string]struct{}, 0)
-		for _, dnsserver := range d.DNSServers {
-			var addrs []string
-			var err error
-			if net.ParseIP(name) != nil {
-				addrs = []string{name}
-				expire = time.Time{}
-			} else if addrs, err = d.lookupHost2(name, dnsserver); err != nil {
-				glog.V(2).Infof("lookupHost2(%#v) error: %s", name, err)
-				continue
-			}
-			glog.V(2).Infof("ExpandList(%#v) %#v return %v", name, dnsserver, addrs)
-			for _, addr := range addrs {
-				seen[addr] = struct{}{}
-			}
-		}
-
-		if len(seen) == 0 {
-			continue
-		}
-
-		if addrs, ok := d.DNSCache.Get(name); ok {
-			addrs1 := addrs.([]string)
-			for _, addr := range addrs1 {
-				seen[addr] = struct{}{}
-			}
-		}
-
-		addrs := make([]string, 0)
-		for addr := range seen {
-			addrs = append(addrs, addr)
-		}
-
-		d.DNSCache.Set(name, addrs, expire)
-	}
-
-	return nil
-}
-
 func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
 	return d.Dialer.Dial(network, address)
 }

@@ -3,6 +3,7 @@ package helpers
 import (
 	"fmt"
 	"net"
+	"strings"
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
@@ -11,6 +12,7 @@ import (
 
 type Resolver struct {
 	LRUCache    lrucache.Cache
+	BlackList   lrucache.Cache
 	DNSServer   net.IP
 	DNSExpiry   time.Duration
 	DisableIPv6 bool
@@ -31,24 +33,58 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 		}
 	}
 
-	f := net.LookupIP
+	lookupIP := r.lookupIP1
 	if r.DNSServer != nil {
-		f = r.lookupIP
+		lookupIP = r.lookupIP2
 	}
 
-	ips, err := f(name)
+	ips, err := lookupIP(name)
 	if err == nil {
-		if r.DNSExpiry == 0 {
-			r.LRUCache.Set(name, ips, time.Time{})
-		} else {
-			r.LRUCache.Set(name, ips, time.Now().Add(r.DNSExpiry))
+		if r.BlackList != nil {
+			ips1 := ips[:0]
+			for _, ip := range ips {
+				if _, ok := r.BlackList.GetQuiet(ip.String()); !ok {
+					ips1 = append(ips1, ip)
+				}
+			}
+			ips = ips1
+		}
+
+		if len(ips) > 0 {
+			if r.DNSExpiry == 0 {
+				r.LRUCache.Set(name, ips, time.Time{})
+			} else {
+				r.LRUCache.Set(name, ips, time.Now().Add(r.DNSExpiry))
+			}
 		}
 	}
 
 	return ips, err
 }
 
-func (r *Resolver) lookupIP(name string) ([]net.IP, error) {
+func (r *Resolver) lookupIP1(name string) ([]net.IP, error) {
+	ips, err := LookupIP(name)
+	if err != nil {
+		return nil, err
+	}
+
+	ips1 := ips[:0]
+	for _, ip := range ips {
+		if strings.Contains(ip.String(), ":") {
+			if r.ForceIPv6 || !r.DisableIPv6 {
+				ips1 = append(ips1, ip)
+			}
+		} else {
+			if !r.ForceIPv6 {
+				ips1 = append(ips1, ip)
+			}
+		}
+	}
+
+	return ips1, nil
+}
+
+func (r *Resolver) lookupIP2(name string) ([]net.IP, error) {
 	m := &dns.Msg{}
 
 	switch {
