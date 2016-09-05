@@ -40,20 +40,6 @@ func (d *MultiDialer) ClearCache() {
 	d.TLSConnError.Clear()
 }
 
-func (d *MultiDialer) LookupHost(name string) (addrs []string, err error) {
-	ips, err := d.Resolver.LookupIP(name)
-	if err != nil {
-		return nil, err
-	}
-
-	addrs = make([]string, len(ips))
-	for i, ip := range ips {
-		addrs[i] = ip.String()
-	}
-
-	return addrs, nil
-}
-
 func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	names, ok := d.HostMap[alias]
 	if !ok {
@@ -66,7 +52,7 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 		if net.ParseIP(name) != nil {
 			addrs0 = []string{name}
 		} else {
-			addrs0, err = d.LookupHost(name)
+			addrs0, err = d.Resolver.LookupHost(name)
 			if err != nil {
 				glog.Warningf("LookupHost(%#v) error: %s", name, err)
 				addrs0 = []string{}
