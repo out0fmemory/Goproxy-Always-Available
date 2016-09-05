@@ -258,16 +258,16 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	if f.RegionFiltersEnabled {
 		if f1, ok := f.RegionFilterCache.Get(host); ok {
 			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
-		} else if ips, err := f.RegionResolver.LookupHost(host); err == nil {
+		} else if ips, err := f.RegionResolver.LookupIP(host); err == nil && len(ips) > 0 {
 			ip := ips[0]
 
-			if strings.Contains(ip, ":") {
+			if ip.To4() == nil {
 				if f1, ok := f.RegionFiltersRules["ipv6"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPv6 %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
-			} else if country, err := f.FindCountryByIP(ip); err == nil {
+			} else if country, err := f.FindCountryByIP(ip.String()); err == nil {
 				if f1, ok := f.RegionFiltersRules[country]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, country, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
