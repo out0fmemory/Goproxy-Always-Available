@@ -4,7 +4,6 @@ import (
 	"context"
 	"io/ioutil"
 	"mime"
-	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -83,6 +82,7 @@ type Filter struct {
 	SiteFiltersRules     *helpers.HostMatcher
 	RegionFiltersEnabled bool
 	RegionFiltersRules   map[string]filters.RoundTripFilter
+	RegionResolver       *helpers.Resolver
 	RegionLocator        *ip17mon.Locator
 	RegionFilterCache    lrucache.Cache
 	Transport            *http.Transport
@@ -182,6 +182,8 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 		f.RegionLocator = ip17mon.NewLocatorWithData(data)
 
+		f.RegionResolver = &helpers.Resolver{}
+
 		fm := make(map[string]filters.RoundTripFilter)
 		for region, name := range config.RegionFilters.Rules {
 			if name == "" {
@@ -256,7 +258,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	if f.RegionFiltersEnabled {
 		if f1, ok := f.RegionFilterCache.Get(host); ok {
 			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
-		} else if ips, err := net.LookupHost(host); err == nil {
+		} else if ips, err := f.RegionResolver.LookupHost(host); err == nil {
 			ip := ips[0]
 
 			if strings.Contains(ip, ":") {
