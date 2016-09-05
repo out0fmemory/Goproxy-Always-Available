@@ -268,13 +268,13 @@ func (d *MultiDialer) pickupTLSAddrs(addrs []string, n int) []string {
 	badAddrs := make([]string, 0)
 
 	for _, addr := range addrs {
-		if duration, ok := d.TLSConnDuration.GetQuiet(addr); ok {
+		if duration, ok := d.TLSConnDuration.Get(addr); ok {
 			if d, ok := duration.(time.Duration); !ok {
 				glog.Errorf("%#v for %#v is not a time.Duration", duration, addr)
 			} else {
 				goodAddrs = append(goodAddrs, addrRacer{addr, d})
 			}
-		} else if e, ok := d.TLSConnError.GetQuiet(addr); ok {
+		} else if e, ok := d.TLSConnError.Get(addr); ok {
 			if _, ok := e.(error); !ok {
 				glog.Errorf("%#v for %#v is not a error", e, addr)
 			} else {
