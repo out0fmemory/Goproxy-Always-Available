@@ -19,14 +19,14 @@ done
 ```
 - 编译 golang 工具链
 ```bash
-export GOROOT_BOOTSTRAP=~/workspace/goproxy/go1.6
+export GOROOT_BOOTSTRAP=~/workspace/goproxy/goroot_bootstrap
 export GOROOT=~/workspace/goproxy/go
 export GOPATH=~/workspace/goproxy/gopath
 
 cd ~/workspace/goproxy/
 
-curl -k https://storage.googleapis.com/golang/go1.6.linux-amd64.tar.gz | tar xz
-mv go go1.6
+curl -k https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz | tar xz
+mv go goroot_bootstrap
 
 git clone --depth 1 https://github.com/phuslu/go
 (cd go/src && bash ./make.bash)
@@ -44,7 +44,7 @@ go build -v
 ```
 - 运行调试 goproxy
 ```bash
-./goproxy -v=2
+./goproxy -v=3
 ```
 - 打包 goproxy
 ```bash
