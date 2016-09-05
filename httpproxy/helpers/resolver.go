@@ -19,6 +19,20 @@ type Resolver struct {
 	ForceIPv6   bool
 }
 
+func (r *Resolver) LookupHost(name string) ([]string, error) {
+	ips, err := r.LookupIP(name)
+	if err != nil {
+		return nil, err
+	}
+
+	addrs := make([]string, len(ips))
+	for i, ip := range ips {
+		addrs[i] = ip.String()
+	}
+
+	return addrs, nil
+}
+
 func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 	if r.LRUCache != nil {
 		if v, ok := r.LRUCache.Get(name); ok {
