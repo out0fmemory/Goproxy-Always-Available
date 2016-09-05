@@ -64,7 +64,7 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 			ips = ips1
 		}
 
-		if len(ips) > 0 {
+		if r.LRUCache != nil && len(ips) > 0 {
 			if r.DNSExpiry == 0 {
 				r.LRUCache.Set(name, ips, time.Time{})
 			} else {
