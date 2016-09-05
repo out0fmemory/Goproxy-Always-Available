@@ -503,19 +503,23 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return ctx, nil, err
 	}
 
-	if resp.StatusCode == http.StatusBadGateway && tr == f.DirectTransport && f.GAETransport.MultiDialer != nil {
+	if tr == f.DirectTransport && resp.StatusCode >= http.StatusBadRequest {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			resp.Body.Close()
+			return ctx, nil, err
+		}
 		if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
 			if ip, _, err := net.SplitHostPort(addr); err == nil {
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					resp.Body.Close()
-					return ctx, nil, err
-				}
-				resp.Body.Close()
-				resp.Body = ioutil.NopCloser(bytes.NewReader(body))
+				var duration time.Duration
 				switch {
-				case bytes.Contains(body, []byte("Please try again in 30 seconds.")):
-					duration := 1 * time.Hour
+				case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
+					duration = 1 * time.Hour
+				case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
+					duration = 5 * time.Minute
+				}
+
+				if duration > 0 {
 					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
 					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 
@@ -525,6 +529,8 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				}
 			}
 		}
+		resp.Body.Close()
+		resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 	}
 
 	if resp != nil && resp.Header != nil {
