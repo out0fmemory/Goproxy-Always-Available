@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: QhzQz6baFEpnMmeL40Cn+A
+! Checksum: m9rCwl4Y8UGLJ5UyAAaYfg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Fri, 02 Sep 2016 17:02:16 +0200
+! Last Modified: Tue, 06 Sep 2016 06:02:38 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -615,6 +615,7 @@ taiwannation.50webs.com
 ||51.ca
 .51luoben.com
 ||51luoben.com
+5aimiku.com
 5i01.com
 .5isotoi5.org
 .5maodang.com
@@ -2314,11 +2315,13 @@ gigporno.ru
 ||git.io
 |http://softwaredownload.gitbooks.io
 
+!---GitHub---
 .github.com
 |https://gist.github.com
-|http://cthlo.github.io/hktv
-|http://onionhacker.github.io
-|http://wsgzao.github.io/post/gfw-break
+!--|http://cthlo.github.io/hktv
+!--|http://onionhacker.github.io
+!--|http://wsgzao.github.io/post/gfw-break
+.github.io
 
 .gizlen.net
 ||gizlen.net
@@ -3671,6 +3674,7 @@ mysinablog.com
 !--vids.myspace.com/index.cfm?fuseaction=vids.
 !--viewmorepics.myspace.com
 .mytalkbox.com
+.mytizi.com
 
 !--------------------NN-------------------------
 ||naacoalition.org
@@ -4220,7 +4224,7 @@ blog.qooza.hk/dafengqixi
 .quranexplorer.com
 qusi8.net
 .qvodzy.org
-nemesis2.qx.net*pages*MyEnTunnel
+nemesis2.qx.net/pages/MyEnTunnel
 qxbbs.org
 
 !--------------------RR-------------------------
@@ -4445,6 +4449,7 @@ sexinsex.net
 ||sftuk.org
 shadow.ma
 .shadowsky.xyz
+.shadowsocks.com
 .shadowsocks.org
 ||shadowsocks.org
 |http://cn.shafaqna.com
@@ -4491,6 +4496,7 @@ ch.shvoong.com
 |http://shwchurch3.com
 ||sidelinesnews.com
 .sidelinessportseatery.com
+.sijihuisuo.club
 .sijihuisuo.com
 simplecd.org
 ||simplecd.org
@@ -5057,7 +5063,7 @@ torrentcrazy.com
 ||torrentcrazy.com
 torrentprivacy.com
 ||torrentprivacy.com
-||torrentproject.se
+|http://torrentproject.se
 ||torrenty.org
 ||torrentz.eu
 ||torvpn.com
@@ -5894,6 +5900,7 @@ hk.video.news.yahoo.com/video
 meme.yahoo.com
 !--tw.yahoo.com
 ||tw.knowledge.yahoo.com
+||tw.mall.yahoo.com
 tw.yahoo.com
 ||tw.mobi.yahoo.com
 tw.myblog.yahoo.com
@@ -5992,7 +5999,6 @@ zacebook.com
 .zaobao.com.sg
 ||zaobao.com.sg
 .zaozon.com
-||zarias.com
 !--.zdnet.com.tw/news/software/0,2000085678,20111187,00
 ||zdnet.com.tw
 .zello.com
@@ -6029,7 +6035,7 @@ zhuichaguoji.org
 |http://book.zi5.me
 .ziddu.com/download
 ||zillionk.com
-zinio.com
+.zinio.com
 ||zinio.com
 ||ziplib.com
 .ziporn.com
