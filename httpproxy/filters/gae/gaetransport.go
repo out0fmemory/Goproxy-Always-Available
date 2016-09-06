@@ -17,14 +17,16 @@ type Transport struct {
 	http.RoundTripper
 	MultiDialer *helpers.MultiDialer
 	Servers     *Servers
+	Deadline    time.Duration
 	RetryDelay  time.Duration
 	RetryTimes  int
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
+	deadline := t.Deadline
 	for i := 0; i < t.RetryTimes; i++ {
 		server := t.Servers.PickFetchServer(req, i)
-		req1, err := t.Servers.EncodeRequest(req, server)
+		req1, err := t.Servers.EncodeRequest(req, server, deadline)
 		if err != nil {
 			return nil, fmt.Errorf("GAE EncodeRequest: %s", err.Error())
 		}
@@ -110,7 +112,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp1.Body.Close()
 			switch {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
-				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, retry...", req1.Host, req.URL.String())
+				//FIXME: deadline += 10 * time.Second
+				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, retry with deadline=%s...", req1.Host, req.URL.String(), deadline)
 				continue
 			case bytes.Contains(body, []byte("ver quota")):
 				glog.Warningf("GAE: %s urlfetch %#v get over quota, retry...", req1.Host, req.URL.String())
