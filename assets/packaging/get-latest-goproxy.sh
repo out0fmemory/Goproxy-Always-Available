@@ -7,7 +7,7 @@ cd $(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")
 if [ -f "httpproxy.json" ]; then
     if ! ls *.user.json ; then
         echo "Please backup your config as .user.json"
-        exit -1
+        exit 1
     fi
 fi
 
@@ -56,7 +56,7 @@ case $(uname -s)/$(uname -m) in
 		;;
 	* )
 		echo "Unsupported platform: $(uname -a)"
-		exit -1
+		exit 1
 		;;
 esac
 
@@ -64,20 +64,20 @@ LOCALVERSION=$(./goproxy -version 2>/dev/null || :)
 echo "0. Local Goproxy version ${LOCALVERSION}"
 
 echo "1. Checking GoProxy Version"
-REMOTEVERSION=$(curl https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oP "<strong>\K${FILENAME_PREFIX}\Kr\d+")
-if [ -z "${REMOTEVERSION}" ]; then
+REMOTEVERSION=$(curl https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oE "<strong>${FILENAME_PREFIX}r[0-9]+" | awk -F- '{print $2}')
+if test -z "${REMOTEVERSION}"; then
     echo "Cannot detect ${FILENAME_PREFIX} version"
-    exit -1
+    exit 1
 fi
 
-if [ x"${LOCALVERSION}" == x"${REMOTEVERSION}" ]; then
+if test "${LOCALVERSION}" = "${REMOTEVERSION}"; then
 	echo "Your GoProxy already update to latest"
-	exit -1
+	exit 1
 fi
 
 FILENAME=${FILENAME_PREFIX}${REMOTEVERSION}${FILENAME_SUFFIX}
 
 echo "2. Downloading ${FILENAME}"
-curl -L https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} | ([[ "${FILENAME_SUFFIX}" == *.xz ]] && xz -d || bzip2 -d)  | tar xvp --strip-components=1
+curl -L https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} | (test "${FILENAME##*.}" = "xz" && xz -d || bzip2 -d)  | tar -xvp --strip-components=1
 
 echo "3. Done"
