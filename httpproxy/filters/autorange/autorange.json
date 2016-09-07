@@ -23,10 +23,11 @@
 		"x*.last.fm",
 	],
 	"SupportFilters": [
+		"autoproxy",
+		"direct",
 		"gae",
 		"php",
 		"vps",
-		"direct",
 	],
 	"MaxSize": 1572864,
 	"BufSize": 8192,
