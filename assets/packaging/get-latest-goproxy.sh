@@ -5,10 +5,10 @@ set -e
 cd $(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")
 
 if [ -f "httpproxy.json" ]; then
-    if ! ls *.user.json ; then
-        echo "Please backup your config as .user.json"
-        exit 1
-    fi
+	if ! ls *.user.json ; then
+		echo "Please backup your config as .user.json"
+		exit 1
+	fi
 fi
 
 FILENAME_PREFIX=
@@ -66,8 +66,8 @@ echo "0. Local Goproxy version ${LOCALVERSION}"
 echo "1. Checking GoProxy Version"
 REMOTEVERSION=$(curl https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oE "<strong>${FILENAME_PREFIX}r[0-9]+" | awk -F- '{print $2}')
 if test -z "${REMOTEVERSION}"; then
-    echo "Cannot detect ${FILENAME_PREFIX} version"
-    exit 1
+	echo "Cannot detect ${FILENAME_PREFIX} version"
+	exit 1
 fi
 
 if test "${LOCALVERSION}" = "${REMOTEVERSION}"; then
@@ -78,6 +78,25 @@ fi
 FILENAME=${FILENAME_PREFIX}${REMOTEVERSION}${FILENAME_SUFFIX}
 
 echo "2. Downloading ${FILENAME}"
-curl -L https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} | (test "${FILENAME##*.}" = "xz" && xz -d || bzip2 -d)  | tar -xvp --strip-components=1
+curl -LOJ https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME}
 
-echo "3. Done"
+echo "3. Extracting ${FILENAME}"
+case ${FILENAME##*.} in
+	xz )
+		xz -d ${FILENAME}
+		;;
+	bz2 )
+		bzip2 -d ${FILENAME}
+		;;
+	gz )
+		gzip -d ${FILENAME}
+		;;
+	* )
+		echo "Unsupported archive format: ${FILENAME}"
+		exit 1
+esac
+
+tar -xvp --strip-components 1 -f ${FILENAME%.*}
+rm -f ${FILENAME%.*}
+
+echo "4. Done"
