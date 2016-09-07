@@ -521,8 +521,8 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
 					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 
-					if ok := helpers.CloseConnectionByRemoteAddr(tr, addr); !ok {
-						glog.Warningf("GAE: TryCloseConnectionByRemoteAddr(%T, %#v) failed.", tr, addr)
+					if !helpers.CloseConnectionByRemoteAddr(tr, addr) {
+						glog.Warningf("GAE: CloseConnectionByRemoteAddr(%T, %#v) failed.", tr, addr)
 					}
 				}
 			}

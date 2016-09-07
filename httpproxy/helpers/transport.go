@@ -3,6 +3,8 @@ package helpers
 import (
 	"net"
 	"net/http"
+
+	"github.com/phuslu/net/http2"
 )
 
 var (
@@ -31,11 +33,15 @@ func CloseConnections(tr http.RoundTripper) bool {
 }
 
 func CloseConnectionByRemoteAddr(tr http.RoundTripper, addr string) bool {
-	if t, ok := tr.(*http.Transport); ok {
-		f := func(conn net.Conn, idle bool) bool {
-			return conn != nil && conn.RemoteAddr().String() == addr
-		}
-		t.CloseConnections(f)
+	f := func(conn net.Conn, idle bool) bool {
+		return conn != nil && conn.RemoteAddr().String() == addr
+	}
+	switch tr.(type) {
+	case *http.Transport:
+		tr.(*http.Transport).CloseConnections(f)
+		return true
+	case *http2.Transport:
+		tr.(*http2.Transport).CloseConnections(f)
 		return true
 	}
 	return false
