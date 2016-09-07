@@ -16,7 +16,6 @@
 		"DNSCacheSize": 4096,
 		"Rules": {
 			"default": "",
-			"ipv6": "direct",
 			"中国": "direct",
 			"局域网": "direct",
 			"保留地址": "direct",
