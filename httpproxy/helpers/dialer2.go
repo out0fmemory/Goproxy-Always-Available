@@ -57,7 +57,6 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 				glog.Warningf("LookupHost(%#v) error: %s", name, err)
 				addrs0 = []string{}
 			}
-			glog.V(2).Infof("LookupHost(%#v) return %v", name, addrs0)
 		}
 		for _, addr := range addrs0 {
 			seen[addr] = struct{}{}

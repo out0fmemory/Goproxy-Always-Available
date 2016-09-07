@@ -8,6 +8,7 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/miekg/dns"
+	"github.com/phuslu/glog"
 )
 
 type Resolver struct {
@@ -73,6 +74,7 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 		}
 	}
 
+	glog.V(2).Infof("LookupIP(%#v) return %+v, err=%+v", name, ips, err)
 	return ips, err
 }
 
