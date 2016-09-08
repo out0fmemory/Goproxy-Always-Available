@@ -48,6 +48,12 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 		}
 	}
 
+	if ip := net.ParseIP(name); ip != nil {
+		ips := []net.IP{ip}
+		r.LRUCache.Set(name, ips, time.Time{})
+		return ips, nil
+	}
+
 	lookupIP := r.lookupIP1
 	if r.DNSServer != nil {
 		lookupIP = r.lookupIP2
@@ -101,10 +107,6 @@ func (r *Resolver) lookupIP1(name string) ([]net.IP, error) {
 }
 
 func (r *Resolver) lookupIP2(name string) ([]net.IP, error) {
-	if ip := net.ParseIP(name); ip != nil {
-		return []net.IP{ip}, nil
-	}
-
 	m := &dns.Msg{}
 
 	switch {
