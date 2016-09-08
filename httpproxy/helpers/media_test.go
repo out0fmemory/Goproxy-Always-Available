@@ -17,3 +17,10 @@ func TestIsBinary2(t *testing.T) {
 		t.Errorf("data=%s must not be binary", data)
 	}
 }
+
+func TestIsBinary3(t *testing.T) {
+	data := []byte("\xef\xbb\xbfhello world!")
+	if IsBinary(data) {
+		t.Errorf("data=%s must not be binary", data)
+	}
+}
