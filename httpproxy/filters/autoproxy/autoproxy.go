@@ -257,7 +257,9 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 	if f.RegionFiltersEnabled {
 		if f1, ok := f.RegionFilterCache.Get(host); ok {
-			filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
+			if f1 != nil {
+				filters.SetRoundTripFilter(ctx, f1.(filters.RoundTripFilter))
+			}
 		} else if ips, err := f.RegionResolver.LookupIP(host); err == nil && len(ips) > 0 {
 			ip := ips[0]
 
@@ -276,6 +278,8 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Default %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
+				} else {
+					f.RegionFilterCache.Set(host, nil, time.Now().Add(time.Hour))
 				}
 			}
 		}
@@ -291,11 +295,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 
 	switch {
 	case f.SiteFiltersEnabled && req.URL.Scheme == "https":
-		if f1, ok := f.SiteFiltersRules.Lookup(helpers.GetHostName(req)); ok {
+		if f1, ok := f.SiteFiltersRules.Lookup(helpers.GetHostName(req)); ok && f1 != nil {
 			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
 		}
 	case f.RegionFiltersEnabled && req.URL.Scheme == "https":
-		if f1, ok := f.RegionFilterCache.Get(helpers.GetHostName(req)); ok {
+		if f1, ok := f.RegionFilterCache.Get(helpers.GetHostName(req)); ok && f1 != nil {
 			return f1.(filters.RoundTripFilter).RoundTrip(ctx, req)
 		}
 	}
