@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: m9rCwl4Y8UGLJ5UyAAaYfg
+! Checksum: M9avX6GR4kQFLoXm6CDxfQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 06 Sep 2016 06:02:38 +0200
+! Last Modified: Thu, 08 Sep 2016 12:53:52 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -429,6 +429,8 @@ blogspot.com
 ||ggpht.com
 ||gmail.com
 ||gmodules.com
+||godoc.org
+||golang.org
 ||goo.gl
 .google.ae
 .google.am
@@ -2461,7 +2463,6 @@ echofon.com
 !-||www.gmote.org
 !-||blog.go2web20.net
 !-||google-melange.com
-||golang.org
 !-||fame.gonzolabs.org
 !-||govecn.org
 !-||gqueues.com
@@ -4660,6 +4661,7 @@ squarespace.com
 ||ssh91.com
 .sspro.ml
 |http://sspro.ml
+||sss.camp
 !--|http://cdn.sstatic.net/
 sstmlt.net
 ||sstmlt.net
@@ -6060,6 +6062,7 @@ writer.zoho.com
 .zuola.com
 ||zuola.com
 ||zvereff.com
+.zynaima.com
 zyzc9.com
 .zzcartoon.com
 !##############General List End#################
@@ -6080,10 +6083,6 @@ q%3DTriangle
 ultrareach
 ultrasurf
 zhengjian
-
-!---------------Other Wikis---------------
-!--Tu Po Wang Luo Shen Cha--Wikibooks
-zh.wikibooks.org*%E7%AA%81%E7%A0%B4%E7%BD%91%E7%BB%9C%E5%AE%A1%E6%9F%A5
 
 !-------------------TW Govs---------------------
 .gov.tw
