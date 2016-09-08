@@ -11,6 +11,8 @@ if [ -f "httpproxy.json" ]; then
 	fi
 fi
 
+find cache -name "*.crt" -mtime +90 -delete
+
 FILENAME_PREFIX=
 FILENAME_SUFFIX=
 case $(uname -s)/$(uname -m) in

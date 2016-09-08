@@ -36,6 +36,10 @@ if exist "httpproxy.json" (
     )
 )
 
+forfiles /? 1>NUL 2>NUL && (
+    forfiles /P cache /M *.crt /D -90 /C "cmd /c del /f @path"
+)
+
 set filename_pattern=goproxy_windows_386
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
     set filename_pattern=goproxy_windows_amd64
