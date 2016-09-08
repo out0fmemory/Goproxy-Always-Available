@@ -14,7 +14,9 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -327,6 +329,15 @@ func main() {
 		handler.PWAuthPath = filepath.Join(filepath.Dir(os.Args[0]), "./pwauth")
 		if _, err := os.Stat(handler.PWAuthPath); err != nil {
 			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
+		}
+
+		switch runtime.GOOS {
+		case "linux", "freebsd", "darwin":
+			if u, err := user.Current(); err == nil && u.Uid == "0" {
+				glog.Warningf("If you want to use system native pwauth, please run as root, otherwise please add/edit pwauth.txt.")
+			}
+		case "windows":
+			glog.Warningf("Current platform %+v not support native pwauth, please add/edit pwauth.txt.", runtime.GOOS)
 		}
 	}
 
