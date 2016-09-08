@@ -50,7 +50,9 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 
 	if ip := net.ParseIP(name); ip != nil {
 		ips := []net.IP{ip}
-		r.LRUCache.Set(name, ips, time.Time{})
+		if r.LRUCache != nil {
+			r.LRUCache.Set(name, ips, time.Time{})
+		}
 		return ips, nil
 	}
 
