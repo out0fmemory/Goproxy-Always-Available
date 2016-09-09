@@ -1,0 +1,16 @@
+{
+	"AppIDs": [
+		"goagenta",
+	],
+	// "DisableHTTP2": true,
+	// "EnableRemoteDNS": true,
+	// "ForceHTTP2": true,
+	// "SSLVerify": true,
+	// "ForceIPv6": true,
+	// "DisableIPv6": false,
+	"HostMap" : {
+		"google_hk": [
+			"216.58.209.101","2404:6800:4005:800::2002","www.l.google.com",
+		]
+	},
+}
