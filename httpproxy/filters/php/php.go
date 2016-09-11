@@ -107,11 +107,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	for _, server := range servers {
 		if server.Host != "" {
-			host := server.URL.Host
-			if h, _, err := net.SplitHostPort(host); err == nil {
-				host = h
-			}
-			d.Resolver.LRUCache.Set(host, server.Host, time.Time{})
+			d.Resolver.LRUCache.Set(server.URL.Hostname(), server.Host, time.Time{})
 		}
 	}
 
