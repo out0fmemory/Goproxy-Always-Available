@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: M9avX6GR4kQFLoXm6CDxfQ
+! Checksum: tl28bfsbRqRy3q+Ys7Kc4A
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 08 Sep 2016 12:53:52 +0200
+! Last Modified: Sun, 11 Sep 2016 10:16:38 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -118,6 +118,7 @@
 ||nordstromrack.com
 ||nottinghampost.com
 ||ntdtv.cz
+||s1.nudezz.com
 ||nusatrip.com
 ||nuuvem.com
 ||omni7.jp
@@ -895,6 +896,8 @@ badoo.com
 ||baixing.me
 .banana-vpn.com
 ||banana-vpn.com
+.bandwagonhost.com
+||bandwagonhost.com
 .bangchen.net
 |http://bangchen.net
 ||bangyoulater.com
@@ -1788,6 +1791,7 @@ emilylau.org.hk
 chinese.engadget.com
 englishforeveryone.org
 ||englishfromengland.co.uk
+englishpen.org
 .enlighten.org.tw
 ||entermap.com
 .entnt.com
@@ -2661,6 +2665,7 @@ guruonline.hk
 .gyatsostudio.com
 
 !--------------------HH-------------------------
+.h5dm.com
 ||h-china.org
 .h-moe.com
 |http://h-moe.com
@@ -2773,6 +2778,8 @@ himalayanglacier.com
 ||himemix.com
 .himemix.net
 times.hinet.net
+.hitomi.la
+|http://hitomi.la
 hizbuttahrir.org
 hizb-ut-tahrir.info
 hizb-ut-tahrir.org
@@ -2983,6 +2990,8 @@ ifjc.org
 ||im.tv
 @@||myvlog.im.tv
 ||im88.tw
+.imgchili.net
+|http://imgchili.net
 .imagefap.com
 ||imagefap.com
 ||imageflea.com
@@ -3265,6 +3274,7 @@ kusocity.com
 ||kwcg.ca
 kwongwah.com.my
 kyohk.net
+||kyoyue.com
 .kzeng.info
 ||kzeng.info
 
@@ -3586,6 +3596,7 @@ plurktop.mmdays.com
 |http://moby.to
 ||moeerolibrary.com
 wiki.moegirl.org
+.mofaxiehui.com
 .mofos.com
 ||mog.com
 molihua.org
@@ -5880,6 +5891,7 @@ xuchao.net
 .xxbbx.com
 .xxlmovies.com
 ||xxx.com
+.xxxfuckmom.com
 ||xxxx.com.au
 .xxxymovies.com
 |http://xxxymovies.com
@@ -5927,6 +5939,7 @@ yangjianli.com
 yeeyi.com
 yegle.net
 ||yegle.net
+.yes.xxx
 ||yes123.com.tw
 ||yesasia.com
 ||yesasia.com.hk
