@@ -37,7 +37,7 @@ if exist "httpproxy.json" (
 )
 
 forfiles /? 1>NUL 2>NUL && (
-    forfiles /P cache /M *.crt /D -90 /C "cmd /c del /f @path"
+    forfiles /P cache /M *.crt /D -90 /C "cmd /c del /f @path" 2>NUL
 )
 
 set filename_pattern=goproxy_windows_386
