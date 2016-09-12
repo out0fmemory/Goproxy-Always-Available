@@ -4,6 +4,7 @@ import (
 	"context"
 	"io/ioutil"
 	"mime"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -31,6 +32,7 @@ type Config struct {
 	RegionFilters struct {
 		Enabled      bool
 		DataFile     string
+		DNSServer    string
 		DNSCacheSize int
 		Rules        map[string]string
 	}
@@ -183,6 +185,12 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		f.RegionLocator = ip17mon.NewLocatorWithData(data)
 
 		f.RegionResolver = &helpers.Resolver{}
+		if config.RegionFilters.DNSServer != "" {
+			f.RegionResolver.DNSServer = net.ParseIP(config.RegionFilters.DNSServer)
+			if f.RegionResolver.DNSServer == nil {
+				glog.Fatalf("AUTOPROXY: net.ParseIP(%+v) failed", config.RegionFilters.DNSServer)
+			}
+		}
 
 		fm := make(map[string]filters.RoundTripFilter)
 		for region, name := range config.RegionFilters.Rules {
