@@ -76,10 +76,12 @@ if "%filename%" == "" (
     goto quit
 )
 
-if "%localname%" geq "%filename%" (
-    echo.
-    echo Your Goproxy already update to latest.
-    goto quit
+if "!localversion!" neq "r9999" (
+    if "%localname%" geq "%filename%" (
+        echo.
+        echo Your Goproxy already update to latest.
+        goto quit
+    )
 )
 
 (
