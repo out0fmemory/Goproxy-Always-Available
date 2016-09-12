@@ -263,7 +263,10 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 		} else if ips, err := f.RegionResolver.LookupIP(host); err == nil && len(ips) > 0 {
 			ip := ips[0]
 
-			if ip.To4() == nil {
+			if ip.IsLoopback() && !(strings.Contains(host, ".local") || strings.Contains(host, "localhost.")) {
+				glog.V(2).Infof("%s \"AUTOPROXY RegionFilters BYPASS Loopback %s %s %s\" with nil", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+				f.RegionFilterCache.Set(host, nil, time.Now().Add(time.Hour))
+			} else if ip.To4() == nil {
 				if f1, ok := f.RegionFiltersRules["ipv6"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPv6 %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
