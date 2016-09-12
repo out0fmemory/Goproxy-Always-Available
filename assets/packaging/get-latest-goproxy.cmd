@@ -76,7 +76,7 @@ if "%filename%" == "" (
     goto quit
 )
 
-if "%localname%" == "%filename%" (
+if "%localname%" geq "%filename%" (
     echo.
     echo Your Goproxy already update to latest.
     goto quit
