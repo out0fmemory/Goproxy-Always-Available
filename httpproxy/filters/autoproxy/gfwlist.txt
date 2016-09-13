@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: tl28bfsbRqRy3q+Ys7Kc4A
+! Checksum: 2kgJJQH3DqaTQwVNuGf87A
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Sun, 11 Sep 2016 10:16:38 +0200
+! Last Modified: Mon, 12 Sep 2016 16:25:24 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -358,6 +358,10 @@ s3-ap-northeast-1.amazonaws.com
 .zzux.com
 
 !!---CloudFront---
+d1b183sg0nvnuh.cloudfront.net
+|https://d1b183sg0nvnuh.cloudfront.net
+d1c37gjwa26taa.cloudfront.net
+|https://d1c37gjwa26taa.cloudfront.net
 ||d3rhr7kgmtrq1v.cloudfront.net
 
 !!---DtDNS---
@@ -434,6 +438,7 @@ blogspot.com
 ||golang.org
 ||goo.gl
 .google.ae
+.google.as
 .google.am
 .google.cat
 .google.cd
@@ -444,19 +449,29 @@ blogspot.com
 .google.co.uk
 .google.com
 .google.de
+.google.dj
 .google.dk
 .google.es
 .google.fi
+.google.fm
 .google.fr
 .google.gg
 .google.ie
 .google.is
 .google.it
+.google.ms
 .google.nl
+.google.nu
 .google.no
+.google.ro
+.google.sc
 .google.sk
 .google.sm
 .google.tk
+.google.to
+.google.tt
+.google.vu
+.google.ws
 /^https?:\/\/([^\/]+\.)*google\.(ac|ad|ae|al|am|as|at|az|ba|be|bf|bg|bi|bj|bs|bt|by|ca|cat|cd|cf|cg|ch|ci|cl|cm|co.ao|co.bw|co.ck|co.cr|co.id|co.il|co.in|co.jp|co.ke|co.kr|co.ls|co.ma|com|com.af|com.ag|com.ai|com.ar|com.au|com.bd|com.bh|com.bn|com.bo|com.br|com.bz|com.co|com.cu|com.cy|com.do|com.ec|com.eg|com.et|com.fj|com.gh|com.gi|com.gt|com.hk|com.jm|com.kh|com.kw|com.lb|com.ly|com.mm|com.mt|com.mx|com.my|com.na|com.nf|com.ng|com.ni|com.np|com.om|com.pa|com.pe|com.pg|com.ph|com.pk|com.pr|com.py|com.qa|com.sa|com.sb|com.sg|com.sl|com.sv|com.tj|com.tr|com.tw|com.ua|com.uy|com.vc|com.vn|co.mz|co.nz|co.th|co.tz|co.ug|co.uk|co.uz|co.ve|co.vi|co.za|co.zm|co.zw|cv|cz|de|dj|dk|dm|dz|ee|es|fi|fm|fr|ga|ge|gg|gl|gm|gp|gr|gy|hk|hn|hr|ht|hu|ie|im|iq|is|it|je|jo|kg|ki|kz|la|li|lk|lt|lu|lv|md|me|mg|mk|ml|mn|ms|mu|mv|mw|mx|ne|nl|no|nr|nu|org|pl|pn|ps|pt|ro|rs|ru|rw|sc|se|sh|si|sk|sm|sn|so|sr|st|td|tg|tk|tl|tm|tn|to|tt|us|vg|vn|vu|ws)\/.*/
 !--||google-analytics.com
 !--||googleadservices.com
@@ -471,6 +486,7 @@ blogspot.com
 ||googleearth.com
 ||googledrive.com
 ||googlegroups.com
+||googlecapital.com
 ||googlehosted.com
 ||googleideas.com
 ||googlelabs.com
@@ -493,6 +509,7 @@ blogspot.com
 ||igoogle.com
 ||itasoftware.com
 ||like.com
+||madewithcode.com
 ||nic.google
 ||on2.com
 ||panoramio.com
@@ -519,6 +536,7 @@ blogspot.com
 .youtube.com
 ||youtube.com
 ||youtube-nocookie.com
+||youtubeeducation.com
 ||ytimg.com
 ||zynamics.com
 
@@ -1095,7 +1113,9 @@ bbs.brockbbs.com
 brucewang.net
 .brutaltgp.com
 ||brutaltgp.com
+.bt2mag.com
 ||bt95.com
+.btaia.com
 |http://btdigg.org
 .btku.me
 ||btku.me
@@ -2666,6 +2686,7 @@ guruonline.hk
 
 !--------------------HH-------------------------
 .h5dm.com
+.h5galgame.me
 ||h-china.org
 .h-moe.com
 |http://h-moe.com
