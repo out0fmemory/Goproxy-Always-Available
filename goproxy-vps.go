@@ -31,6 +31,7 @@ var (
 )
 
 var (
+	ListenAddrs          string = os.Getenv("GOPROXY_VPS_LISTEN_ADDRS")
 	CertificateURL       string = os.Getenv("GOPROXY_VPS_CERTIFICATE_URL")
 	CertificateURLHeader string = os.Getenv("GOPROXY_VPS_CERTIFICATE_URL_HEADER")
 )
@@ -382,6 +383,9 @@ func main() {
 	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
 
+	if ListenAddrs != "" {
+		addrs = ListenAddrs
+	}
 	for _, addr := range strings.Split(addrs, ",") {
 		ln, err := net.Listen("tcp", addr)
 		if err != nil {
