@@ -7,6 +7,25 @@ import (
 	"reflect"
 )
 
+func ReflectRemoteIPFromResponse(resp *http.Response) (net.IP, error) {
+	addr, err := ReflectRemoteAddrFromResponse(resp)
+	if err != nil {
+		return nil, err
+	}
+
+	host, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	ip := net.ParseIP(host)
+	if ip == nil {
+		return nil, fmt.Errorf("ReflectRemoteIPFromResponse: cannot parse %+v to ip format", host)
+	}
+
+	return ip, nil
+}
+
 func ReflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
 	// if v := reflect.ValueOf(resp).Elem().FieldByName("RemoteAddr"); v.IsValid() {
 	// 	return v.String(), nil
