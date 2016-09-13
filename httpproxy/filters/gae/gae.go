@@ -512,8 +512,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
 					duration = 1 * time.Hour
 				case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
-					if md := f.GAETransport.MultiDialer; md != nil && md.TLSConnDuration.Len() > 10 {
-						duration = 5 * time.Minute
+					server := resp.Header.Get("Server")
+					if server != "gws" && !strings.HasPrefix(server, "gvs") {
+						if md := f.GAETransport.MultiDialer; md != nil && md.TLSConnDuration.Len() > 10 {
+							duration = 5 * time.Minute
+						}
 					}
 				}
 
