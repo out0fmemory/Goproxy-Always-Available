@@ -44,6 +44,9 @@ set filename_pattern=goproxy_windows_386
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
     set filename_pattern=goproxy_windows_amd64
 )
+if exist "%SystemDrive%\Program Files (x86)" (
+    set filename_pattern=goproxy_windows_amd64
+)
 
 if exist "goproxy.exe" (
     for /f "usebackq" %%I in (`goproxy.exe -version`) do (
