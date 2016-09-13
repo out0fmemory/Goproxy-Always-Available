@@ -514,10 +514,12 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
 					duration = 1 * time.Hour
 				case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
-					duration = 5 * time.Minute
+					if md := f.GAETransport.MultiDialer; md != nil && md.TLSConnDuration.Len() > 10 {
+						duration = 5 * time.Minute
+					}
 				}
 
-				if duration > 0 {
+				if duration > 0 && f.GAETransport.MultiDialer != nil {
 					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
 					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 
