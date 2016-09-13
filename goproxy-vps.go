@@ -30,6 +30,11 @@ var (
 	version = "r9999"
 )
 
+var (
+	CertificateURL       string = os.Getenv("GOPROXY_VPS_CERTIFICATE_URL")
+	CertificateURLHeader string = os.Getenv("GOPROXY_VPS_CERTIFICATE_URL_HEADER")
+)
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }
@@ -265,18 +270,43 @@ func main() {
 	flag.Parse()
 
 	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-		cmd := exec.Command("openssl",
-			"req",
-			"-subj", "/CN=github.com/O=GitHub, Inc./C=US",
-			"-new",
-			"-newkey", "rsa:2048",
-			"-days", "365",
-			"-nodes",
-			"-x509",
-			"-keyout", keyFile,
-			"-out", certFile)
-		if err = cmd.Run(); err != nil {
-			glog.Fatalf("openssl: %+v error: %+v", cmd.Args, err)
+		switch CertificateURL {
+		case "":
+			cmd := exec.Command("openssl",
+				"req",
+				"-subj", "/CN=github.com/O=GitHub, Inc./C=US",
+				"-new",
+				"-newkey", "rsa:2048",
+				"-days", "365",
+				"-nodes",
+				"-x509",
+				"-keyout", keyFile,
+				"-out", certFile)
+			if err = cmd.Run(); err != nil {
+				glog.Fatalf("openssl: %+v error: %+v", cmd.Args, err)
+			}
+		default:
+			req, err := http.NewRequest(http.MethodGet, CertificateURL, nil)
+			if err != nil {
+				glog.Fatalf("http.NewRequest(%+v) error: %+v", CertificateURL, err)
+			}
+			parts := strings.SplitN(CertificateURLHeader, ":", 2)
+			req.Header.Add(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
+			resp, err := http.DefaultClient.Do(req)
+			if err != nil {
+				glog.Fatalf("http.DefaultClient.Do(%+v) error: %+v", req, err)
+			}
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				resp.Body.Close()
+				glog.Fatalf("ioutil.ReadAll(%+v.Body) error: %+v", req, err)
+			}
+
+			for _, filename := range []string{certFile, keyFile} {
+				if err := ioutil.WriteFile(filename, data, 0644); err != nil {
+					glog.Fatalf("ioutil.WriteFile(%+v) error: %+v", filename, err)
+				}
+			}
 		}
 	}
 
