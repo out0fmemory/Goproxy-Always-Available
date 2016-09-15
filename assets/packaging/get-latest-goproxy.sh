@@ -11,7 +11,9 @@ if [ -f "httpproxy.json" ]; then
 	fi
 fi
 
-find cache -name "*.crt" -mtime +90 -delete
+if [ -d cache ]; then
+	find cache -name "*.crt" -mtime +90 -delete
+fi
 
 FILENAME_PREFIX=
 FILENAME_SUFFIX=
@@ -65,8 +67,14 @@ esac
 LOCALVERSION=$(./goproxy -version 2>/dev/null || :)
 echo "0. Local Goproxy version ${LOCALVERSION}"
 
+if netstat -an | grep -i tcp | grep LISTEN | grep ':8087'; then
+	echo "Set http_proxy=http://127.0.0.1:8087"
+	export http_proxy=http://127.0.0.1:8087
+	export https_proxy=http://127.0.0.1:8087
+fi
+
 echo "1. Checking GoProxy Version"
-REMOTEVERSION=$(curl https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oE "<strong>${FILENAME_PREFIX}r[0-9]+" | awk -F- '{print $2}')
+REMOTEVERSION=$(curl -k https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oE "<strong>${FILENAME_PREFIX}r[0-9]+" | awk -F- '{print $2}')
 if test -z "${REMOTEVERSION}"; then
 	echo "Cannot detect ${FILENAME_PREFIX} version"
 	exit 1
@@ -80,7 +88,7 @@ fi
 FILENAME=${FILENAME_PREFIX}${REMOTEVERSION}${FILENAME_SUFFIX}
 
 echo "2. Downloading ${FILENAME}"
-curl -LOJ https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME}
+curl -k -LOJ https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME}
 
 echo "3. Extracting ${FILENAME}"
 case ${FILENAME##*.} in
