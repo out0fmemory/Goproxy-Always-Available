@@ -32,4 +32,5 @@ $(CHANGELOG):
 	git log --after="3 months ago" --pretty="%ci (%an) %s" >$@
 
 $(GOPROXY_VPS_EXE): $(SOURCES)
+	CGO_ENABLED=0 \
 	go build -v -ldflags="-s -w -X main.version=r$(REVSION)" -o $@ .
