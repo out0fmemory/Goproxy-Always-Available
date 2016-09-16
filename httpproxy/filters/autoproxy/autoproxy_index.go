@@ -3,11 +3,16 @@ package autoproxy
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"html/template"
 	"io/ioutil"
 	"mime"
+	"net"
 	"net/http"
 	"path/filepath"
+	"strings"
+
+	"../../filters"
 )
 
 func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
@@ -27,7 +32,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 <pre>Name</pre><hr/>
 <pre>{{ range $key, $value := .IndexFiles }}
 📄 <a href="{{ $key }}">{{ $key }}</a>{{ end }}</pre>
-<hr/><address style="font-size:small;">GoProxy Server</address>
+<hr/><address style="font-size:small;">{{.Branding}}, Remote IP {{.Remote}}</address>
 </body>
 </html>`
 		t, err := template.New("index").Parse(tpl)
@@ -35,8 +40,25 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 			return ctx, nil, err
 		}
 
+		remote, _, err := net.SplitHostPort(req.RemoteAddr)
+		if err == nil && f.RegionLocator != nil {
+			if li, err := f.RegionLocator.Find(remote); err == nil {
+				remote = fmt.Sprintf("%s (%s)", remote, strings.Join([]string{li.Country, li.Region, li.City, li.Isp}, " "))
+			}
+		}
+
+		data := struct {
+			IndexFiles map[string]struct{}
+			Remote     string
+			Branding   string
+		}{
+			IndexFiles: f.IndexFiles,
+			Remote:     remote,
+			Branding:   filters.GetBranding(ctx),
+		}
+
 		b := new(bytes.Buffer)
-		err = t.Execute(b, struct{ IndexFiles map[string]struct{} }{f.IndexFiles})
+		err = t.Execute(b, data)
 		if err != nil {
 			return ctx, nil, err
 		}
