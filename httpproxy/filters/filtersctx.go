@@ -15,10 +15,11 @@ type racer struct {
 	ln  net.Listener
 	rw  http.ResponseWriter
 	rtf RoundTripFilter
+	b   string
 }
 
-func NewContext(ctx context.Context, h http.Handler, ln net.Listener, rw http.ResponseWriter) context.Context {
-	return context.WithValue(ctx, contextKey, &racer{h, ln, rw, nil})
+func NewContext(ctx context.Context, h http.Handler, ln net.Listener, rw http.ResponseWriter, brand string) context.Context {
+	return context.WithValue(ctx, contextKey, &racer{h, ln, rw, nil, brand})
 }
 
 func GetHandler(ctx context.Context) http.Handler {
@@ -35,6 +36,10 @@ func GetResponseWriter(ctx context.Context) http.ResponseWriter {
 
 func GetRoundTripFilter(ctx context.Context) RoundTripFilter {
 	return ctx.Value(contextKey).(*racer).rtf
+}
+
+func GetBranding(ctx context.Context) string {
+	return ctx.Value(contextKey).(*racer).b
 }
 
 func SetRoundTripFilter(ctx context.Context, filter RoundTripFilter) {
