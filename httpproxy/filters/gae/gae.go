@@ -404,13 +404,28 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	if f.DirectSiteMatcher.Match(req.Host) {
-		if req.URL.Path == "/url" {
+		switch req.URL.Path {
+		case "/url":
 			if rawurl := req.URL.Query().Get("url"); rawurl != "" {
 				if u, err := url.Parse(rawurl); err == nil {
 					if u.Scheme == "http" && f.ForceHTTPSMatcher.Match(u.Host) {
 						rawurl = strings.Replace(rawurl, "http://", "https://", 1)
 					}
 				}
+				glog.V(2).Infof("%s \"GAE REDIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, rawurl, req.Proto)
+				return ctx, &http.Response{
+					StatusCode: http.StatusFound,
+					Header: http.Header{
+						"Location": []string{rawurl},
+					},
+					Request:       req,
+					Close:         true,
+					ContentLength: -1,
+				}, nil
+			}
+		case "/books":
+			if req.URL.Host == "books.google.cn" {
+				rawurl := strings.Replace(req.URL.String(), "books.google.cn", "books.google.com", 1)
 				glog.V(2).Infof("%s \"GAE REDIRECT %s %s %s\" - -", req.RemoteAddr, req.Method, rawurl, req.Proto)
 				return ctx, &http.Response{
 					StatusCode: http.StatusFound,
