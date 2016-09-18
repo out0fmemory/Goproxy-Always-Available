@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 2kgJJQH3DqaTQwVNuGf87A
+! Checksum: 2UK1dKVWNA3RK801ZP3woQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 12 Sep 2016 16:25:24 +0200
+! Last Modified: Sat, 17 Sep 2016 17:45:08 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -1029,6 +1029,7 @@ blinw.com
 .blockcn.com
 ||blockcn.com
 ||blog.de
+.blog.jp
 ||blogblog.com
 .blogcatalog.com
 ||blogcatalog.com
