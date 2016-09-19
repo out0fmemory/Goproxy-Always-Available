@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"html/template"
 	"io/ioutil"
+	"net"
 	"net/http"
 	"regexp"
 	"strings"
@@ -47,6 +48,18 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 
 	switch req.Method {
 	case http.MethodPost:
+		host, _, err := net.SplitHostPort(req.RemoteAddr)
+		if err != nil {
+			return ctx, nil, err
+		}
+		ip := net.ParseIP(host)
+		if ip == nil {
+			return ctx, nil, fmt.Errorf("Invaild RemoteAddr: %+v", req.RemoteAddr)
+		}
+		if !ip.IsLoopback() {
+			return ctx, nil, fmt.Errorf("Post from a non-local address: %+v", req.RemoteAddr)
+		}
+
 		store := storage.LookupStoreByFilterName("gae")
 		//rawips := req.FormValue("rawips")
 		jsonips := req.FormValue("jsonips")
