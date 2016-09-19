@@ -316,6 +316,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
+		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/ip" {
+			glog.V(2).Infof("%s \"AUTOPROXY IP %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+			return f.IPFilesRoundTrip(ctx, req)
+
+		}
 		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
 			switch {
 			case f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac"):
