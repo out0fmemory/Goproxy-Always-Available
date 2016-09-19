@@ -28,6 +28,7 @@
 			"proxy.pac",
 			"GoProxyAPN.mobileconfig",
 			"GoProxy.crt",
+			"ip.html",
 		]
 	},
 	"GFWList": {

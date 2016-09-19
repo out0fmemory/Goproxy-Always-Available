@@ -39,6 +39,7 @@ SOURCES += $(REPO)/httpproxy/httpproxy.json
 SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/17monipdb.dat
+SOURCES += $(REPO)/httpproxy/filters/autoproxy/ip.html
 SOURCES += $(REPO)/assets/packaging/gae.user.json.example
 
 ifeq ($(GOOS)_$(GOARCH), windows_amd64)
