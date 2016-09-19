@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func (f *Filter) IPFilesRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
+func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 
 	const tpl = `<!DOCTYPE html>
 		<html>
@@ -22,7 +22,7 @@ func (f *Filter) IPFilesRoundTrip(ctx context.Context, req *http.Request) (conte
 		<title>Index of /ip.html</title>
 		</head>
 		<body>
-			<form method="POST" action="ip">
+			<form method="POST">
 				<center>
 					<textarea name="rawips" rows="20" cols="50" onkeyup="javascript:convert()" onblur="javascript:convert()" spellcheck="false" placeholder="请把包含 IP 地址的文本粘贴到此处"></textarea>
 					<textarea name="jsonips" rows="20" cols="50" spellcheck="false" style="background-color:#F3F3F3;" readonly="true" placeholder="格式化后的 IP 地址将显示在此"></textarea>

@@ -51,6 +51,9 @@ type Config struct {
 	MobileConfig struct {
 		Enabled bool
 	}
+	IPHTML struct {
+		Enabled bool
+	}
 	BlackList struct {
 		Enabled   bool
 		SiteRules []string
@@ -78,6 +81,7 @@ type Filter struct {
 	GFWListEnabled       bool
 	GFWList              *GFWList
 	MobileConfigEnabled  bool
+	IPHTMLEnabled        bool
 	BlackListEnabled     bool
 	BlackListSiteMatcher *helpers.HostMatcher
 	SiteFiltersEnabled   bool
@@ -143,6 +147,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		ProxyPacCache:        lrucache.NewLRUCache(32),
 		GFWListEnabled:       config.GFWList.Enabled,
 		MobileConfigEnabled:  config.MobileConfig.Enabled,
+		IPHTMLEnabled:        config.IPHTML.Enabled,
 		BlackListEnabled:     config.BlackList.Enabled,
 		BlackListSiteMatcher: helpers.NewHostMatcher(config.BlackList.SiteRules),
 		GFWList:              &gfwlist,
@@ -316,7 +321,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
-		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" || req.URL.Path == "/ip" {
+		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
 			switch {
 			case f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac"):
 				glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
@@ -324,9 +329,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			case f.MobileConfigEnabled && strings.HasSuffix(req.URL.Path, ".mobileconfig"):
 				glog.V(2).Infof("%s \"AUTOPROXY ProxyMobileConfig %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
 				return f.ProxyMobileConfigRoundTrip(ctx, req)
-			case req.URL.Path == "/ip":
-				glog.V(2).Infof("%s \"AUTOPROXY IP %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
-				return f.IPFilesRoundTrip(ctx, req)
+			case f.IPHTMLEnabled && req.URL.Path == "/ip.html":
+				glog.V(2).Infof("%s \"AUTOPROXY IPHTML %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+				return f.IPHTMLRoundTrip(ctx, req)
 			default:
 				glog.V(2).Infof("%s \"AUTOPROXY IndexFiles %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
 				return f.IndexFilesRoundTrip(ctx, req)

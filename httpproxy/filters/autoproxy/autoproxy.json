@@ -28,6 +28,7 @@
 			"proxy.pac",
 			"GoProxyAPN.mobileconfig",
 			"GoProxy.crt",
+			"ip.html",
 		]
 	},
 	"GFWList": {
@@ -39,6 +40,9 @@
 		"Duration": 3600,
 	},
 	"MobileConfig": {
+		"Enabled": true,
+	},
+	"IPHTML": {
 		"Enabled": true,
 	},
 	"BlackList": {
