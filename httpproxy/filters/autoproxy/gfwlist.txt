@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 2UK1dKVWNA3RK801ZP3woQ
+! Checksum: R3kVwJ2F+Z/p0IuPnF5VmQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Sat, 17 Sep 2016 17:45:08 +0200
+! Last Modified: Mon, 19 Sep 2016 12:59:00 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -3874,6 +3874,7 @@ nuzcom.com
 .nydus.ca
 nylon-angel.com
 nylonstockingsonline.com
+!--nysingtao.com
 !--||nyt.com
 ||nytco.com
 |http://nyti.ms/
@@ -3881,7 +3882,7 @@ nylonstockingsonline.com
 ||nytimes.com
 ||nytimg.com
 userapi.nytlog.com
-nysingtao.com
+cn.nytstyle.com
 .nzchinese.com
 ||nzchinese.net.nz
 
@@ -3917,7 +3918,7 @@ news.omy.sg
 showbiz.omy.sg
 ||on.cc
 ||onedrive.live.com
-|http://www.onion.city
+||onion.city
 .onlinecha.com
 ||onlineyoutube.com
 onmoon.net
