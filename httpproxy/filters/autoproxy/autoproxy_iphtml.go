@@ -7,13 +7,24 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"strings"
+
+	"../../storage"
+)
+
+const (
+	IPHTMLFilename string = "ip.html"
 )
 
 func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 
-	tpl0, err := ioutil.ReadFile("ip.html")
+	resp, err := f.Store.Get(IPHTMLFilename)
+	if err != nil {
+		return ctx, nil, err
+	}
+	defer resp.Body.Close()
+
+	tpl0, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ctx, nil, err
 	}
@@ -28,15 +39,15 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 	}
 
 	var msg string
-	if req.Method == "POST" {
+
+	switch req.Method {
+	case http.MethodPost:
+		store := storage.LookupStoreByConfig("gae")
 		//rawips := req.FormValue("rawips")
 		jsonips := req.FormValue("jsonips")
-		filterName := "gae"
-		fileName := filterName + ".user.json"
-		msg = "Failed."
-		_, err = os.Stat(fileName)
-		if !(err == nil || os.IsExist(err)) {
-			fileName = filterName + ".json"
+		filename := "gae.user.json"
+		if storage.IsNotExist(store, filename) {
+			filename = "gae.json"
 		}
 		if len(jsonips) > 0 {
 			jsonips = strings.Replace(jsonips, "\r\n", "", -1)
@@ -45,18 +56,25 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 			for i, ip := range ips {
 				ips[i] = "\t\t\t" + ip
 			}
-			jsonips = strings.Join(ips, ",\n")
+			jsonips = strings.Join(ips, ",\r\n")
 
-			bytes, err := ioutil.ReadFile(fileName)
+			resp, err := store.Get(filename)
 			if err != nil {
 				return ctx, nil, err
 			}
-			content := string(bytes)
+			defer resp.Body.Close()
+
+			data, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				return ctx, nil, err
+			}
+
+			content := string(data)
 			if n := strings.Index(content, "HostMap"); n > -1 {
 				tmp := content[n:]
 				tmp = tmp[strings.Index(tmp, "[")+1 : strings.Index(tmp, "]")]
 				content = strings.Replace(content, tmp, "\n"+jsonips, -1)
-				if err = ioutil.WriteFile(fileName, []byte(content), os.ModePerm); err != nil {
+				if _, err = store.Put(filename, http.Header{}, ioutil.NopCloser(strings.NewReader(content))); err != nil {
 					return ctx, nil, err
 				}
 				msg = fmt.Sprintf("Success. Total %d IP.", len(ips)-1)
