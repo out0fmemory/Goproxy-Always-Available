@@ -42,11 +42,11 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 
 	switch req.Method {
 	case http.MethodPost:
-		store := storage.LookupStoreByConfig("gae")
+		store := storage.LookupStoreByFilterName("gae")
 		//rawips := req.FormValue("rawips")
 		jsonips := req.FormValue("jsonips")
 		filename := "gae.user.json"
-		if storage.IsNotExist(store, filename) {
+		if storage.NotExist(store, filename) {
 			filename = "gae.json"
 		}
 		if len(jsonips) > 0 {

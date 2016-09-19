@@ -27,7 +27,7 @@ type Store interface {
 }
 
 // Lookup config uri by filename
-func LookupStoreByConfig(name string) Store {
+func LookupStoreByFilterName(name string) Store {
 	var store Store
 	for _, dirname := range []string{filepath.Dir(os.Args[0]), ".", "httpproxy", "httpproxy/filters/" + name} {
 		filename := dirname + "/" + name + ".json"
@@ -42,7 +42,7 @@ func LookupStoreByConfig(name string) Store {
 	return store
 }
 
-func IsNotExist(store Store, name string) bool {
+func NotExist(store Store, name string) bool {
 	resp, err := store.Head(name)
 	return os.IsNotExist(err) || (resp != nil && resp.StatusCode == http.StatusNotFound)
 }
