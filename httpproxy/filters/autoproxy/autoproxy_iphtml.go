@@ -7,6 +7,7 @@ import (
 	"html/template"
 	"io/ioutil"
 	"net/http"
+	"regexp"
 	"strings"
 
 	"../../storage"
@@ -14,6 +15,10 @@ import (
 
 const (
 	IPHTMLFilename string = "ip.html"
+)
+
+var (
+	ipv4Regex = regexp.MustCompile(`(?s)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
 )
 
 func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
@@ -50,13 +55,11 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 			filename = "gae.json"
 		}
 		if len(jsonips) > 0 {
-			jsonips = strings.Replace(jsonips, "\r\n", "", -1)
-			jsonips = strings.Replace(jsonips, "\n", "", -1)
-			ips := strings.Split(jsonips, ",")
-			for i, ip := range ips {
-				ips[i] = "\t\t\t" + ip
+			ips := make([]string, 0, 64)
+			for _, m := range ipv4Regex.FindAllStringSubmatch(jsonips, -1) {
+				ips = append(ips, m[1])
 			}
-			jsonips = strings.Join(ips, ",\r\n")
+			jsonips = "\r\n\t\t\t\"" + strings.Join(ips, "\",\r\n\t\t\t\"") + "\",\r\n\t\t"
 
 			resp, err := store.Get(filename)
 			if err != nil {
@@ -73,11 +76,11 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 			if n := strings.Index(content, "HostMap"); n > -1 {
 				tmp := content[n:]
 				tmp = tmp[strings.Index(tmp, "[")+1 : strings.Index(tmp, "]")]
-				content = strings.Replace(content, tmp, "\n"+jsonips, -1)
+				content = strings.Replace(content, tmp, jsonips, -1)
 				if _, err = store.Put(filename, http.Header{}, ioutil.NopCloser(strings.NewReader(content))); err != nil {
 					return ctx, nil, err
 				}
-				msg = fmt.Sprintf("Success. Total %d IP.", len(ips)-1)
+				msg = fmt.Sprintf("Updated %d IP to %s.", len(ips), filename)
 			}
 		}
 	}
