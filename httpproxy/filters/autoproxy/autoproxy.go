@@ -316,7 +316,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
-		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
+		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" || req.URL.Path == "/ip" {
 			switch {
 			case f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac"):
 				glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
@@ -324,6 +324,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			case f.MobileConfigEnabled && strings.HasSuffix(req.URL.Path, ".mobileconfig"):
 				glog.V(2).Infof("%s \"AUTOPROXY ProxyMobileConfig %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
 				return f.ProxyMobileConfigRoundTrip(ctx, req)
+			case req.URL.Path == "/ip":
+				glog.V(2).Infof("%s \"AUTOPROXY IP %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
+				return f.IPFilesRoundTrip(ctx, req)
 			default:
 				glog.V(2).Infof("%s \"AUTOPROXY IndexFiles %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
 				return f.IndexFilesRoundTrip(ctx, req)
