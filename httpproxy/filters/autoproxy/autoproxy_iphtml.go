@@ -30,16 +30,12 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 	}
 	defer resp.Body.Close()
 
-	tpl0, err := ioutil.ReadAll(resp.Body)
+	tpl, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ctx, nil, err
 	}
 
-	tpl := string(tpl0)
-	tpl = strings.Replace(tpl, "<!-- BEGIN IPHTML COMMENT", "", -1)
-	tpl = strings.Replace(tpl, "END IPHTML COMMENT -->", "", -1)
-
-	t, err := template.New("ip").Parse(tpl)
+	t, err := template.New("ip").Parse(string(tpl))
 	if err != nil {
 		return ctx, nil, err
 	}
