@@ -31,7 +31,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 <h1>Index of /</h1>
 <pre>Name</pre><hr/>
 <pre>{{ range $key, $value := .IndexFiles }}
-📄 <a href="{{ $key }}">{{ $key }}</a>{{ end }}</pre>
+📄 <a href="{{ $value }}">{{ $value }}</a>{{ end }}</pre>
 <hr/><address style="font-size:small;">{{.Branding}}, remote ip {{.Remote}}</address>
 </body>
 </html>`
@@ -54,7 +54,7 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		}
 
 		data := struct {
-			IndexFiles map[string]struct{}
+			IndexFiles []string
 			Remote     string
 			Branding   string
 		}{

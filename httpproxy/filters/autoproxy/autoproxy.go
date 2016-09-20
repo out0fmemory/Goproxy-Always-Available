@@ -76,7 +76,8 @@ type Filter struct {
 	Config
 	Store                storage.Store
 	IndexFilesEnabled    bool
-	IndexFiles           map[string]struct{}
+	IndexFiles           []string
+	IndexFilesSet        map[string]struct{}
 	ProxyPacCache        lrucache.Cache
 	GFWListEnabled       bool
 	GFWList              *GFWList
@@ -143,7 +144,8 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		Config:               *config,
 		Store:                store,
 		IndexFilesEnabled:    config.IndexFiles.Enabled,
-		IndexFiles:           make(map[string]struct{}),
+		IndexFiles:           config.IndexFiles.Files,
+		IndexFilesSet:        make(map[string]struct{}),
 		ProxyPacCache:        lrucache.NewLRUCache(32),
 		GFWListEnabled:       config.GFWList.Enabled,
 		MobileConfigEnabled:  config.MobileConfig.Enabled,
@@ -156,8 +158,8 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		RegionFiltersEnabled: config.RegionFilters.Enabled,
 	}
 
-	for _, name := range config.IndexFiles.Files {
-		f.IndexFiles[name] = struct{}{}
+	for _, name := range f.IndexFiles {
+		f.IndexFilesSet[name] = struct{}{}
 	}
 
 	if f.SiteFiltersEnabled {
@@ -321,7 +323,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	if req.URL.Host == "" && req.RequestURI[0] == '/' && f.IndexFilesEnabled {
-		if _, ok := f.IndexFiles[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
+		if _, ok := f.IndexFilesSet[req.URL.Path[1:]]; ok || req.URL.Path == "/" {
 			switch {
 			case f.GFWListEnabled && strings.HasSuffix(req.URL.Path, ".pac"):
 				glog.V(2).Infof("%s \"AUTOPROXY ProxyPac %s %s %s\" - -", req.RemoteAddr, req.Method, req.RequestURI, req.Proto)
