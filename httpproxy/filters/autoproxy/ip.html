@@ -19,7 +19,7 @@
 	</form>
 	<script type="text/javascript">
 	window.onload = function () {
-		if (window.location.href.indexOf('http://') == 0) {
+		if (typeof(IPHTMLVISABLE) != "undefined") {
 			var divs = document.getElementsByName('hiddendiv');
 			if (divs.length > 0) {
 				divs[0].style.display = '';

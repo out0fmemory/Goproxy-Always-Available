@@ -30,12 +30,14 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 	}
 	defer resp.Body.Close()
 
-	tpl, err := ioutil.ReadAll(resp.Body)
+	tpl0, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return ctx, nil, err
 	}
 
-	t, err := template.New("ip").Parse(string(tpl))
+	tpl := strings.Replace(string(tpl0), "IPHTMLVISABLE", "1", 1)
+
+	t, err := template.New("ip").Parse(tpl)
 	if err != nil {
 		return ctx, nil, err
 	}
