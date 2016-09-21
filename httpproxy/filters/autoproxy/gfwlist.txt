@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: R3kVwJ2F+Z/p0IuPnF5VmQ
+! Checksum: k9ygEV5l7LEuNRghR+VDCQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 19 Sep 2016 12:59:00 +0200
+! Last Modified: Wed, 21 Sep 2016 14:03:48 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -15,7 +15,7 @@
 ! or suggestion / enhancement at issue tracker:
 ! https://github.com/gfwlist/gfwlist/issues/.
 
-!---------403/451 & URL Redirects---------
+!---------403/451/520 & URL Redirects---------
 ||4tern.com
 !--ehentai
 |http://85.17.73.31/
@@ -59,6 +59,7 @@
 ||findmima.com
 ||flipboard.com
 ||flitto.com
+||funkyimg.com
 ||fxnetworks.com
 ||gettyimages.com
 ||getuploader.com
@@ -347,6 +348,7 @@ s3-ap-northeast-1.amazonaws.com
 .wikaba.com
 .www1.biz
 .wwwhost.biz
+@@|http://xx.wwwhost.biz
 .x24hr.com
 .xxuz.com
 .xxxy.biz
@@ -856,10 +858,11 @@ artsy.net
 ||asahichinese.com
 asdfg.jp/dabr
 asg.to
-|http://japanfirst.asianfreeforum.com/
+.asia-gaming.com
 .asiaharvest.org
 ||asiaharvest.org
 asianews.it
+|http://japanfirst.asianfreeforum.com/
 ||asiansexdiary.com
 ||asianwomensfilm.de
 .asiatgp.com
@@ -912,10 +915,12 @@ badoo.com
 ||baidu.jp
 ||bailandaily.com
 ||baixing.me
+||bakgeekhome.tk
 .banana-vpn.com
 ||banana-vpn.com
 .bandwagonhost.com
 ||bandwagonhost.com
+.bangbrosnetwork.com
 .bangchen.net
 |http://bangchen.net
 ||bangyoulater.com
@@ -1030,6 +1035,7 @@ blinw.com
 ||blockcn.com
 ||blog.de
 .blog.jp
+|http://blog.jp
 ||blogblog.com
 .blogcatalog.com
 ||blogcatalog.com
@@ -1220,6 +1226,7 @@ catholic.org.tw
 .cbtc.org.hk
 !-.ccc.de
 !-||ccc.de
+||cccat.cc
 .ccdtr.org
 ||ccdtr.org
 .cchere.com
@@ -1940,6 +1947,8 @@ fangongheike.com
 .fanqiang.tk
 fanqianghou.com
 ||fanqianghou.com
+.fanqiangzhe.com
+||fanqiangzhe.com
 fapdu.com
 faproxy.com
 !--.farxian.com
@@ -3465,6 +3474,7 @@ mahabodhi.org
 my.mail.ru
 .maiplus.com
 |http://maiplus.com
+.maizhong.org
 manicur4ik.ru
 .maplew.com
 |http://maplew.com
@@ -3822,8 +3832,16 @@ usmgtcg.ning.com/forum
 njuice.com
 ||njuice.com
 nlfreevpn.com
-!--no-ip.com
+
+!--no-ip.com#NOIP
+.gooddns.info
+.maildns.xyz
 .no-ip.org
+.opendn.xyz
+sytes.net
+.whodns.xyz
+.zapto.org
+
 ||nobel.se
 !--.nobelprize.org
 !--|http://nobelprize.org
@@ -3839,7 +3857,8 @@ nordvpn.com
 ||nordvpn.com
 ||novelasia.com
 .news.now.com
-|http://news.now.com/home*
+|http://news.now.com
+!--|http://news.now.com/home*
 news.now.com%2Fhome
 ||nownews.com
 .nowtorrents.com
@@ -4230,6 +4249,7 @@ pwned.com
 python.com
 .python.com.tw
 |http://python.com.tw
+pythonhackers.com/p
 
 !--------------------QQ-------------------------
 .qanote.com
@@ -4692,6 +4712,7 @@ spinejs.com
 ||sproutcore.com
 ||sproxy.info
 squarespace.com
+||srocket.us
 ||ssh91.com
 .sspro.ml
 |http://sspro.ml
@@ -5571,10 +5592,13 @@ vocn.tv
 vpnbook.com
 .vpncoupons.com
 |http://vpncoupons.com
+.vpndada.com
+||vpndada.com
 .vpnfan.com
 vpnfire.com
 .vpnforgame.net
 ||vpnforgame.net
+||vpnunlimitedapp.com
 ||vpngate.jp
 .vpngate.net
 ||vpngate.net
@@ -5696,6 +5720,7 @@ wezhiyong.org
 ||wforum.com/
 .whatblocked.com
 ||whatblocked.com
+.wheatseeds.org
 ||wheelockslatin.com
 .whippedass.com
 !--|http://who.is/
@@ -5909,6 +5934,7 @@ xuzhiyong.net
 ||xuchao.org
 xuchao.net
 ||xuchao.net
+xvideo.cc
 .xvideos.com
 ||xvideos.es
 .xxbbx.com
