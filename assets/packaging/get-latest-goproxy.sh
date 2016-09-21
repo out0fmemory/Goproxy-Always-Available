@@ -79,6 +79,7 @@ echo "2. Downloading ${FILENAME}"
 curl -k -LOJ https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME}
 
 echo "3. Extracting ${FILENAME}"
+rm -rf ${FILENAME%.*}
 case ${FILENAME##*.} in
 	xz )
 		xz -d ${FILENAME}
@@ -94,7 +95,7 @@ case ${FILENAME##*.} in
 		exit 1
 esac
 
-tar -xvp --strip-components 1 -f ${FILENAME%.*}
+tar -xvpf ${FILENAME%.*} --strip-components $(tar -tf ${FILENAME%.*} | head -1 | grep -c '/')
 rm -f ${FILENAME%.*}
 
 echo "4. Done"
