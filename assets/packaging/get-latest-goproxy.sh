@@ -76,7 +76,8 @@ if test "${LOCALVERSION}" = "${REMOTEVERSION}"; then
 fi
 
 echo "2. Downloading ${FILENAME}"
-curl -k -LOJ https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME}
+curl -kL https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} >${FILENAME}.tmp
+mv -f ${FILENAME}.tmp ${FILENAME}
 
 echo "3. Extracting ${FILENAME}"
 rm -rf ${FILENAME%.*}
