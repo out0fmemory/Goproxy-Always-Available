@@ -62,6 +62,15 @@ if netstat -an | grep -i tcp | grep LISTEN | grep ':8087'; then
 	export https_proxy=http://127.0.0.1:8087
 fi
 
+if [ -f "gae.user.json" ]; then
+	GAE_USER_JSON_LINE=$(head -1 gae.user.json)
+	if echo "${GAE_USER_JSON_LINE}" | grep -q AUTO_UPDATE_URL; then
+		GAE_USER_JSON_URL=${GAE_USER_JSON_LINE#* }
+		echo "Update gae.user.json with ${GAE_USER_JSON_URL}"
+		curl -k "${GAE_USER_JSON_URL}" >gae.user.json
+	fi
+fi
+
 echo "1. Checking GoProxy Version"
 FILENAME=$(curl -k https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oE "<strong>${FILENAME_PREFIX}-r[0-9]+.+</strong>" | awk -F '<strong>|</strong>' '{print $2}')
 REMOTEVERSION=$(echo ${FILENAME} | awk -F'.' '{print $1}' | awk -F'-' '{print $2}')
