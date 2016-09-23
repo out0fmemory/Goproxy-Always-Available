@@ -52,7 +52,8 @@ type Config struct {
 		Enabled bool
 	}
 	IPHTML struct {
-		Enabled bool
+		Enabled   bool
+		WhiteList []string
 	}
 	BlackList struct {
 		Enabled   bool
@@ -83,6 +84,7 @@ type Filter struct {
 	GFWList              *GFWList
 	MobileConfigEnabled  bool
 	IPHTMLEnabled        bool
+	IPHTMLWhiteList      *helpers.HostMatcher
 	BlackListEnabled     bool
 	BlackListSiteMatcher *helpers.HostMatcher
 	SiteFiltersEnabled   bool
@@ -160,6 +162,10 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 	for _, name := range f.IndexFiles {
 		f.IndexFilesSet[name] = struct{}{}
+	}
+
+	if f.IPHTMLEnabled {
+		f.IPHTMLWhiteList = helpers.NewHostMatcher(config.IPHTML.WhiteList)
 	}
 
 	if f.SiteFiltersEnabled {

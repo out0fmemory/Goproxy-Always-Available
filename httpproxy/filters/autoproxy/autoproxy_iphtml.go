@@ -54,7 +54,7 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 		if ip == nil {
 			return ctx, nil, fmt.Errorf("Invaild RemoteAddr: %+v", req.RemoteAddr)
 		}
-		if !ip.IsLoopback() {
+		if !(ip.IsLoopback() || f.IPHTMLWhiteList.Match(host)) {
 			return ctx, nil, fmt.Errorf("Post from a non-local address: %+v", req.RemoteAddr)
 		}
 
