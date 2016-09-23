@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: k9ygEV5l7LEuNRghR+VDCQ
+! Checksum: JOICPhSSaFy5F/ryuvOuJg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 21 Sep 2016 14:03:48 +0200
+! Last Modified: Wed, 21 Sep 2016 14:54:30 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -2389,6 +2389,7 @@ godsdirectcontact.co.uk
 .godsdirectcontact.org
 godsdirectcontact.org.tw
 .godsimmediatecontact.com
+.gogotunnel.com
 ||gohappy.com.tw
 .gokbayrak.com
 .goldbet.com
