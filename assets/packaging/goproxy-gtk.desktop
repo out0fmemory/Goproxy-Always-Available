@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Name=GoProxy GTK
+Comment=GoProxy GTK Launcher
+Categories=Network;Proxy;
+Exec=bash -c "export PATH=$PATH:`dirname '%k'`; goproxy-gtk.py"
+Icon=applications-internet
+Terminal=false
+StartupNotify=true

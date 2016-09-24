@@ -1,9 +1,5 @@
 #!/usr/bin/env python2
 # coding:utf-8
-# Contributor:
-#      Phus Lu        <phuslu@hotmail.com>
-
-__version__ = '1.6'
 
 import sys
 import os
@@ -53,25 +49,13 @@ def spawn_later(seconds, target, *args, **kwargs):
     t.run()
 
 
-def drop_desktop():
-    filename = os.path.abspath(__file__)
-    dirname = os.path.dirname(filename)
-    DESKTOP_FILE = '''\
-#!/usr/bin/env xdg-open
-[Desktop Entry]
-Type=Application
-Name=GoProxy GTK
-Comment=GoProxy GTK Launcher
-Categories=Network;Proxy;
-Exec=/usr/bin/env python2 "%s"
-Icon=%s/goproxy-gtk.png
-Terminal=false
-StartupNotify=true
-''' % (filename, dirname)
-    filename1 = os.path.join(dirname, 'goproxy-gtk.desktop')
-    with open(filename1, 'w') as fp:
-        fp.write(DESKTOP_FILE)
-        os.chmod(filename1, 0o755)
+def rewrite_desktop(filename):
+    with open(filename, 'rb') as fp:
+        content = fp.read()
+    if 'goproxy-gtk.png' not in content:
+        content = re.sub(r'Icon=\S*', 'Icon=%s/goproxy-gtk.png' % os.getcwd(), content)
+        with open(filename, 'wb') as fp:
+            fp.write(content)
 
 #gtk.main_quit = lambda: None
 #appindicator = None
@@ -212,8 +196,8 @@ def main():
         __file__ = getattr(os, 'readlink', lambda x: x)(__file__)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
-    if not os.path.exists('goproxy-gtk.desktop'):
-        drop_desktop()
+    if os.path.isfile('goproxy-gtk.desktop'):
+        rewrite_desktop('goproxy-gtk.desktop')
 
     window = gtk.Window()
     terminal = vte.Terminal()
