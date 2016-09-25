@@ -24,6 +24,7 @@ import (
 	"github.com/phuslu/glog"
 	"github.com/phuslu/goproxy/httpproxy/helpers"
 	"github.com/phuslu/net/http2"
+	"golang.org/x/crypto/acme/autocert"
 )
 
 var (
@@ -31,9 +32,7 @@ var (
 )
 
 var (
-	ListenAddrs          string = os.Getenv("GOPROXY_VPS_LISTEN_ADDRS")
-	CertificateURL       string = os.Getenv("GOPROXY_VPS_CERTIFICATE_URL")
-	CertificateURLHeader string = os.Getenv("GOPROXY_VPS_CERTIFICATE_URL_HEADER")
+	ListenAddrs string = os.Getenv("GOPROXY_VPS_LISTEN_ADDRS")
 )
 
 func init() {
@@ -245,8 +244,6 @@ func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.R
 }
 
 func main() {
-	var err error
-
 	if len(os.Args) > 1 && os.Args[1] == "-version" {
 		fmt.Print(version)
 		return
@@ -254,11 +251,13 @@ func main() {
 
 	addrs := ":443"
 	pwauth := false
+	acme := ""
 	keyFile := "goproxy-vps.key"
 	certFile := "goproxy-vps.crt"
 	http2verbose := false
 
 	flag.StringVar(&addrs, "addr", addrs, "goproxy vps listen addrs, i.e. 0.0.0.0:443,0.0.0.0:8443")
+	flag.StringVar(&acme, "acme", acme, "goproxy vps acme domain, i.e. vps.example.com")
 	flag.StringVar(&keyFile, "keyfile", keyFile, "goproxy vps keyfile")
 	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
@@ -269,52 +268,6 @@ func main() {
 		"v":           "2",
 	})
 	flag.Parse()
-
-	if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-		switch CertificateURL {
-		case "":
-			cmd := exec.Command("openssl",
-				"req",
-				"-subj", "/CN=github.com/O=GitHub, Inc./C=US",
-				"-new",
-				"-newkey", "rsa:2048",
-				"-days", "365",
-				"-nodes",
-				"-x509",
-				"-keyout", keyFile,
-				"-out", certFile)
-			if err = cmd.Run(); err != nil {
-				glog.Fatalf("openssl: %+v error: %+v", cmd.Args, err)
-			}
-		default:
-			req, err := http.NewRequest(http.MethodGet, CertificateURL, nil)
-			if err != nil {
-				glog.Fatalf("http.NewRequest(%+v) error: %+v", CertificateURL, err)
-			}
-			parts := strings.SplitN(CertificateURLHeader, ":", 2)
-			req.Header.Add(strings.TrimSpace(parts[0]), strings.TrimSpace(parts[1]))
-			resp, err := http.DefaultClient.Do(req)
-			if err != nil {
-				glog.Fatalf("http.DefaultClient.Do(%+v) error: %+v", req, err)
-			}
-			data, err := ioutil.ReadAll(resp.Body)
-			if err != nil {
-				resp.Body.Close()
-				glog.Fatalf("ioutil.ReadAll(%+v.Body) error: %+v", req, err)
-			}
-
-			for _, filename := range []string{certFile, keyFile} {
-				if err := ioutil.WriteFile(filename, data, 0644); err != nil {
-					glog.Fatalf("ioutil.WriteFile(%+v) error: %+v", filename, err)
-				}
-			}
-		}
-	}
-
-	cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-	if err != nil {
-		glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
-	}
 
 	dialer := &helpers.Dialer{
 		Dialer: &net.Dialer{
@@ -375,9 +328,41 @@ func main() {
 	srv := &http.Server{
 		Handler: handler,
 		TLSConfig: &tls.Config{
-			Certificates: []tls.Certificate{cert},
-			MinVersion:   tls.VersionTLS12,
+			MinVersion: tls.VersionTLS12,
 		},
+	}
+
+	if acme != "" {
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			Cache:      autocert.DirCache("."),
+			HostPolicy: autocert.HostWhitelist(acme),
+		}
+
+		srv.TLSConfig.GetCertificate = m.GetCertificate
+	} else {
+		if _, err := os.Stat(keyFile); os.IsNotExist(err) {
+			cmd := exec.Command("openssl",
+				"req",
+				"-subj", "/CN=github.com/O=GitHub, Inc./C=US",
+				"-new",
+				"-newkey", "rsa:2048",
+				"-days", "365",
+				"-nodes",
+				"-x509",
+				"-keyout", keyFile,
+				"-out", certFile)
+			if err = cmd.Run(); err != nil {
+				glog.Fatalf("openssl: %+v error: %+v", cmd.Args, err)
+			}
+		}
+
+		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
+		if err != nil {
+			glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
+		}
+
+		srv.TLSConfig.Certificates = []tls.Certificate{cert}
 	}
 
 	http2.VerboseLogs = http2verbose
