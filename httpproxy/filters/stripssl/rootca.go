@@ -301,7 +301,18 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (
 		}
 	}
 
-	tlsCert, err := tls.LoadX509KeyPair(certFile, certFile)
+	resp, err := c.store.Get(certFile)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	tlsCert, err := tls.X509KeyPair(data, data)
 	if err != nil {
 		return nil, err
 	}
