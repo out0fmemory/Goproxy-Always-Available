@@ -12,6 +12,7 @@ var (
 	kernel32                    = syscall.NewLazyDLL("kernel32.dll")
 	procSetConsoleTitleW        = kernel32.NewProc("SetConsoleTitleW")
 	procSetConsoleTextAttribute = kernel32.NewProc("SetConsoleTextAttribute")
+	hStderr                     = os.Stderr.Fd()
 )
 
 func SetConsoleTitle(name string) {
@@ -19,7 +20,7 @@ func SetConsoleTitle(name string) {
 }
 
 func setConsoleTextAttribute(attr uint) error {
-	_, _, err := procSetConsoleTextAttribute.Call(os.Stderr.Fd(), uintptr(attr))
+	_, _, err := procSetConsoleTextAttribute.Call(hStderr, uintptr(attr))
 	return err
 }
 
