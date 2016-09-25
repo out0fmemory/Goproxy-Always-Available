@@ -40,12 +40,13 @@ forfiles /? 1>NUL 2>NUL && (
     forfiles /P cache /M *.crt /D -90 /C "cmd /c del /f @path" 2>NUL
 )
 
-if exist "gae.user.json" (
-    set /p GAE_USER_JSON_LINE= <gae.user.json
-    echo "!GAE_USER_JSON_LINE!" | findstr "AUTO_UPDATE_URL" 1>NUL && (
-        set GAE_USER_JSON_URL=!GAE_USER_JSON_LINE:* =!
-        echo Update gae.user.json with !GAE_USER_JSON_URL!
-        cscript /nologo ~gdownload.vbs "!GAE_USER_JSON_URL!" gae.user.json
+for %%I in (*.user.json) do (
+    set USER_JSON_FILE=%%I
+    set /p USER_JSON_LINE= <!USER_JSON_FILE!
+    echo "!USER_JSON_LINE!" | findstr "AUTO_UPDATE_URL" 1>NUL && (
+        set USER_JSON_URL=!USER_JSON_LINE:* =!
+        echo Update !USER_JSON_FILE! with !USER_JSON_URL!
+        cscript /nologo ~gdownload.vbs "!USER_JSON_URL!" "!USER_JSON_FILE!"
     )
 )
 
