@@ -8,7 +8,7 @@ import (
 	"github.com/kardianos/osext"
 )
 
-func FixOSArgs() {
+func FixOSArgs0() {
 	if p, err := osext.Executable(); err == nil {
 		os.Args[0] = p
 	}
