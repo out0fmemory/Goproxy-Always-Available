@@ -26,6 +26,7 @@ func main() {
 		return
 	}
 
+	helpers.FixOSArgs()
 	helpers.SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
 		"v":           "2",
