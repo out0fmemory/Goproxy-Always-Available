@@ -11,6 +11,9 @@
 		<center>
 			<textarea name="rawips" rows="20" cols="45" onkeyup="javascript:convert()" onblur="javascript:convert()" spellcheck="false" placeholder="请把包含 IP 地址的文本粘贴到此处"></textarea>
 			<textarea name="jsonips" rows="20" cols="45" spellcheck="false" style="background-color:#F3F3F3;" readonly="true" placeholder="格式化后的 IP 地址将显示在此"></textarea>
+			<br>
+			<input type="radio" name="ipfamily" id="ipv4" value="v4" onclick="javascript:convert()" checked="checked">IPv4
+			<input type="radio" name="ipfamily" id="ipv6" value="v6" onclick="javascript:convert()">IPv6
 		</center>
 		<div name="hiddendiv" align="center" style="display:none">
 			<input type="submit" name="submit" disabled value="写入到本地 json 文件" style="padding:8px;margin-top:40px;"/>
@@ -38,7 +41,11 @@
 		var text1 = document.getElementsByTagName('textarea')[0];
 		var text2 = document.getElementsByTagName('textarea')[1];
 		if (text1.value != "") {
-			var matches = text1.value.match(/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/g)
+			regex = /([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3})/g;
+			if (document.getElementById('ipv6').checked) {
+				regex = /((([0-9A-Fa-f]{1,4}:){7}([0-9A-Fa-f]{1,4}|:))|(([0-9A-Fa-f]{1,4}:){6}(:[0-9A-Fa-f]{1,4}|((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){5}(((:[0-9A-Fa-f]{1,4}){1,2})|:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3})|:))|(([0-9A-Fa-f]{1,4}:){4}(((:[0-9A-Fa-f]{1,4}){1,3})|((:[0-9A-Fa-f]{1,4})?:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){3}(((:[0-9A-Fa-f]{1,4}){1,4})|((:[0-9A-Fa-f]{1,4}){0,2}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){2}(((:[0-9A-Fa-f]{1,4}){1,5})|((:[0-9A-Fa-f]{1,4}){0,3}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(([0-9A-Fa-f]{1,4}:){1}(((:[0-9A-Fa-f]{1,4}){1,6})|((:[0-9A-Fa-f]{1,4}){0,4}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:))|(:(((:[0-9A-Fa-f]{1,4}){1,7})|((:[0-9A-Fa-f]{1,4}){0,5}:((25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)){3}))|:)))/g
+			}
+			var matches = text1.value.match(regex)
 			if (matches != null) {
 				text2.value = "\"" + matches.join("\",\n\"") + "\",";
 				enable_submit(true);
