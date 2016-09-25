@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"../../storage"
@@ -16,10 +15,6 @@ import (
 
 const (
 	IPHTMLFilename string = "ip.html"
-)
-
-var (
-	ipv4Regex = regexp.MustCompile(`(?s)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})`)
 )
 
 func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
@@ -66,10 +61,12 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 			filename = "gae.json"
 		}
 		if len(jsonips) > 0 {
-			ips := make([]string, 0, 64)
-			for _, m := range ipv4Regex.FindAllStringSubmatch(jsonips, -1) {
-				ips = append(ips, m[1])
+			s := jsonips
+			for _, sep := range []string{" ", "\t", "\r", "\n"} {
+				s = strings.Replace(s, sep, "", -1)
 			}
+
+			ips := strings.Split(strings.Trim(s, "\","), "\",\"")
 			jsonips = "\r\n\t\t\t\"" + strings.Join(ips, "\",\r\n\t\t\t\"") + "\",\r\n\t\t"
 
 			resp, err := store.Get(filename)
