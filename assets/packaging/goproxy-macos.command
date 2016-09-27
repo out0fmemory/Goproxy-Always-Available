@@ -1,4 +1,4 @@
-(exec /usr/bin/env python2.6 -x "$0" 2>&1 >/dev/null &);exit
+(exec /usr/bin/env python2.7 -x "$0" 2>&1 >/dev/null &);exit
 # coding:utf-8
 # Contributor:
 #      Phus Lu        <phuslu@hotmail.com>
@@ -66,6 +66,8 @@ class GoProxyMacOS(NSObject):
         raw_data = base64.b64decode(''.join(GOPROXY_ICON_DATA.strip().splitlines()))
         self.image_data = NSData.dataWithBytes_length_(raw_data, len(raw_data))
         self.image = NSImage.alloc().initWithData_(self.image_data)
+        self.image.setSize_((18, 18))
+        self.image.setTemplate_(True)
         self.statusitem.setImage_(self.image)
         # Let it highlight upon clicking
         self.statusitem.setHighlightMode_(1)
