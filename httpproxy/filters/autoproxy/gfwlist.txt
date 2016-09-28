@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: JOICPhSSaFy5F/ryuvOuJg
+! Checksum: cnrHppZl6yTrQF4S9bvTPw
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 21 Sep 2016 14:54:30 +0200
+! Last Modified: Tue, 27 Sep 2016 06:28:47 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -852,6 +852,7 @@ archive.is
 ||army.mil
 ||arstechnica.com
 .art4tibet1998.org
+artofpeacefoundation.org
 artsy.net
 ||asacp.org
 .asahichinese.com
@@ -2354,10 +2355,11 @@ gigporno.ru
 !---GitHub---
 .github.com
 |https://gist.github.com
-!--|http://cthlo.github.io/hktv
+http://cthlo.github.io/hktv
 !--|http://onionhacker.github.io
-!--|http://wsgzao.github.io/post/gfw-break
-.github.io
+wsgzao.github.io
+||wsgzao.github.io
+!--.github.io
 
 .gizlen.net
 ||gizlen.net
