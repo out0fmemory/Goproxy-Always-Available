@@ -33,6 +33,7 @@ var (
 
 var (
 	ListenAddrs string = os.Getenv("GOPROXY_VPS_LISTEN_ADDRS")
+	ACMEDomain  string = os.Getenv("GOPROXY_VPS_ACME_DOMAIN")
 )
 
 func init() {
@@ -251,13 +252,13 @@ func main() {
 
 	addrs := ":443"
 	pwauth := false
-	acme := ""
+	acmeDomain := ""
 	keyFile := "goproxy-vps.key"
 	certFile := "goproxy-vps.crt"
 	http2verbose := false
 
 	flag.StringVar(&addrs, "addr", addrs, "goproxy vps listen addrs, i.e. 0.0.0.0:443,0.0.0.0:8443")
-	flag.StringVar(&acme, "acme", acme, "goproxy vps acme domain, i.e. vps.example.com")
+	flag.StringVar(&acmeDomain, "acmedomain", acmeDomain, "goproxy vps acme domain, i.e. vps.example.com")
 	flag.StringVar(&keyFile, "keyfile", keyFile, "goproxy vps keyfile")
 	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
@@ -332,11 +333,11 @@ func main() {
 		},
 	}
 
-	if acme != "" {
+	if acmeDomain != "" {
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			Cache:      autocert.DirCache("."),
-			HostPolicy: autocert.HostWhitelist(acme),
+			HostPolicy: autocert.HostWhitelist(acmeDomain),
 		}
 
 		srv.TLSConfig.GetCertificate = m.GetCertificate
