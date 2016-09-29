@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: cnrHppZl6yTrQF4S9bvTPw
+! Checksum: V+Z/0qEUMI4i156O0J0aNQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 27 Sep 2016 06:28:47 +0200
+! Last Modified: Thu, 29 Sep 2016 13:12:28 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -506,6 +506,7 @@ blogspot.com
 ||gvt0.com
 ||gvt1.com
 ||gvt3.com
+||gwtproject.org
 ||html5rocks.com
 ||iam.soy
 ||igoogle.com
@@ -756,6 +757,7 @@ aliengu.com
 ||allconnected.co
 .alldrawnsex.com
 ||alldrawnsex.com
+||allfinegirls.com
 allgirlsallowed.org
 alliance.org.hk
 .allinfa.com
@@ -972,6 +974,8 @@ bdsmvideos.net
 beijingspring.com
 ||beijingspring.com
 .belamionline.com
+.bell.wiki
+|http://bell.wiki
 bemywife.cc
 beric.me
 .berlintwitterwall.com
@@ -2074,6 +2078,7 @@ video.foxbusiness.com
 .fooooo.com
 ||fooooo.com
 footwiball.com
+.fotile.me
 ||fourthinternational.org
 ||foxdie.us
 ||foxsub.com
@@ -2452,7 +2457,7 @@ gunsandammo.com
 .gzm.tv
 ||gzone-anime.info
 
-!-------------Google ghs-----
+!-------------GHS-----
 !-||feeds.cbsnews.com
 !-||www.chinesealbumart.com
 ||clementine-player.org
@@ -2752,6 +2757,7 @@ have8.com
 ||hechaji.com
 ||heeact.edu.tw
 .hegre-art.com
+|http://hegre-art.com
 ||cdn.helixstudios.net
 ||helplinfen.com
 ||helloandroid.com
@@ -3213,6 +3219,7 @@ weiboscope.jmsc.hku.hk
 ||joeedelman.com
 .journalchretien.net
 ||journalofdemocracy.org
+.joymiihub.com
 jpopforum.net
 !--Doamin parking
 .juhuaren.com
@@ -3704,6 +3711,7 @@ mycould.com/discuz
 .myforum.com.hk
 ||myforum.com.hk
 ||myforum.com.uk
+.myfreecams.com
 .myfreepaysite.com
 .myfreshnet.com
 forum.mymaji.com
@@ -4123,6 +4131,8 @@ plm.org.hk
 plunder.com
 .plus28.com
 .plusbb.com
+.pmatehunter.com
+|http://pmatehunter.com
 .pmates.com
 ||po2b.com
 !--||pocoo.org
@@ -4576,6 +4586,7 @@ news.sinchew.com.my
 .singaporepools.com.sg
 ||singaporepools.com.sg
 .singfortibet.com
+.singpao.com.hk
 singtao.com
 ||singtao.com
 news.singtao.ca
@@ -4694,6 +4705,7 @@ soundofhope.org
 !--.sourceforge.net
 !-|http://sourceforge.net
 |http://sourceforge.net/p*/shadowsocksgui/
+|http://nchc.dl.sourceforge.net
 .sourcewadio.com
 southnews.com.tw
 sowers.org.hk
@@ -5847,6 +5859,8 @@ worldjournal.com
 .wow.com
 .wow-life.net
 ||wowlegacy.ml
+||wowporn.com
+||wowgirls.com
 woxinghuiguo.com
 .woyaolian.org
 |http://woyaolian.org
@@ -5890,17 +5904,17 @@ xanga.com
 ||xcity.jp
 .xcritic.com
 |http://cdn*.xda-developers.com
+.xerotica.com
 destiny.xfiles.to/ubbthreads
 .xfm.pp.ru
 xgmyd.com
-xh4n.cn/blog
 xhamster.com
 .xianchawang.net
 .xianjian.tw
 |http://xianjian.tw
 .xianqiao.net
 .xiaochuncnjp.com
-s.xiaod.in
+.xiaod.in
 .xiaohexie.com
 ||xiaolan.me
 ||xiaoma.org
