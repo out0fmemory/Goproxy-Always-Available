@@ -50,12 +50,12 @@ for %%I in (*.user.json) do (
     )
 )
 
-set filename_pattern=goproxy_windows_386
+set filename_prefix=goproxy_windows_386
 if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
-    set filename_pattern=goproxy_windows_amd64
+    set filename_prefix=goproxy_windows_amd64
 )
 if exist "%SystemDrive%\Program Files (x86)" (
-    set filename_pattern=goproxy_windows_amd64
+    set filename_prefix=goproxy_windows_amd64
 )
 
 if exist "goproxy.exe" (
@@ -68,34 +68,35 @@ if exist "goproxy.exe" (
 if not "%localversion%" == "" (
     echo 0. Local Goproxy version %localversion%
 )
-set localname=!filename_pattern!-!localversion!.7z
 
-set filename=
+set remoteversion=
 (
     title 1. Checking GoProxy Version
     echo 1. Checking GoProxy Version
-    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/tag/goproxy ~goproxy_tag.txt
+    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/latest ~goproxy_tag.txt
 ) && (
-    for /f "usebackq tokens=3 delims=<>" %%I in (`findstr "<strong>%filename_pattern%-r" ~goproxy_tag.txt`) do (
-        set filename=%%I
+    for /f "usebackq tokens=4 delims=<>-." %%I in (`findstr "<strong>%filename_prefix%-r" ~goproxy_tag.txt`) do (
+        set remoteversion=%%I
     )
 ) || (
-    echo Cannot detect %filename_pattern% version
+    echo Cannot detect !filename_prefix! version
     goto quit
 )
 del /f ~goproxy_tag.txt
-if "%filename%" == "" (
-    echo Cannot detect %filename_pattern% version
+if "!remoteversion!" == "" (
+    echo Cannot detect !filename_prefix! version
     goto quit
 )
 
 if "!localversion!" neq "r9999" (
-    if "%localname%" geq "%filename%" (
+    if "!localversion!" geq "!remoteversion!" (
         echo.
         echo Your Goproxy already update to latest.
         goto quit
     )
 )
+
+set filename=!filename_prefix!-!remoteversion!.7z
 
 (
     title 2. Downloading 7zCon.sfx for extracting
@@ -108,7 +109,7 @@ if "!localversion!" neq "r9999" (
 ) && (
     title 3. Downloading %filename%
     echo 3. Downloading %filename%
-    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/download/goproxy/%filename% "~%filename%"
+    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy-ci/releases/download/!remoteversion!/%filename% "~%filename%"
     if not exist "~%filename%" (
         echo Cannot download %filename%
         goto quit

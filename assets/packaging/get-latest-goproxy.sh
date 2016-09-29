@@ -73,7 +73,7 @@ for USER_JSON_FILE in *.user.json; do
 done
 
 echo "1. Checking GoProxy Version"
-FILENAME=$(curl -k https://github.com/phuslu/goproxy/releases/tag/goproxy | grep -oE "<strong>${FILENAME_PREFIX}-r[0-9]+.+</strong>" | awk -F '<strong>|</strong>' '{print $2}')
+FILENAME=$(curl -kL https://github.com/phuslu/goproxy/releases/latest | grep -oE "<strong>${FILENAME_PREFIX}-r[0-9]+.+</strong>" | awk -F '<strong>|</strong>' '{print $2}')
 REMOTEVERSION=$(echo ${FILENAME} | awk -F'.' '{print $1}' | awk -F'-' '{print $2}')
 if test -z "${REMOTEVERSION}"; then
 	echo "Cannot detect ${FILENAME_PREFIX} version"
@@ -86,7 +86,7 @@ if test "${LOCALVERSION}" = "${REMOTEVERSION}"; then
 fi
 
 echo "2. Downloading ${FILENAME}"
-curl -kL https://github.com/phuslu/goproxy/releases/download/goproxy/${FILENAME} >${FILENAME}.tmp
+curl -kL https://github.com/phuslu/goproxy-ci/releases/download/${REMOTEVERSION}/${FILENAME} >${FILENAME}.tmp
 mv -f ${FILENAME}.tmp ${FILENAME}
 
 echo "3. Extracting ${FILENAME}"
