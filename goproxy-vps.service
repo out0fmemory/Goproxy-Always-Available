@@ -3,9 +3,6 @@ Description=goproxy-vps
 
 [Service]
 Type=simple
-User=nobody
-Group=users
-PermissionsStartOnly=true
 ExecStartPre=/bin/mkdir -p /var/log/goproxy
 ExecStartPre=/bin/chown -R nobody:users /var/log/goproxy
 ExecStartPre=/sbin/setcap 'cap_net_bind_service=+ep' ./goproxy-vps
