@@ -32,7 +32,7 @@ GITHUB_RELEASE_URL=https://github.com/aktau/github-release/releases/download/v0.
 GITHUB_RELEASE_BIN=$(pwd)/$(curl -L ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
 
 if [ -z "${GITHUB_TAG}" ]; then
-GITHUB_TAG=$(${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | head | grep -oP '\- \Kr\d+' | head -1)
+GITHUB_TAG=$(${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | grep -m 1 -oP '\- \Kr\d+')
 fi
 
 ${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} -t ${GITHUB_TAG} > ${GITHUB_CI_REPO_RELEASE_INFO_TXT}
