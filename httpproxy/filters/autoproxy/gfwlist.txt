@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: V+Z/0qEUMI4i156O0J0aNQ
+! Checksum: +0sj/4nEg0x3yT/DS+1+9g
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 29 Sep 2016 13:12:28 +0200
+! Last Modified: Sun, 02 Oct 2016 11:02:24 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -2104,8 +2104,6 @@ kineox.free.fr
 whitebear.freebearblog.org
 ||freebrowser.org
 .freechal.com
-.freecn.top
-|http://freecn.top
 .freedomchina.info
 ||freedomchina.info
 .freedomhouse.org
