@@ -19,64 +19,53 @@ func (f *Filter) ProxyMobileConfigRoundTrip(ctx context.Context, req *http.Reque
 	s := fmt.Sprintf(`<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-    <dict>
-        <key>PayloadContent</key>
-        <array>
+<dict>
+    <key>PayloadContent</key>
+    <array>
+        <dict>
+            <key>APNs</key>
+            <array>
+                <dict>
+                    <key>Name</key>
+                    <string>3gnet</string>
+                    <key>ProxyServer</key>
+                    <string>%s</string>
+                    <key>ProxyPort</key>
+                    <integer>%s</integer>
+                </dict>
+            </array>
+            <key>AttachAPN</key>
             <dict>
-                <key>PayloadContent</key>
-                <array>
-                    <dict>
-                        <key>DefaultsData</key>
-                        <dict>
-                            <key>apns</key>
-                            <array>
-                                <dict>
-                                    <key>apn</key>
-                                    <string>3gnet</string>
-                                    <key>proxy</key>
-                                    <string>%s</string>
-                                    <key>proxyPort</key>
-                                    <integer>%s</integer>
-                                </dict>
-                            </array>
-                        </dict>
-                        <key>DefaultsDomainName</key>
-                        <string>com.apple.managedCarrier</string>
-                    </dict>
-                </array>
-                <key>PayloadDescription</key>
-                <string>Provides customization of carrier Access Point Name.</string>
-                <key>PayloadDisplayName</key>
-                <string>APN</string>
-                <key>PayloadIdentifier</key>
-                <string>org.goproxy.APNMobileConfig.</string>
-                <key>PayloadOrganization</key>
-                <string>goproxy.org</string>
-                <key>PayloadType</key>
-                <string>com.apple.apn.managed</string>
-                <key>PayloadUUID</key>
-                <string>8D83F161-1F78-4201-9A07-C136B58DB2A2</string>
-                <key>PayloadVersion</key>
-                <integer>1</integer>
+                <key>Name</key>
+                <string>3gnet</string>
             </dict>
-        </array>
-        <key>PayloadDescription</key>
-        <string>Profile description.</string>
-        <key>PayloadDisplayName</key>
-        <string>GoProxyAPN</string>
-        <key>PayloadIdentifier</key>
-        <string>org.goproxy.APNMobileConfig</string>
-        <key>PayloadOrganization</key>
-        <string></string>
-        <key>PayloadRemovalDisallowed</key>
-        <false/>
-        <key>PayloadType</key>
-        <string>Configuration</string>
-        <key>PayloadUUID</key>
-        <string>F95E2370-5C89-11E6-8F3D-001E3724BDEB</string>
-        <key>PayloadVersion</key>
-        <integer>1</integer>
-    </dict>
+            <key>PayloadDescription</key>
+            <string>Configures cellular data settings</string>
+            <key>PayloadDisplayName</key>
+            <string>Cellular</string>
+            <key>PayloadIdentifier</key>
+            <string>com.apple.cellular.50342D3D-1F0A-4AC2-BBBB-F91BE4303D36</string>
+            <key>PayloadType</key>
+            <string>com.apple.cellular</string>
+            <key>PayloadUUID</key>
+            <string>ED9A04BB-F7C4-451F-B541-1FDBA4BA3715</string>
+            <key>PayloadVersion</key>
+            <integer>1</integer>
+        </dict>
+    </array>
+    <key>PayloadDisplayName</key>
+    <string>GoProxy APN</string>
+    <key>PayloadIdentifier</key>
+    <string>F38E3192-7193-4E00-AD3D-859572FE28E7</string>
+    <key>PayloadRemovalDisallowed</key>
+    <false/>
+    <key>PayloadType</key>
+    <string>Configuration</string>
+    <key>PayloadUUID</key>
+    <string>B075216F-63A8-498C-B8CC-8BBE85221FEE</string>
+    <key>PayloadVersion</key>
+    <integer>1</integer>
+</dict>
 </plist>
 `, host, port)
 
