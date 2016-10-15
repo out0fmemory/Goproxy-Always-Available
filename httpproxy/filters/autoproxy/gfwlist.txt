@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: +0sj/4nEg0x3yT/DS+1+9g
+! Checksum: wQkEBBeWYuoPKpLyuqmQtw
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Sun, 02 Oct 2016 11:02:24 +0200
+! Last Modified: Thu, 13 Oct 2016 13:36:44 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -2239,6 +2239,8 @@ www.ftchinese.com/story/001067479
 .ftchinese.com/story/001068278
 .ftchinese.com/story/001068379
 .ftchinese.com/story/001068483
+.ftchinese.com/story/001069373
+.ftchinese.com/story/001069516
 .ftchinese.com/video/1437
 .ftchinese.com/comments
 fucd.com
@@ -3030,6 +3032,7 @@ ifjc.org
 ||im88.tw
 .imgchili.net
 |http://imgchili.net
+.imageab.com
 .imagefap.com
 ||imagefap.com
 ||imageflea.com
@@ -3523,6 +3526,7 @@ mcfog.com
 mcreasite.com
 .md-t.org
 ||md-t.org
+.media.org.hk
 .mediachinese.com
 ||mediachinese.com
 .mediafire.com/?
@@ -3617,6 +3621,7 @@ minzhuzhongguo.org
 ||miroguide.com
 mirrorbooks.com
 thecenter.mit.edu
+.mitao.com.tw
 mitbbs.com
 .mixero.com
 ||mixero.com
@@ -4650,6 +4655,7 @@ snowlionpub.com
 .so-news.com
 home.so-net.net.tw/yisa_tsai
 ||soc.mil
+.sockscap64.com
 ||sockslist.net
 .socrec.org
 |http://socrec.org
@@ -4944,8 +4950,10 @@ thehousenews.com
 ||theinitium.com
 ||thelifeyoucansave.com
 .thenewslens.com
-thepiratebay.org
+.thepiratebay.org
+||thepiratebay.org
 !--||thepiratebay.se
+||theportalwiki.com
 thereallove.kr
 therock.net.nz
 thespeeder.com
@@ -5208,10 +5216,12 @@ bbs.tuitui.info
 ||tunnelbear.com
 .tuo8.cc
 .tuo8.club
+.tuo8.fit
 .tuo8.hk
 .tuo8.in
 .tuo8.ninja
 .tuo8.org
+||tuo8.fit
 ||tuo8.org
 .tuo8.pw
 |http://tuo8.pw
@@ -5748,7 +5758,7 @@ zh.uncyclopedia.wikia.com
 ||wikileaks.eu
 ||wikileaks.lu
 .wikileaks.org
-||wikileaks.org
+!--||wikileaks.org
 ||wikileaks.pl
 .wikileaks-forum.com
 wildammo.com
