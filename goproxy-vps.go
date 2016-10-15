@@ -337,7 +337,7 @@ func main() {
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			Cache:      autocert.DirCache("."),
-			HostPolicy: autocert.HostWhitelist(acmeDomain),
+			HostPolicy: autocert.HostWhitelist(strings.Split(acmeDomain, ",")...),
 		}
 
 		srv.TLSConfig.GetCertificate = m.GetCertificate
