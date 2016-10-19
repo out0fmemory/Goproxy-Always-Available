@@ -28,7 +28,7 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
     mkdir -p /var/log/goproxy
-    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=/var/log/goproxy &
+    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=/var/log/goproxy >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
 }
 
