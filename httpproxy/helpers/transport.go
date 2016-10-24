@@ -3,6 +3,7 @@ package helpers
 import (
 	"net"
 	"net/http"
+	"strconv"
 
 	"github.com/phuslu/net/http2"
 )
@@ -54,6 +55,14 @@ func FixRequestURL(req *http.Request) {
 			req.URL.Host = req.Host
 		case req.TLS != nil:
 			req.URL.Host = req.TLS.ServerName
+		}
+	}
+}
+
+func FixRequestHeader(req *http.Request) {
+	if req.ContentLength > 0 {
+		if req.Header.Get("Content-Length") == "" {
+			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
 		}
 	}
 }

@@ -174,6 +174,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		return ctx, filters.DummyResponse, nil
 	default:
 		helpers.FixRequestURL(req)
+		helpers.FixRequestHeader(req)
 		resp, err := f.transport.RoundTrip(req)
 
 		if err != nil {
