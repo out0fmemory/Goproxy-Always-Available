@@ -12,14 +12,13 @@
 	},
 	"RegionFilters": {
 		"Enabled": false,
-		"DataFile": "17monipdb.dat",
+		"DataFile": "GeoLite2-Country.mmdb",
 		"DNSServer": "",
 		"DNSCacheSize": 4096,
 		"Rules": {
 			"default": "",
-			"中国": "direct",
-			"局域网": "direct",
-			"保留地址": "direct",
+			"private": "direct",
+			"CN": "direct",
 		},
 	},
 	"IndexFiles": {

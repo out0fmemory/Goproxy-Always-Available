@@ -42,15 +42,24 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 
 		remote, _, err := net.SplitHostPort(req.RemoteAddr)
 		if err == nil && f.RegionLocator != nil {
-			if li, err := f.RegionLocator.Find(remote); err == nil {
-				regions := []string{li.Country}
-				for i, r := range []string{li.Region, li.City, li.Isp} {
-					if r != "" && r != "N/A" && r != regions[i] {
-						regions = append(regions, r)
-					}
-				}
-				remote = fmt.Sprintf("%s (%s)", remote, strings.Join(regions, " "))
+			ip := net.ParseIP(remote)
+			country, err := f.RegionLocator.Country(ip)
+			if err != nil {
+				return ctx, nil, err
 			}
+
+			city, err := f.RegionLocator.City(ip)
+			if err != nil {
+				return ctx, nil, err
+			}
+
+			isp, err := f.RegionLocator.ISP(ip)
+			if err != nil {
+				return ctx, nil, err
+			}
+
+			region := strings.Join([]string{country.Country.IsoCode, city.Postal.Code, isp.ISP}, " ")
+			remote = fmt.Sprintf("%s (%s)", remote, region)
 		}
 
 		data := struct {
