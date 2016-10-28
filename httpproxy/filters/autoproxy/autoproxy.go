@@ -302,13 +302,13 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 				glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Loopback %s %s %s\" with nil", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 				f.RegionFilterCache.Set(host, nil, time.Now().Add(time.Hour))
 			} else if f.IsPrivateIP(ip) {
-				if f1, ok := f.RegionFiltersRules["private"]; ok {
+				if f1, ok := f.RegionFiltersRules["PRIVATE"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Private %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
 			} else if ip.To4() == nil {
-				if f1, ok := f.RegionFiltersRules["ipv6"]; ok {
+				if f1, ok := f.RegionFiltersRules["IPV6"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPv6 %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
@@ -319,7 +319,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, country, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
-				} else if f1, ok := f.RegionFiltersRules["default"]; ok {
+				} else if f1, ok := f.RegionFiltersRules["DEFAULT"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Default %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
