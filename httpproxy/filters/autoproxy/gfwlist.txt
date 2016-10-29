@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: wQkEBBeWYuoPKpLyuqmQtw
+! Checksum: CixQz0zCA0snuVl6VwG9NA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 13 Oct 2016 13:36:44 +0200
+! Last Modified: Mon, 24 Oct 2016 09:28:42 +0200
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -79,6 +79,7 @@
 |http://hustlercash.com
 |http://www.hustlercash.com
 ||hybrid-analysis.com
+||cdn*.i-scmp.com
 ||ilovelongtoes.com
 |http://imgmega.com/*.gif.html
 |http://imgmega.com/*.jpg.html
@@ -445,6 +446,7 @@ blogspot.com
 .google.cat
 .google.cd
 .google.ci
+.google.co.id
 .google.co.jp
 .google.co.kr
 .google.co.ma
@@ -1595,6 +1597,7 @@ dalianmeng.org
 daolan.net
 darktoy.net
 ||dastrassi.org
+blog.daum.net/_blog
 .david-kilgour.com
 |http://david-kilgour.com
 daxa.cn
@@ -1720,6 +1723,7 @@ drsunacademy.com
 ||dtic.mil
 dtiserv2.com
 .dtwang.org
+.duanzhihu.com
 .duckdns.org
 |http://duckdns.org
 .duckduckgo.com
@@ -5649,6 +5653,7 @@ vpnhq.com
 ||vpnvip.com
 .vporn.com
 ||vporn.com
+.vpser.net
 vraiesagesse.net
 ||vtunnel.com
 ||vuku.cc
