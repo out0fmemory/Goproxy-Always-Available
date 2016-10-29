@@ -80,7 +80,7 @@ if test -z "${REMOTEVERSION}"; then
 	exit 1
 fi
 
-test ${LOCALVERSION#r*} -ge ${REMOTEVERSION#r*}; then
+if [[ ${LOCALVERSION#r*} -ge ${REMOTEVERSION#r*} ]]; then
 	echo "Your GoProxy already update to latest"
 	exit 1
 fi
