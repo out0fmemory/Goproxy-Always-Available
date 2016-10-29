@@ -3,7 +3,9 @@
 		"Enabled": false,
 		"Rules": {
 			"live.github.com": "direct",
-			"m.apkpure.com": "direct",
+			"api.pureapk.com": "direct",
+			"download.pureapk.com": "direct",
+			"dl.winudf.com": "direct",
 			"pastebin.com": "php",
 			"rarbg.to": "direct",
 			"www.rfa.org": "php",
