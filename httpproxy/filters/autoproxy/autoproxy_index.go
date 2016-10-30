@@ -43,23 +43,25 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		remote, _, err := net.SplitHostPort(req.RemoteAddr)
 		if err == nil && f.RegionLocator != nil {
 			ip := net.ParseIP(remote)
-			country, err := f.RegionLocator.Country(ip)
-			if err != nil {
-				return ctx, nil, err
+
+			regions := []string{}
+			if country, err := f.RegionLocator.Country(ip); err == nil {
+				if s := country.Country.IsoCode; s != "" {
+					regions = append(regions, s)
+				}
+			}
+			if city, err := f.RegionLocator.City(ip); err == nil {
+				if s := city.Postal.Code; s != "" {
+					regions = append(regions, s)
+				}
+			}
+			if isp, err := f.RegionLocator.ISP(ip); err == nil {
+				if s := isp.ISP; s != "" {
+					regions = append(regions, s)
+				}
 			}
 
-			city, err := f.RegionLocator.City(ip)
-			if err != nil {
-				return ctx, nil, err
-			}
-
-			isp, err := f.RegionLocator.ISP(ip)
-			if err != nil {
-				return ctx, nil, err
-			}
-
-			region := strings.Join([]string{country.Country.IsoCode, city.Postal.Code, isp.ISP}, " ")
-			remote = fmt.Sprintf("%s (%s)", remote, region)
+			remote = fmt.Sprintf("%s (%s)", remote, strings.Join(regions, " "))
 		}
 
 		data := struct {
