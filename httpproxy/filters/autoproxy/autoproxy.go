@@ -202,7 +202,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		}
 
 		f.RegionPrivateNets = make([]*net.IPNet, 0, 4)
-		for _, network := range []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16"} {
+		for _, network := range []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16", "127.0.0.1/8"} {
 			_, n, err := net.ParseCIDR(network)
 			if err != nil {
 				glog.Fatalf("AUTOPROXY: net.ParseCIDR(%#v) error: %v", network, err)

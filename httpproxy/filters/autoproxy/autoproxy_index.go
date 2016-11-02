@@ -10,7 +10,6 @@ import (
 	"net"
 	"net/http"
 	"path/filepath"
-	"strings"
 
 	"../../filters"
 )
@@ -44,24 +43,13 @@ func (f *Filter) IndexFilesRoundTrip(ctx context.Context, req *http.Request) (co
 		if err == nil && f.RegionLocator != nil {
 			ip := net.ParseIP(remote)
 
-			regions := []string{}
-			if country, err := f.RegionLocator.Country(ip); err == nil {
-				if s := country.Country.IsoCode; s != "" {
-					regions = append(regions, s)
-				}
+			if f.IsPrivateIP(ip) {
+				remote += " (私有地址)"
+			} else if record, err := f.RegionLocator.City(ip); err == nil {
+				remote += fmt.Sprintf(" (%s %s)", record.Country.Names["zh-CN"], record.City.Names["zh-CN"])
+			} else if record, err := f.RegionLocator.Country(ip); err == nil {
+				remote += fmt.Sprintf(" (%s)", record.Country.Names["zh-CN"])
 			}
-			if city, err := f.RegionLocator.City(ip); err == nil {
-				if s := city.Postal.Code; s != "" {
-					regions = append(regions, s)
-				}
-			}
-			if isp, err := f.RegionLocator.ISP(ip); err == nil {
-				if s := isp.ISP; s != "" {
-					regions = append(regions, s)
-				}
-			}
-
-			remote = fmt.Sprintf("%s (%s)", remote, strings.Join(regions, " "))
 		}
 
 		data := struct {
