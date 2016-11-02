@@ -14,7 +14,7 @@ if [ -z "$GITHUB_TOKEN" ]; then
 	exit 1
 fi
 
-for CMD in curl tar head git awk sha1sum
+for CMD in curl tar bzip2 head git awk sha1sum
 do
 	if ! type -p ${CMD}; then
 		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
@@ -29,7 +29,7 @@ mkdir -p $WORKING_DIR
 pushd ${WORKING_DIR}
 
 GITHUB_RELEASE_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
-GITHUB_RELEASE_BIN=$(pwd)/$(curl -L ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
+GITHUB_RELEASE_BIN=$(pwd)/$(curl -kL ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
 
 if [ -z "${GITHUB_TAG}" ]; then
 GITHUB_TAG=$(${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | grep -m 1 -oP '\- \Kr\d+')
