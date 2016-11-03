@@ -19,8 +19,11 @@ import (
 
 	"github.com/phuslu/glog"
 
-	"../../filters"
 	"../../storage"
+)
+
+const (
+	localhost2 string = "127.0.1.2"
 )
 
 func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
@@ -65,12 +68,12 @@ function FindProxyForURL(url, host) {
     }
 
     if (shExpMatch(host, '*.google*.*')) {
-        return 'PROXY localhost:%s';
+        return 'PROXY %s:%s';
     }
 
     return 'DIRECT';
 }
-`, port)
+`, localhost2, port)
 		f.Store.Put(filename, http.Header{}, ioutil.NopCloser(bytes.NewBufferString(s)))
 	case err != nil:
 		return ctx, nil, err
@@ -120,7 +123,7 @@ function FindProxyForURL(url, host) {
     var lastPos;
     do {
         if (sites.hasOwnProperty(host)) {
-            return 'PROXY GOPROXY_ADDRESS';
+            return 'PROXY `+localhost2+`:8087';
         }
         lastPos = host.indexOf('.') + 1;
         host = host.slice(lastPos);
@@ -226,18 +229,7 @@ func (f *Filter) pacUpdater() {
 }
 
 func fixProxyPac(s string, req *http.Request) string {
-	s = strings.Replace(s, "GOPROXY_ADDRESS", req.Host, -1)
-
-	ports := make([]string, 0)
-	for _, addr := range []string{req.Host, filters.GetListener(req.Context()).Addr().String()} {
-		_, port, err := net.SplitHostPort(addr)
-		if err != nil {
-			port = "80"
-		}
-		ports = append(ports, port)
-	}
-
-	r := regexp.MustCompile(`PROXY (127.0.0.1|\[::1\]|localhost):(` + strings.Join(ports, "|") + `)`)
+	r := regexp.MustCompile(`PROXY ` + localhost2 + `:\d+`)
 	return r.ReplaceAllString(s, "PROXY "+req.Host)
 }
 
