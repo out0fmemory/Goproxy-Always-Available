@@ -17,6 +17,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"time"
 
@@ -202,6 +203,12 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.ProtoMajor = 1
 		req.ProtoMinor = 1
 		req.Proto = "HTTP/1.1"
+	}
+
+	if req.ContentLength > 0 {
+		if req.Header.Get("Content-Length") == "" {
+			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
+		}
 	}
 
 	resp, err := h.Transport.RoundTrip(req)
