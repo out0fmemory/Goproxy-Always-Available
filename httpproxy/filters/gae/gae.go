@@ -245,6 +245,15 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	var tr http.RoundTripper
 
+	GetConnectMethodAddr := func(addr string) string {
+		if host, port, err := net.SplitHostPort(addr); err == nil {
+			if alias, ok := md.SiteToAlias.Lookup(host); ok {
+				addr = net.JoinHostPort(alias.(string), port)
+			}
+		}
+		return addr
+	}
+
 	t1 := &http.Transport{
 		Dial:                  md.Dial,
 		DialTLS:               md.DialTLS,
@@ -253,6 +262,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 		IdleConnTimeout:       time.Duration(config.Transport.IdleConnTimeout) * time.Second,
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
+		GetConnectMethodAddr:  GetConnectMethodAddr,
 	}
 
 	if config.Transport.Proxy.Enabled {
