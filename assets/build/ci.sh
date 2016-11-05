@@ -169,6 +169,8 @@ function build_repo() {
 		make clean
 	done
 
+	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
+
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
