@@ -56,10 +56,12 @@ esac
 LOCALVERSION=$(./goproxy -version 2>/dev/null || :)
 echo "0. Local Goproxy version ${LOCALVERSION}"
 
-if netstat -an | grep -i tcp | grep LISTEN | grep ':8087'; then
-	echo "Set http_proxy=http://127.0.0.1:8087"
-	export http_proxy=http://127.0.0.1:8087
-	export https_proxy=http://127.0.0.1:8087
+if [ "${http_proxy}" == "" ]; then
+	if netstat -an | grep -i tcp | grep LISTEN | grep ':8087'; then
+		echo "Set http_proxy=http://127.0.0.1:8087"
+		export http_proxy=http://127.0.0.1:8087
+		export https_proxy=http://127.0.0.1:8087
+	fi
 fi
 
 for USER_JSON_FILE in *.user.json; do
