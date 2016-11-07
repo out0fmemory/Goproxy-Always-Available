@@ -15,18 +15,18 @@
 			<input type="radio" name="ipfamily" id="ipv4" value="v4" onclick="javascript:convert()" checked="checked">IPv4
 			<input type="radio" name="ipfamily" id="ipv6" value="v6" onclick="javascript:convert()">IPv6
 		</center>
-		<div name="hiddendiv" align="center" style="display:none">
+		<div align="center">
 			<input type="submit" name="submit" disabled value="写入到本地 json 文件" style="padding:8px;margin-top:40px;"/>
-			<p>{{.Message}}</p>
+			<p name="message_shown">{{.Message}}</p>
 		</div>
 	</form>
 	<script type="text/javascript">
 	window.onload = function () {
+		var message = document.getElementsByName('message_shown');
 		if (typeof(IPHTMLVISABLE) != "undefined") {
-			var divs = document.getElementsByName('hiddendiv');
-			if (divs.length > 0) {
-				divs[0].style.display = '';
-			}
+			message[0].innerHTML='';
+		} else {
+			message[0].innerHTML='写入功能仅在通过网络打开时可用<br /><a href="http://127.0.0.1:8087/ip.html">默认地址</a>';
 		}
 	}
 
