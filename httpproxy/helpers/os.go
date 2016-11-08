@@ -4,15 +4,7 @@ import (
 	"flag"
 	"os"
 	"strings"
-
-	"github.com/kardianos/osext"
 )
-
-func FixOSArgs0() {
-	if p, err := osext.Executable(); err == nil {
-		os.Args[0] = p
-	}
-}
 
 func SetFlagsIfAbsent(m map[string]string) {
 	seen := map[string]struct{}{}

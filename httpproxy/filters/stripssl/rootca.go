@@ -45,7 +45,11 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 
 	var store storage.Store
 	if portable {
-		store = &storage.FileStore{filepath.Dir(os.Args[0])}
+		exe, err := os.Executable()
+		if err != nil {
+			glog.Fatalf("os.Executable() error: %+v", err)
+		}
+		store = &storage.FileStore{filepath.Dir(exe)}
 	} else {
 		store = &storage.FileStore{"."}
 	}
