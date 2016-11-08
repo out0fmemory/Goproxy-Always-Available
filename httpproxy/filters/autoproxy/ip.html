@@ -18,21 +18,28 @@
 		<div align="center">
 			<input type="submit" name="submit" disabled value="写入到本地 json 文件" style="padding:8px;margin-top:40px;"/>
 			<p name="message_shown">{{.Message}}</p>
+			<p name="error_message" style="display:none">写入功能仅在通过网络打开时可用
+			<br /><a href="http://127.0.0.1:8087/ip.html">默认地址</a>
+			</p>
 		</div>
 	</form>
 	<script type="text/javascript">
+    var proxyprovided = (typeof(IPHTMLVISABLE) != "undefined");
 	window.onload = function () {
 		var message = document.getElementsByName('message_shown');
-		if (typeof(IPHTMLVISABLE) != "undefined") {
-			message[0].innerHTML='';
+		var error = document.getElementsByName('error_message');
+		if (proxyprovided) {
+			message[0].style.display = '';
+			error[0].style.display = 'none';
 		} else {
-			message[0].innerHTML='写入功能仅在通过网络打开时可用<br /><a href="http://127.0.0.1:8087/ip.html">默认地址</a>';
+			message[0].style.display = 'none';
+			error[0].style.display = '';
 		}
 	}
 
 	function enable_submit(value) {
 		var buttons = document.getElementsByName('submit');
-		if (buttons.length > 0) {
+		if (buttons.length > 0 && proxyprovided) {
 			buttons[0].disabled = !value;
 		}
 	}
