@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
-	"github.com/oschwald/geoip2-golang"
 	"github.com/phuslu/glog"
+	"github.com/wangtuanjie/ip17mon"
 
 	"../../filters"
 	"../../helpers"
@@ -92,8 +92,7 @@ type Filter struct {
 	RegionFiltersEnabled bool
 	RegionFiltersRules   map[string]filters.RoundTripFilter
 	RegionResolver       *helpers.Resolver
-	RegionPrivateNets    []*net.IPNet
-	RegionLocator        *geoip2.Reader
+	RegionLocator        *ip17mon.Locator
 	RegionFilterCache    lrucache.Cache
 	Transport            *http.Transport
 }
@@ -196,19 +195,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 			glog.Fatalf("AUTOPROXY: ioutil.ReadAll(%#v) error: %v", resp.Body, err)
 		}
 
-		f.RegionLocator, err = geoip2.FromBytes(data)
-		if err != nil {
-			glog.Fatalf("AUTOPROXY: geoip2.FromBytes(%#v) error: %v", resp.Body, err)
-		}
-
-		f.RegionPrivateNets = make([]*net.IPNet, 0, 4)
-		for _, network := range []string{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "169.254.0.0/16", "127.0.0.1/8"} {
-			_, n, err := net.ParseCIDR(network)
-			if err != nil {
-				glog.Fatalf("AUTOPROXY: net.ParseCIDR(%#v) error: %v", network, err)
-			}
-			f.RegionPrivateNets = append(f.RegionPrivateNets, n)
-		}
+		f.RegionLocator = ip17mon.NewLocatorWithData(data)
 
 		f.RegionResolver = &helpers.Resolver{}
 		if config.RegionFilters.DNSServer != "" {
@@ -231,7 +218,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 			if !ok {
 				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) return %T, not a RoundTripFilter", name, f)
 			}
-			fm[strings.ToUpper(region)] = f1
+			fm[strings.ToLower(region)] = f1
 		}
 		f.RegionFiltersRules = fm
 
@@ -249,23 +236,22 @@ func (f *Filter) FilterName() string {
 	return filterName
 }
 
-func (f *Filter) IsPrivateIP(ip net.IP) bool {
-	for _, cidr := range f.RegionPrivateNets {
-		if cidr.Contains(ip) {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (f *Filter) FindCountryByIP(ip net.IP) (string, error) {
-	info, err := f.RegionLocator.Country(ip)
+func (f *Filter) FindCountryByIP(ip string) (string, error) {
+	li, err := f.RegionLocator.Find(ip)
 	if err != nil {
 		return "", err
 	}
 
-	return info.Country.IsoCode, nil
+	//FIXME: Who should be ashamed?
+	switch li.Country {
+	case "中国":
+		switch li.Region {
+		case "台湾", "香港":
+			li.Country = li.Region
+		}
+	}
+
+	return li.Country, nil
 }
 
 func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
@@ -299,27 +285,20 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 			ip := ips[0]
 
 			if ip.IsLoopback() && !(strings.Contains(host, ".local") || strings.Contains(host, "localhost.")) {
-				glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Loopback %s %s %s\" with nil", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+				glog.V(2).Infof("%s \"AUTOPROXY RegionFilters BYPASS Loopback %s %s %s\" with nil", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 				f.RegionFilterCache.Set(host, nil, time.Now().Add(time.Hour))
-			} else if f.IsPrivateIP(ip) {
-				if f1, ok := f.RegionFiltersRules["PRIVATE"]; ok {
-					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Private %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
-					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
-					filters.SetRoundTripFilter(ctx, f1)
-				}
 			} else if ip.To4() == nil {
-				if f1, ok := f.RegionFiltersRules["IPV6"]; ok {
+				if f1, ok := f.RegionFiltersRules["ipv6"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPv6 %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
-			} else if country, err := f.FindCountryByIP(ip); err == nil {
-				glog.V(3).Infof("AUTOPROXY FindCountryByIP(%+v) return %+v", ip, country)
+			} else if country, err := f.FindCountryByIP(ip.String()); err == nil {
 				if f1, ok := f.RegionFiltersRules[country]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, country, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
-				} else if f1, ok := f.RegionFiltersRules["DEFAULT"]; ok {
+				} else if f1, ok := f.RegionFiltersRules["default"]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters Default %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
