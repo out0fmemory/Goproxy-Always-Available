@@ -171,6 +171,9 @@ function build_repo() {
 
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
 
+	export GAE_RELEASE=$(git rev-list --count origin/server.gae)
+	git archive --format=zip --prefix="goproxy-r${GAE_RELEASE}/" origin/server.gae > "${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.zip"
+
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
