@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: CixQz0zCA0snuVl6VwG9NA
+! Checksum: /4B21YVpJClNpIlau6d49w
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 24 Oct 2016 09:28:42 +0200
+! Last Modified: Mon, 07 Nov 2016 15:50:08 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -43,7 +43,6 @@
 ||desipro.de
 ||dish.com
 |http://img.dlsite.jp/
-||dm530.net
 !--||share.dmhy.org
 ||dmm.co.jp
 !--||dmm.com
@@ -391,6 +390,7 @@ d1c37gjwa26taa.cloudfront.net
 ||facebook.com
 !--/^https?:\/\/[^\/]+facebook\.com/
 @@||*v6.facebook.com
+||facebook.design
 ||connect.facebook.net
 ||facebook.hu
 ||facebook.in
@@ -4496,6 +4496,7 @@ sesawe.net
 ||sesawe.net
 .sesawe.org
 ||sethwklein.net
+.setn.com
 forum.setty.com.tw
 .sevenload.com
 ||sevenload.com
