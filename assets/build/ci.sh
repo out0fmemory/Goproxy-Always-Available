@@ -160,6 +160,8 @@ function build_repo() {
 				linux/arm64 \
 				linux/mips64 \
 				linux/mips64le \
+				linux/mips \
+				linux/mipsle \
 				windows/386 \
 				windows/amd64
 	do

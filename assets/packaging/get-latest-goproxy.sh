@@ -35,6 +35,12 @@ case $(uname -s)/$(uname -m) in
 	Linux/mips64 )
 		FILENAME_PREFIX=goproxy_linux_mips64
 		;;
+	Linux/mipsel )
+		FILENAME_PREFIX=goproxy_linux_mipsle
+		;;
+	Linux/mips )
+		FILENAME_PREFIX=goproxy_linux_mips
+		;;
 	FreeBSD/x86_64 )
 		FILENAME_PREFIX=goproxy_freebsd_amd64
 		;;
