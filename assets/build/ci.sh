@@ -5,6 +5,8 @@ export GITHUB_EMAIL=${GITHUB_EMAIL:-${GITHUB_USER}@noreply.github.com}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
+export SOURCEFORGE_USER=${SOURCEFORGE_USER:-${GITHUB_USER}}
+export SOURCEFORGE_REPO=${SOURCEFORGE_REPO:-${GITHUB_REPO}}
 export WORKING_DIR=$(pwd)/${GITHUB_REPO}.$(date "+%y%m%d").${RANDOM:-$$}
 export GOROOT_BOOTSTRAP=${WORKING_DIR}/goroot_bootstrap
 export GOROOT=${WORKING_DIR}/go
@@ -15,6 +17,10 @@ export CGO_ENABLED=${CGO_ENABLED:-0}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
+fi
+
+if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
+	echo "WARNING: \$SOURCEFORGE_PASSWORD is not set!"
 fi
 
 for CMD in curl awk git tar bzip2 xz 7za gcc make sha1sum timeout
@@ -250,6 +256,23 @@ function release_repo_ci() {
 	popd
 }
 
+function release_sourceforge() {
+	pushd ${WORKING_DIR}/r${RELEASE}/
+
+	if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
+		echo -e "\e[1;31m\$SOURCEFORGE_PASSWORD is not set, abort\e[0m"
+		exit 1
+	fi
+
+	for FILE in $(ls -1 | sort -r)
+	do
+	    echo Uploading ${FILE} to https://sourceforge.mirrorservice.org/g/go/${SOURCEFORGE_REPO}/r${RELEASE}/
+	    lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net" -e "cd /home/frs/project/${SOURCEFORGE_REPO}; mkdir r${RELEASE}; cd r${RELEASE}; put ${FILE}; bye"
+	done
+
+	popd
+}
+
 function clean() {
 	( set +x ;\
 		cd ${WORKING_DIR}/r${RELEASE}/ ;\
@@ -269,5 +292,6 @@ build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
 	release_repo_ci
+	release_sourceforge
 fi
 clean
