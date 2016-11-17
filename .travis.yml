@@ -18,6 +18,7 @@ addons:
   apt:
     packages:
       - p7zip-full
+      - lftp
 
 notifications:
   webhooks:
