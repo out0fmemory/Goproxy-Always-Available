@@ -60,6 +60,17 @@ git tag ${GITHUB_REPO}
 git push -f origin ${GITHUB_REPO}
 popd
 
+pushd $(mktemp -d -p .)
+git init
+git config user.name "${GITHUB_USER}"
+git config user.email "${GITHUB_USER}@noreply.github.com"
+git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}
+git fetch origin master
+git checkout -b master FETCH_HEAD
+git commit --amend --no-edit --allow-empty -m "${GITHUB_TAG}" -m "${RELEASE_FILES}"
+git push -f origin master
+popd
+
 export RELEASE_NOTE=$(printf "%s\n\n|sha1|filename|\n|------|------|\n%s" "${RELEASE_NOTE}" "$(sha1sum ${RELEASE_FILES}| awk '{print "|"$1"|"$2"|"}')")
 
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
