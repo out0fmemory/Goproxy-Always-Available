@@ -73,9 +73,9 @@ set remoteversion=
 (
     title 1. Checking GoProxy Version
     echo 1. Checking GoProxy Version
-    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy/releases/latest ~goproxy_tag.txt
+    cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy-ci/commits/master ~goproxy_tag.txt
 ) && (
-    for /f "usebackq tokens=4 delims=<>-." %%I in (`findstr "<strong>%filename_prefix%-r" ~goproxy_tag.txt`) do (
+    for /f "usebackq tokens=2 delims=-." %%I in (`findstr "%filename_prefix%-r" ~goproxy_tag.txt`) do (
         set remoteversion=%%I
     )
 ) || (
@@ -101,7 +101,7 @@ set filename=!filename_prefix!-!remoteversion!.7z
 (
     title 2. Downloading 7zCon.sfx for extracting
     echo 2. Downloading 7zCon.sfx for extracting
-    cscript /nologo ~gdownload.vbs https://raw.githubusercontent.com/phuslu/goproxy/master/assets/download/7zCon.sfx ~7zCon.sfx
+    cscript /nologo ~gdownload.vbs https://raw.githubusercontent.com/phuslu/goproxy-ci/files/7zCon.sfx ~7zCon.sfx
     if not exist "~7zCon.sfx" (
         echo Cannot download 7zCon.sfx
         goto quit
