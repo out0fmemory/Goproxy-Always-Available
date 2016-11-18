@@ -5,6 +5,9 @@ export GITHUB_EMAIL=${GITHUB_EMAIL:-${GITHUB_USER}@noreply.github.com}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
+export BINTRAY_USER=${BINTRAY_USER:-${GITHUB_USER}}
+export BINTRAY_REPO=${BINTRAY_REPO:-${GITHUB_REPO}}
+export BINTRAY_PACKAGE=${BINTRAY_PACKAGE:-ci}
 export SOURCEFORGE_USER=${SOURCEFORGE_USER:-${GITHUB_USER}}
 export SOURCEFORGE_REPO=${SOURCEFORGE_REPO:-${GITHUB_REPO}}
 export WORKING_DIR=$(pwd)/${GITHUB_REPO}.$(date "+%y%m%d").${RANDOM:-$$}
@@ -21,6 +24,10 @@ fi
 
 if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
 	echo "WARNING: \$SOURCEFORGE_PASSWORD is not set!"
+fi
+
+if [ ${#BINTRAY_KEY} -eq 0 ]; then
+	echo "WARNING: \$BINTRAY_KEY is not set!"
 fi
 
 for CMD in curl awk git tar bzip2 xz 7za gcc make sha1sum timeout
@@ -256,6 +263,22 @@ function release_repo_ci() {
 	popd
 }
 
+function release_bintray() {
+	pushd ${WORKING_DIR}/
+
+	if [ ${#BINTRAY_KEY} -eq 0 ]; then
+		echo -e "\e[1;31m\$BINTRAY_KEY is not set, abort\e[0m"
+		exit 1
+	fi
+
+	curl -LOJ https://dl.bintray.com/jfrog/jfrog-cli-go/1.5.1/jfrog-cli-linux-amd64/jfrog
+	chmod +x jfrog
+
+	(set +x; ./jfrog bt u r${RELEASE}/'*' ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --publish=true --flat=false)
+
+	popd
+}
+
 function release_sourceforge() {
 	pushd ${WORKING_DIR}/r${RELEASE}/
 
@@ -293,6 +316,7 @@ build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
 	release_repo_ci
+	release_bintray
 	release_sourceforge
 fi
 clean
