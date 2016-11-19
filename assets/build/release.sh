@@ -67,7 +67,7 @@ git config user.email "${GITHUB_USER}@noreply.github.com"
 git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}
 git fetch origin master
 git checkout -b master FETCH_HEAD
-git commit --amend --no-edit --allow-empty -m "${GITHUB_TAG}" -m "${RELEASE_FILES}"
+env GIT_COMMITTER_DATE='Mon Jul 12 10:00 2010 +0800' git commit --amend --no-edit --allow-empty --date='Mon Jul 12 10:00 2010 +0800' -m "init" -m "${RELEASE_FILES}"
 git push -f origin master
 popd
 
