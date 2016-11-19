@@ -10,6 +10,8 @@ DISTDIR = $(BUILDROOT)/dist
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
+GOARM ?= 7
+CGO_ENABLED ?= 0
 
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
