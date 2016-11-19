@@ -99,34 +99,26 @@ if "!localversion!" neq "r9999" (
 set filename=!filename_prefix!-!remoteversion!.7z
 
 (
-    title 2. Downloading 7zCon.sfx for extracting
-    echo 2. Downloading 7zCon.sfx for extracting
-    cscript /nologo ~gdownload.vbs https://raw.githubusercontent.com/phuslu/goproxy-ci/files/7zCon.sfx ~7zCon.sfx
-    if not exist "~7zCon.sfx" (
-        echo Cannot download 7zCon.sfx
-        goto quit
-    )
-) && (
-    title 3. Downloading %filename%
-    echo 3. Downloading %filename%
+    title 2. Downloading %filename%
+    echo 2. Downloading %filename%
     cscript /nologo ~gdownload.vbs https://github.com/phuslu/goproxy-ci/releases/download/!remoteversion!/%filename% "~%filename%"
     if not exist "~%filename%" (
         echo Cannot download %filename%
         goto quit
     )
 ) && (
-    title 4. Extract Goproxy files
-    echo 4. Extract Goproxy files
-    copy /b ~7zCon.sfx+~%filename% ~%filename%.exe
-    del /f ~gdownload.vbs ~7zCon.sfx ~%filename% 2>NUL
+    title 3. Extract GoProxy files
+    echo 3. Extract GoProxy files
+    move /y ~%filename% ~%filename%.exe
+    del /f ~gdownload.vbs 2>NUL
     for %%I in ("goproxy.exe" "goproxy-gui.exe") do (
         if exist "%%~I" (
             move /y "%%~I" "~%%~nI.%localversion%.%%~xI.tmp"
         )
     )
     ~%filename%.exe -y
-    title 5. Update %filename% OK
-    echo 5. Update %filename% OK
+    title 4. Update %filename% OK
+    echo 4. Update %filename% OK
 )
 
 :quit
