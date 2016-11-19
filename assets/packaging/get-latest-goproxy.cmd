@@ -50,11 +50,9 @@ for %%I in (*.user.json) do (
     )
 )
 
-set filename_prefix=goproxy_windows_386
-if "%PROCESSOR_ARCHITECTURE%" == "AMD64" (
-    set filename_prefix=goproxy_windows_amd64
-)
-if exist "%SystemDrive%\Program Files (x86)" (
+reg query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" && (
+    set filename_prefix=goproxy_windows_386
+) || (
     set filename_prefix=goproxy_windows_amd64
 )
 
