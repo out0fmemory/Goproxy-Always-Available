@@ -192,6 +192,12 @@ function build_repo() {
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
+
+	for FILE in goproxy_windows_*.7z
+	do
+		cat ${WORKING_DIR}/${GITHUB_REPO}/assets/download/7zCon.sfx ${FILE} >${FILE}.exe
+		/bin/mv ${FILE}.exe ${FILE}
+	done
 	ls -lht
 
 	popd
