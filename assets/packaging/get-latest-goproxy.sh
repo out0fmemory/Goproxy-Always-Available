@@ -2,7 +2,11 @@
 
 set -e
 
-cd $(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")
+if readlink --help | grep -q -w -- '-f'; then
+    cd "$(dirname "$(readlink -f "$0")")"
+else
+    cd "$(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")"
+fi
 
 if [ -f "httpproxy.json" ]; then
 	if ! ls *.user.json ; then
@@ -23,7 +27,7 @@ case $(uname -s)/$(uname -m) in
 	Linux/i686|Linux/i386 )
 		FILENAME_PREFIX=goproxy_linux_386
 		;;
-	Linux/armv7l|Linux/armv8 )
+	Linux/aarch64|Linux/arm64 )
 		FILENAME_PREFIX=goproxy_linux_arm64
 		;;
 	Linux/arm* )
