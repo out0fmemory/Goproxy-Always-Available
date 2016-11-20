@@ -50,8 +50,11 @@ usage() {
     exit 1
 }
 
-# `readlink -f` won't work on Mac, this hack should work on all systems.
-cd $(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")
+if readlink --help | grep -q -w -- '-f'; then
+    cd "$(dirname "$(readlink -f "$0")")"
+else
+    cd "$(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")"
+fi
 
 case "$1" in
     start)
