@@ -27,8 +27,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    mkdir -p /var/log/goproxy
-    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=/var/log/goproxy >/dev/null 2>&1 &
+    local log_dir=$(test -d "/var/log" && echo "/var/log/${PACKAGE_NAME}" || echo "$(pwd)/logs")
+    mkdir -p ${log_dir}
+    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
 }
 
@@ -45,8 +46,7 @@ restart() {
 }
 
 usage() {
-    N=$(basename "$0")
-    echo "Usage: [sudo] $N {start|stop|restart}" >&2
+    echo "Usage: [sudo] $(basename "$0") {start|stop|restart}" >&2
     exit 1
 }
 
