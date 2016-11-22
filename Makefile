@@ -10,7 +10,6 @@ DISTDIR = $(BUILDROOT)/dist
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
-GOARM ?= 7
 CGO_ENABLED ?= 0
 
 ifeq ($(GOOS), windows)
@@ -52,6 +51,10 @@ else ifeq ($(GOOS)_$(GOARCH), windows_386)
 	SOURCES += $(REPO)/assets/packaging/goproxy-gui.exe
 	SOURCES += $(REPO)/assets/packaging/addto-startup.vbs
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.cmd
+else ifeq ($(GOOS)_$(GOARCH), linux_arm)
+	GOARM ?= 6
+	SOURCES += $(REPO)/assets/packaging/goproxy.sh
+	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
 else ifeq ($(GOOS), darwin)
 	SOURCES += $(REPO)/assets/packaging/goproxy-macos.command
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
