@@ -280,7 +280,8 @@ function release_bintray() {
 	curl -LOJ https://dl.bintray.com/jfrog/jfrog-cli-go/1.5.1/jfrog-cli-linux-amd64/jfrog
 	chmod +x jfrog
 
-	(set +x; ./jfrog bt u r${RELEASE}/'*' ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --publish=true --flat=false)
+	(set +xe; ./jfrog bt version-delete ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY})
+	(set +x; ./jfrog bt upload r${RELEASE}/'*' ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --publish=true --flat=false)
 
 	popd
 }
@@ -293,7 +294,7 @@ function release_sourceforge() {
 		exit 1
 	fi
 
-	(set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net" -e "mkdir /home/frs/project/${SOURCEFORGE_REPO}/r${RELEASE}; bye")
+	(set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net" -e "cd /home/frs/project/${SOURCEFORGE_REPO}/; rm -rf r${RELEASE}; mkdir r${RELEASE}; bye")
 	for FILE in $(ls -1 | sort -r)
 	do
 	    echo Uploading ${FILE} to https://sourceforge.net/projects/goproxy/files/r${RELEASE}/
