@@ -40,7 +40,7 @@ done
 mkdir -p ${WORKING_DIR}
 
 function rename() {
-	for FILENAME in ${2+"$@"}
+	for FILENAME in ${@:2}
 	do
 		local NEWNAME=$(echo ${FILENAME} | sed -r $1)
 		if [ "${NEWNAME}" != "${FILENAME}" ]; then
@@ -191,6 +191,7 @@ function build_repo() {
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
+	# rename 's/_linux_arm64/_linux_aarch64/' *
 
 	for FILE in goproxy_windows_*.7z
 	do
