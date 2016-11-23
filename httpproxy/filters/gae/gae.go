@@ -236,7 +236,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		TLSConnDuration:   lrucache.NewLRUCache(8192),
 		TLSConnError:      lrucache.NewLRUCache(8192),
 		TLSConnReadBuffer: config.Transport.Dialer.SocketReadBuffer,
-		ConnExpiry:        5 * time.Minute,
+		GoodConnExpiry:    5 * time.Minute,
+		ErrorConnExpiry:   30 * time.Minute,
 		Level:             config.Transport.Dialer.Level,
 	}
 
