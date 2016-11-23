@@ -280,7 +280,7 @@ function release_bintray() {
 	curl -LOJ https://dl.bintray.com/jfrog/jfrog-cli-go/1.5.1/jfrog-cli-linux-amd64/jfrog
 	chmod +x jfrog
 
-	(set +xe; ./jfrog bt version-delete ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY})
+	(set +xe; ./jfrog bt vd ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --quiet=true)
 	(set +x; ./jfrog bt upload r${RELEASE}/'*' ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --publish=true --flat=false)
 
 	popd
