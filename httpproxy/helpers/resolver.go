@@ -36,7 +36,7 @@ func (r *Resolver) LookupHost(name string) ([]string, error) {
 
 func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 	if r.LRUCache != nil {
-		if v, ok := r.LRUCache.Get(name); ok {
+		if v, ok := r.LRUCache.GetNotStale(name); ok {
 			switch v.(type) {
 			case []net.IP:
 				return v.([]net.IP), nil
@@ -49,11 +49,7 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 	}
 
 	if ip := net.ParseIP(name); ip != nil {
-		ips := []net.IP{ip}
-		if r.LRUCache != nil {
-			r.LRUCache.Set(name, ips, time.Time{})
-		}
-		return ips, nil
+		return []net.IP{ip}, nil
 	}
 
 	lookupIP := r.lookupIP1

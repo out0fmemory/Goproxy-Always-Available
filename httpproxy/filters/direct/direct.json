@@ -4,7 +4,7 @@
 			"Timeout": 10,
 			"KeepAlive": 180,
 			"DualStack": false,
-			"DNSCacheExpiry": 3600,
+			"DNSCacheExpiry": 600,
 			"DNSCacheSize": 8192
 		},
 		"Proxy": {
