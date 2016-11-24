@@ -162,7 +162,7 @@ function build_repo() {
 		fi
 	fi
 
-	for OSARCH in darwin/386 \
+	for OSARCH in \
 				darwin/amd64 \
 				freebsd/386 \
 				freebsd/amd64 \
@@ -170,9 +170,9 @@ function build_repo() {
 				linux/amd64 \
 				linux/arm \
 				linux/arm64 \
+				linux/mips \
 				linux/mips64 \
 				linux/mips64le \
-				linux/mips \
 				linux/mipsle \
 				windows/386 \
 				windows/amd64
@@ -191,6 +191,7 @@ function build_repo() {
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
+	# rename 's/_linux_arm-/_linux_armv6l-/' *
 	# rename 's/_linux_arm64/_linux_aarch64/' *
 
 	for FILE in goproxy_windows_*.7z
