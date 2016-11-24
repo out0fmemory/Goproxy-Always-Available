@@ -1,4 +1,5 @@
-sudo: false
+dist: trusty
+sudo: required
 
 language: bash
 
@@ -19,6 +20,9 @@ addons:
     packages:
       - p7zip-full
       - lftp
+      - gcc-4.8-multilib-arm-linux-gnueabihf
+      - libc6-dev-armhf-cross
+      - gcc-arm-linux-gnueabihf
 
 notifications:
   webhooks:
