@@ -30,6 +30,9 @@ else
 endif
 
 GOPROXY_DIST = $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_DISTEXT)
+ifeq ($(CGO_ENABLED), 1)
+	GOPROXY_DIST = $(DISTDIR)/$(PACKAGE)_$(GOOS)_$(GOARCH)_cgo-r$(REVSION)$(GOPROXY_DISTEXT)
+endif
 
 OBJECTS :=
 OBJECTS += $(OBJECTDIR)/$(GOPROXY_EXE)
@@ -51,9 +54,12 @@ else ifeq ($(GOOS)_$(GOARCH), windows_386)
 	SOURCES += $(REPO)/assets/packaging/goproxy-gui.exe
 	SOURCES += $(REPO)/assets/packaging/addto-startup.vbs
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.cmd
-else ifeq ($(GOOS)_$(GOARCH), linux_arm)
+else ifeq ($(GOOS)_$(GOARCH)_$(CGO_ENABLED), linux_arm_0)
+	GOARM ?= 7
+	SOURCES += $(REPO)/assets/packaging/goproxy.sh
+	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
+else ifeq ($(GOOS)_$(GOARCH)_$(CGO_ENABLED), linux_arm_1)
 	GOARM ?= 6
-	CGO_ENABLED = 1
 	CC = arm-linux-gnueabihf-gcc
 	SOURCES += $(REPO)/assets/packaging/goproxy.sh
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
