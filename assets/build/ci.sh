@@ -162,6 +162,8 @@ function build_repo() {
 		fi
 	fi
 
+	mkdir -p ${WORKING_DIR}/r${RELEASE}
+
 	for OSARCH in \
 				darwin/amd64 \
 				freebsd/386 \
@@ -178,7 +180,14 @@ function build_repo() {
 				windows/amd64
 	do
 		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
-		mkdir -p ${WORKING_DIR}/r${RELEASE}
+		cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
+		make clean
+	done
+
+	for OSARCH in \
+				linux/arm
+	do
+		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/} CGO_ENABLED=1
 		cp -r build/dist/* ${WORKING_DIR}/r${RELEASE}
 		make clean
 	done
