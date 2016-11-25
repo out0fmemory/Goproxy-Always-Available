@@ -60,7 +60,7 @@ else ifeq ($(GOOS)_$(GOARCH)_$(CGO_ENABLED), linux_arm_0)
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
 else ifeq ($(GOOS)_$(GOARCH)_$(CGO_ENABLED), linux_arm_1)
 	GOARM ?= 6
-	CC = arm-linux-gnueabihf-gcc
+	CC = $(or $(ARM_CC), arm-linux-gnueabihf-gcc)
 	SOURCES += $(REPO)/assets/packaging/goproxy.sh
 	SOURCES += $(REPO)/assets/packaging/get-latest-goproxy.sh
 else ifeq ($(GOOS), darwin)
