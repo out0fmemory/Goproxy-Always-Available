@@ -297,19 +297,24 @@ function release_bintray() {
 }
 
 function release_sourceforge() {
-	pushd ${WORKING_DIR}/r${RELEASE}/
+	pushd ${WORKING_DIR}/
 
 	if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
 		echo -e "\e[1;31m\$SOURCEFORGE_PASSWORD is not set, abort\e[0m"
 		exit 1
 	fi
 
-	(set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net/home/frs/project/${SOURCEFORGE_REPO}/" -e "rm -rf r${RELEASE}; mkdir r${RELEASE}; bye")
-	for FILE in *
+	set +ex
+
+	for i in $(seq 5)
 	do
-	    echo Uploading ${FILE} to https://sourceforge.net/projects/goproxy/files/r${RELEASE}/
-	    (set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net/home/frs/project/${SOURCEFORGE_REPO}/r${RELEASE}" -e "put ${FILE}; bye")
+		echo Uploading r${RELEASE}/* to https://sourceforge.net/projects/goproxy/files/r${RELEASE}/
+		if timeout -k60 60 lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net/home/frs/project/${SOURCEFORGE_REPO}/" -e "rm -rf r${RELEASE}; mkdir r${RELEASE}; mirror -R r${RELEASE} r${RELEASE}; bye"; then
+			break
+		fi
 	done
+
+	set -ex
 
 	popd
 }
