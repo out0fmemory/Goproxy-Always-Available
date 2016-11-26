@@ -32,6 +32,9 @@ case $(uname -s)/$(uname -m) in
 		;;
 	Linux/arm* )
 		FILENAME_PREFIX=goproxy_linux_arm
+		if grep -q ld-linux-armhf.so ./goproxy; then
+			FILENAME_PREFIX=goproxy_linux_arm_cgo
+		fi
 		;;
 	Linux/mips64el )
 		FILENAME_PREFIX=goproxy_linux_mips64le
