@@ -304,11 +304,11 @@ function release_sourceforge() {
 		exit 1
 	fi
 
-	(set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net" -e "cd /home/frs/project/${SOURCEFORGE_REPO}/; rm -rf r${RELEASE}; mkdir r${RELEASE}; bye")
-	for FILE in $(ls -1 | sort -r)
+	(set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net/home/frs/project/${SOURCEFORGE_REPO}/" -e "rm -rf r${RELEASE}; mkdir r${RELEASE}; bye")
+	for FILE in *
 	do
 	    echo Uploading ${FILE} to https://sourceforge.net/projects/goproxy/files/r${RELEASE}/
-	    (set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net" -e "cd /home/frs/project/${SOURCEFORGE_REPO}/r${RELEASE}; put ${FILE}; bye")
+	    (set +x; lftp "sftp://${SOURCEFORGE_USER}:${SOURCEFORGE_PASSWORD}@frs.sourceforge.net/home/frs/project/${SOURCEFORGE_REPO}/r${RELEASE}" -e "put ${FILE}; bye")
 	done
 
 	popd
