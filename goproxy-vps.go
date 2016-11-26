@@ -97,7 +97,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			h.ProxyAuthorizationReqiured(rw, req)
 			return
 		}
-		if _, ok := h.PWAuthCache.Get(auth); !ok {
+		if _, ok := h.PWAuthCache.GetNotStale(auth); !ok {
 			parts := strings.SplitN(auth, " ", 2)
 			if len(parts) == 2 {
 				switch parts[0] {
