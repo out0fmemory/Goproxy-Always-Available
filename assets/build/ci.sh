@@ -77,17 +77,17 @@ function build_go() {
 	bash ./make.bash
 	grep -q 'machine github.com' ~/.netrc && git push -f origin ${GOBRANCH}
 
-	(set +x; \
-		echo '================================================================================' ;\
-		cat /etc/issue ;\
-		uname -a ;\
-		echo ;\
-		go version ;\
-		go env ;\
-		echo ;\
-		env | grep -v GITHUB_TOKEN ;\
-		echo '================================================================================' ;\
-	)
+	set +ex
+	echo '================================================================================'
+	cat /etc/issue
+	uname -a
+	echo
+	go version
+	go env
+	echo
+	env | grep -v GITHUB_TOKEN
+	echo '================================================================================'
+	set -ex
 
 	popd
 }
@@ -290,8 +290,13 @@ function release_bintray() {
 	curl -LOJ https://dl.bintray.com/jfrog/jfrog-cli-go/1.5.1/jfrog-cli-linux-amd64/jfrog
 	chmod +x jfrog
 
-	(set +xe; ./jfrog bt vd ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --quiet=true)
-	(set +x; ./jfrog bt upload r${RELEASE}/'*' ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --publish=true --flat=false)
+	set +ex
+
+	echo Uploading r${RELEASE}/* to https://dl.bintray.com/phuslu/goproxy/
+	./jfrog bt vd ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --quiet=true
+	./jfrog bt upload r${RELEASE}/'*' ${BINTRAY_USER}/${BINTRAY_REPO}/${BINTRAY_PACKAGE}/r${RELEASE} --user=${BINTRAY_USER} --key=${BINTRAY_KEY} --publish=true --flat=false
+
+	set -ex
 
 	popd
 }
@@ -320,14 +325,20 @@ function release_sourceforge() {
 }
 
 function clean() {
-	( set +x ;\
-		cd ${WORKING_DIR}/r${RELEASE}/ ;\
-		ls -lht ;\
-		echo ;\
-		echo 'sha1sum *' ;\
-		sha1sum * | xargs -n1 -i echo -e "\e[1;32m{}\e[0m" ;\
-		rm -rf ${WORKING_DIR} ;\
-	)
+	pushd ${WORKING_DIR}/r${RELEASE}/
+
+	set +ex
+
+	ls -lht
+	echo
+	echo 'sha1sum *'
+	sha1sum * | xargs -n1 -i echo -e "\e[1;32m{}\e[0m"
+
+	set -ex
+
+	popd
+
+	rm -rf ${WORKING_DIR}
 }
 
 init_github
