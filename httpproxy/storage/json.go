@@ -33,6 +33,8 @@ func readJsonConfig(store Store, filename string, config interface{}) error {
 				return err
 			}
 
+			data = bytes.TrimPrefix(data, []byte("\xef\xbb\xbf"))
+
 			cm1 := make(map[string]interface{})
 
 			d := json.NewDecoder(bytes.NewReader(data))
