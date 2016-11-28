@@ -325,20 +325,17 @@ function release_sourceforge() {
 }
 
 function clean() {
-	pushd ${WORKING_DIR}/r${RELEASE}/
-
 	set +ex
 
+	pushd ${WORKING_DIR}/r${RELEASE}/
 	ls -lht
 	echo
 	echo 'sha1sum *'
 	sha1sum * | xargs -n1 -i echo -e "\e[1;32m{}\e[0m"
+	popd
+	rm -rf ${WORKING_DIR}
 
 	set -ex
-
-	popd
-
-	rm -rf ${WORKING_DIR}
 }
 
 init_github
