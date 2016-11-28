@@ -330,6 +330,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	if config.EnableDeadProbe && !config.Transport.Proxy.Enabled {
 		go func() {
 			probe := func() {
+				c, err := net.DialTimeout("tcp", net.JoinHostPort(config.DNSServers[0], "53"), 300*time.Millisecond)
+				if err != nil {
+					glog.V(3).Infof("GAE EnableDeadProbe connect DNSServer(%#v) failed: %+v", config.DNSServers[0], err)
+					return
+				}
+				c.Close()
+
 				req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
 				ctx, cancel := context.WithTimeout(req.Context(), 2*time.Second)
 				defer cancel()
