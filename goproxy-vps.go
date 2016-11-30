@@ -192,11 +192,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.URL.Host = req.Host
 	}
 
-	if req.Header.Get("Transfer-Encoding") != "" {
-		if req.Method == http.MethodGet || req.ContentLength > 0 {
-			req.Header.Del("Transfer-Encoding")
-		}
-	}
+	req.Header.Del("Transfer-Encoding")
 
 	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
