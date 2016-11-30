@@ -32,8 +32,8 @@ var (
 )
 
 var (
-	ListenAddrs string = os.Getenv("GOPROXY_VPS_LISTEN_ADDRS")
-	ACMEDomain  string = os.Getenv("GOPROXY_VPS_ACME_DOMAIN")
+	ListenAddrs string = os.Getenv("LISTEN_ADDRS")
+	ACMEDomain  string = os.Getenv("ACME_DOMAIN")
 )
 
 func init() {
