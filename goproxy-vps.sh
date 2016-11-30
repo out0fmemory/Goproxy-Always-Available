@@ -28,9 +28,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
     local log_dir=$(test -d "/var/log" && echo "/var/log/goproxy" || echo "$(pwd)/logs")
+    local acme_domain=${ACME_DOAMIN:-$(cat ./acme_domain.txt)}
     mkdir -p ${log_dir}
-    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
-    # nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -v=2 -logtostderr=0 -log_dir=${log_dir} -pwauth >/dev/null 2>&1 &
+    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acme_domain} -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
 }
 
