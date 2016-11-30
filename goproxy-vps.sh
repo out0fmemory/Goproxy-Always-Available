@@ -24,13 +24,15 @@ set -e
 PACKAGE_NAME=goproxy-vps
 PACKAGE_DESC="a go proxy vps"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
+DOAMIN_FILE=acme_domain.txt
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
+    test -f ${DOAMIN_FILE} || echo "Please put your vps domain name to ./${DOAMIN_FILE}"
+    local acmedomain=${DOAMIN:-$(cat ${DOAMIN_FILE})}
     local log_dir=$(test -d "/var/log" && echo "/var/log/goproxy" || echo "$(pwd)/logs")
-    local acme_domain=${ACME_DOAMIN:-$(cat ./acme_domain.txt)}
     mkdir -p ${log_dir}
-    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acme_domain} -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
+    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acmedomain} -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
 }
 
