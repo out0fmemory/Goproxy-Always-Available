@@ -35,12 +35,12 @@ start() {
 
 stop() {
     echo -n "Stopping ${PACKAGE_DESC}: "
-    killall goproxy >/dev/null 2>&1 || true
+    killall goproxy
     echo "${PACKAGE_NAME}."
 }
 
 restart() {
-    stop || true
+    stop
     sleep 1
     start
 }
