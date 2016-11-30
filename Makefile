@@ -13,6 +13,7 @@ GOPROXY_VPS_DIST = $(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT
 SOURCES =
 SOURCES += goproxy-vps.sh
 SOURCES += pwauth
+SOURCES += get-latest-goproxy-vps.sh
 
 CHANGELOG = changelog.txt
 
