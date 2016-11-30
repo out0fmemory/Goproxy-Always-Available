@@ -17,7 +17,6 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
-	"strconv"
 	"strings"
 	"time"
 
@@ -193,6 +192,12 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.URL.Host = req.Host
 	}
 
+	if req.Header.Get("Transfer-Encoding") != "" {
+		if req.Method == http.MethodGet || req.ContentLength > 0 {
+			req.Header.Del("Transfer-Encoding")
+		}
+	}
+
 	glog.Infof("%s \"%s %s %s\" - -", req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
 	if req.URL.Scheme == "" {
@@ -203,12 +208,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.ProtoMajor = 1
 		req.ProtoMinor = 1
 		req.Proto = "HTTP/1.1"
-	}
-
-	if req.ContentLength > 0 {
-		if req.Header.Get("Content-Length") == "" {
-			req.Header.Set("Content-Length", strconv.FormatInt(req.ContentLength, 10))
-		}
 	}
 
 	resp, err := h.Transport.RoundTrip(req)
