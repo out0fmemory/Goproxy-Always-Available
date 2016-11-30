@@ -258,6 +258,7 @@ func main() {
 
 	addrs := ":443"
 	pwauth := false
+	tls12 := false
 	acmeDomain := ""
 	keyFile := "goproxy-vps.key"
 	certFile := "goproxy-vps.crt"
@@ -269,6 +270,7 @@ func main() {
 	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
 	flag.BoolVar(&pwauth, "pwauth", pwauth, "goproxy vps enable pwauth")
+	flag.BoolVar(&tls12, "tls12", tls12, "goproxy vps enable tls 1.2")
 
 	helpers.SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
@@ -333,10 +335,12 @@ func main() {
 	}
 
 	srv := &http.Server{
-		Handler: handler,
-		TLSConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
-		},
+		Handler:   handler,
+		TLSConfig: &tls.Config{},
+	}
+
+	if tls12 {
+		srv.TLSConfig.MinVersion = tls.VersionTLS12
 	}
 
 	if acmeDomain != "" {

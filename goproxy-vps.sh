@@ -32,7 +32,7 @@ start() {
     local acmedomain=${DOAMIN:-$(cat ${DOAMIN_FILE})}
     local log_dir=$(test -d "/var/log" && echo "/var/log/goproxy" || echo "$(pwd)/logs")
     mkdir -p ${log_dir}
-    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acmedomain} -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
+    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acmedomain} -tls12 -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
 }
 
