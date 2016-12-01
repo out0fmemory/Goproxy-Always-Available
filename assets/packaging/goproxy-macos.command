@@ -77,6 +77,9 @@ class GoProxyMacOS(NSObject):
         # Build a very simple menu
         self.menu = NSMenu.alloc().init()
         # Show Menu Item
+        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('SetAutoProxy', 'setautoproxy:', '')
+        self.menu.addItem_(menuitem)
+        # Show Menu Item
         menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Show', 'show:', '')
         self.menu.addItem_(menuitem)
         # Hide Menu Item
@@ -168,6 +171,12 @@ class GoProxyMacOS(NSObject):
         while(True):
             line = self.pipe_fd.readline()
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
+
+    def setautoproxy_(self, notification):
+        network = 'Wi-Fi'
+        pac = 'http://127.0.0.1:8087/proxy.pac'
+        cmd = 'networksetup -setautoproxystate %s on; networksetup -setautoproxyurl %s %s' % (network, network, pac)
+        os.system(cmd)
 
     def show_(self, notification):
         self.console_window.center()
