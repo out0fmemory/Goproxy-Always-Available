@@ -33,13 +33,12 @@ start() {
     local log_dir=$(test -d "/var/log" && echo "/var/log/goproxy" || echo "$(pwd)/logs")
     mkdir -p ${log_dir}
     nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acmedomain} -tls12 -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
-    echo "${PACKAGE_NAME}."
+    echo "\e[1;32m${PACKAGE_NAME}\e[0m\n"
 }
 
 stop() {
     echo -n "Stopping ${PACKAGE_DESC}: "
-    killall goproxy-vps 2>&1
-    echo "${PACKAGE_NAME}."
+    killall goproxy-vps && echo -e "\e[1;32m${PACKAGE_NAME}\e[0m\n" || echo -e "\e[1;31m${PACKAGE_NAME}\e[0m\n"
 }
 
 restart() {
