@@ -186,7 +186,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		googleTLSConfig.ServerName = config.TLSConfig.ServerName[rand.Intn(len(config.TLSConfig.ServerName))]
 	}
 	if !config.DisableHTTP2 {
-		googleTLSConfig.NextProtos = []string{"h2", "h2-14", "http/1.1"}
+		googleTLSConfig.NextProtos = []string{"h2", "http/1.1"}
 	}
 
 	if config.Site2Alias == nil {
@@ -406,8 +406,9 @@ func (f *Filter) FilterName() string {
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	var tr http.RoundTripper = f.GAETransport
+	var ocsp string = "http://clients1.google.com/ocsp"
 
-	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) {
+	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) && !strings.EqualFold(req.RequestURI, ocsp) {
 		if !strings.HasPrefix(req.Header.Get("Referer"), "https://") {
 			u := strings.Replace(req.URL.String(), "http://", "https://", 1)
 			glog.V(2).Infof("GAE FORCEHTTPS get raw url=%v, redirect to %v", req.URL.String(), u)

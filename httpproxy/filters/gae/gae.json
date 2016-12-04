@@ -60,6 +60,7 @@
 		"www.google.com/maps",
 		"www.google.com/patents",
 		"plus.google.com/$",
+		"clients1.google.com/ocsp",
 	],
 	"TLSConfig": {
 		"Version": "TLSv1.2",
