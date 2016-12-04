@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: /4B21YVpJClNpIlau6d49w
+! Checksum: WcZwijv1x6oSavQusUJNow
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 07 Nov 2016 15:50:08 +0100
+! Last Modified: Fri, 02 Dec 2016 09:17:24 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -515,6 +515,7 @@ blogspot.com
 ||itasoftware.com
 ||like.com
 ||madewithcode.com
+||material.io
 ||nic.google
 ||on2.com
 ||panoramio.com
@@ -639,6 +640,7 @@ zhao.1984.city
 ||4shared.com
 taiwannation.50webs.com
 ||51.ca
+||51jav.org
 .51luoben.com
 ||51luoben.com
 5aimiku.com
@@ -1027,6 +1029,7 @@ bitsnoop.com
 bizhat.com
 ||bl-doujinsouko.com
 .bjnewlife.org
+.bjs.org
 bjzc.org
 ||bjzc.org
 .blacklogic.com
@@ -1447,6 +1450,7 @@ hkupop.hku.hk
 ||cmule.org
 ||cms.gov
 .cn6.eu
+.cna.com.tw
 ||cna.com.tw
 .cnabc.com
 .cnd.org
@@ -3133,6 +3137,8 @@ chinese.irib.ir
 ||ismprofessional.net
 isohunt.com
 ||israbox.com
+.issuu.com
+||issuu.com
 .istars.co.nz
 oversea.istarshine.com
 ||oversea.istarshine.com
@@ -3539,6 +3545,7 @@ mcreasite.com
 ||mediafreakcity.com
 .medium.com
 ||medium.com
+.meetav.com
 ||meetup.com
 mefeedia.com
 .megaporn.com
@@ -4197,6 +4204,7 @@ proxyanonimo.es
 pubu.com.tw
 puffinbrowser.com
 pureinsight.org
+.putty.org
 ||putty.org
 
 !-------------Posterous-----
@@ -4481,7 +4489,6 @@ domainhelp.search.com
 .searchtruth.com
 secretchina.com
 ||secretgarden.no
-||default.secureserver.net
 .secretsline.biz
 ||secretsline.biz
 ||securetunnel.com
@@ -5373,6 +5380,7 @@ twitoaster.com
 ||t.co
 |http://twt.tl
 twittbot.net
+||ads-twitter.com
 .twitter.com
 ||twitter.com
 ||twitter.jp
@@ -5764,7 +5772,7 @@ zh.uncyclopedia.wikia.com
 ||wikileaks.eu
 ||wikileaks.lu
 .wikileaks.org
-!--||wikileaks.org
+||wikileaks.org
 ||wikileaks.pl
 .wikileaks-forum.com
 wildammo.com
@@ -6047,6 +6055,7 @@ yong.hu
 .youjizz.com
 ||youjizz.com
 youmaker.com
+youngspiration.hk
 .youpai.org
 ||youpai.org
 .your-freedom.net
@@ -6278,9 +6287,10 @@ taipei.gov.tw
 !--@@||bing.com
 @@||bt.byr.cn
 @@||chinaso.com
+@@||chinaz.com
 @@|http://nrch.culture.tw/
 !--ISP cache works sometimes, verified at drpeng + gehua.
-!--@@||dl.google.com
+@@||dl.google.com
 @@||fonts.googleapis.com
 @@||cn.gravatar.com
 @@||csi.gstatic.com
