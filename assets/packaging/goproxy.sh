@@ -27,10 +27,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    local goproxy_cli=$(test -f "/system/bin/linker" && echo "/system/bin/linker ./goproxy" || echo "./goproxy")
     local log_dir=$(test -d "/var/log" && echo "/var/log/${PACKAGE_NAME}" || echo "$(pwd)/logs")
     mkdir -p ${log_dir}
-    nohup ${goproxy_cli} -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
+    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
 }
 
