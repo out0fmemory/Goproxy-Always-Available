@@ -50,11 +50,8 @@ usage() {
     exit 1
 }
 
-if readlink --help | grep -q -w -- '-f'; then
-    cd "$(dirname "$(readlink -f "$0")")"
-else
-    cd "$(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")"
-fi
+linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
+cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 case "$1" in
     start)
