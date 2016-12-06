@@ -168,6 +168,7 @@ function build_repo() {
 				darwin/amd64 \
 				freebsd/386 \
 				freebsd/amd64 \
+				freebsd/arm \
 				linux/386 \
 				linux/amd64 \
 				linux/arm \
