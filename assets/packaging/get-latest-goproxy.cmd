@@ -12,6 +12,7 @@ echo Http.SetTimeouts 30*1000, 30*1000, 30*1000, 120*1000  >>~.txt
 netstat -an| findstr LISTENING | findstr ":8087" >NUL && (
     echo Http.SetProxy 2, "127.0.0.1:8087", "" >>~.txt
 )
+echo Http.Option(4) = 256 + 512 + 4096 + 8192 >>~.txt
 echo Http.Open "GET", WScript.Arguments.Item(0), False >>~.txt
 echo Http.Send >>~.txt
 echo Http.WaitForResponse 5 >>~.txt
