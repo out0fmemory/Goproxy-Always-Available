@@ -206,7 +206,7 @@ function build_repo() {
 
 	for FILE in goproxy_windows_*.7z
 	do
-		cat ${WORKING_DIR}/${GITHUB_REPO}/assets/download/7zCon.sfx ${FILE} >${FILE}.exe
+		cat ${WORKING_DIR}/${GITHUB_REPO}/assets/packaging/7zCon.sfx ${FILE} >${FILE}.exe
 		/bin/mv ${FILE}.exe ${FILE}
 	done
 	ls -lht
