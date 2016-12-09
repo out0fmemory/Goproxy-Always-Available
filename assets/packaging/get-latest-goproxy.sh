@@ -2,6 +2,14 @@
 
 set -e
 
+for CMD in curl sed expr tar;
+do
+        if ! type -p ${CMD} >/dev/null; then
+                echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
+                exit 1
+        fi
+done
+
 linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
@@ -66,7 +74,7 @@ esac
 LOCALVERSION=$(./goproxy -version 2>/dev/null || :)
 echo "0. Local Goproxy version ${LOCALVERSION}"
 
-if [ "${http_proxy}" == "" ]; then
+if test "${http_proxy}" = ""; then
 	if netstat -an | grep -i tcp | grep LISTEN | grep ':8087'; then
 		echo "Set http_proxy=http://127.0.0.1:8087"
 		export http_proxy=http://127.0.0.1:8087
@@ -92,7 +100,7 @@ if test -z "${REMOTEVERSION}"; then
 	exit 1
 fi
 
-if [[ ${LOCALVERSION#r*} -ge ${REMOTEVERSION#r*} ]]; then
+if expr "${LOCALVERSION#r*}" ">=" "${REMOTEVERSION#r*}" >/dev/null; then
 	echo "Your GoProxy already update to latest"
 	exit 1
 fi
