@@ -2,12 +2,14 @@
 
 set -e
 
-for CMD in curl sed expr tar;
+WHICH=$(which which || echo 'type -p')
+
+for CMD in which curl sed expr tar;
 do
-        if ! type -p ${CMD} >/dev/null; then
-                echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
-                exit 1
-        fi
+		if ! ${WHICH} ${CMD} >/dev/null; then
+				echo "tool ${CMD} is not installed, abort."
+				exit 1
+		fi
 done
 
 linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
