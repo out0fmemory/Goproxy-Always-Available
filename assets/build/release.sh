@@ -28,17 +28,13 @@ WORKING_DIR=${HOME}/tmp.$$.${GITHUB_REPO}
 mkdir -p $WORKING_DIR
 pushd ${WORKING_DIR}
 
-GITHUB_RELEASE_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
-GITHUB_RELEASE_BIN=$(pwd)/$(curl -kL ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
-
-if [ -z "${GITHUB_TAG}" ]; then
-GITHUB_TAG=$(${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | grep -m 1 -oP '\- \Kr\d+')
+if [ -n "${GITHUB_TAG}" ]; then
+RELEASE_URL=https://github.com/phuslu/goproxy-ci/releases/tag/${GITHUB_TAG}
+else
+RELEASE_URL=https://github.com/phuslu/goproxy-ci/releases/latest
 fi
 
-${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} -t ${GITHUB_TAG} > ${GITHUB_CI_REPO_RELEASE_INFO_TXT}
-export RELEASE_NAME=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "name: '\K.+?(?=',)")
-export RELEASE_NOTE=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "description: '\K.+?(?=',)")
-export RELEASE_FILES=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP 'artifact: \K\S+\.(7z|zip|gz|bz2|xz|tar)')
+RELEASE_FILES=$(curl -ksSL ${RELEASE_URL} | grep -oP '(goproxy|source)[^/]*\.(tar|gz|bz2|xz|7z|zip)' | uniq)
 
 pushd $(mktemp -d -p .)
 git init
@@ -52,6 +48,18 @@ git push -f origin master
 popd
 
 if false; then
+
+GITHUB_RELEASE_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
+GITHUB_RELEASE_BIN=$(pwd)/$(curl -kL ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
+
+if [ -z "${GITHUB_TAG}" ]; then
+GITHUB_TAG=$(${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} | grep -m 1 -oP '\- \Kr\d+')
+fi
+
+${GITHUB_RELEASE_BIN} info -u ${GITHUB_USER} -r ${GITHUB_CI_REPO} -t ${GITHUB_TAG} > ${GITHUB_CI_REPO_RELEASE_INFO_TXT}
+RELEASE_NAME=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "name: '\K.+?(?=',)")
+RELEASE_NOTE=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "description: '\K.+?(?=',)")
+RELEASE_FILES=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP 'artifact: \K\S+\.(7z|zip|gz|bz2|xz|tar)')
 
 for FILE in ${RELEASE_FILES}
 do
@@ -73,7 +81,7 @@ git tag ${GITHUB_REPO}
 git push -f origin ${GITHUB_REPO}
 popd
 
-export RELEASE_NOTE=$(printf "%s\n\n|sha1|filename|\n|------|------|\n%s" "${RELEASE_NOTE}" "$(sha1sum ${RELEASE_FILES}| awk '{print "|"$1"|"$2"|"}')")
+RELEASE_NOTE=$(printf "%s\n\n|sha1|filename|\n|------|------|\n%s" "${RELEASE_NOTE}" "$(sha1sum ${RELEASE_FILES}| awk '{print "|"$1"|"$2"|"}')")
 
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
 
