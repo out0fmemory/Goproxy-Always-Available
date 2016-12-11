@@ -40,6 +40,19 @@ export RELEASE_NAME=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "name: '
 export RELEASE_NOTE=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP "description: '\K.+?(?=',)")
 export RELEASE_FILES=$(cat ${GITHUB_CI_REPO_RELEASE_INFO_TXT} | grep -oP 'artifact: \K\S+\.(7z|zip|gz|bz2|xz|tar)')
 
+pushd $(mktemp -d -p .)
+git init
+git config user.name "${GITHUB_USER}"
+git config user.email "${GITHUB_USER}@noreply.github.com"
+git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}
+git fetch origin master
+git checkout -b master FETCH_HEAD
+env GIT_COMMITTER_DATE='Mon Jul 12 10:00 2010 +0800' git commit --amend --no-edit --allow-empty --date='Mon Jul 12 10:00 2010 +0800' -m "init" -m "${RELEASE_FILES}"
+git push -f origin master
+popd
+
+if false; then
+
 for FILE in ${RELEASE_FILES}
 do
     echo Downloading ${FILE} from https://github.com/${GITHUB_USER}/${GITHUB_CI_REPO}.git#${GITHUB_TAG}
@@ -60,17 +73,6 @@ git tag ${GITHUB_REPO}
 git push -f origin ${GITHUB_REPO}
 popd
 
-pushd $(mktemp -d -p .)
-git init
-git config user.name "${GITHUB_USER}"
-git config user.email "${GITHUB_USER}@noreply.github.com"
-git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}
-git fetch origin master
-git checkout -b master FETCH_HEAD
-env GIT_COMMITTER_DATE='Mon Jul 12 10:00 2010 +0800' git commit --amend --no-edit --allow-empty --date='Mon Jul 12 10:00 2010 +0800' -m "init" -m "${RELEASE_FILES}"
-git push -f origin master
-popd
-
 export RELEASE_NOTE=$(printf "%s\n\n|sha1|filename|\n|------|------|\n%s" "${RELEASE_NOTE}" "$(sha1sum ${RELEASE_FILES}| awk '{print "|"$1"|"$2"|"}')")
 
 ${GITHUB_RELEASE_BIN} release --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${RELEASE_NAME}" --description "${RELEASE_NOTE}"
@@ -80,6 +82,8 @@ do
     echo Uploading ${FILE} to https://github.com/${GITHUB_USER}/${GITHUB_REPO}.git#${GITHUB_TAG}
     ${GITHUB_RELEASE_BIN} upload --user ${GITHUB_USER} --repo ${GITHUB_REPO} --tag ${GITHUB_REPO} --name "${FILE}" --file "${FILE}"
 done
+
+fi
 
 popd
 rm -rf ${WORKING_DIR}
