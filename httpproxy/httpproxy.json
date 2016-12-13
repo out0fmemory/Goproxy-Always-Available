@@ -23,7 +23,6 @@
 		"ResponseFilters": [
 			"autorange",
 			// "rewrite",
-			// "ratelimit",
 		]
 	},
 	"PHP": {
