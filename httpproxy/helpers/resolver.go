@@ -113,7 +113,7 @@ func (r *Resolver) lookupIP2(name string) ([]net.IP, error) {
 	case r.DisableIPv6:
 		m.SetQuestion(dns.Fqdn(name), dns.TypeA)
 	default:
-		m.SetQuestion(dns.Fqdn(name), dns.TypeANY)
+		m.SetQuestion(dns.Fqdn(name), dns.TypeA)
 	}
 
 	reply, err := dns.Exchange(m, net.JoinHostPort(r.DNSServer.String(), "53"))
@@ -136,8 +136,9 @@ func (r *Resolver) lookupIP2(name string) ([]net.IP, error) {
 		case *dns.A:
 			ip = rr.(*dns.A).A
 		}
-
-		ips = append(ips, ip)
+		if ip != nil {
+			ips = append(ips, ip)
+		}
 	}
 
 	return ips, nil

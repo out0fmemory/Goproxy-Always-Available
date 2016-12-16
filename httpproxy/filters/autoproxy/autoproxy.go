@@ -30,11 +30,12 @@ type Config struct {
 		Rules   map[string]string
 	}
 	RegionFilters struct {
-		Enabled      bool
-		DataFile     string
-		DNSServer    string
-		DNSCacheSize int
-		Rules        map[string]string
+		Enabled         bool
+		DataFile        string
+		EnableRemoteDNS bool
+		DNSServer       string
+		DNSCacheSize    int
+		Rules           map[string]string
 	}
 	IndexFiles struct {
 		Enabled bool
@@ -198,7 +199,7 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		f.RegionLocator = ip17mon.NewLocatorWithData(data)
 
 		f.RegionResolver = &helpers.Resolver{}
-		if config.RegionFilters.DNSServer != "" {
+		if config.RegionFilters.EnableRemoteDNS {
 			f.RegionResolver.DNSServer = net.ParseIP(config.RegionFilters.DNSServer)
 			if f.RegionResolver.DNSServer == nil {
 				glog.Fatalf("AUTOPROXY: net.ParseIP(%+v) failed", config.RegionFilters.DNSServer)

@@ -15,7 +15,8 @@
 	"RegionFilters": {
 		"Enabled": false,
 		"DataFile": "17monipdb.dat",
-		"DNSServer": "",
+		"EnableRemoteDNS": false,
+		"DNSServer": "114.114.114.114",
 		"DNSCacheSize": 4096,
 		"Rules": {
 			"default": "",
