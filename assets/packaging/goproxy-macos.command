@@ -84,20 +84,21 @@ class GoProxyMacOS(NSObject):
         # Build a very simple menu
         self.menu = NSMenu.alloc().init()
         # Show Menu Item
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Show', 'show:', '')
-        self.menu.addItem_(menuitem)
+        self.menu.addItemWithTitle_action_keyEquivalent_('Show', self.show_, '').setTarget_(self)
         # Hide Menu Item
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Hide', 'hide2:', '')
-        self.menu.addItem_(menuitem)
+        self.menu.addItemWithTitle_action_keyEquivalent_('Hide', self.hide2_, '').setTarget_(self)
         # Proxy Menu Item
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('SetAutoProxy', 'setautoproxy:', '')
+        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Set Proxy', None, '')
+        submenu = NSMenu.alloc().init()
+        submenu.addItemWithTitle_action_keyEquivalent_('<None>', self.setproxy0_, '').setTarget_(self)
+        submenu.addItemWithTitle_action_keyEquivalent_('http://127.0.0.1:8087/proxy.pac', self.setproxy1_, '').setTarget_(self)
+        submenu.addItemWithTitle_action_keyEquivalent_('127.0.0.1:8087', self.setproxy2_, '').setTarget_(self)
+        menuitem.setSubmenu_(submenu)
         self.menu.addItem_(menuitem)
         # Rest Menu Item
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Reload', 'reset:', '')
-        self.menu.addItem_(menuitem)
+        self.menu.addItemWithTitle_action_keyEquivalent_('Reload', self.reset_, '').setTarget_(self)
         # Default event
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Quit', 'exit:', '')
-        self.menu.addItem_(menuitem)
+        self.menu.addItemWithTitle_action_keyEquivalent_('Quit', self.exit_, '').setTarget_(self)
         # Bind it to the status item
         self.statusitem.setMenu_(self.menu)
 
@@ -187,10 +188,19 @@ class GoProxyMacOS(NSObject):
             line = self.pipe_fd.readline()
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
 
-    def setautoproxy_(self, notification):
+    def setproxy0_(self, notification):
         network = 'Wi-Fi'
-        pac = 'http://127.0.0.1:8087/proxy.pac'
-        cmd = 'networksetup -setautoproxyurl %s %s' % (network, pac)
+        cmd = 'networksetup -setwebproxystate %s off && networksetup -setsecurewebproxystate %s off' % (network, network)
+        os.system(cmd)
+
+    def setproxy1_(self, notification):
+        network = 'Wi-Fi'
+        cmd = 'networksetup -setautoproxyurl %s http://127.0.0.1:8087/proxy.pac' % network
+        os.system(cmd)
+
+    def setproxy2_(self, notification):
+        network = 'Wi-Fi'
+        cmd = 'networksetup -setwebproxy %s 127.0.0.1:8087 && networksetup -setsecurewebproxy %s 127.0.0.1:8087' % (network, network)
         os.system(cmd)
 
     def show_(self, notification):
@@ -228,4 +238,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
