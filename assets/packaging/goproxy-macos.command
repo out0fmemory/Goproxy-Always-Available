@@ -1,4 +1,4 @@
-(exec /usr/bin/env python2.7 -x "$0" 2>&1 >/dev/null &);exit
+(/usr/bin/env python2.7 -x "$0" >/dev/null 2>&1 &); kill $(ps -o ppid= -p $(ps -o ppid= -p $(ps -o ppid= -p $$))); exit
 # coding:utf-8
 # Contributor:
 #      Phus Lu        <phuslu@hotmail.com>
@@ -41,7 +41,14 @@ import ctypes.util
 from PyObjCTools import AppHelper
 from AppKit import *
 
-ColorSet=[NSColor.blackColor(), NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0), NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
+ColorSet=[NSColor.whiteColor(),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0),
+          NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
 
 
 class GoProxyMacOS(NSObject):
@@ -77,13 +84,13 @@ class GoProxyMacOS(NSObject):
         # Build a very simple menu
         self.menu = NSMenu.alloc().init()
         # Show Menu Item
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('SetAutoProxy', 'setautoproxy:', '')
-        self.menu.addItem_(menuitem)
-        # Show Menu Item
         menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Show', 'show:', '')
         self.menu.addItem_(menuitem)
         # Hide Menu Item
         menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Hide', 'hide2:', '')
+        self.menu.addItem_(menuitem)
+        # Proxy Menu Item
+        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('SetAutoProxy', 'setautoproxy:', '')
         self.menu.addItem_(menuitem)
         # Rest Menu Item
         menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Reload', 'reset:', '')
@@ -108,6 +115,8 @@ class GoProxyMacOS(NSObject):
         self.scroll_view.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
 
         self.console_view = NSTextView.alloc().initWithFrame_(frame)
+        self.console_view.setBackgroundColor_(NSColor.blackColor())
+        self.console_view.setFont_(NSFont.fontWithName_size_("Monaco", 12.0))
         self.console_view.setRichText_(True)
         self.console_view.setVerticallyResizable_(True)
         self.console_view.setHorizontallyResizable_(True)
@@ -146,10 +155,16 @@ class GoProxyMacOS(NSObject):
         self.pipe.terminate()
 
     def parseLine(self, line):
+        if line.startswith('\x1b]2;') and '\x07' in line:
+            global GOPROXY_TITLE
+            pos = line.find('\x07')
+            GOPROXY_TITLE = line[4:pos]
+            self.statusitem.setToolTip_(GOPROXY_TITLE)
+            self.console_window.setTitle_(GOPROXY_TITLE)
+            return self.parseLine(line[pos:])
         while line.startswith('\x1b['):
             line = line[2:]
             color_number = int(line.split('m',1)[0])
-            print color_number
             if 30 <= color_number < 38:
                 self.console_color = ColorSet[color_number-30]
             elif color_number == 0:
@@ -175,7 +190,7 @@ class GoProxyMacOS(NSObject):
     def setautoproxy_(self, notification):
         network = 'Wi-Fi'
         pac = 'http://127.0.0.1:8087/proxy.pac'
-        cmd = 'networksetup -setautoproxystate %s on; networksetup -setautoproxyurl %s %s' % (network, network, pac)
+        cmd = 'networksetup -setautoproxyurl %s %s' % (network, pac)
         os.system(cmd)
 
     def show_(self, notification):
@@ -213,3 +228,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
