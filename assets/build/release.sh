@@ -35,6 +35,7 @@ RELEASE_URL=https://github.com/phuslu/goproxy-ci/releases/latest
 fi
 
 RELEASE_FILES=$(curl -ksSL ${RELEASE_URL} | grep -oP '(goproxy|source)[^/]*\.(tar|gz|bz2|xz|7z|zip)' | uniq)
+RELEASE_MESSAGE="https://github.com/phuslu/goproxy-ci/releases/tag/$(echo ${RELEASE_FILES} | grep -oP 'r\d\d\d\d' | head -1)"
 
 pushd $(mktemp -d -p .)
 git init
@@ -43,7 +44,7 @@ git config user.email "${GITHUB_USER}@noreply.github.com"
 git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}
 git fetch origin master
 git checkout -b master FETCH_HEAD
-env GIT_COMMITTER_DATE='Mon Jul 12 10:00 2010 +0800' git commit --amend --no-edit --allow-empty --date='Mon Jul 12 10:00 2010 +0800' -m "init" -m "${RELEASE_FILES}"
+env GIT_COMMITTER_DATE='Mon Jul 12 10:00 2010 +0800' git commit --amend --no-edit --allow-empty --date='Mon Jul 12 10:00 2010 +0800' -m "${RELEASE_MESSAGE}" -m "${RELEASE_FILES}"
 git push -f origin master
 popd
 
