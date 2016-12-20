@@ -1,5 +1,7 @@
 #!/bin/bash
 
+export LATEST=${LATEST:-false}
+
 set -e
 
 WHICH=$(which which || echo 'type -p')
@@ -95,7 +97,11 @@ for USER_JSON_FILE in *.user.json; do
 done
 
 echo "1. Checking GoProxy Version"
-FILENAME=$(curl https://github.com/phuslu/goproxy-ci/commits/master | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
+if test "${LATEST}" = "false"; then
+	FILENAME=$(curl https://github.com/phuslu/goproxy-ci/commits/master | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
+else
+	FILENAME=$(curl -L https://github.com/phuslu/goproxy-ci/releases/latest | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
+fi
 REMOTEVERSION=$(echo ${FILENAME} | awk -F'.' '{print $1}' | awk -F'-' '{print $2}')
 if test -z "${REMOTEVERSION}"; then
 	echo "Cannot detect ${FILENAME_PREFIX} version"
