@@ -1,4 +1,4 @@
-(/usr/bin/env python2.7 -x "$0" >/dev/null 2>&1 &); kill $(ps -o ppid= -p $(ps -o ppid= -p $(ps -o ppid= -p $$))); exit
+(/usr/bin/env python2.7 -x "$0" >/dev/null 2>&1 &); exit
 # coding:utf-8
 # Contributor:
 #      Phus Lu        <phuslu@hotmail.com>
@@ -189,18 +189,33 @@ class GoProxyMacOS(NSObject):
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
 
     def setproxy0_(self, notification):
+        cmds = []
         network = 'Wi-Fi'
-        cmd = 'networksetup -setwebproxystate %s off && networksetup -setsecurewebproxystate %s off' % (network, network)
+        cmds.append('networksetup -setwebproxystate %s off' % network)
+        cmds.append('networksetup -setsecurewebproxystate %s off' % network)
+        cmds.append('networksetup -setautoproxystate %s off' % network)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
         os.system(cmd)
 
     def setproxy1_(self, notification):
+        cmds = []
         network = 'Wi-Fi'
-        cmd = 'networksetup -setautoproxyurl %s http://127.0.0.1:8087/proxy.pac' % network
+        cmds.append('networksetup -setautoproxyurl %s http://127.0.0.1:8087/proxy.pac' % network)
+        cmds.append('networksetup -setautoproxystate %s on' % network)
+        cmds.append('networksetup -setwebproxystate %s off' % network)
+        cmds.append('networksetup -setsecurewebproxystate %s off' % network)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
         os.system(cmd)
 
     def setproxy2_(self, notification):
+        cmds = []
         network = 'Wi-Fi'
-        cmd = 'networksetup -setwebproxy %s 127.0.0.1:8087 && networksetup -setsecurewebproxy %s 127.0.0.1:8087' % (network, network)
+        cmds.append('networksetup -setwebproxy %s 127.0.0.1 8087' % network)
+        cmds.append('networksetup -setwebproxystate %s on' % network)
+        cmds.append('networksetup -setsecurewebproxy %s 127.0.0.1 8087' % network)
+        cmds.append('networksetup -setsecurewebproxystate %s on' % network)
+        cmds.append('networksetup -setautoproxystate %s off' % network)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
         os.system(cmd)
 
     def show_(self, notification):
