@@ -333,7 +333,7 @@ function clean() {
 	echo
 	echo 'sha1sum *'
 	sha1sum * | xargs -n1 -i echo -e "\e[1;32m{}\e[0m"
-	popd
+	popd >/dev/null
 	rm -rf ${WORKING_DIR}
 
 	set -ex
