@@ -3,6 +3,8 @@
 set -ex
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
+export GITHUB_USER_NAME=${GITHUB_USER_NAME:-"Phus Lu"}
+export GITHUB_USER_EMAIL=${GITHUB_USER_EMAIL:-phuslu@hotmail.com}
 export GITHUB_REPO=goproxy
 export GITHUB_CI_REPO=goproxy-ci
 export GITHUB_TAG=${GITHUB_TAG}
@@ -39,8 +41,8 @@ RELEASE_MESSAGE="https://github.com/phuslu/goproxy-ci/releases/tag/$(echo ${RELE
 
 pushd $(mktemp -d -p .)
 git init
-git config user.name "${GITHUB_USER}"
-git config user.email "${GITHUB_USER}@noreply.github.com"
+git config user.name "${GITHUB_USER_NAME}"
+git config user.email "${GITHUB_USER_EMAIL}"
 git remote add origin https://${GITHUB_USER}:${GITHUB_TOKEN}@github.com/${GITHUB_USER}/${GITHUB_CI_REPO}
 git fetch origin master
 git checkout -b master FETCH_HEAD
