@@ -162,33 +162,28 @@ function build_repo() {
 		fi
 	fi
 
-	for OSARCH in \
-				darwin/amd64 \
-				freebsd/386 \
-				freebsd/amd64 \
-				freebsd/arm \
-				linux/386 \
-				linux/amd64 \
-				linux/arm \
-				linux/arm64 \
-				linux/mips \
-				linux/mips64 \
-				linux/mips64le \
-				linux/mipsle \
-				windows/386 \
-				windows/amd64
-	do
-		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
-	done
-
-	for OSARCH in \
-				linux/arm
-	do
-		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/} CGO_ENABLED=1
-	done
+	cat <<EOF |
+make GOOS=darwin GOARCH=amd64 CGO_ENABLED=0
+make GOOS=freebsd GOARCH=386 CGO_ENABLED=0
+make GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0
+make GOOS=freebsd GOARCH=arm CGO_ENABLED=0
+make GOOS=linux GOARCH=386 CGO_ENABLED=0
+make GOOS=linux GOARCH=amd64 CGO_ENABLED=0
+make GOOS=linux GOARCH=arm CGO_ENABLED=0
+make GOOS=linux GOARCH=arm CGO_ENABLED=1
+make GOOS=linux GOARCH=arm64 CGO_ENABLED=0
+make GOOS=linux GOARCH=mips CGO_ENABLED=0
+make GOOS=linux GOARCH=mips64 CGO_ENABLED=0
+make GOOS=linux GOARCH=mips64le CGO_ENABLED=0
+make GOOS=linux GOARCH=mipsle CGO_ENABLED=0
+make GOOS=windows GOARCH=386 CGO_ENABLED=0
+make GOOS=windows GOARCH=amd64 CGO_ENABLED=0
+EOF
+	xargs --max-procs=5 -n1 -i bash -c {}
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
+	test $(ls -1 ${WORKING_DIR}/r${RELEASE} | wc -l) -eq 15
 
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
 
