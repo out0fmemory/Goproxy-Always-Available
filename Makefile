@@ -1,16 +1,20 @@
 REVSION = $(shell git rev-list --count HEAD)
 HTTP2REV = $(shell (cd $$GOPATH/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h"))
 
-REPO = $(shell git rev-parse --show-toplevel)
-PACKAGE = $(shell basename $(REPO))
-BUILDROOT = $(REPO)/build
-STAGEDIR = $(BUILDROOT)/stage
-OBJECTDIR = $(BUILDROOT)/obj
-DISTDIR = $(BUILDROOT)/dist
-
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 CGO_ENABLED ?= 0
+
+REPO = $(shell git rev-parse --show-toplevel)
+PACKAGE = $(shell basename $(REPO))
+ifeq ($(CGO_ENABLED), 0)
+	BUILDROOT = $(REPO)/build/$(GOOS)_$(GOARCH)
+else
+	BUILDROOT = $(REPO)/build/$(GOOS)_$(GOARCH)_cgo
+endif
+STAGEDIR = $(BUILDROOT)/stage
+OBJECTDIR = $(BUILDROOT)/obj
+DISTDIR = $(BUILDROOT)/dist
 
 ifeq ($(GOOS), windows)
 	GOPROXY_EXE = $(PACKAGE).exe
