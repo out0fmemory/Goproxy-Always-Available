@@ -8,12 +8,13 @@ GoProxy 对 golang 周边库做了一些修改。具体的改动请见，
 
 所以编译需要从 golang 工具链开始编译, 以下步骤都假设你的工作目录位于 ~/workspace/goproxy/
 
-- 保证系统安装了如下工具 awk/git/tar/bzip2/xz/7za/gcc/make，检查命令：
+- 保证系统安装了如下工具 awk/git/tar/bzip2/xz/7za/gcc/make/sha1sum/timeout/xargs，检查命令：
 ```bash
-for CMD in curl awk git tar bzip2 xz 7za gcc make
+for CMD in curl awk git tar bzip2 xz 7za gcc make sha1sum timeout xargs
 do
-	if ! $(which ${CMD} >/dev/null 2>&1); then
-		echo "tool ${CMD} is not installed, abort."
+	if ! type -p ${CMD}; then
+		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
+		exit 1
 	fi
 done
 ```
@@ -37,6 +38,7 @@ export PATH=$PATH:~/workspace/goproxy/go/bin
 ```bash
 git clone https://github.com/phuslu/goproxy
 cd goproxy
+git checkout master
 
 awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v -u {}
 
