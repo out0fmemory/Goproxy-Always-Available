@@ -85,7 +85,7 @@ function build_go() {
 	go version
 	go env
 	echo
-	env | grep -v GITHUB_TOKEN
+	env | grep -v GITHUB_TOKEN | grep -v BINTRAY_KEY | grep -v SOURCEFORGE_PASSWORD
 	echo '================================================================================'
 	set -ex
 
@@ -183,7 +183,7 @@ EOF
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
-	test $(ls -1 ${WORKING_DIR}/r${RELEASE} | wc -l) -eq 15
+	# test $(ls -1 ${WORKING_DIR}/r${RELEASE} | wc -l) -eq 15
 
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
 
