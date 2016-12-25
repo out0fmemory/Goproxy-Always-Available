@@ -406,9 +406,8 @@ func (f *Filter) FilterName() string {
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	var tr http.RoundTripper = f.GAETransport
-	var ocsp string = "http://clients1.google.com/ocsp"
 
-	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) && !strings.EqualFold(req.RequestURI, ocsp) {
+	if req.URL.Scheme == "http" && f.ForceHTTPSMatcher.Match(req.Host) && req.URL.Path != "/ocsp" {
 		if !strings.HasPrefix(req.Header.Get("Referer"), "https://") {
 			u := strings.Replace(req.URL.String(), "http://", "https://", 1)
 			glog.V(2).Infof("GAE FORCEHTTPS get raw url=%v, redirect to %v", req.URL.String(), u)
