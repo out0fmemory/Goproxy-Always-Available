@@ -81,6 +81,7 @@ function build_go() {
 	echo '================================================================================'
 	cat /etc/issue
 	uname -a
+	lscpu
 	echo
 	go version
 	go env
@@ -179,7 +180,7 @@ make GOOS=linux GOARCH=mipsle CGO_ENABLED=0
 make GOOS=windows GOARCH=386 CGO_ENABLED=0
 make GOOS=windows GOARCH=amd64 CGO_ENABLED=0
 EOF
-	xargs --max-procs=5 -n1 -i bash -c {}
+	xargs --max-procs=16 -n1 -i bash -c {}
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
