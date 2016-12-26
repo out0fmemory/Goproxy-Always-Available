@@ -1,7 +1,6 @@
 (/usr/bin/python2.7 -x "$0" >/dev/null 2>&1 &); exit
+#!/usr/bin/python2.7
 # coding:utf-8
-# Contributor:
-#      Phus Lu        <phuslu@hotmail.com>
 
 __version__ = '1.6'
 
@@ -41,19 +40,21 @@ import ctypes.util
 from PyObjCTools import AppHelper
 from AppKit import *
 
-ColorSet=[NSColor.whiteColor(),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0),
-          NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
+ColorSet = [NSColor.whiteColor(),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.67578125,0.67578125,0.15234375,1.0),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.28515625,0.1796875,0.87890625,1.0),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.82421875,0.21875,0.82421875,1.0),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.19921875,0.73046875,0.78125,1.0),
+            NSColor.colorWithDeviceRed_green_blue_alpha_(0.79296875,0.796875,0.80078125,1.0)]
+
+ConsoleFont = NSFont.fontWithName_size_("Monaco", 12.0)
 
 
 class GoProxyMacOS(NSObject):
 
-    console_color=ColorSet[0]
+    console_color = ColorSet[0]
 
     def applicationDidFinishLaunching_(self, notification):
         self.setupUI()
@@ -103,7 +104,7 @@ class GoProxyMacOS(NSObject):
         self.statusitem.setMenu_(self.menu)
 
         # Console window
-        frame = NSMakeRect(0, 0, 550, 350)
+        frame = NSMakeRect(0, 0, 640, 480)
         self.console_window = NSWindow.alloc().initWithContentRect_styleMask_backing_defer_(frame, NSClosableWindowMask | NSTitledWindowMask, NSBackingStoreBuffered, False)
         self.console_window.setTitle_(GOPROXY_TITLE)
         self.console_window.setDelegate_(self)
@@ -117,7 +118,6 @@ class GoProxyMacOS(NSObject):
 
         self.console_view = NSTextView.alloc().initWithFrame_(frame)
         self.console_view.setBackgroundColor_(NSColor.blackColor())
-        self.console_view.setFont_(NSFont.fontWithName_size_("Monaco", 12.0))
         self.console_view.setRichText_(True)
         self.console_view.setVerticallyResizable_(True)
         self.console_view.setHorizontallyResizable_(True)
@@ -178,10 +178,13 @@ class GoProxyMacOS(NSObject):
         console_line = NSMutableAttributedString.alloc().initWithString_(line)
         console_line.addAttribute_value_range_(NSForegroundColorAttributeName, self.console_color, NSMakeRange(0,len(line)))
         self.console_view.textStorage().appendAttributedString_(console_line)
+        self.console_view.textStorage().setFont_(ConsoleFont)
         need_scroll = NSMaxY(self.console_view.visibleRect()) >= NSMaxY(self.console_view.bounds())
         if need_scroll:
             range = NSMakeRange(len(self.console_view.textStorage().mutableString()), 0)
             self.console_view.scrollRangeToVisible_(range)
+        # self.console_view.textContainer().setWidthTracksTextView_(False)
+        # self.console_view.textContainer().setContainerSize_((640, 480))
 
     def readProxyOutput(self):
         while(True):
