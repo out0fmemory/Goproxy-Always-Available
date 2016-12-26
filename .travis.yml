@@ -18,11 +18,12 @@ branches:
 addons:
   apt:
     packages:
-      - p7zip-full
-      - lftp
+      - g++-mingw-w64
       - gcc-4.8-multilib-arm-linux-gnueabihf
-      - libc6-dev-armhf-cross
       - gcc-arm-linux-gnueabihf
+      - lftp
+      - libc6-dev-armhf-cross
+      - p7zip-full
 
 notifications:
   webhooks:
