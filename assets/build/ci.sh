@@ -16,7 +16,7 @@ export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 export GOBRANCH=${GOBRANCH:-master}
-export BUILD_TASKBAR=${BUILD_TASKBAR:-false}
+export BUILD_TASKBAR=${BUILD_TASKBAR:-true}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
@@ -166,10 +166,14 @@ function build_repo() {
 
 	if [ "${BUILD_TASKBAR}" != "false" ]; then
 		cd assets/taskbar
+
 		i686-w64-mingw32-windres taskbar.rc -O coff -o taskbar.res
-		i686-w64-mingw32-g++ -Os -O3 -m32 -s -fno-exceptions -fno-rtti -fno-ident -flto -nostdlib -c -Wall taskbar.cpp
-		i686-w64-mingw32-g++ -static -o goproxy-gui.exe taskbar.o taskbar.res -lkernel32 -luser32 -lrasapi32 -lshell32 -lpsapi -ladvapi32 -lwininet
+		i686-w64-mingw32-g++ -m32 -c -Wall taskbar.cpp
+		i686-w64-mingw32-g++ -static -o goproxy-gui.exe taskbar.o taskbar.res -lpsapi -ladvapi32 -lwininet
+		strip goproxy-gui.exe
+
 		cp -f goproxy-gui.exe ../packaging/
+
 		cd ../..
 	fi
 
