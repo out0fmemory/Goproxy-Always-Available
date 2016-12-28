@@ -13,13 +13,13 @@
 #include <psapi.h>
 #include "resource.h"
 
-// #pragma comment(lib, "rasapi32.lib")
-// #pragma comment(lib, "shell32.lib")
-// #pragma comment(lib, "psapi.lib")
-// #pragma comment(lib, "advapi32.lib")
-// #pragma comment(lib, "wininet.lib")
-
+#ifndef __cplusplus
+#undef NULL
+#define NULL 0
+extern WINBASEAPI HWND WINAPI GetConsoleWindow();
+#else
 extern "C" WINBASEAPI HWND WINAPI GetConsoleWindow();
+#endif
 
 #define NID_UID 123
 #define WM_TASKBARNOTIFY WM_USER+20
@@ -89,7 +89,7 @@ static BOOL MyEndTask(DWORD pid)
 	return _wsystem(szCmd) == 0;
 }
 
-BOOL ShowTrayIcon(LPCTSTR lpszProxy, DWORD dwMessage=NIM_ADD)
+BOOL ShowTrayIcon(LPCTSTR lpszProxy, DWORD dwMessage)
 {
 	NOTIFYICONDATA nid;
 	ZeroMemory(&nid, sizeof(NOTIFYICONDATA));
@@ -116,7 +116,7 @@ BOOL ShowTrayIcon(LPCTSTR lpszProxy, DWORD dwMessage=NIM_ADD)
 			lstrcpy(nid.szTip, szTooltip);
 		}
 	}
-	Shell_NotifyIcon(dwMessage, &nid);
+	Shell_NotifyIcon(dwMessage?dwMessage:NIM_ADD, &nid);
 	return TRUE;
 }
 
@@ -172,7 +172,7 @@ LPCTSTR GetWindowsProxy()
 }
 
 
-BOOL SetWindowsProxy(WCHAR* szProxy, const WCHAR* szProxyInterface=NULL)
+BOOL SetWindowsProxy(WCHAR* szProxy, const WCHAR* szProxyInterface)
 {
 	INTERNET_PER_CONN_OPTION_LIST conn_options;
 	BOOL    bReturn;
@@ -491,7 +491,10 @@ BOOL ReloadCmdline()
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static const UINT WM_TASKBARCREATED = ::RegisterWindowMessage(L"TaskbarCreated");
+	static UINT WM_TASKBARCREATED = 0;
+	if (WM_TASKBARCREATED == 0)
+		WM_TASKBARCREATED = RegisterWindowMessage(L"TaskbarCreated");
+
 	UINT nID;
 	switch (message)
 	{
@@ -534,7 +537,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			else if (WM_TASKBARNOTIFY_MENUITEM_PROXYLIST_BASE <= nID && nID <= WM_TASKBARNOTIFY_MENUITEM_PROXYLIST_BASE+sizeof(lpProxyList)/sizeof(lpProxyList[0]))
 			{
 				WCHAR *szProxy = lpProxyList[nID-WM_TASKBARNOTIFY_MENUITEM_PROXYLIST_BASE];
-				SetWindowsProxy(szProxy);
+				SetWindowsProxy(szProxy, NULL);
 				SetWindowsProxyForAllRasConnections(szProxy);
 				ShowTrayIcon(szProxy, NIM_MODIFY);
 			}
@@ -578,7 +581,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
-int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdShow)
+int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 {
 	MSG msg;
 	hInst = hInstance;
@@ -592,7 +595,7 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdSh
 	}
 	CreateConsole();
 	ExecCmdline();
-	ShowTrayIcon(GetWindowsProxy());
+	ShowTrayIcon(GetWindowsProxy(), NIM_ADD);
 	TryDeleteUpdateFiles();
 	while (GetMessage(&msg, NULL, 0, 0))
 	{
@@ -601,4 +604,3 @@ int APIENTRY WinMain(HINSTANCE hInstance, HINSTANCE, LPSTR lpCmdLine, int nCmdSh
 	}
 	return 0;
 }
-
