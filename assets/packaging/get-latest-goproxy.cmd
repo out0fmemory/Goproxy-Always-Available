@@ -65,7 +65,7 @@ if exist "goproxy.exe" (
     )
 )
 if not "%localversion%" == "" (
-    echo 0. Local Goproxy version %localversion%
+    echo 0. Local GoProxy version %localversion%
 )
 
 set remoteversion=
@@ -115,11 +115,9 @@ set filename=!filename_prefix!-!remoteversion!.7z
             move /y "%%~I" "~%%~nI.%localversion%.%%~xI.tmp"
         )
     )
-    ~%filename%.exe -y
-    title 4. Update %filename% OK
-    echo 4. Update %filename% OK
+    ~%filename%.exe -y || echo "Failed to update GoProxy, please retry."
 )
 
 :quit
     del /f ~* 1>NUL 2>NUL
-    pause >NUL
+    pause
