@@ -98,9 +98,9 @@ done
 
 echo "1. Checking GoProxy Version"
 if test "${LATEST}" = "false"; then
-	FILENAME=$(curl https://github.com/phuslu/goproxy-ci/commits/master | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
+	FILENAME=$(curl -k https://github.com/phuslu/goproxy-ci/commits/master | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
 else
-	FILENAME=$(curl -L https://github.com/phuslu/goproxy-ci/releases/latest | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
+	FILENAME=$(curl -kL https://github.com/phuslu/goproxy-ci/releases/latest | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
 fi
 REMOTEVERSION=$(echo ${FILENAME} | awk -F'.' '{print $1}' | awk -F'-' '{print $2}')
 if test -z "${REMOTEVERSION}"; then
