@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: YCV+XP85A/5r2frNmwJH4w
+! Checksum: BaEvEIDKR20ydYrXhBHfrA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 06 Dec 2016 14:02:06 +0100
+! Last Modified: Wed, 28 Dec 2016 05:24:15 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -163,6 +163,7 @@
 ||wingamestore.com
 ||wizcrafts.net
 ||xfinity.com
+||ytn.co.kr
 ||zattoo.com
 ||zozotown.com
 
@@ -1168,6 +1169,8 @@ busytrade.com
 .buugaa.com
 .buzzhand.com
 .buzzhand.net
+.buzzorange.com
+||buzzorange.com
 bwsj.hk
 ||bx.tl
 holz.byethost8.com
@@ -1718,6 +1721,7 @@ dpp.org.tw
 .drmingxia.org
 |http://drmingxia.org
 ||dropbox.com
+||api.dropboxapi.com
 ||dropboxusercontent.com
 drsunacademy.com
 .drtuber.com
@@ -4904,6 +4908,8 @@ tangben.com
 |http://taoism.net
 .taolun.info
 ||taolun.info
+.tapatalk.com
+||tapatalk.com
 blog.taragana.com
 .tascn.com.au
 ||taup.net
@@ -4967,6 +4973,7 @@ thehousenews.com
 ||theinitium.com
 ||thelifeyoucansave.com
 .thenewslens.com
+||thenewslens.com
 .thepiratebay.org
 ||thepiratebay.org
 !--||thepiratebay.se
@@ -6291,7 +6298,6 @@ taipei.gov.tw
 @@||aliyun.com
 @@||baidu.com
 !--@@||bing.com
-@@||bt.byr.cn
 @@||chinaso.com
 @@||chinaz.com
 @@|http://nrch.culture.tw/
@@ -6308,7 +6314,6 @@ taipei.gov.tw
 @@|http://www.google.cn/maps
 @@||http2.golang.org
 @@||gov.cn
-@@||bt.neu6.edu.cn
 @@||qq.com
 @@||sina.cn
 @@||sina.com.cn
