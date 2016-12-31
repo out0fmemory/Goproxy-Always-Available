@@ -215,6 +215,41 @@ EOF
 		cat ${WORKING_DIR}/${GITHUB_REPO}/assets/packaging/7zCon.sfx ${FILE} >${FILE}.exe
 		/bin/mv ${FILE}.exe ${FILE}
 	done
+
+	APPNAME=goproxy-macos
+	mkdir -p ${APPNAME}.app/Contents/{MacOS,Resources}
+	tar xvpf goproxy_macos_amd64-r${RELEASE}.tar.bz2 -C ${APPNAME}.app/Contents/MacOS/
+	cp ${WORKING_DIR}/${GITHUB_REPO}/assets/packaging/${APPNAME}.icns ${APPNAME}.app/Contents/Resources/
+	cat <<EOF > ${APPNAME}.app/Contents/Info.plist
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+        <key>CFBundleExecutable</key>
+        <string>${APPNAME}</string>
+        <key>CFBundleGetInfoString</key>
+        <string>${APPNAME}</string>
+        <key>CFBundleIconFile</key>
+        <string>${APPNAME}</string>
+        <key>CFBundleName</key>
+        <string>${APPNAME}</string>
+        <key>CFBundlePackageType</key>
+        <string>APPL</string>
+</dict>
+</plist>
+EOF
+	cat <<EOF > ${APPNAME}.app/Contents/MacOS/${APPNAME}
+#!/usr/bin/python2.7
+import os
+__file__ = os.path.join(os.path.dirname(__file__), 'goproxy-macos.command')
+text = open(__file__, 'rb').read()
+code = compile(text[text.index('\n'):], __file__, 'exec')
+exec code
+EOF
+	chmod +x ${APPNAME}.app/Contents/MacOS/goproxy-macos
+	BZIP=-9 tar cvjpf goproxy_macos_app-r${RELEASE}.tar.bz2 ${APPNAME}.app
+	rm -rf ${APPNAME}.app
+
 	ls -lht
 
 	popd
