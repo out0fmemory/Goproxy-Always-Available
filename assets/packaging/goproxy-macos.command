@@ -33,6 +33,7 @@ import sys
 import subprocess
 import pty
 import os
+import glob
 import base64
 import ctypes
 import ctypes.util
@@ -241,6 +242,13 @@ class GoProxyMacOS(NSObject):
         NSApp.terminate_(self)
 
 
+def precheck():
+    has_user_json = glob.glob('*.user.json') != []
+    if not has_user_json:
+        os.system('osascript -e \'display dialog "Please configure your goproxy at first." buttons {"OK"} default button 1 with icon caution with title "GoProxy For macOS"\'')
+        os.system('open "%s"' % os.path.dirname(__file__))
+
+
 def main():
     global __file__
     __file__ = os.path.abspath(__file__)
@@ -248,6 +256,7 @@ def main():
         __file__ = getattr(os, 'readlink', lambda x: x)(__file__)
     os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
+    precheck()
     app = NSApplication.sharedApplication()
     delegate = GoProxyMacOS.alloc().init()
     app.setDelegate_(delegate)
