@@ -24,6 +24,7 @@ set -e
 PACKAGE_NAME=goproxy
 PACKAGE_DESC="a go proxy"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
+SUDO=$(test $(id -u) = 0 || echo sudo)
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
@@ -31,6 +32,11 @@ start() {
     mkdir -p ${log_dir}
     nohup ./goproxy -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
     echo "${PACKAGE_NAME}."
+    if [ -d '/etc/logrotate.d/' ]; then
+        if [ ! -f '/etc/logrotate.d/goproxy' ]; then
+            echo "Dont Forget: $(SUDO) cp $(pwd)/logrotate.conf /etc/logrotate.d/goproxy"
+        fi
+    fi
 }
 
 stop() {
