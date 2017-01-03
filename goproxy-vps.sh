@@ -24,16 +24,18 @@ set -e
 PACKAGE_NAME=goproxy-vps
 PACKAGE_DESC="a go proxy vps"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
+SUDO=$(test $(id -u) = 0 || echo sudo)
 DOAMIN_FILE=acme_domain.txt
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
     test -f ${DOAMIN_FILE} || echo "Please put your vps domain name to ./${DOAMIN_FILE}"
     local acmedomain=${DOAMIN:-$(cat ${DOAMIN_FILE})}
+    local extra_args=$(cat ./extra-args.txt 2>/dev/null | tr '\n' ' ')
     local log_dir=$(test -d "/var/log" && echo "/var/log/goproxy" || echo "$(pwd)/logs")
     mkdir -p ${log_dir}
-    nohup /opt/goproxy-vps/goproxy-vps -addr=:443 -acmedomain=${acmedomain} -tls12 -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
-    echo "\e[1;32m${PACKAGE_NAME}\e[0m\n"
+    nohup ./goproxy-vps -addr=:443 -acmedomain=${acmedomain} -v=2 -logtostderr=0 -log_dir=${log_dir} -tls12 ${extra_args} >/dev/null 2>&1 &
+    echo -e "\e[1;32m${PACKAGE_NAME}\e[0m\n"
 }
 
 stop() {
@@ -52,11 +54,12 @@ usage() {
     exit 1
 }
 
-if readlink --help | grep -q -w -- '-f'; then
-    cd "$(dirname "$(readlink -f "$0")")"
-else
-    cd "$(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")"
+if [ -n "${SUDO}" ]; then
+    echo -e "\e[1;32mPlease run as root\e[0m\n"
 fi
+
+linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
+cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 case "$1" in
     start)

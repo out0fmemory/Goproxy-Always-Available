@@ -2,11 +2,8 @@
 
 set -e
 
-if readlink --help | grep -q -w -- '-f'; then
-    cd "$(dirname "$(readlink -f "$0")")"
-else
-    cd "$(python -c "import os; print(os.path.dirname(os.path.realpath('$0')))")"
-fi
+linkpath=$(ls -l "$0" 2>/dev/null | sed "s/.*->\s*//")
+cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 FILENAME_PREFIX=
 case $(uname -s)/$(uname -m) in
@@ -98,5 +95,21 @@ esac
 tar -xvpf ${FILENAME%.*} --strip-components $(tar -tf ${FILENAME%.*} | head -1 | grep -c '/')
 rm -f ${FILENAME%.*}
 
-echo "4. Done"
+echo "4. Configure goproxy-vps"
+
+if [ ! -f acme_domain.txt ]; then
+	read -p "Please input your domain:" acme_domain </dev/tty
+	if test -n "${acme_domain}"; then
+		echo ${acme_domain} >acme_domain.txt
+	fi
+fi
+
+if [ ! -f extra-args.txt ]; then
+	read -p "Enable PAM Auth for goproxy-vps? [y/N]:" pwauth </dev/tty
+	if test "${pwauth}" = "y"; then
+		echo "-pwauth" >extra-args.txt
+	fi
+fi
+
+echo "5. Done"
 
