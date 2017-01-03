@@ -32,15 +32,14 @@ start() {
     test -f ${DOAMIN_FILE} || echo "Please put your vps domain name to ./${DOAMIN_FILE}"
     local acmedomain=${DOAMIN:-$(cat ${DOAMIN_FILE})}
     local extra_args=$(cat ./extra-args.txt 2>/dev/null | tr '\n' ' ')
-    local log_dir=$(test -d "/var/log" && echo "/var/log/goproxy" || echo "$(pwd)/logs")
-    mkdir -p ${log_dir}
+    local log_dir=$(test -d /var/log/goproxy || (mkdir -p /var/log/goproxy 2>/dev/null && echo /var/log/goproxy) || (mkdir -p logs && echo "$(pwd)/logs"))
     nohup ./goproxy-vps -addr=:443 -acmedomain=${acmedomain} -v=2 -logtostderr=0 -log_dir=${log_dir} -tls12 ${extra_args} >/dev/null 2>&1 &
-    echo -e "\e[1;32m${PACKAGE_NAME}\e[0m\n"
+    echo "${PACKAGE_NAME}"
 }
 
 stop() {
     echo -n "Stopping ${PACKAGE_DESC}: "
-    killall goproxy-vps && echo -e "\e[1;32m${PACKAGE_NAME}\e[0m\n" || echo -e "\e[1;31m${PACKAGE_NAME}\e[0m\n"
+    killall goproxy-vps && echo "${PACKAGE_NAME}" || echo "${PACKAGE_NAME}"
 }
 
 restart() {
@@ -55,7 +54,7 @@ usage() {
 }
 
 if [ -n "${SUDO}" ]; then
-    echo -e "\e[1;32mPlease run as root\e[0m\n"
+    echo "ERROR: Please run as root"
 fi
 
 linkpath=$(ls -l "$0" | sed "s/.*->\s*//")

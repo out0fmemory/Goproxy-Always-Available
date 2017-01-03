@@ -98,7 +98,7 @@ rm -f ${FILENAME%.*}
 echo "4. Configure goproxy-vps"
 
 if [ ! -f acme_domain.txt ]; then
-	read -p "Please input your domain:" acme_domain </dev/tty
+	read -p "Please input your domain: " acme_domain </dev/tty
 	if test -n "${acme_domain}"; then
 		echo ${acme_domain} >acme_domain.txt
 	fi
@@ -112,4 +112,6 @@ if [ ! -f extra-args.txt ]; then
 fi
 
 echo "5. Done"
+echo
+echo "Please run \"sudo $(pwd)/goproxy-vps.sh start\""
 
