@@ -33,6 +33,7 @@ import sys
 import subprocess
 import pty
 import os
+import re
 import glob
 import base64
 import ctypes
@@ -52,6 +53,59 @@ ColorSet = [NSColor.whiteColor(),
 
 ConsoleFont = NSFont.fontWithName_size_("Monaco", 12.0)
 
+class GoProxyHelpers(object):
+
+    def __init__(self):
+        self.__network_location = ''
+
+    @property
+    def network_location(self):
+        if self.__network_location == '':
+            s = os.popen('system_profiler SPNetworkDataType').read()
+            m = re.search(r'(?s)\s*([^\n]+):\s+Type:\s+AirPort', s)
+            self.__network_location = m.group(1) if m else 'Wi-Fi'
+        return self.__network_location
+
+    def set_webproxy(self, host, port):
+        assert isinstance(host, basestring) and isinstance(port, int)
+        cmds = []
+        network = self.network_location
+        cmds.append('networksetup -setwebproxy %s %s %d' % (network, host, port))
+        cmds.append('networksetup -setwebproxystate %s on' % network)
+        cmds.append('networksetup -setsecurewebproxy %s %s %d' % (network, host, port))
+        cmds.append('networksetup -setsecurewebproxystate %s on' % network)
+        cmds.append('networksetup -setautoproxystate %s off' % network)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
+        return os.system(cmd)
+
+    def set_autoproxy(self, url):
+        cmds = []
+        network = self.network_location
+        cmds.append('networksetup -setwebproxy %s 127.0.0.1 8087' % network)
+        cmds.append('networksetup -setwebproxystate %s on' % network)
+        cmds.append('networksetup -setsecurewebproxy %s 127.0.0.1 8087' % network)
+        cmds.append('networksetup -setsecurewebproxystate %s on' % network)
+        cmds.append('networksetup -setautoproxystate %s off' % network)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
+        return os.system(cmd)
+
+    def unset_proxy(self):
+        cmds = []
+        network = self.network_location
+        cmds.append('networksetup -setwebproxystate %s off' % network)
+        cmds.append('networksetup -setsecurewebproxystate %s off' % network)
+        cmds.append('networksetup -setautoproxystate %s off' % network)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
+        return os.system(cmd)
+
+    def import_rootca(self, certfile):
+        cmds = []
+        if not os.path.isfile(certfile):
+            raise SystemError('File %r not exists.' % certfile)
+        cmds.append('security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain %s' % certfile)
+        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
+        return os.system(cmd)
+
 
 class GoProxyMacOS(NSObject):
 
@@ -62,6 +116,7 @@ class GoProxyMacOS(NSObject):
         self.startGoProxy()
         self.notify()
         self.registerObserver()
+        self.helper = GoProxyHelpers()
 
     def windowWillClose_(self, notification):
         self.stopGoProxy()
@@ -98,6 +153,7 @@ class GoProxyMacOS(NSObject):
         menuitem.setSubmenu_(submenu)
         self.menu.addItem_(menuitem)
         # Rest Menu Item
+        self.menu.addItemWithTitle_action_keyEquivalent_('Import RootCA', self.importca_, '').setTarget_(self)
         self.menu.addItemWithTitle_action_keyEquivalent_('Reload', self.reset_, '').setTarget_(self)
         # Default event
         self.menu.addItemWithTitle_action_keyEquivalent_('Quit', self.exit_, '').setTarget_(self)
@@ -193,34 +249,17 @@ class GoProxyMacOS(NSObject):
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
 
     def setproxy0_(self, notification):
-        cmds = []
-        network = 'Wi-Fi'
-        cmds.append('networksetup -setwebproxystate %s off' % network)
-        cmds.append('networksetup -setsecurewebproxystate %s off' % network)
-        cmds.append('networksetup -setautoproxystate %s off' % network)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
-        os.system(cmd)
+        self.helper.unset_proxy()
 
     def setproxy1_(self, notification):
-        cmds = []
-        network = 'Wi-Fi'
-        cmds.append('networksetup -setautoproxyurl %s http://127.0.0.1:8087/proxy.pac' % network)
-        cmds.append('networksetup -setautoproxystate %s on' % network)
-        cmds.append('networksetup -setwebproxystate %s off' % network)
-        cmds.append('networksetup -setsecurewebproxystate %s off' % network)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
-        os.system(cmd)
+        self.helper.set_autoproxy('http://127.0.0.1:8087/proxy.pac')
 
     def setproxy2_(self, notification):
-        cmds = []
-        network = 'Wi-Fi'
-        cmds.append('networksetup -setwebproxy %s 127.0.0.1 8087' % network)
-        cmds.append('networksetup -setwebproxystate %s on' % network)
-        cmds.append('networksetup -setsecurewebproxy %s 127.0.0.1 8087' % network)
-        cmds.append('networksetup -setsecurewebproxystate %s on' % network)
-        cmds.append('networksetup -setautoproxystate %s off' % network)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
-        os.system(cmd)
+        self.helper.set_webproxy('127.0.0.1', 8087)
+
+    def importca_(self, notification):
+        certfile = './GoProxy.crt'
+        self.helper.import_rootca(certfile)
 
     def show_(self, notification):
         self.console_window.center()
@@ -265,3 +304,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
