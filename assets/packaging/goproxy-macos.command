@@ -2,7 +2,7 @@
 #!/usr/bin/python2.7
 # coding:utf-8
 
-__version__ = '2.0'
+__version__ = '2.1'
 
 GOPROXY_TITLE = "GoProxy macOS"
 GOPROXY_ICON_DATA = """\
@@ -62,8 +62,8 @@ class GoProxyHelpers(object):
     def network_location(self):
         if self.__network_location == '':
             s = os.popen('system_profiler SPNetworkDataType').read()
-            m = re.search(r'(?s)\s*([^\n]+):\s+Type:\s+AirPort', s)
-            self.__network_location = m.group(1) if m else 'Wi-Fi'
+            addrs = re.findall(r'(?is)\s*([^\n]+):\s+Type:\s+(AirPort|Ethernet).+?Addresses:\s*(\S+).+?(?:\n\n|$)', s)
+            self.__network_location = next(n for n,t,a in addrs if re.match('^[0-9a-fA-F\.:]+$', a))
         return self.__network_location
 
     def set_webproxy(self, host, port):
@@ -81,11 +81,10 @@ class GoProxyHelpers(object):
     def set_autoproxy(self, url):
         cmds = []
         network = self.network_location
-        cmds.append('networksetup -setwebproxy %s 127.0.0.1 8087' % network)
-        cmds.append('networksetup -setwebproxystate %s on' % network)
-        cmds.append('networksetup -setsecurewebproxy %s 127.0.0.1 8087' % network)
-        cmds.append('networksetup -setsecurewebproxystate %s on' % network)
-        cmds.append('networksetup -setautoproxystate %s off' % network)
+        cmds.append('networksetup -setautoproxyurl %s %s' % (network, url))
+        cmds.append('networksetup -setautoproxystate %s on' % network)
+        cmds.append('networksetup -setwebproxystate %s off' % network)
+        cmds.append('networksetup -setsecurewebproxystate %s off' % network)
         cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
         return os.system(cmd)
 
