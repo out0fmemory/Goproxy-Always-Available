@@ -1,7 +1,7 @@
 #!/bin/bash -xe
 
 export GITHUB_USER=${GITHUB_USER:-phuslu}
-export GITHUB_EMAIL=${GITHUB_EMAIL:-${GITHUB_USER}@noreply.github.com}
+export GITHUB_EMAIL=${GITHUB_EMAIL:-phuslu@hotmail.com}
 export GITHUB_REPO=${GITHUB_REPO:-goproxy}
 export GITHUB_CI_REPO=${GITHUB_CI_REPO:-goproxy-ci}
 export GITHUB_COMMIT_ID=${TRAVIS_COMMIT:-${COMMIT_ID:-master}}
