@@ -2,7 +2,7 @@
 #!/usr/bin/python2.7
 # coding:utf-8
 
-__version__ = '1.6'
+__version__ = '2.0'
 
 GOPROXY_TITLE = "GoProxy macOS"
 GOPROXY_ICON_DATA = """\
