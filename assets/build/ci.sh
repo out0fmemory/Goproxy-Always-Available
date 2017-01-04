@@ -258,6 +258,8 @@ function build_repo_ex() {
 	pushd ${WORKING_DIR}/${GITHUB_REPO}
 
 	git checkout -f server.vps
+	git fetch origin server.vps
+	git reset --hard origin/server.vps
 
 	git clone --branch ${GOBRANCH} https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
