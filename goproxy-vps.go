@@ -69,6 +69,7 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 }
 
 type Handler struct {
+	ACMEDomain    string
 	PWAuthEnabled bool
 	PWAuthCache   lrucache.Cache
 	PWAuthPath    string
@@ -90,7 +91,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	if h.PWAuthEnabled {
+	if h.PWAuthEnabled && req.Host != h.ACMEDomain {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -313,6 +314,7 @@ func main() {
 	}
 
 	handler := &Handler{
+		ACMEDomain:    acmeDomain,
 		PWAuthEnabled: pwauth,
 		Transport:     transport,
 	}
