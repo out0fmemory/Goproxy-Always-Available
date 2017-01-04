@@ -319,7 +319,11 @@ func main() {
 
 	if handler.PWAuthEnabled {
 		handler.PWAuthCache = lrucache.NewLRUCache(1024)
-		handler.PWAuthPath = filepath.Join(filepath.Dir(os.Args[0]), "./pwauth")
+		exe, err := os.Executable()
+		if err != nil {
+			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
+		}
+		handler.PWAuthPath = filepath.Join(filepath.Dir(exe), "pwauth")
 		if _, err := os.Stat(handler.PWAuthPath); err != nil {
 			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
 		}
