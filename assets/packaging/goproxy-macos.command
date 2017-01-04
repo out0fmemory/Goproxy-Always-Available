@@ -101,8 +101,9 @@ class GoProxyHelpers(object):
         cmds = []
         if not os.path.isfile(certfile):
             raise SystemError('File %r not exists.' % certfile)
+        cmds.append('security delete-certificate -c GoProxy')
         cmds.append('security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain %s' % certfile)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
+        cmd = "osascript -e 'do shell script \"" + ' ; '.join(cmds) + "\" with administrator privileges'"
         return os.system(cmd)
 
 
