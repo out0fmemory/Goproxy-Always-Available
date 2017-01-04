@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
+	"github.com/juju/ratelimit"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/goproxy/httpproxy/helpers"
 	"github.com/phuslu/net/http2"
@@ -72,6 +73,9 @@ type Handler struct {
 	PWAuthEnabled bool
 	PWAuthCache   lrucache.Cache
 	PWAuthPath    string
+	Rate          float64
+	RateCapacity  int64
+	RateVIP       string
 	*http.Transport
 }
 
@@ -89,6 +93,8 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	for key := range params {
 		req.Header.Del(key)
 	}
+
+	needRate := h.Rate > 0
 
 	if h.PWAuthEnabled && req.Host != h.ACMEDomain {
 		auth := req.Header.Get("Proxy-Authorization")
@@ -118,6 +124,13 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 						}
 
 						h.PWAuthCache.Set(auth, struct{}{}, time.Now().Add(2*time.Hour))
+
+						if needRate {
+							if matched, err := filepath.Match(h.RateVIP, username); err == nil && matched {
+								needRate = false
+							}
+						}
+
 					}
 				default:
 					glog.Errorf("Unrecognized auth type: %#v", parts[0])
@@ -177,6 +190,10 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			r = lconn
 		}
 
+		if needRate {
+			r = ratelimit.Reader(r, ratelimit.NewBucketWithRate(h.Rate, h.RateCapacity))
+		}
+
 		go helpers.IOCopy(conn, r)
 		helpers.IOCopy(w, conn)
 
@@ -227,7 +244,15 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 	rw.WriteHeader(resp.StatusCode)
-	helpers.IOCopy(rw, resp.Body)
+
+	defer resp.Body.Close()
+
+	var r io.Reader = resp.Body
+	if needRate {
+		r = ratelimit.Reader(r, ratelimit.NewBucketWithRate(h.Rate, h.RateCapacity))
+	}
+
+	helpers.IOCopy(rw, r)
 }
 
 func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
@@ -263,6 +288,8 @@ func main() {
 	keyFile := "goproxy-vps.key"
 	certFile := "goproxy-vps.crt"
 	http2verbose := false
+	var rate float64
+	rateVIP := "*.vip"
 
 	flag.StringVar(&addrs, "addr", addrs, "goproxy vps listen addrs, i.e. 0.0.0.0:443,0.0.0.0:8443")
 	flag.StringVar(&acmeDomain, "acmedomain", acmeDomain, "goproxy vps acme domain, i.e. vps.example.com")
@@ -271,6 +298,8 @@ func main() {
 	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
 	flag.BoolVar(&pwauth, "pwauth", pwauth, "goproxy vps enable pwauth")
 	flag.BoolVar(&tls12, "tls12", tls12, "goproxy vps enable tls 1.2")
+	flag.Float64Var(&rate, "rate", rate, "goproxy vps rate limit")
+	flag.StringVar(&rateVIP, "ratevip", rateVIP, "goproxy vps rate vip patten")
 
 	helpers.SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
@@ -315,6 +344,9 @@ func main() {
 	handler := &Handler{
 		ACMEDomain:    acmeDomain,
 		PWAuthEnabled: pwauth,
+		Rate:          rate,
+		RateVIP:       rateVIP,
+		RateCapacity:  int64(rate) * 1024,
 		Transport:     transport,
 	}
 
