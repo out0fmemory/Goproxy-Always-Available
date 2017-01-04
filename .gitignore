@@ -1,4 +1,5 @@
 build/
+cache/
 *.crt
 *.db
 *.exe
@@ -10,4 +11,7 @@ goproxy-gtk.desktop
 goproxy-gtk.py
 goproxy-logo.png
 goproxy-macos.command
+goproxy-gui.exe
 proxy.pac
+GoProxy.crt
+GoProxy.key
