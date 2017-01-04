@@ -32,8 +32,7 @@ var (
 )
 
 var (
-	ListenAddrs string = os.Getenv("LISTEN_ADDRS")
-	ACMEDomain  string = os.Getenv("ACME_DOMAIN")
+	ACMEDomain string = os.Getenv("ACME_DOMAIN")
 )
 
 func init() {
@@ -385,9 +384,6 @@ func main() {
 	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
 
-	if ListenAddrs != "" {
-		addrs = ListenAddrs
-	}
 	for _, addr := range strings.Split(addrs, ",") {
 		ln, err := net.Listen("tcp", addr)
 		if err != nil {
