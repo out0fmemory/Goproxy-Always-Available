@@ -236,13 +236,20 @@ class GoProxyMacOS(NSObject):
 
     def notify(self):
         from Foundation import NSUserNotification, NSUserNotificationCenter
+        usernotifycenter = NSUserNotificationCenter.defaultUserNotificationCenter()
         notification = NSUserNotification.alloc().init()
         notification.setTitle_("GoProxy macOS Started.")
         notification.setSubtitle_("")
         notification.setInformativeText_("")
         notification.setSoundName_("NSUserNotificationDefaultSoundName")
         notification.setContentImage_(self.image)
-        NSUserNotificationCenter.defaultUserNotificationCenter().scheduleNotification_(notification)
+        usernotifycenter.removeAllDeliveredNotifications()
+        usernotifycenter.setDelegate_(self)
+        usernotifycenter.scheduleNotification_(notification)
+
+    def userNotificationCenter_didActivateNotification_(self, center, notification):
+        from Foundation import NSUserNotification, NSUserNotificationCenter
+        NSUserNotificationCenter.defaultUserNotificationCenter().removeAllDeliveredNotifications()
 
     def stopGoProxy(self):
         self.pipe.terminate()
