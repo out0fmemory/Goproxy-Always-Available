@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: BaEvEIDKR20ydYrXhBHfrA
+! Checksum: 6RSr+zVShHZVV6AyzVAIaA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 28 Dec 2016 05:24:15 +0100
+! Last Modified: Wed, 04 Jan 2017 19:21:59 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -472,6 +472,7 @@ blogspot.com
 .google.no
 .google.ro
 .google.sc
+.google.sh
 .google.sk
 .google.sm
 .google.tk
@@ -482,6 +483,7 @@ blogspot.com
 /^https?:\/\/([^\/]+\.)*google\.(ac|ad|ae|al|am|as|at|az|ba|be|bf|bg|bi|bj|bs|bt|by|ca|cat|cd|cf|cg|ch|ci|cl|cm|co.ao|co.bw|co.ck|co.cr|co.id|co.il|co.in|co.jp|co.ke|co.kr|co.ls|co.ma|com|com.af|com.ag|com.ai|com.ar|com.au|com.bd|com.bh|com.bn|com.bo|com.br|com.bz|com.co|com.cu|com.cy|com.do|com.ec|com.eg|com.et|com.fj|com.gh|com.gi|com.gt|com.hk|com.jm|com.kh|com.kw|com.lb|com.ly|com.mm|com.mt|com.mx|com.my|com.na|com.nf|com.ng|com.ni|com.np|com.om|com.pa|com.pe|com.pg|com.ph|com.pk|com.pr|com.py|com.qa|com.sa|com.sb|com.sg|com.sl|com.sv|com.tj|com.tr|com.tw|com.ua|com.uy|com.vc|com.vn|co.mz|co.nz|co.th|co.tz|co.ug|co.uk|co.uz|co.ve|co.vi|co.za|co.zm|co.zw|cv|cz|de|dj|dk|dm|dz|ee|es|fi|fm|fr|ga|ge|gg|gl|gm|gp|gr|gy|hk|hn|hr|ht|hu|ie|im|iq|is|it|je|jo|kg|ki|kz|la|li|lk|lt|lu|lv|md|me|mg|mk|ml|mn|ms|mu|mv|mw|mx|ne|nl|no|nr|nu|org|pl|pn|ps|pt|ro|rs|ru|rw|sc|se|sh|si|sk|sm|sn|so|sr|st|td|tg|tk|tl|tm|tn|to|tt|us|vg|vn|vu|ws)\/.*/
 !--||google-analytics.com
 !--||googleadservices.com
+||googleapis.cn
 ||googleapis.com
 ||googleapps.com
 ||googleartproject.com
@@ -646,6 +648,7 @@ taiwannation.50webs.com
 ||51jav.org
 .51luoben.com
 ||51luoben.com
+.5278.cc
 5aimiku.com
 5i01.com
 .5isotoi5.org
@@ -818,6 +821,7 @@ anontext.com
 .answering-islam.org
 |http://www.antd.org
 ||anthonycalzadilla.com
+.anti1984.com
 .antiwave.net
 |http://antiwave.net
 .anysex.com
@@ -1084,6 +1088,7 @@ boardreader.com/thread
 ||bolehvpn.net
 bonbonme.com
 .bonbonsex.com
+.bonfoundation.org
 .bongacams.com
 ||boobstagram.com
 ||book.com.tw
@@ -1890,6 +1895,7 @@ erabaru.net
 .eslite.com/Search_BW.aspx?q
 wiki.esu.im/%E8%9B%A4%E8%9B%A4%E8%AF%AD%E5%BD%95
 .etaa.org.au
+.etadult.com
 etaiwannews.com
 ||etizer.org
 ||etokki.com
@@ -2159,6 +2165,9 @@ free4u.com.ar
 |http://freevpn.me
 ||freewallpaper4.me
 .freewebs.com
+.freewechat.com
+||freewechat.com
+freeweibo.com
 ||freeweibo.com
 .freexinwen.com
 .freeyoutubeproxy.net
@@ -2363,7 +2372,7 @@ gfw.org.ua
 ||ghostpath.com
 ||ghut.org
 ||giga-web.jp
-|http://tw.gigacircle.com
+|tw.gigacircle.com
 |http://cn.giganews.com/
 gigporno.ru
 ||girlbanker.com
@@ -2425,6 +2434,8 @@ gongminliliang.com
 .gongwt.com
 |http://gongwt.com
 blog.goo.ne.jp/duck-tail_2009
+.gooday.xyz
+|http://gooday.xyz
 .goodreads.com
 ||goodreads.com
 .goodreaders.com
@@ -2717,6 +2728,7 @@ guruonline.hk
 .gyatsostudio.com
 
 !--------------------HH-------------------------
+.h528.com
 .h5dm.com
 .h5galgame.me
 ||h-china.org
@@ -3188,6 +3200,7 @@ jamaat.org
 ||janwongphoto.com
 ||japan-whores.com
 .jav68.tv
+.javhd.com
 .javhip.com
 .javakiba.org
 |http://javakiba.org
@@ -3724,6 +3737,7 @@ myactimes.com
 .mychinanet.com
 .mychinanews.com
 ||mychinanews.com
+.mychinese.news
 ||mycnnews.com
 ||mykomica.org
 mycould.com/discuz
@@ -3849,6 +3863,7 @@ nexttv.com.tw
 ngensis.com
 .nhentai.net
 |http://nhentai.net
+.nhk-ondemand.jp
 .nicovideo.jp/watch
 !--||nicovideo.jp
 ||nighost.org
@@ -3990,7 +4005,7 @@ openid.net
 openvpn.net
 ||openvpn.net
 ||openwebster.com
-|http://help.opera.com
+.openwrt.org.cn
 my.opera.com/dahema
 ||demo.opera-mini.net
 www.orchidbbs.com
@@ -4938,6 +4953,8 @@ tbswd.org
 .tcewf.org
 tchrd.org
 tcnynj.org
+.tcsofbc.org
+.tcsovi.org
 teamamericany.com
 ||techlifeweb.com
 !--technorati.com
@@ -5420,6 +5437,7 @@ twiyia.com
 |http://twtkr.com
 ||twimg.com
 .twnorth.org.tw
+twskype.com
 twtrland.com
 twurl.nl
 .twyac.org
@@ -5656,6 +5674,7 @@ vpnhq.com
 ||vpnmaster.com
 .vpninja.net
 ||vpninja.net
+||vpnintouch.net
 .vpnpick.com
 ||vpnpick.com
 ||vpnpop.com
@@ -6303,6 +6322,7 @@ taipei.gov.tw
 @@|http://nrch.culture.tw/
 !--ISP cache works sometimes, verified at drpeng + gehua.
 @@||dl.google.com
+@@||kh.google.com
 @@||fonts.googleapis.com
 @@||cn.gravatar.com
 @@||csi.gstatic.com
