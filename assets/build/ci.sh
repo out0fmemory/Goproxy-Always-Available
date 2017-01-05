@@ -389,7 +389,7 @@ build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
 	release_repo_ci
-	release_bintray
+	# release_bintray
 	release_sourceforge
 	clean
 fi
