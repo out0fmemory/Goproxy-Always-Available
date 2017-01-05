@@ -40,6 +40,7 @@ import ctypes
 import ctypes.util
 
 from PyObjCTools import AppHelper
+from AppKit import NSAlert
 from AppKit import NSApp
 from AppKit import NSAppleScript
 from AppKit import NSApplication
@@ -51,6 +52,7 @@ from AppKit import NSData
 from AppKit import NSFont
 from AppKit import NSForegroundColorAttributeName
 from AppKit import NSImage
+from AppKit import NSInformationalAlertStyle
 from AppKit import NSMakeRange
 from AppKit import NSMakeRect
 from AppKit import NSMaxY
@@ -69,6 +71,7 @@ from AppKit import NSUserNotificationDefaultSoundName
 from AppKit import NSVariableStatusItemLength
 from AppKit import NSViewHeightSizable
 from AppKit import NSViewWidthSizable
+from AppKit import NSWarningAlertStyle
 from AppKit import NSWindow
 from AppKit import NSWorkspace
 from AppKit import NSWorkspaceWillPowerOffNotification
@@ -331,7 +334,13 @@ class GoProxyMacOS(NSObject):
 def precheck():
     has_user_json = glob.glob('*.user.json') != []
     if not has_user_json:
-        os.system('osascript -e \'display dialog "Please configure your goproxy at first." buttons {"OK"} default button 1 with icon caution with title "GoProxy For macOS"\'')
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_('Please configure your goproxy at first.')
+        alert.setInformativeText_('e.g. add a new gae.user.json')
+        alert.setAlertStyle_(NSWarningAlertStyle)
+        alert.addButtonWithTitle_('OK')
+        NSApp.activateIgnoringOtherApps_(True)
+        pressed = alert.runModal()
         os.system('open "%s"' % os.path.dirname(__file__))
 
 
