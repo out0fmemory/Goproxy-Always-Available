@@ -73,6 +73,13 @@ from AppKit import NSMakeRange
 from AppKit import NSMaxY
 from AppKit import NSApplication
 
+try:
+    import setproctitle
+    setproctitle.setproctitle('goproxy-macos')
+except ImportError:
+    pass
+
+
 ColorSet = [NSColor.whiteColor(),
             NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0),
             NSColor.colorWithDeviceRed_green_blue_alpha_(0.14453125,0.734375,0.140625,1.0),
