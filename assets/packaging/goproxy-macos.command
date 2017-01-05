@@ -40,42 +40,42 @@ import ctypes
 import ctypes.util
 
 from PyObjCTools import AppHelper
-from AppKit import NSColor
-from AppKit import NSFont
-from AppKit import NSAppleScript
-from AppKit import NSObject
 from AppKit import NSApp
-from AppKit import NSStatusBar
-from AppKit import NSVariableStatusItemLength
+from AppKit import NSAppleScript
+from AppKit import NSApplication
+from AppKit import NSApplicationActivationPolicyProhibited
+from AppKit import NSBackingStoreBuffered
+from AppKit import NSClosableWindowMask
+from AppKit import NSColor
 from AppKit import NSData
+from AppKit import NSFont
+from AppKit import NSForegroundColorAttributeName
 from AppKit import NSImage
+from AppKit import NSMakeRange
+from AppKit import NSMakeRect
+from AppKit import NSMaxY
 from AppKit import NSMenu
 from AppKit import NSMenuItem
-from AppKit import NSMakeRect
-from AppKit import NSWindow
-from AppKit import NSClosableWindowMask
-from AppKit import NSTitledWindowMask
-from AppKit import NSBackingStoreBuffered
-from AppKit import NSScrollView
+from AppKit import NSMutableAttributedString
 from AppKit import NSNoBorder
-from AppKit import NSViewWidthSizable
-from AppKit import NSViewHeightSizable
+from AppKit import NSObject
+from AppKit import NSScrollView
+from AppKit import NSStatusBar
 from AppKit import NSTextView
-from AppKit import NSApplicationActivationPolicyProhibited
-from AppKit import NSWorkspace
-from AppKit import NSWorkspaceWillPowerOffNotification
+from AppKit import NSTitledWindowMask
 from AppKit import NSUserNotification
 from AppKit import NSUserNotificationCenter
 from AppKit import NSUserNotificationDefaultSoundName
-from AppKit import NSMutableAttributedString
-from AppKit import NSForegroundColorAttributeName
-from AppKit import NSMakeRange
-from AppKit import NSMaxY
-from AppKit import NSApplication
+from AppKit import NSVariableStatusItemLength
+from AppKit import NSViewHeightSizable
+from AppKit import NSViewWidthSizable
+from AppKit import NSWindow
+from AppKit import NSWorkspace
+from AppKit import NSWorkspaceWillPowerOffNotification
 
 try:
     import setproctitle
-    setproctitle.setproctitle('goproxy-macos')
+    setproctitle.setproctitle(__file__)
 except ImportError:
     pass
 
@@ -242,7 +242,6 @@ class GoProxyMacOS(NSObject):
         self.performSelectorInBackground_withObject_('readProxyOutput', None)
 
     def notify(self):
-        from Foundation import NSUserNotification, NSUserNotificationCenter
         usernotifycenter = NSUserNotificationCenter.defaultUserNotificationCenter()
         notification = NSUserNotification.alloc().init()
         notification.setTitle_("GoProxy macOS Started.")
@@ -255,7 +254,6 @@ class GoProxyMacOS(NSObject):
         usernotifycenter.scheduleNotification_(notification)
 
     def userNotificationCenter_didActivateNotification_(self, center, notification):
-        from Foundation import NSUserNotification, NSUserNotificationCenter
         NSUserNotificationCenter.defaultUserNotificationCenter().removeAllDeliveredNotifications()
 
     def stopGoProxy(self):
