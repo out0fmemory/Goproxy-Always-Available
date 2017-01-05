@@ -40,7 +40,38 @@ import ctypes
 import ctypes.util
 
 from PyObjCTools import AppHelper
-from AppKit import *
+from AppKit import NSColor
+from AppKit import NSFont
+from AppKit import NSAppleScript
+from AppKit import NSObject
+from AppKit import NSApp
+from AppKit import NSStatusBar
+from AppKit import NSVariableStatusItemLength
+from AppKit import NSData
+from AppKit import NSImage
+from AppKit import NSMenu
+from AppKit import NSMenuItem
+from AppKit import NSMakeRect
+from AppKit import NSWindow
+from AppKit import NSClosableWindowMask
+from AppKit import NSTitledWindowMask
+from AppKit import NSBackingStoreBuffered
+from AppKit import NSScrollView
+from AppKit import NSNoBorder
+from AppKit import NSViewWidthSizable
+from AppKit import NSViewHeightSizable
+from AppKit import NSTextView
+from AppKit import NSApplicationActivationPolicyProhibited
+from AppKit import NSWorkspace
+from AppKit import NSWorkspaceWillPowerOffNotification
+from AppKit import NSUserNotification
+from AppKit import NSUserNotificationCenter
+from AppKit import NSUserNotificationDefaultSoundName
+from AppKit import NSMutableAttributedString
+from AppKit import NSForegroundColorAttributeName
+from AppKit import NSMakeRange
+from AppKit import NSMaxY
+from AppKit import NSApplication
 
 ColorSet = [NSColor.whiteColor(),
             NSColor.colorWithDeviceRed_green_blue_alpha_(0.7578125,0.2109375,0.12890625,1.0),
@@ -75,8 +106,9 @@ class GoProxyHelpers(object):
         cmds.append('networksetup -setsecurewebproxy %s %s %d' % (network, host, port))
         cmds.append('networksetup -setsecurewebproxystate %s on' % network)
         cmds.append('networksetup -setautoproxystate %s off' % network)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
-        return os.system(cmd)
+        script = '''do shell script "%s" with administrator privileges''' % ' && '.join(cmds)
+        result, error = NSAppleScript.alloc().initWithSource_(script).executeAndReturnError_(None)
+        return result, error
 
     def set_autoproxy(self, url):
         cmds = []
@@ -85,8 +117,9 @@ class GoProxyHelpers(object):
         cmds.append('networksetup -setautoproxystate %s on' % network)
         cmds.append('networksetup -setwebproxystate %s off' % network)
         cmds.append('networksetup -setsecurewebproxystate %s off' % network)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
-        return os.system(cmd)
+        script = '''do shell script "%s" with administrator privileges''' % ' && '.join(cmds)
+        result, error = NSAppleScript.alloc().initWithSource_(script).executeAndReturnError_(None)
+        return result, error
 
     def unset_proxy(self):
         cmds = []
@@ -94,8 +127,9 @@ class GoProxyHelpers(object):
         cmds.append('networksetup -setwebproxystate %s off' % network)
         cmds.append('networksetup -setsecurewebproxystate %s off' % network)
         cmds.append('networksetup -setautoproxystate %s off' % network)
-        cmd = "osascript -e 'do shell script \"" + ' && '.join(cmds) + "\" with administrator privileges'"
-        return os.system(cmd)
+        script = '''do shell script "%s" with administrator privileges''' % ' && '.join(cmds)
+        result, error = NSAppleScript.alloc().initWithSource_(script).executeAndReturnError_(None)
+        return result, error
 
     def import_rootca(self, certfile):
         cmds = []
@@ -103,8 +137,9 @@ class GoProxyHelpers(object):
             raise SystemError('File %r not exists.' % certfile)
         cmds.append('security delete-certificate -c GoProxy')
         cmds.append('security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain %s' % certfile)
-        cmd = "osascript -e 'do shell script \"" + ' ; '.join(cmds) + "\" with administrator privileges'"
-        return os.system(cmd)
+        script = '''do shell script "%s" with administrator privileges''' % ' ; '.join(cmds)
+        result, error = NSAppleScript.alloc().initWithSource_(script).executeAndReturnError_(None)
+        return result, error
 
 
 class GoProxyMacOS(NSObject):
