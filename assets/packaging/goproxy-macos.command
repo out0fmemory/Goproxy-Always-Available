@@ -66,8 +66,6 @@ from AppKit import NSStatusBar
 from AppKit import NSTextView
 from AppKit import NSTitledWindowMask
 from AppKit import NSUserNotification
-from AppKit import NSUserNotificationCenter
-from AppKit import NSUserNotificationDefaultSoundName
 from AppKit import NSVariableStatusItemLength
 from AppKit import NSViewHeightSizable
 from AppKit import NSViewWidthSizable
@@ -245,6 +243,11 @@ class GoProxyMacOS(NSObject):
         self.performSelectorInBackground_withObject_('readProxyOutput', None)
 
     def notify(self):
+        try:
+            from AppKit import NSUserNotificationCenter
+            from AppKit import NSUserNotificationDefaultSoundName
+        except ImportError:
+            return
         usernotifycenter = NSUserNotificationCenter.defaultUserNotificationCenter()
         notification = NSUserNotification.alloc().init()
         notification.setTitle_("GoProxy macOS Started.")
