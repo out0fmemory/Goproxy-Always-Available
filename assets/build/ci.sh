@@ -114,7 +114,7 @@ function build_http2() {
 	cd $GOPATH/src/github.com/phuslu/net/http2
 	git remote add -f upstream https://github.com/golang/net
 	git rebase upstream/master
-	go build -v
+	go get -x github.com/phuslu/net/http2
 	grep -q 'machine github.com' ~/.netrc && git push -f origin master
 
 	popd
