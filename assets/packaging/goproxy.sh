@@ -30,7 +30,11 @@ start() {
     echo -n "Starting ${PACKAGE_DESC}: "
     local log_dir=$(test -d "/var/log" && echo "/var/log/${PACKAGE_NAME}" || echo "$(pwd)/logs")
     mkdir -p ${log_dir}
-    nohup ./goproxy -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
+    if busybox start-stop-daemon --help 2>/dev/null ; then
+        busybox start-stop-daemon -S -b -x ./goproxy -- -v=2 -logtostderr=0 -log_dir=/var/log/goproxy
+    else
+        nohup ./goproxy -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
+    fi
     echo "${PACKAGE_NAME}."
     if [ -d '/etc/logrotate.d/' ]; then
         if [ ! -f '/etc/logrotate.d/goproxy' ]; then
