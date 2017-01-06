@@ -232,7 +232,7 @@ EOF
 </plist>
 EOF
 	cat <<EOF > GoProxy.app/Contents/MacOS/goproxy-macos
-#!/System/Library/Frameworks/Python.framework/Versions/2.7/bin/python
+#!$(head -1 GoProxy.app/Contents/MacOS/goproxy-macos.command | tr -d '()' | awk '{print $1}')
 import os
 __file__ = os.path.join(os.path.dirname(__file__), 'goproxy-macos.command')
 text = open(__file__, 'rb').read()
