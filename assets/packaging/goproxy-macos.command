@@ -46,6 +46,7 @@ from AppKit import NSAppleScript
 from AppKit import NSApplication
 from AppKit import NSApplicationActivationPolicyProhibited
 from AppKit import NSBackingStoreBuffered
+from AppKit import NSBezelBorder
 from AppKit import NSClosableWindowMask
 from AppKit import NSColor
 from AppKit import NSData
@@ -211,7 +212,7 @@ class GoProxyMacOS(NSObject):
 
         # Console view inside a scrollview
         self.scroll_view = NSScrollView.alloc().initWithFrame_(frame)
-        self.scroll_view.setBorderType_(NSNoBorder)
+        self.scroll_view.setBorderType_(NSBezelBorder)
         self.scroll_view.setHasVerticalScroller_(True)
         self.scroll_view.setHasHorizontalScroller_(False)
         self.scroll_view.setAutoresizingMask_(NSViewWidthSizable | NSViewHeightSizable)
@@ -224,9 +225,7 @@ class GoProxyMacOS(NSObject):
         self.console_view.setAutoresizingMask_(NSViewWidthSizable)
 
         self.scroll_view.setDocumentView_(self.console_view)
-
-        contentView = self.console_window.contentView()
-        contentView.addSubview_(self.scroll_view)
+        self.console_window.contentView().addSubview_(self.scroll_view)
 
         # Hide dock icon
         NSApp.setActivationPolicy_(NSApplicationActivationPolicyProhibited)
