@@ -4,11 +4,9 @@ export LATEST=${LATEST:-false}
 
 set -e
 
-WHICH=$(which which || echo 'type -p')
-
-for CMD in which curl sed expr tar;
+for CMD in curl sed expr tar;
 do
-		if ! ${WHICH} ${CMD} >/dev/null; then
+		if ! ${CMD} --version >/dev/null; then
 				echo "tool ${CMD} is not installed, abort."
 				exit 1
 		fi
