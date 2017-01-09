@@ -5,26 +5,31 @@ setlocal enabledelayedexpansion
 
 cd /d "%~dp0"
 
-echo. >~.txt
-echo Set Http = CreateObject("WinHttp.WinHttpRequest.5.1") >>~.txt
-echo Set Stream = CreateObject("Adodb.Stream") >>~.txt
-echo Http.SetTimeouts 30*1000, 30*1000, 30*1000, 120*1000  >>~.txt
-netstat -an| findstr LISTENING | findstr ":8087" >NUL && (
-    echo Http.SetProxy 2, "127.0.0.1:8087", "" >>~.txt
-    echo Http.Option^(4^) = 256 >>~.txt
-)
-echo Http.Open "GET", WScript.Arguments.Item(0), False >>~.txt
-echo Http.Send >>~.txt
-echo Http.WaitForResponse 5 >>~.txt
-echo If Not Http.Status = 200 then >>~.txt
-echo     WScript.Quit 1 >>~.txt
-echo End If >>~.txt
-echo Stream.Type = 1 >>~.txt
-echo Stream.Open >>~.txt
-echo Stream.Write Http.ResponseBody >>~.txt
-echo Stream.SaveToFile WScript.Arguments.Item(1), 2 >>~.txt
+(
+echo Set Http = CreateObject^("WinHttp.WinHttpRequest.5.1"^)
+echo Set Stream = CreateObject^("Adodb.Stream"^)
+echo Set Environment = CreateObject^("WScript.Shell"^).Environment^("Process"^)
+echo If Not Environment^("HTTP_PROXY"^) = "" then
+echo     Http.SetProxy 2, Environment^("HTTP_PROXY"^), ""
+echo     Http.Option^(4^) = 256
+echo End If
+echo Http.SetTimeouts 30*1000, 30*1000, 30*1000, 120*1000
+echo Http.Open "GET", WScript.Arguments.Item^(0^), False
+echo Http.Send
+echo Http.WaitForResponse 5
+echo If Not Http.Status = 200 then
+echo     WScript.Quit 1
+echo End If
+echo Stream.Type = 1
+echo Stream.Open
+echo Stream.Write Http.ResponseBody
+echo Stream.SaveToFile WScript.Arguments.Item^(1^), 2
+)>~.txt
 move /y ~.txt ~gdownload.vbs >NUL
 
+netstat -an| findstr LISTENING | findstr ":8087" >NUL && (
+    set HTTP_PROXY=127.0.0.1:8087
+)
 
 set has_user_json=0
 if exist "httpproxy.json" (
