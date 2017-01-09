@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 6RSr+zVShHZVV6AyzVAIaA
+! Checksum: HTEORbU4eDlVXwTSK6Y1Hw
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 04 Jan 2017 19:21:59 +0100
+! Last Modified: Mon, 09 Jan 2017 08:56:41 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -106,6 +106,7 @@
 ||mattwilcox.net
 ||metarthunter.com
 ||mfxmedia.com
+||kb.monitorware.com
 ||monster.com
 ||moodyz.com
 ||muzu.tv
@@ -3344,6 +3345,7 @@ kusocity.com
 ||kusos.com
 ||kwcg.ca
 kwongwah.com.my
+.kyofun.com
 kyohk.net
 ||kyoyue.com
 .kzeng.info
@@ -3790,6 +3792,7 @@ namgyalmonastery.org
 .nakido.com
 ||nakido.com
 .naol.ca
+.naol.cc
 uighur.narod.ru
 cyberghost.natado.com
 ||national-lottery.co.uk
@@ -4605,6 +4608,7 @@ ch.shvoong.com
 .sidelinessportseatery.com
 .sijihuisuo.club
 .sijihuisuo.com
+.silkbook.com
 simplecd.org
 ||simplecd.org
 @@||simplecd.me
