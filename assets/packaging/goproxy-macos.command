@@ -106,6 +106,16 @@ class GoProxyHelpers(object):
             self.__network_location = next(n for n,t,a in addrs if re.match('^[0-9a-fA-F\.:]+$', a))
         return self.__network_location
 
+    def get_current_proxy(self):
+        s = os.popen('scutil --proxy').read()
+        info = dict(re.findall('(?m)^\s+([A-Z]\w+)\s+:\s+(\S+)', s))
+        if info['HTTPEnable'] == '1':
+            return '%s:%s' % (info['HTTPProxy'], info['HTTPPort'])
+        elif info['ProxyAutoConfigEnable'] == '1':
+            return info['ProxyAutoConfigURLString']
+        else:
+            return '<None>'
+
     def set_webproxy(self, host, port):
         assert isinstance(host, basestring) and isinstance(port, int)
         cmds = []
@@ -165,13 +175,13 @@ class GoProxyMacOS(NSObject):
         self.startGoProxy()
         self.notify()
         self.registerObserver()
-        self.helper = GoProxyHelpers()
 
     def windowWillClose_(self, notification):
         self.stopGoProxy()
         NSApp.terminate_(self)
 
     def setupUI(self):
+        self.helper = GoProxyHelpers()
         self.statusbar = NSStatusBar.systemStatusBar()
         # Create the statusbar item
         self.statusitem = self.statusbar.statusItemWithLength_(NSVariableStatusItemLength)
@@ -195,11 +205,15 @@ class GoProxyMacOS(NSObject):
         self.menu.addItemWithTitle_action_keyEquivalent_('Hide', self.hide2_, '').setTarget_(self)
         # Proxy Menu Item
         menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Set Proxy', None, '')
-        submenu = NSMenu.alloc().init()
-        submenu.addItemWithTitle_action_keyEquivalent_('<None>', self.setproxy0_, '').setTarget_(self)
-        submenu.addItemWithTitle_action_keyEquivalent_('http://127.0.0.1:8087/proxy.pac', self.setproxy1_, '').setTarget_(self)
-        submenu.addItemWithTitle_action_keyEquivalent_('127.0.0.1:8087', self.setproxy2_, '').setTarget_(self)
-        menuitem.setSubmenu_(submenu)
+        self.submenu = NSMenu.alloc().init()
+        self.submenu_titles = [
+            ('<None>', self.setproxy0_),
+            ('http://127.0.0.1:8087/proxy.pac', self.setproxy1_),
+            ('127.0.0.1:8087', self.setproxy2_),
+        ]
+        for title, callback in self.submenu_titles:
+            self.submenu.addItemWithTitle_action_keyEquivalent_(title, callback, '').setTarget_(self)
+        menuitem.setSubmenu_(self.submenu)
         self.menu.addItem_(menuitem)
         # Rest Menu Item
         self.menu.addItemWithTitle_action_keyEquivalent_('Import RootCA', self.importca_, '').setTarget_(self)
@@ -233,6 +247,8 @@ class GoProxyMacOS(NSObject):
         self.scroll_view.setDocumentView_(self.console_view)
         self.console_window.contentView().addSubview_(self.scroll_view)
 
+        # Add checkmark to submenu
+        self.setproxystate(self.helper.get_current_proxy())
         # Hide dock icon
         NSApp.setActivationPolicy_(NSApplicationActivationPolicyProhibited)
 
@@ -306,14 +322,22 @@ class GoProxyMacOS(NSObject):
             line = self.pipe_fd.readline()
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
 
+    def setproxystate(self, title):
+        for t, _ in self.submenu_titles:
+            state = 1 if title == t else 0
+            self.submenu.itemWithTitle_(t).setState_(state)
+
     def setproxy0_(self, notification):
         self.helper.unset_proxy()
+        self.setproxystate('<None>')
 
     def setproxy1_(self, notification):
         self.helper.set_autoproxy('http://127.0.0.1:8087/proxy.pac')
+        self.setproxystate('http://127.0.0.1:8087/proxy.pac')
 
     def setproxy2_(self, notification):
         self.helper.set_webproxy('127.0.0.1', 8087)
+        self.setproxystate('127.0.0.1:8087')
 
     def importca_(self, notification):
         certfile = './GoProxy.crt'
