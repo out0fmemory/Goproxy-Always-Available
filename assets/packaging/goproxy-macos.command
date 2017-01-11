@@ -140,6 +140,11 @@ class GoProxyHelpers(object):
         result, error = NSAppleScript.alloc().initWithSource_(script).executeAndReturnError_(None)
         return result, error
 
+    def check_update(self):
+        script = '''tell application "Terminal"\nactivate\ndo script "%s/get-latest-goproxy.sh"\nend tell''' % os.getcwd()
+        result, error = NSAppleScript.alloc().initWithSource_(script).executeAndReturnError_(None)
+        return result, error
+
     def import_rootca(self, certfile):
         cmds = []
         if not os.path.isfile(certfile):
@@ -198,6 +203,7 @@ class GoProxyMacOS(NSObject):
         self.menu.addItem_(menuitem)
         # Rest Menu Item
         self.menu.addItemWithTitle_action_keyEquivalent_('Import RootCA', self.importca_, '').setTarget_(self)
+        self.menu.addItemWithTitle_action_keyEquivalent_('Check Update', self.checkupdate_, '').setTarget_(self)
         self.menu.addItemWithTitle_action_keyEquivalent_('Reload', self.reset_, '').setTarget_(self)
         # Default event
         self.menu.addItemWithTitle_action_keyEquivalent_('Quit', self.exit_, '').setTarget_(self)
@@ -312,6 +318,9 @@ class GoProxyMacOS(NSObject):
     def importca_(self, notification):
         certfile = './GoProxy.crt'
         self.helper.import_rootca(certfile)
+
+    def checkupdate_(self, notification):
+        self.helper.check_update()
 
     def show_(self, notification):
         self.console_window.center()
