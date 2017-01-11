@@ -4,9 +4,15 @@ export LATEST=${LATEST:-false}
 
 set -e
 
+if test "$(basename "$SHELL")" = "bash"; then
+	WHICH="type -p"
+else
+	WHICH=which
+fi
+
 for CMD in curl sed expr tar;
 do
-		if ! ${CMD} --version >/dev/null; then
+		if ! ${WHICH} ${CMD} >/dev/null; then
 				echo "tool ${CMD} is not installed, abort."
 				exit 1
 		fi
