@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 export LATEST=${LATEST:-false}
 
@@ -138,7 +138,16 @@ case ${FILENAME##*.} in
 		exit 1
 esac
 
-tar -xvpf ${FILENAME%.*} --strip-components $(tar -tf ${FILENAME%.*} | head -1 | grep -c '/')
+DIRNAME=$(tar -tf ${FILENAME%.*} | grep '/$' | head -1)
+if test -n "${DIRNAME}"; then
+	rm -rf tmp
+	mkdir tmp
+	tar -xvpf ${FILENAME%.*} -C tmp
+	mv -f tmp/${DIRNAME}/* .
+	rm -rf tmp
+else
+	tar -xvpf ${FILENAME%.*}
+fi
 rm -f ${FILENAME%.*}
 
 echo "4. Done"
