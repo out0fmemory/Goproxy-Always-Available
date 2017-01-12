@@ -248,7 +248,9 @@ class GoProxyMacOS(NSObject):
         self.console_window.contentView().addSubview_(self.scroll_view)
 
         # Add checkmark to submenu
-        self.setproxystate(self.helper.get_current_proxy())
+        proxy_title = self.helper.get_current_proxy()
+        if proxy_title in [t for t, _ in self.submenu_titles]:
+            self.setproxystate(proxy_title)
         # Hide dock icon
         NSApp.setActivationPolicy_(NSApplicationActivationPolicyProhibited)
 
