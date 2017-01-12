@@ -1,4 +1,4 @@
-(/System/Library/Frameworks/Python.framework/Versions/2.7/bin/python -x "$0" >/dev/null 2>&1 &); exit
+(/System/Library/Frameworks/Python.framework/Versions/2.7/Resources/Python.app/Contents/MacOS/Python -x "$0" >/dev/null 2>&1 &); exit
 #!/usr/bin/python2.7
 # coding:utf-8
 
