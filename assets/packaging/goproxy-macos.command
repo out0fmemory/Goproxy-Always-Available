@@ -172,6 +172,7 @@ class GoProxyMacOS(NSObject):
     console_color = ColorSet[0]
 
     def applicationDidFinishLaunching_(self, notification):
+        self.helper = GoProxyHelpers()
         self.setupUI()
         self.startGoProxy()
         self.notify()
@@ -182,7 +183,6 @@ class GoProxyMacOS(NSObject):
         NSApp.terminate_(self)
 
     def setupUI(self):
-        self.helper = GoProxyHelpers()
         self.statusbar = NSStatusBar.systemStatusBar()
         # Create the statusbar item
         self.statusitem = self.statusbar.statusItemWithLength_(NSVariableStatusItemLength)
@@ -205,7 +205,6 @@ class GoProxyMacOS(NSObject):
         # Hide Menu Item
         self.menu.addItemWithTitle_action_keyEquivalent_('Hide', self.hide2_, '').setTarget_(self)
         # Proxy Menu Item
-        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Set Proxy', None, '')
         self.submenu = NSMenu.alloc().init()
         self.submenu_titles = [
             ('<None>', self.setproxy0_),
@@ -214,6 +213,8 @@ class GoProxyMacOS(NSObject):
         ]
         for title, callback in self.submenu_titles:
             self.submenu.addItemWithTitle_action_keyEquivalent_(title, callback, '').setTarget_(self)
+        menuitem = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_('Set Proxy', None, '')
+        menuitem.setTarget_(self)
         menuitem.setSubmenu_(self.submenu)
         self.menu.addItem_(menuitem)
         # Rest Menu Item
@@ -248,10 +249,8 @@ class GoProxyMacOS(NSObject):
         self.scroll_view.setDocumentView_(self.console_view)
         self.console_window.contentView().addSubview_(self.scroll_view)
 
-        # Add checkmark to submenu
-        proxy_title = self.helper.get_current_proxy()
-        if proxy_title in [t for t, _ in self.submenu_titles]:
-            self.setproxystate(proxy_title)
+        # Update Proxy Menu
+        self.updateproxystate_(None)
         # Hide dock icon
         NSApp.setActivationPolicy_(NSApplicationActivationPolicyProhibited)
 
@@ -320,22 +319,24 @@ class GoProxyMacOS(NSObject):
             line = self.pipe_fd.readline()
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
 
-    def setproxystate(self, title):
-        for t, _ in self.submenu_titles:
-            state = 1 if title == t else 0
-            self.submenu.itemWithTitle_(t).setState_(state)
+    def updateproxystate_(self, notification):
+        # Add checkmark to submenu
+        proxy_title = self.helper.get_current_proxy()
+        for title, _ in self.submenu_titles:
+            state = 1 if title == proxy_title else 0
+            self.submenu.itemWithTitle_(title).setState_(state)
 
     def setproxy0_(self, notification):
         self.helper.unset_proxy()
-        self.setproxystate('<None>')
+        self.updateproxystate_(notification)
 
     def setproxy1_(self, notification):
         self.helper.set_autoproxy('http://127.0.0.1:8087/proxy.pac')
-        self.setproxystate('http://127.0.0.1:8087/proxy.pac')
+        self.updateproxystate_(notification)
 
     def setproxy2_(self, notification):
         self.helper.set_webproxy('127.0.0.1', 8087)
-        self.setproxystate('127.0.0.1:8087')
+        self.updateproxystate_(notification)
 
     def importca_(self, notification):
         certfile = './GoProxy.crt'
