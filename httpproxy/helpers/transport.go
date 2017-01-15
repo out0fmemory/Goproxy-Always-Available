@@ -30,6 +30,13 @@ func CloseConnections(tr http.RoundTripper) bool {
 		t.CloseConnections(f)
 		return true
 	}
+	if t, ok := tr.(*http2.Transport); ok {
+		f := func(conn net.Conn, idle bool) bool {
+			return true
+		}
+		t.CloseConnections(f)
+		return true
+	}
 	return false
 }
 
