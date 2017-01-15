@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: HTEORbU4eDlVXwTSK6Y1Hw
+! Checksum: fEzjcH0/p8NFjGHebURMsg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Mon, 09 Jan 2017 08:56:41 +0100
+! Last Modified: Fri, 13 Jan 2017 07:49:03 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -45,7 +45,7 @@
 |http://img.dlsite.jp/
 !--||share.dmhy.org
 ||dmm.co.jp
-!--||dmm.com
+|http://www.dmm.com/netgame
 ||eesti.ee
 .expekt.com
 ||expekt.com
@@ -1350,21 +1350,18 @@ chinachannel.hk
 chinageeks.org
 chinagfw.org
 ||chinagfw.org
+.chinagonet.com
 .chinagreenparty.org
 ||chinagreenparty.org
 .chinahorizon.org
 ||chinahorizon.org
 .chinahush.com
+.chinainperspective.com
+||chinainterimgov.org
 chinalaborwatch.org
 chinalawtranslate.com
 .chinapost.com.tw/taiwan/national/national-news
 chinaxchina.com/howto
-.chinainperspective.com
-chinainperspective.net/ArtShow.aspx?
-||chinainperspective.net
-.chinainperspective.org
-||chinainperspective.org
-||chinainterimgov.org
 chinalawandpolicy.com
 .chinamule.com
 ||chinamule.com
@@ -2745,9 +2742,11 @@ h1n1china.org
 .hacg.red
 |http://hacg.red
 .hacken.cc/bbs
+.hacker.org
 ||hackthatphone.net
 hahlo.com
 ||hakkatv.org.tw
+.handcraftedsoftware.org
 |http://bbs.hanminzu.org/
 .hanunyi.com
 |http://ae.hao123.com
@@ -3259,6 +3258,8 @@ jpopforum.net
 .june4commemoration.org
 .junefourth-20.net
 ||junefourth-20.net
+.juoaa.com
+|http://juoaa.com
 justfreevpn.com
 .justicefortenzin.org
 justpaste.it
@@ -3753,6 +3754,7 @@ mycould.com/discuz
 .myfreshnet.com
 forum.mymaji.com
 mymediarom.com/files/box
+||mymoe.moe
 ||mymusic.net.tw
 ||myparagliding.com
 ||mypopescu.com
@@ -3788,7 +3790,6 @@ namgyalmonastery.org
 ||jpl.nasa.gov
 ||pds.nasa.gov
 ||solarsystem.nasa.gov
-/^https?:\/\/[^\/]+line\.naver\.jp/
 .nakido.com
 ||nakido.com
 .naol.ca
@@ -3798,6 +3799,7 @@ cyberghost.natado.com
 ||national-lottery.co.uk
 news.nationalgeographic.com/news/2014/06/140603-tiananmen-square
 .nationsonline.org/oneworld/tibet
+||line.naver.jp
 ||navyfamily.navy.mil
 ||navyreserve.navy.mil
 ||nko.navy.mil
@@ -4418,7 +4420,7 @@ rfaweb.org
 .rfi.fr
 ||rfi.fr
 |http://rfi.my/
-.rhcloud.com
+!--.rhcloud.com
 !--Edgecast
 |http://vds.rightster.com/
 .rigpa.org
@@ -5761,6 +5763,7 @@ webworkerdaily.com
 ||wefightcensorship.org
 .wefong.com
 weiboleak.com
+.weihuo.org
 weijingsheng.org
 .weiming.info
 ||weiming.info
