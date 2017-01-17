@@ -52,10 +52,10 @@ def spawn_later(seconds, target, *args, **kwargs):
 def rewrite_desktop(filename):
     with open(filename, 'rb') as fp:
         content = fp.read()
-    if 'goproxy-gtk.png' not in content:
+    with open(filename, 'wb') as fp:
+        content = re.sub(r'(?m)Exec=.*', '''Exec=bash -c "export PATH=$PATH:`dirname '%%k'`:%s; exec goproxy-gtk.py"''' % os.getcwd(), content)
         content = re.sub(r'Icon=\S*', 'Icon=%s/goproxy-gtk.png' % os.getcwd(), content)
-        with open(filename, 'wb') as fp:
-            fp.write(content)
+        fp.write(content)
 
 #gtk.main_quit = lambda: None
 #appindicator = None
