@@ -529,6 +529,18 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				// f.MultiDialer.ClearCache()
 				helpers.CloseConnections(tr)
 			}
+			if ne, ok := err.(*net.OpError); ok {
+				if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
+					if f.GAETransport.MultiDialer != nil {
+						duration := 5 * time.Minute
+						glog.Warningf("GAE: %s \"DIRECT\" timeout, add to blacklist for %v", ip, duration)
+						f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+					}
+				}
+			}
+			if err.Error() == "unexpected EOF" {
+				helpers.CloseConnections(tr)
+			}
 		}
 		if resp != nil && resp.Body != nil {
 			resp.Body.Close()
