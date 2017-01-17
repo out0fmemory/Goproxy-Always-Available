@@ -194,6 +194,8 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			r = ratelimit.Reader(r, ratelimit.NewBucketWithRate(h.Rate, h.RateCapacity))
 		}
 
+		defer conn.Close()
+
 		go helpers.IOCopy(conn, r)
 		helpers.IOCopy(w, conn)
 
