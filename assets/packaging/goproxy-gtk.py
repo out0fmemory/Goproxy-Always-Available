@@ -70,7 +70,7 @@ class GoProxyGTK:
 
     def __init__(self, window, terminal):
         self.window = window
-        self.window.set_size_request(652, 447)
+        self.window.set_size_request(640, 480)
         self.window.set_position(gtk.WIN_POS_CENTER)
         self.window.connect('delete-event', self.delete_event)
         self.terminal = terminal
