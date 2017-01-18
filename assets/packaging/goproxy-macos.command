@@ -283,14 +283,14 @@ class GoProxyMacOS(NSObject):
     def stopGoProxy(self):
         self.pipe.terminate()
 
-    def parseLine(self, line):
+    def parseLine_(self, line):
         if line.startswith('\x1b]2;') and '\x07' in line:
             global GOPROXY_TITLE
             pos = line.find('\x07')
             GOPROXY_TITLE = line[4:pos]
             self.statusitem.setToolTip_(GOPROXY_TITLE)
             self.console_window.setTitle_(GOPROXY_TITLE)
-            return self.parseLine(line[pos:])
+            return self.parseLine_(line[pos:])
         while line.startswith('\x1b['):
             line = line[2:]
             color_number = int(line.split('m',1)[0])
@@ -302,7 +302,7 @@ class GoProxyMacOS(NSObject):
         return line
 
     def refreshDisplay_(self, line):
-        line = self.parseLine(line)
+        line = self.parseLine_(line)
         console_line = NSMutableAttributedString.alloc().initWithString_(line)
         console_line.addAttribute_value_range_(NSForegroundColorAttributeName, self.console_color, NSMakeRange(0,len(line)))
         self.console_view.textStorage().appendAttributedString_(console_line)
