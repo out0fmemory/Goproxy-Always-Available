@@ -168,10 +168,9 @@ function build_repo() {
 		cd assets/taskbar
 
 		i686-w64-mingw32-windres taskbar.rc -O coff -o taskbar.res
-		i686-w64-mingw32-gcc -Wall -Os -s -std=c99 -Wl,--subsystem,windows -c taskbar.c
-		i686-w64-mingw32-gcc -static -Os -s -o goproxy-gui.exe taskbar.o taskbar.res -lwininet -lstdc++
-
-		cp -f goproxy-gui.exe ../packaging/
+		i686-w64-mingw32-g++ -Wall -Os -s -Wl,--subsystem,windows -c taskbar.c
+		i686-w64-mingw32-g++ -static -Os -s -o goproxy-gui.exe taskbar.o taskbar.res -lwininet
+		mv -f goproxy-gui.exe ../packaging/goproxy-gui.exe
 
 		cd ../..
 	fi
