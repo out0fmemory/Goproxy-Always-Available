@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"runtime"
@@ -12,12 +13,17 @@ import (
 
 	"./httpproxy"
 	"./httpproxy/helpers"
+	"./httpproxy/storage"
 )
 
 var (
 	version  = "r9999"
 	http2rev = "?????"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 func main() {
 
@@ -40,10 +46,18 @@ func main() {
 		helpers.SetConsoleTitle(fmt.Sprintf("GoProxy %s (go/%s)", version, gover))
 	}
 
+	config := make(map[string]httpproxy.Config)
+	filename := "httpproxy.json"
+	err := storage.LookupStoreByFilterName("httpproxy").UnmarshallJson(filename, &config)
+	if err != nil {
+		fmt.Printf("storage.LookupStoreByFilterName(%#v) failed: %s\n", filename, err)
+		return
+	}
+
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
 GoProxy Version    : %s (go/%s http2/%s %s/%s)`,
 		version, gover, http2rev, runtime.GOOS, runtime.GOARCH)
-	for profile, config := range httpproxy.Config {
+	for profile, config := range config {
 		if !config.Enabled {
 			continue
 		}
@@ -73,7 +87,7 @@ Enabled Filters    : %v`,
 Pac Server         : http://%s/proxy.pac`, addr)
 			}
 		}
-		go httpproxy.ServeProfile(profile, "goproxy "+version)
+		go httpproxy.ServeProfile(config, "goproxy "+version)
 	}
 	fmt.Fprintf(os.Stderr, "\n------------------------------------------------------\n")
 

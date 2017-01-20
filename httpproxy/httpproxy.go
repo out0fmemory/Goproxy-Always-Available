@@ -1,8 +1,6 @@
 package httpproxy
 
 import (
-	"fmt"
-	"math/rand"
 	"net/http"
 	"time"
 
@@ -10,7 +8,6 @@ import (
 
 	"./filters"
 	"./helpers"
-	"./storage"
 
 	_ "./filters/auth"
 	_ "./filters/autoproxy"
@@ -24,7 +21,7 @@ import (
 	_ "./filters/vps"
 )
 
-type configType map[string]struct {
+type Config struct {
 	Enabled          bool
 	Address          string
 	KeepAlivePeriod  int
@@ -35,26 +32,7 @@ type configType map[string]struct {
 	ResponseFilters  []string
 }
 
-var (
-	Config configType
-)
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-
-	filename := "httpproxy.json"
-	err := storage.LookupStoreByFilterName("httpproxy").UnmarshallJson(filename, &Config)
-	if err != nil {
-		fmt.Printf("storage.ReadJsonConfig(%#v) failed: %s\n", filename, err)
-		return
-	}
-}
-
-func ServeProfile(profile string, branding string) error {
-	config, ok := Config[profile]
-	if !ok {
-		return fmt.Errorf("profile(%#v) not exists", profile)
-	}
+func ServeProfile(config Config, branding string) error {
 
 	listenOpts := &helpers.ListenOptions{TLSConfig: nil}
 
@@ -63,7 +41,7 @@ func ServeProfile(profile string, branding string) error {
 		glog.Fatalf("ListenTCP(%s, %#v) error: %s", config.Address, listenOpts, err)
 	}
 
-	requestFilters, roundtripFilters, responseFilters := getFilters(profile)
+	requestFilters, roundtripFilters, responseFilters := getFilters(config)
 
 	h := Handler{
 		Listener:         ln,
@@ -80,15 +58,10 @@ func ServeProfile(profile string, branding string) error {
 		MaxHeaderBytes: 1 << 20,
 	}
 
-	glog.Infof("ListenAndServe(%#v) on %s\n", profile, h.Listener.Addr().String())
 	return s.Serve(h.Listener)
 }
 
-func getFilters(profile string) ([]filters.RequestFilter, []filters.RoundTripFilter, []filters.ResponseFilter) {
-	config, ok := Config[profile]
-	if !ok {
-		panic(fmt.Errorf("profile(%#v) not exists", profile))
-	}
+func getFilters(config Config) ([]filters.RequestFilter, []filters.RoundTripFilter, []filters.ResponseFilter) {
 
 	fs := make(map[string]filters.Filter)
 	for _, names := range [][]string{config.RequestFilters,
