@@ -42,12 +42,13 @@ func Register(name string, New func() (Filter, error)) {
 	defer mu.Unlock()
 	if _, ok := fnm[name]; !ok {
 		fnm[name] = New
+		fm[name] = nil
 		mm[name] = new(sync.Mutex)
 	}
 }
 
 func GetFilter(name string) (Filter, error) {
-	if f, ok := fm[name]; ok {
+	if f, ok := fm[name]; ok && f != nil {
 		return f, nil
 	}
 
@@ -55,7 +56,7 @@ func GetFilter(name string) (Filter, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	if f, ok := fm[name]; ok {
+	if f, ok := fm[name]; ok && f != nil {
 		return f, nil
 	}
 
