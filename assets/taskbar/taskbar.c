@@ -8,8 +8,6 @@
 #include <stdio.h>
 #include <wininet.h>
 #include <io.h>
-#include <ras.h>
-#include <raserror.h>
 #include <psapi.h>
 #include "resource.h"
 
@@ -40,7 +38,6 @@ WCHAR szTooltip[512] = L"";
 WCHAR szBalloon[512] = L"";
 WCHAR szEnvironment[1024] = L"";
 WCHAR szProxyString[2048] = L"";
-CHAR szRasPbk[4096] = "";
 WCHAR *lpProxyList[8] = {0};
 volatile DWORD dwChildrenPid;
 
@@ -223,10 +220,16 @@ BOOL SetWindowsProxy(WCHAR* szProxy, const WCHAR* szProxyInterface)
 
 BOOL SetWindowsProxyForAllRasConnections(WCHAR* szProxy)
 {
-    for (LPCSTR lpRasPbk = szRasPbk; *lpRasPbk; lpRasPbk += strlen(lpRasPbk) + 1)
+    const char *szRasPbk[] = {
+        "%APPDATA%\\Microsoft\\Network\\Connections\\Pbk\\rasphone.pbk",
+        "%ALLUSERSPROFILE%\\Microsoft\\Network\\Connections\\Pbk\\rasphone.pbk",
+        "%ALLUSERSPROFILE%\\Application Data\\Microsoft\\Network\\Connections\\Pbk\\rasphone.pbk",
+    };
+
+    for (int i = 0; i < sizeof(szRasPbk) / sizeof(szRasPbk)[0]; i++)
     {
         char szPath[2048] = "";
-        if (ExpandEnvironmentStringsA(lpRasPbk, szPath, sizeof(szPath)/sizeof(szPath[0])))
+        if (ExpandEnvironmentStringsA(szRasPbk[i], szPath, sizeof(szPath)/sizeof(szPath[0])))
         {
             char line[2048] = "";
             int length = 0;
@@ -305,14 +308,6 @@ BOOL ParseProxyList()
     }
     lpProxyList[i] = 0;
 
-
-    for (LPSTR ptr = szRasPbk; *ptr; ptr++)
-    {
-        if (*ptr == '\n')
-        {
-            *ptr++ = 0;
-        }
-    }
     return TRUE;
 }
 
@@ -347,7 +342,6 @@ BOOL SetEenvironment()
     LoadString(hInst, IDS_CMDLINE, szCommandLine, sizeof(szCommandLine)/sizeof(szCommandLine[0])-1);
     LoadString(hInst, IDS_ENVIRONMENT, szEnvironment, sizeof(szEnvironment)/sizeof(szEnvironment[0])-1);
     LoadString(hInst, IDS_PROXYLIST, szProxyString, sizeof(szProxyString)/sizeof(szEnvironment[0])-1);
-    LoadStringA(hInst, IDS_RASPBK, szRasPbk, sizeof(szRasPbk)/sizeof(szRasPbk[0])-1);
 
     const WCHAR *sep = L"\n";
     WCHAR *pos = NULL;

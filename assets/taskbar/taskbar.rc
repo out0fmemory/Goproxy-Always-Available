@@ -131,7 +131,6 @@ BEGIN
     IDS_CMDLINE             "goproxy.exe -v=2"
     IDS_ENVIRONMENT         "TASKBAR_VISIBLE=0\nTASKBAR_TOOLTIP=GoProxy\nTASKBAR_TITLE=GoProxy Notify\nTASKBAR_BALLOON=GoProxy 已经启动，单击托盘图标可以最小化。\n"
     IDS_PROXYLIST           "http://127.0.0.1:8087/proxy.pac\n127.0.0.1:8087\n"
-    IDS_RASPBK              "%APPDATA%\\Microsoft\\Network\\Connections\\Pbk\n%ALLUSERSPROFILE%\\Microsoft\\Network\\Connections\\Pbk\n%ALLUSERSPROFILE%\\Application Data\\Microsoft\\Network\\Connections\\Pbk\\rasphone.pbk\n"
 END
 
 #endif    // Chinese (P.R.C.) resources
