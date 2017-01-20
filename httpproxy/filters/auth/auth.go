@@ -16,9 +16,7 @@ import (
 )
 
 const (
-	filterName   string = "auth"
-	authHeader   string = filterName + "/header"
-	bypassHeader string = filterName + "/bypass"
+	filterName string = "auth"
 )
 
 type Config struct {
@@ -32,9 +30,9 @@ type Config struct {
 
 type Filter struct {
 	Config
-	ByPassHeaders lrucache.Cache
-	Basic         map[string]string
-	WhiteList     map[string]struct{}
+	AuthCache lrucache.Cache
+	Basic     map[string]string
+	WhiteList map[string]struct{}
 }
 
 func init() {
@@ -51,10 +49,10 @@ func init() {
 
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
-		Config:        *config,
-		ByPassHeaders: lrucache.NewMultiLRUCache(4, uint(config.CacheSize)),
-		Basic:         make(map[string]string),
-		WhiteList:     make(map[string]struct{}),
+		Config:    *config,
+		AuthCache: lrucache.NewMultiLRUCache(4, uint(config.CacheSize)),
+		Basic:     make(map[string]string),
+		WhiteList: make(map[string]struct{}),
 	}
 
 	for _, v := range config.Basic {
@@ -75,7 +73,7 @@ func (f *Filter) FilterName() string {
 func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Context, *http.Request, error) {
 	if auth := req.Header.Get("Proxy-Authorization"); auth != "" {
 		req.Header.Del("Proxy-Authorization")
-		ctx = filters.WithString(ctx, authHeader, auth)
+		f.AuthCache.Set(req.RemoteAddr, auth, time.Now().Add(time.Hour))
 	}
 	return ctx, req, nil
 }
@@ -88,12 +86,8 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 	}
 
-	if auth := filters.String(ctx, authHeader); auth != "" {
-		if _, ok := f.ByPassHeaders.Get(auth); ok {
-			glog.V(3).Infof("auth filter hit bypass cache %#v", auth)
-			return ctx, nil, nil
-		}
-		parts := strings.SplitN(auth, " ", 2)
+	if auth, ok := f.AuthCache.GetNotStale(req.RemoteAddr); ok && auth != nil {
+		parts := strings.SplitN(auth.(string), " ", 2)
 		if len(parts) == 2 {
 			switch parts[0] {
 			case "Basic":
@@ -103,7 +97,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					pass := parts[1]
 					pass1, ok := f.Basic[user]
 					if ok && pass == pass1 {
-						f.ByPassHeaders.Set(auth, struct{}{}, time.Now().Add(time.Hour))
 						return ctx, nil, nil
 					}
 				}
@@ -117,8 +110,10 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	glog.V(1).Infof("UnAuthenticated URL %v from %#v", req.URL.String(), req.RemoteAddr)
 
 	noAuthResponse := &http.Response{
-		StatusCode:    http.StatusProxyAuthRequired,
-		Header:        http.Header{},
+		StatusCode: http.StatusProxyAuthRequired,
+		Header: http.Header{
+			"Proxy-Authenticate": []string{"Basic realm=\"GoProxy Authentication Required\""},
+		},
 		Request:       req,
 		Close:         true,
 		ContentLength: -1,
