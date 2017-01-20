@@ -16,7 +16,6 @@ export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 export GOBRANCH=${GOBRANCH:-master}
-export BUILD_TASKBAR=${BUILD_TASKBAR:-true}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
@@ -164,16 +163,13 @@ function build_repo() {
 		fi
 	fi
 
-	if [ "${BUILD_TASKBAR}" != "false" ]; then
-		cd assets/taskbar
+	make GOARCH=amd64 -C ./assets/taskbar
+	cp -f ./assets/taskbar/goproxy-gui.exe ./assets/packaging/goproxy-gui.exe
+	make GOOS=windows GOARCH=amd64 CGO_ENABLED=0
 
-		i686-w64-mingw32-windres taskbar.rc -O coff -o taskbar.res
-		i686-w64-mingw32-g++ -Wall -Os -s -Wl,--subsystem,windows -c taskbar.c
-		i686-w64-mingw32-g++ -static -Os -s -o goproxy-gui.exe taskbar.o taskbar.res -lwininet
-		mv -f goproxy-gui.exe ../packaging/goproxy-gui.exe
-
-		cd ../..
-	fi
+	make GOARCH=386 -C ./assets/taskbar
+	cp -f ./assets/taskbar/goproxy-gui_x86.exe ./assets/packaging/goproxy-gui.exe
+	make GOOS=windows GOARCH=386 CGO_ENABLED=0
 
 	cat <<EOF |
 make GOOS=darwin GOARCH=amd64 CGO_ENABLED=0
@@ -189,10 +185,8 @@ make GOOS=linux GOARCH=mips CGO_ENABLED=0
 make GOOS=linux GOARCH=mips64 CGO_ENABLED=0
 make GOOS=linux GOARCH=mips64le CGO_ENABLED=0
 make GOOS=linux GOARCH=mipsle CGO_ENABLED=0
-make GOOS=windows GOARCH=386 CGO_ENABLED=0
-make GOOS=windows GOARCH=amd64 CGO_ENABLED=0
 EOF
-	xargs --max-procs=16 -n1 -i bash -c {}
+	xargs --max-procs=5 -n1 -i bash -c {}
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
