@@ -99,25 +99,19 @@ type Filter struct {
 }
 
 func init() {
-	filename := filterName + ".json"
-	config := new(Config)
-	err := storage.LookupStoreByFilterName(filterName).UnmarshallJson(filename, config)
-	if err != nil {
-		glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
-	}
-
-	err = filters.Register(filterName, &filters.RegisteredFilter{
-		New: func() (filters.Filter, error) {
-			return NewFilter(config)
-		},
-	})
-
-	if err != nil {
-		glog.Fatalf("Register(%#v) error: %s", filterName, err)
-	}
-
 	mime.AddExtensionType(".crt", "application/x-x509-ca-cert")
 	mime.AddExtensionType(".mobileconfig", "application/x-apple-aspen-config")
+
+	filters.Register(filterName, func() (filters.Filter, error) {
+		filename := filterName + ".json"
+		config := new(Config)
+		err := storage.LookupStoreByFilterName(filterName).UnmarshallJson(filename, config)
+		if err != nil {
+			glog.Fatalf("storage.ReadJsonConfig(%#v) failed: %s", filename, err)
+		}
+
+		return NewFilter(config)
+	})
 }
 
 func NewFilter(config *Config) (_ filters.Filter, err error) {

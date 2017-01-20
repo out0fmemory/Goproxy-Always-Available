@@ -2,7 +2,6 @@ package filters
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"sync"
 )
@@ -31,53 +30,42 @@ type ResponseFilter interface {
 	Response(context.Context, *http.Response) (context.Context, *http.Response, error)
 }
 
-type RegisteredFilter struct {
-	New func() (Filter, error)
-}
-
 var (
-	registeredFilters map[string]*RegisteredFilter
-	newedFilters      map[string]Filter
-	muFilters         map[string]*sync.Mutex
+	mu  = new(sync.Mutex)
+	mm  = make(map[string]*sync.Mutex)
+	fnm = make(map[string]func() (Filter, error))
+	fm  = make(map[string]Filter)
 )
 
-func init() {
-	registeredFilters = make(map[string]*RegisteredFilter)
-	newedFilters = make(map[string]Filter)
-	muFilters = make(map[string]*sync.Mutex)
-}
-
-// Register a Filter
-func Register(name string, registeredFilter *RegisteredFilter) error {
-	if _, exists := registeredFilters[name]; exists {
-		return fmt.Errorf("Name already registered %s", name)
+func Register(name string, New func() (Filter, error)) {
+	mu.Lock()
+	defer mu.Unlock()
+	if _, ok := fnm[name]; !ok {
+		fnm[name] = New
+		mm[name] = new(sync.Mutex)
 	}
-
-	registeredFilters[name] = registeredFilter
-	muFilters[name] = new(sync.Mutex)
-	return nil
 }
 
-// GetFilter try get a existing Filter of type "name", otherwise create new one
 func GetFilter(name string) (Filter, error) {
-	muFilters[name].Lock()
-	defer muFilters[name].Unlock()
-
-	if f, ok := newedFilters[name]; ok {
+	if f, ok := fm[name]; ok {
 		return f, nil
 	}
 
-	filterNew, ok := registeredFilters[name]
-	if !ok {
-		return nil, fmt.Errorf("registeredFilters: Unknown filter %q", name)
+	mu := mm[name]
+	mu.Lock()
+	defer mu.Unlock()
+
+	if f, ok := fm[name]; ok {
+		return f, nil
 	}
 
-	filter, err := filterNew.New()
+	f, err := fnm[name]()
 	if err != nil {
 		return nil, err
 	}
 
-	newedFilters[name] = filter
+	fm[name] = f
 
-	return filter, nil
+	return f, nil
+
 }
