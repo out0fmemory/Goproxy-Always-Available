@@ -41,14 +41,39 @@ func ServeProfile(config Config, branding string) error {
 		glog.Fatalf("ListenTCP(%s, %#v) error: %s", config.Address, listenOpts, err)
 	}
 
-	requestFilters, roundtripFilters, responseFilters := getFilters(config)
-
 	h := Handler{
 		Listener:         ln,
-		RequestFilters:   requestFilters,
-		RoundTripFilters: roundtripFilters,
-		ResponseFilters:  responseFilters,
+		RequestFilters:   []filters.RequestFilter{},
+		RoundTripFilters: []filters.RoundTripFilter{},
+		ResponseFilters:  []filters.ResponseFilter{},
 		Branding:         branding,
+	}
+
+	for _, name := range config.RequestFilters {
+		f, err := filters.GetFilter(name)
+		f1, ok := f.(filters.RequestFilter)
+		if !ok {
+			glog.Fatalf("%#v is not a RequestFilter, err=%+v", f, err)
+		}
+		h.RequestFilters = append(h.RequestFilters, f1)
+	}
+
+	for _, name := range config.RoundTripFilters {
+		f, err := filters.GetFilter(name)
+		f1, ok := f.(filters.RoundTripFilter)
+		if !ok {
+			glog.Fatalf("%#v is not a RoundTripFilter, err=%+v", f, err)
+		}
+		h.RoundTripFilters = append(h.RoundTripFilters, f1)
+	}
+
+	for _, name := range config.ResponseFilters {
+		f, err := filters.GetFilter(name)
+		f1, ok := f.(filters.ResponseFilter)
+		if !ok {
+			glog.Fatalf("%#v is not a ResponseFilter, err=%+v", f, err)
+		}
+		h.ResponseFilters = append(h.ResponseFilters, f1)
 	}
 
 	s := &http.Server{
@@ -59,54 +84,4 @@ func ServeProfile(config Config, branding string) error {
 	}
 
 	return s.Serve(h.Listener)
-}
-
-func getFilters(config Config) ([]filters.RequestFilter, []filters.RoundTripFilter, []filters.ResponseFilter) {
-
-	fs := make(map[string]filters.Filter)
-	for _, names := range [][]string{config.RequestFilters,
-		config.RoundTripFilters,
-		config.ResponseFilters} {
-		for _, name := range names {
-			if _, ok := fs[name]; !ok {
-				f, err := filters.GetFilter(name)
-				if err != nil {
-					glog.Fatalf("filters.GetFilter(%#v) failed: %#v", name, err)
-				}
-				fs[name] = f
-			}
-		}
-	}
-
-	requestFilters := make([]filters.RequestFilter, 0)
-	for _, name := range config.RequestFilters {
-		f := fs[name]
-		f1, ok := f.(filters.RequestFilter)
-		if !ok {
-			glog.Fatalf("%#v is not a RequestFilter", f)
-		}
-		requestFilters = append(requestFilters, f1)
-	}
-
-	roundtripFilters := make([]filters.RoundTripFilter, 0)
-	for _, name := range config.RoundTripFilters {
-		f := fs[name]
-		f1, ok := f.(filters.RoundTripFilter)
-		if !ok {
-			glog.Fatalf("%#v is not a RoundTripFilter", f)
-		}
-		roundtripFilters = append(roundtripFilters, f1)
-	}
-
-	responseFilters := make([]filters.ResponseFilter, 0)
-	for _, name := range config.ResponseFilters {
-		f := fs[name]
-		f1, ok := f.(filters.ResponseFilter)
-		if !ok {
-			glog.Fatalf("%#v is not a ResponseFilter", f)
-		}
-		responseFilters = append(responseFilters, f1)
-	}
-
-	return requestFilters, roundtripFilters, responseFilters
 }
