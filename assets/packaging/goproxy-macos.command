@@ -110,9 +110,9 @@ class GoProxyHelpers(object):
     def get_current_proxy(self):
         s = os.popen('scutil --proxy').read()
         info = dict(re.findall('(?m)^\s+([A-Z]\w+)\s+:\s+(\S+)', s))
-        if info['HTTPEnable'] == '1':
+        if info.get('HTTPEnable') == '1':
             return '%s:%s' % (info['HTTPProxy'], info['HTTPPort'])
-        elif info['ProxyAutoConfigEnable'] == '1':
+        elif info.get('ProxyAutoConfigEnable') == '1':
             return info['ProxyAutoConfigURLString']
         else:
             return '<None>'
