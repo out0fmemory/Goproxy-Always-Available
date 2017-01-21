@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: JZX3lRXrgUtXhOBnlXFAeQ
+! Checksum: ogVbrJOs8W6iTlbDDSlVEg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 19 Jan 2017 06:33:13 +0100
+! Last Modified: Fri, 20 Jan 2017 08:07:09 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -3139,6 +3139,7 @@ ipalter.com
 .ipjetable.net
 ||ipjetable.net
 .ipobar.com/read.php?
+ipoock.com/img
 .iportal.me
 |http://iportal.me
 ||ippotv.com
@@ -3273,6 +3274,7 @@ jpopforum.net
 .june4commemoration.org
 .junefourth-20.net
 ||junefourth-20.net
+||bbs.junglobal.net
 .juoaa.com
 |http://juoaa.com
 justfreevpn.com
@@ -4767,12 +4769,10 @@ soundofhope.org
 !--.sourceforge.net
 !-|http://sourceforge.net
 |http://sourceforge.net/p*/shadowsocksgui/
-|http://nchc.dl.sourceforge.net
 .sourcewadio.com
 southnews.com.tw
 sowers.org.hk
 ||wlx.sowiki.net
-||space-scape.com
 ||spankbang.com
 .spankwire.com
 ||spb.com
@@ -5274,6 +5274,7 @@ tuidang.org
 bbs.tuitui.info
 .tumutanzi.com
 |http://tumutanzi.com
+||tumview.com
 .tunein.com
 |http://tunein.com
 ||tunnelbear.com
@@ -5288,6 +5289,7 @@ bbs.tuitui.info
 ||tuo8.org
 .tuo8.pw
 |http://tuo8.pw
+.tuo8.space
 tuitwit.com
 .turansam.org
 .turbobit.net
@@ -5313,14 +5315,9 @@ tuitwit.com
 !--@@||media.tumblr.com
 !--@@||static.tumblr.com
 !--@@||www.tumblr.com
-!--blockedonweibo.tumblr.com
-!--||fqrouter.tumblr.com
-!--fanqiangkan.tumblr.com
-!--fubaichina.tumblr.com
 
 .tv.com
 |http://tv.com
-||tv-intros.com
 tvants.com
 forum.tvb.com
 news.tvb.com/list/world
