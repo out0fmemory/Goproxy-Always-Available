@@ -149,7 +149,7 @@ function FindProxyForURL(url, host) {
 }
 
 func (f *Filter) pacUpdater() {
-	glog.V(2).Infof("start updater for %+v, expiry=%s, duration=%s", f.GFWList.URL.String(), f.GFWList.Expiry, f.GFWList.Duration)
+	// glog.V(2).Infof("start updater for %+v, expiry=%s, duration=%s", f.GFWList.URL.String(), f.GFWList.Expiry, f.GFWList.Duration)
 
 	ticker := time.Tick(f.GFWList.Duration)
 

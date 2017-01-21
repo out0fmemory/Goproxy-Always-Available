@@ -11,9 +11,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/phuslu/glog"
+
 	"./httpproxy"
+	"./httpproxy/filters"
 	"./httpproxy/helpers"
 	"./httpproxy/storage"
+
+	"./httpproxy/filters/gae"
+	"./httpproxy/filters/php"
 )
 
 var (
@@ -81,10 +87,25 @@ Enabled Filters    : %v`,
 			addr,
 			fmt.Sprintf("%s|%s|%s", strings.Join(config.RequestFilters, ","), strings.Join(config.RoundTripFilters, ","), strings.Join(config.ResponseFilters, ",")))
 		for _, fn := range config.RoundTripFilters {
+			f, err := filters.GetFilter(fn)
+			if err != nil {
+				glog.Fatalf("filters.GetFilter(%#v) error: %+v", fn, err)
+			}
+
 			switch fn {
 			case "autoproxy":
 				fmt.Fprintf(os.Stderr, `
 Pac Server         : http://%s/proxy.pac`, addr)
+			case "gae":
+				fmt.Fprintf(os.Stderr, `
+GAE AppIDs         : %s`, strings.Join(f.(*gae.Filter).Config.AppIDs, "|"))
+			case "php":
+				urls := make([]string, 0)
+				for _, s := range f.(*php.Filter).Config.Servers {
+					urls = append(urls, s.URL)
+				}
+				fmt.Fprintf(os.Stderr, `
+GAE AppIDs         : %s`, strings.Join(urls, "|"))
 			}
 		}
 		go httpproxy.ServeProfile(config, "goproxy "+version)
