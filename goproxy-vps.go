@@ -81,12 +81,12 @@ func (p *SimplePAM) init() {
 
 	exe, err := os.Executable()
 	if err != nil {
-		glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
+		glog.Fatalf("os.Executable() error: %+v", err)
 	}
 
 	p.path = filepath.Join(filepath.Dir(exe), "pwauth")
 	if _, err := os.Stat(p.path); err != nil {
-		glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
+		glog.Fatalf("os.Stat(%#v) error: %+v", p.path, err)
 	}
 
 	switch runtime.GOOS {
