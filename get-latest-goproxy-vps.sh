@@ -95,23 +95,29 @@ esac
 tar -xvpf ${FILENAME%.*} --strip-components $(tar -tf ${FILENAME%.*} | head -1 | grep -c '/')
 rm -f ${FILENAME%.*}
 
-echo "4. Configure goproxy-vps"
+if grep -q 'server_name = "example.org"' goproxy-vps.toml; then
 
-if [ ! -f acme_domain.txt ]; then
-	read -p "Please input your domain: " acme_domain </dev/tty
-	if test -n "${acme_domain}"; then
-		echo ${acme_domain} >acme_domain.txt
-	fi
+	echo "4. Configure goproxy-vps"
+
+	read -p "Please input your domain: " server_name </dev/tty
+	read -p "Enable PAM Auth for goproxy-vps? [y/N]:" pam_auth </dev/tty
+
+	cat <<EOF >goproxy-vps.toml
+[default]
+log_level = 2
+
+[[server]]
+enabled = false
+listen = [":443"]
+server_name = "${server_name}"
+proxy_fallback = "http://127.0.0.1:80"
+proxy_auth_method = "$(test "${pam_auth}" = "y" && echo pam)"
+EOF
+
 fi
 
-if [ ! -f extra-args.txt ]; then
-	read -p "Enable PAM Auth for goproxy-vps? [y/N]:" pwauth </dev/tty
-	if test "${pwauth}" = "y"; then
-		echo "-pwauth" >extra-args.txt
-	fi
-fi
-
-echo "5. Done"
+echo "Done"
 echo
-echo "Please run \"sudo $(pwd)/goproxy-vps.sh start\""
-
+SUDO=$(test $(id -u) = 0 || echo sudo)
+RESTART=$(pgrep goproxy && echo restart || echo start)
+echo "Please run \"${SUDO} $(pwd)/goproxy-vps.sh ${RESTART}\""
