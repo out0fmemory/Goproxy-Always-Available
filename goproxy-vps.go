@@ -260,6 +260,9 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req.URL.Host == req.TLS.ServerName {
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Host = h.Fallback.Host
+		if ip, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+			req.Header.Set("X-Real-IP", ip)
+		}
 	}
 
 	resp, err := h.Transport.RoundTrip(req)
