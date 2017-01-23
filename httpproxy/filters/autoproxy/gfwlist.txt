@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: ogVbrJOs8W6iTlbDDSlVEg
+! Checksum: M7UibacG/XgmqyiupCx76w
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Fri, 20 Jan 2017 08:07:09 +0100
+! Last Modified: Sun, 22 Jan 2017 15:09:24 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -93,6 +93,7 @@
 ||juliepost.com
 ||kawaiikawaii.jp
 ||khatrimaza.org
+||kkbox.com
 ||leisurepro.com
 ||longtoes.com
 ||lovetvshow.com
@@ -189,6 +190,9 @@ china-mmm.jp.net
 china-mmm.sa.com
 
 !---------------------Groups--------------------
+!!---Afraid FreeDNS---
+.now.im
+
 !!---Amazon---
 .amazon.com/Dalai-Lama
 s3-ap-northeast-1.amazonaws.com
@@ -1466,6 +1470,7 @@ hkupop.hku.hk
 ||cmule.com
 ||cmule.org
 ||cms.gov
+|http://vpn.cmu.edu
 .cn6.eu
 .cna.com.tw
 ||cna.com.tw
