@@ -125,8 +125,9 @@ func (p *SimplePAM) Authenticate(username, password string) error {
 type ProxyHandler struct {
 	ServerName string
 	Fallback   *url.URL
-	*SimplePAM
+	Dial       func(network, address string) (net.Conn, error)
 	*http.Transport
+	*SimplePAM
 }
 
 func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -183,7 +184,12 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 		glog.Infof("%s \"%s %s:%s %s\" - -", req.RemoteAddr, req.Method, host, port, req.Proto)
 
-		conn, err := h.Transport.Dial("tcp", net.JoinHostPort(host, port))
+		dial := h.Dial
+		if dial == nil {
+			dial = h.Transport.Dial
+		}
+
+		conn, err := dial("tcp", net.JoinHostPort(host, port))
 		if err != nil {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
@@ -418,21 +424,25 @@ func main() {
 		}
 
 		if server.ParentProxy != "" {
+			handler.Transport = &http.Transport{}
+			*handler.Transport = *transport
+
 			fixedURL, err := url.Parse(server.ParentProxy)
 			if err != nil {
 				glog.Fatalf("url.Parse(%#v) error: %+v", server.ParentProxy, err)
 			}
 
-			dialer2, err := proxy.FromURL(fixedURL, dialer, nil)
-			if err != nil {
-				glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
+			switch fixedURL.Scheme {
+			case "http":
+				handler.Transport.Proxy = http.ProxyURL(fixedURL)
+				fallthrough
+			default:
+				dialer2, err := proxy.FromURL(fixedURL, dialer, nil)
+				if err != nil {
+					glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
+				}
+				handler.Dial = dialer2.Dial
 			}
-
-			handler.Transport = &http.Transport{}
-			*handler.Transport = *transport
-			handler.Transport.Dial = dialer2.Dial
-			handler.Transport.DialTLS = nil
-			handler.Transport.Proxy = nil
 		}
 
 		switch server.ProxyAuthMethod {
