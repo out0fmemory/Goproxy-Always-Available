@@ -12,28 +12,28 @@ import (
 	"math/rand"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	"github.com/cloudflare/golibs/lrucache"
-	"github.com/juju/ratelimit"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/goproxy/httpproxy/helpers"
+	"github.com/phuslu/goproxy/httpproxy/proxy"
 	"github.com/phuslu/net/http2"
 	"golang.org/x/crypto/acme/autocert"
 )
 
 var (
 	version = "r9999"
-)
-
-var (
-	ACMEDomain string = os.Getenv("ACME_DOMAIN")
 )
 
 func init() {
@@ -68,18 +68,68 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 	return tc, nil
 }
 
-type Handler struct {
-	ACMEDomain    string
-	PWAuthEnabled bool
-	PWAuthCache   lrucache.Cache
-	PWAuthPath    string
-	Rate          float64
-	RateCapacity  int64
-	RateVIP       string
+type SimplePAM struct {
+	CacheSize uint
+
+	path  string
+	cache lrucache.Cache
+	once  sync.Once
+}
+
+func (p *SimplePAM) init() {
+	p.cache = lrucache.NewLRUCache(p.CacheSize)
+
+	exe, err := os.Executable()
+	if err != nil {
+		glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
+	}
+
+	p.path = filepath.Join(filepath.Dir(exe), "pwauth")
+	if _, err := os.Stat(p.path); err != nil {
+		glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
+	}
+
+	switch runtime.GOOS {
+	case "linux", "freebsd", "darwin":
+		if u, err := user.Current(); err == nil && u.Uid == "0" {
+			glog.Warningf("If you want to use system native pwauth, please run as root, otherwise please add/edit pwauth.txt.")
+		}
+	case "windows":
+		glog.Warningf("Current platform %+v not support native pwauth, please add/edit pwauth.txt.", runtime.GOOS)
+	}
+}
+
+func (p *SimplePAM) Authenticate(username, password string) error {
+	p.once.Do(p.init)
+
+	auth := username + ":" + password
+
+	if _, ok := p.cache.GetNotStale(auth); ok {
+		return nil
+	}
+
+	cmd := exec.Command(p.path)
+	cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
+	err := cmd.Run()
+
+	if err != nil {
+		glog.Warningf("SimplePAM: username=%v password=%v error: %+v", username, password, err)
+		time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+		return err
+	}
+
+	p.cache.Set(auth, struct{}{}, time.Now().Add(2*time.Hour))
+	return nil
+}
+
+type ProxyHandler struct {
+	ServerName string
+	Fallback   *url.URL
+	*SimplePAM
 	*http.Transport
 }
 
-func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
@@ -94,51 +144,33 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	needRate := h.Rate > 0
-
-	if h.PWAuthEnabled && req.Host != h.ACMEDomain {
+	if h.SimplePAM != nil && req.Host != req.TLS.ServerName {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
 			return
 		}
-		if _, ok := h.PWAuthCache.GetNotStale(auth); !ok {
-			parts := strings.SplitN(auth, " ", 2)
-			if len(parts) == 2 {
-				switch parts[0] {
-				case "Basic":
-					if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
-						parts := strings.Split(string(userpass), ":")
-						username := parts[0]
-						password := parts[1]
 
-						cmd := exec.Command(h.PWAuthPath)
-						cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
-						err = cmd.Run()
+		parts := strings.SplitN(auth, " ", 2)
+		if len(parts) == 2 {
+			switch parts[0] {
+			case "Basic":
+				if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
+					parts := strings.Split(string(userpass), ":")
+					username := parts[0]
+					password := parts[1]
 
-						if err != nil {
-							glog.Warningf("pwauth: username=%v password=%v error: %+v", username, password, err)
-							time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
-							h.ProxyAuthorizationReqiured(rw, req)
-							return
-						}
-
-						h.PWAuthCache.Set(auth, struct{}{}, time.Now().Add(2*time.Hour))
-
-						if needRate {
-							if matched, err := filepath.Match(h.RateVIP, username); err == nil && matched {
-								needRate = false
-							}
-						}
-
+					if err := h.SimplePAM.Authenticate(username, password); err != nil {
+						http.Error(rw, "403 Forbidden", http.StatusForbidden)
 					}
-				default:
-					glog.Errorf("Unrecognized auth type: %#v", parts[0])
-					http.Error(rw, "403 Forbidden", http.StatusForbidden)
-					return
 				}
+			default:
+				glog.Errorf("Unrecognized auth type: %#v", parts[0])
+				http.Error(rw, "403 Forbidden", http.StatusForbidden)
+				return
 			}
 		}
+
 		req.Header.Del("Proxy-Authorization")
 	}
 
@@ -190,10 +222,6 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			r = lconn
 		}
 
-		if needRate {
-			r = ratelimit.Reader(r, ratelimit.NewBucketWithRate(h.Rate, h.RateCapacity))
-		}
-
 		defer conn.Close()
 
 		go helpers.IOCopy(conn, r)
@@ -229,6 +257,11 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Proto = "HTTP/1.1"
 	}
 
+	if req.URL.Host == req.TLS.ServerName {
+		req.URL.Scheme = h.Fallback.Scheme
+		req.URL.Host = h.Fallback.Host
+	}
+
 	resp, err := h.Transport.RoundTrip(req)
 	if err != nil {
 		msg := err.Error()
@@ -250,14 +283,10 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	defer resp.Body.Close()
 
 	var r io.Reader = resp.Body
-	if needRate {
-		r = ratelimit.Reader(r, ratelimit.NewBucketWithRate(h.Rate, h.RateCapacity))
-	}
-
 	helpers.IOCopy(rw, r)
 }
 
-func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
+func (h *ProxyHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
 	data := "Proxy Authentication Required"
 	resp := &http.Response{
 		StatusCode: http.StatusProxyAuthRequired,
@@ -277,35 +306,63 @@ func (h *Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.R
 	helpers.IOCopy(rw, resp.Body)
 }
 
+type Config struct {
+	Default struct {
+		LogLevel int `toml:"log_level"`
+	}
+	Server []struct {
+		Enabled    bool     `toml:"enabled"`
+		Listen     []string `toml:"listen"`
+		ServerName string   `toml:"server_name"`
+
+		ParentProxy string `toml:"parent_proxy"`
+
+		ProxyFallback   string `toml:"proxy_fallback"`
+		ProxyAuthMethod string `toml:"proxy_auth_method"`
+	}
+}
+
+type Handler struct {
+	Handlers map[string]http.Handler
+}
+
+func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	handler, ok := h.Handlers[req.TLS.ServerName]
+	if !ok {
+		http.Error(rw, "403 Forbidden", http.StatusForbidden)
+	}
+	handler.ServeHTTP(rw, req)
+}
+
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "-version" {
 		fmt.Print(version)
 		return
 	}
 
-	addrs := ":443"
-	pwauth := false
-	tls12 := false
-	acmeDomain := ""
-	keyFile := "goproxy-vps.key"
-	certFile := "goproxy-vps.crt"
-	http2verbose := false
-	var rate float64
-	rateVIP := "*.vip"
+	var config Config
 
-	flag.StringVar(&addrs, "addr", addrs, "goproxy vps listen addrs, i.e. 0.0.0.0:443,0.0.0.0:8443")
-	flag.StringVar(&acmeDomain, "acmedomain", acmeDomain, "goproxy vps acme domain, i.e. vps.example.com")
-	flag.StringVar(&keyFile, "keyfile", keyFile, "goproxy vps keyfile")
-	flag.StringVar(&certFile, "certfile", certFile, "goproxy vps certfile")
-	flag.BoolVar(&http2verbose, "http2verbose", http2verbose, "goproxy vps http2 verbose mode")
-	flag.BoolVar(&pwauth, "pwauth", pwauth, "goproxy vps enable pwauth")
-	flag.BoolVar(&tls12, "tls12", tls12, "goproxy vps enable tls 1.2")
-	flag.Float64Var(&rate, "rate", rate, "goproxy vps rate limit")
-	flag.StringVar(&rateVIP, "ratevip", rateVIP, "goproxy vps rate vip patten")
+	exe, err := os.Executable()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "os.Executable() error: %+v\n", err)
+		os.Exit(1)
+	}
+
+	tomlData, err := ioutil.ReadFile(exe + ".toml")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "ioutil.ReadFile(%s.toml) error: %+v\n", exe, err)
+		os.Exit(1)
+	}
+
+	_, err = toml.Decode(string(tomlData), &config)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "toml.Decode(%s) error: %+v\n", tomlData, err)
+		os.Exit(1)
+	}
 
 	helpers.SetFlagsIfAbsent(map[string]string{
 		"logtostderr": "true",
-		"v":           "2",
+		"v":           strconv.Itoa(config.Default.LogLevel),
 	})
 	flag.Parse()
 
@@ -343,88 +400,85 @@ func main() {
 		DisableCompression:  false,
 	}
 
-	handler := &Handler{
-		ACMEDomain:    acmeDomain,
-		PWAuthEnabled: pwauth,
-		Rate:          rate,
-		RateVIP:       rateVIP,
-		RateCapacity:  int64(rate) * 1024,
-		Transport:     transport,
+	domains := []string{}
+	handlers := map[string]http.Handler{}
+	for _, server := range config.Server {
+		handler := &ProxyHandler{
+			Transport: transport,
+		}
+
+		if server.ProxyFallback != "" {
+			handler.Fallback, err = url.Parse(server.ProxyFallback)
+			if err != nil {
+				glog.Fatalf("url.Parse(%+v) error: %+v", server.ProxyFallback, err)
+			}
+		}
+
+		if server.ParentProxy != "" {
+			fixedURL, err := url.Parse(server.ParentProxy)
+			if err != nil {
+				glog.Fatalf("url.Parse(%#v) error: %+v", server.ParentProxy, err)
+			}
+
+			dialer2, err := proxy.FromURL(fixedURL, dialer, nil)
+			if err != nil {
+				glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
+			}
+
+			handler.Transport = &http.Transport{}
+			*handler.Transport = *transport
+			handler.Transport.Dial = dialer2.Dial
+			handler.Transport.DialTLS = nil
+			handler.Transport.Proxy = nil
+		}
+
+		switch server.ProxyAuthMethod {
+		case "pam":
+			handler.SimplePAM = &SimplePAM{
+				CacheSize: 2048,
+			}
+		case "":
+			break
+		default:
+			glog.Fatalf("unsupport proxy_auth_method(%+v)", server.ProxyAuthMethod)
+		}
+
+		handlers[server.ServerName] = handler
+		domains = append(domains, server.ServerName)
 	}
 
-	if handler.PWAuthEnabled {
-		handler.PWAuthCache = lrucache.NewLRUCache(1024)
-		exe, err := os.Executable()
-		if err != nil {
-			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
-		}
-		handler.PWAuthPath = filepath.Join(filepath.Dir(exe), "pwauth")
-		if _, err := os.Stat(handler.PWAuthPath); err != nil {
-			glog.Fatalf("Ensure bundled `pwauth' error: %+v", err)
-		}
-
-		switch runtime.GOOS {
-		case "linux", "freebsd", "darwin":
-			if u, err := user.Current(); err == nil && u.Uid == "0" {
-				glog.Warningf("If you want to use system native pwauth, please run as root, otherwise please add/edit pwauth.txt.")
-			}
-		case "windows":
-			glog.Warningf("Current platform %+v not support native pwauth, please add/edit pwauth.txt.", runtime.GOOS)
-		}
+	m := autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		Cache:      autocert.DirCache("."),
+		HostPolicy: autocert.HostWhitelist(domains...),
 	}
 
 	srv := &http.Server{
-		Handler:   handler,
-		TLSConfig: &tls.Config{},
+		Handler: &Handler{
+			Handlers: handlers,
+		},
+		TLSConfig: &tls.Config{
+			MinVersion:     tls.VersionTLS12,
+			GetCertificate: m.GetCertificate,
+		},
 	}
 
-	if tls12 {
-		srv.TLSConfig.MinVersion = tls.VersionTLS12
-	}
-
-	if acmeDomain != "" {
-		m := autocert.Manager{
-			Prompt:     autocert.AcceptTOS,
-			Cache:      autocert.DirCache("."),
-			HostPolicy: autocert.HostWhitelist(strings.Split(acmeDomain, ",")...),
-		}
-
-		srv.TLSConfig.GetCertificate = m.GetCertificate
-	} else {
-		if _, err := os.Stat(keyFile); os.IsNotExist(err) {
-			cmd := exec.Command("openssl",
-				"req",
-				"-subj", "/CN=github.com/O=GitHub, Inc./C=US",
-				"-new",
-				"-newkey", "rsa:2048",
-				"-days", "365",
-				"-nodes",
-				"-x509",
-				"-keyout", keyFile,
-				"-out", certFile)
-			if err = cmd.Run(); err != nil {
-				glog.Fatalf("openssl: %+v error: %+v", cmd.Args, err)
-			}
-		}
-
-		cert, err := tls.LoadX509KeyPair(certFile, keyFile)
-		if err != nil {
-			glog.Fatalf("LoadX509KeyPair(%#v, %#v) error: %v", certFile, keyFile, err)
-		}
-
-		srv.TLSConfig.Certificates = []tls.Certificate{cert}
-	}
-
-	http2.VerboseLogs = http2verbose
 	http2.ConfigureServer(srv, &http2.Server{})
 
-	for _, addr := range strings.Split(addrs, ",") {
-		ln, err := net.Listen("tcp", addr)
-		if err != nil {
-			glog.Fatalf("Listen(%s) error: %s", addr, err)
+	seen := make(map[string]struct{})
+	for _, server := range config.Server {
+		for _, addr := range server.Listen {
+			if _, ok := seen[addr]; ok {
+				continue
+			}
+			seen[addr] = struct{}{}
+			ln, err := net.Listen("tcp", addr)
+			if err != nil {
+				glog.Fatalf("Listen(%s) error: %s", addr, err)
+			}
+			glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
+			go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 		}
-		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
-		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 	}
 
 	select {}

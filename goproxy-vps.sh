@@ -29,11 +29,7 @@ DOAMIN_FILE=acme_domain.txt
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    test -f ${DOAMIN_FILE} || echo "Please put your vps domain name to ./${DOAMIN_FILE}"
-    local acmedomain=${DOAMIN:-$(cat ${DOAMIN_FILE})}
-    local extra_args=$(cat ./extra-args.txt 2>/dev/null | tr '\n' ' ')
-    local log_dir=$(mkdir -p logs && echo "$(pwd)/logs")
-    nohup ./goproxy-vps -addr=:443 -acmedomain=${acmedomain} -v=2 -logtostderr=0 -log_dir=${log_dir} -tls12 ${extra_args} >/dev/null 2>&1 &
+    nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &
     echo "${PACKAGE_NAME}"
 }
 

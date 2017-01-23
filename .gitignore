@@ -1,4 +1,6 @@
 changelog.txt
+goproxy-vps
+goproxy-vps.log*
 *.crt
 *.key
 *.pem

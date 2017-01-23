@@ -1,0 +1,15 @@
+[default]
+log_level = 2
+
+[[server]]
+enabled = false
+listen = [":443"]
+server_name = "example.org"
+proxy_fallback = "http://127.0.0.1:80"
+
+[[server]]
+enabled = false
+listen = [":443"]
+server_name = "proxy.eample.org"
+parent_proxy = "http://127.0.0.1:8080"
+proxy_auth_method = "pam"
