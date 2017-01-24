@@ -263,7 +263,8 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Proto = "HTTP/1.1"
 	}
 
-	if req.URL.Host == req.TLS.ServerName {
+	if req.URL.Host == req.TLS.ServerName && h.Fallback != nil {
+		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Host = h.Fallback.Host
 		if ip, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
@@ -339,6 +340,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	handler, ok := h.Handlers[req.TLS.ServerName]
 	if !ok {
 		http.Error(rw, "403 Forbidden", http.StatusForbidden)
+		return
 	}
 	handler.ServeHTTP(rw, req)
 }
