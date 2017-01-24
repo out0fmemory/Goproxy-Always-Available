@@ -29,8 +29,7 @@ DOAMIN_FILE=acme_domain.txt
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    setcap cap_net_bind_service=+ep goproxy-vps
-    su ${SUDO_USER} -c 'nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &'
+    nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &
     echo "${PACKAGE_NAME}"
 }
 
