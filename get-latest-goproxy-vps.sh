@@ -5,6 +5,11 @@ set -e
 linkpath=$(ls -l "$0" 2>/dev/null | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
+if [ "$(/bin/ls -ld goproxy-vps* 2>/dev/null | grep -c '^-')" = "0" ]; then
+	mkdir -p goproxy-vps
+	cd goproxy-vps
+fi
+
 FILENAME_PREFIX=
 case $(uname -s)/$(uname -m) in
 	Linux/x86_64 )
