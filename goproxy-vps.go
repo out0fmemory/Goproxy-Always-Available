@@ -359,16 +359,22 @@ func main() {
 		os.Exit(1)
 	}
 
-	tomlData, err := ioutil.ReadFile(exe + ".toml")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "ioutil.ReadFile(%s.toml) error: %+v\n", exe, err)
-		os.Exit(1)
-	}
+	for _, filename := range []string{exe + ".user.toml", exe + ".toml"} {
+		if _, err := os.Stat(filename); err == nil {
+			tomlData, err := ioutil.ReadFile(filename)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "ioutil.ReadFile(%#v) error: %+v\n", filename, err)
+				os.Exit(1)
+			}
 
-	_, err = toml.Decode(string(tomlData), &config)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "toml.Decode(%s) error: %+v\n", tomlData, err)
-		os.Exit(1)
+			_, err = toml.Decode(string(tomlData), &config)
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "toml.Decode(%s) error: %+v\n", tomlData, err)
+				os.Exit(1)
+			}
+
+			break
+		}
 	}
 
 	helpers.SetFlagsIfAbsent(map[string]string{
