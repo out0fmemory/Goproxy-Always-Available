@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"net"
 	"net/http"
+	"runtime"
 	"strings"
 	"time"
 
@@ -50,7 +51,7 @@ func init() {
 func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
 		Config:    *config,
-		AuthCache: lrucache.NewMultiLRUCache(4, uint(config.CacheSize)),
+		AuthCache: lrucache.NewMultiLRUCache(uint(runtime.NumCPU()), uint(config.CacheSize)),
 		Basic:     make(map[string]string),
 		WhiteList: make(map[string]struct{}),
 	}
