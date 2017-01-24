@@ -29,7 +29,8 @@ DOAMIN_FILE=acme_domain.txt
 
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
-    nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &
+    setcap cap_net_bind_service=+ep goproxy-vps
+    su ${SUDO_USER} -c 'nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &'
     echo "${PACKAGE_NAME}"
 }
 
@@ -51,6 +52,7 @@ usage() {
 
 if [ -n "${SUDO}" ]; then
     echo "ERROR: Please run as root"
+    exit 1
 fi
 
 linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
