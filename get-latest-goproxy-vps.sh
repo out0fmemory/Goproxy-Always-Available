@@ -61,7 +61,7 @@ MAJORVERSION=$(cat goproxy-ci.txt | grep -oE "goproxy_linux_amd64-r[0-9]+.[0-9a-
 FILENAME=$(cat goproxy-ci.txt | grep -oE "${FILENAME_PREFIX}-r[0-9]+.[0-9a-z\.]+" | head -1)
 REMOTEVERSION=$(echo ${FILENAME} | awk -F'.' '{print $1}' | awk -F'-' '{print $3}')
 rm -rf goproxy-ci.txt
-if test -z "${REMOTEVERSION}"; then
+if [ -z "${REMOTEVERSION}" ]; then
 	echo "Cannot detect ${FILENAME_PREFIX} version"
 	exit 1
 fi
@@ -95,12 +95,12 @@ esac
 tar -xvpf ${FILENAME%.*} --strip-components $(tar -tf ${FILENAME%.*} | head -1 | grep -c '/')
 rm -f ${FILENAME%.*}
 
-if test '!' -f goproxy-vps.toml -o -n $(grep -q 'server_name = "example.org"' goproxy-vps.toml 2>/dev/null); then
+if [[ ! -f goproxy-vps.toml || -n $(grep 'server_name = "example.org"' goproxy-vps.toml 2>/dev/null) ]]; then
 
         echo "4. Configure goproxy-vps"
 
-        read -p "Please input your domain: " server_name </dev/tty
-        read -p "Enable PAM Auth for goproxy-vps? [y/N]:" pam_auth </dev/tty
+        read -ep "Please input your domain: " server_name </dev/tty
+        read -ep "Enable PAM Auth for goproxy-vps? [y/N]:" pam_auth </dev/tty
 
         cat <<EOF >goproxy-vps.toml
 [default]
@@ -112,7 +112,7 @@ listen = [":443"]
 server_name = "${server_name}"
 proxy_fallback = "http://127.0.0.1:80"
 EOF
-	if test "${pam_auth}" = "y"; then
+	if [ "${pam_auth}" = "y" ]; then
 		echo 'proxy_auth_method = "pam"' >>goproxy-vps.toml
 	else
 		echo '#proxy_auth_method = "pam"' >>goproxy-vps.toml
@@ -122,6 +122,7 @@ fi
 
 echo "Done"
 echo
+
 SUDO=$(test $(id -u) = 0 || echo sudo)
 RESTART=$(pgrep goproxy-vps >/dev/null && echo restart || echo start)
 echo "Please run \"${SUDO} $(pwd)/goproxy-vps.sh ${RESTART}\""
