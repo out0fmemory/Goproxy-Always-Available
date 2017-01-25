@@ -323,7 +323,7 @@ type Config struct {
 	Server []struct {
 		Enabled    bool     `toml:"enabled"`
 		Listen     []string `toml:"listen"`
-		ServerName []string   `toml:"server_name"`
+		ServerName []string `toml:"server_name"`
 
 		ParentProxy string `toml:"parent_proxy"`
 
@@ -455,6 +455,9 @@ func main() {
 
 		switch server.ProxyAuthMethod {
 		case "pam":
+			if _, err := exec.LookPath("python2"); err != nil {
+				glog.Fatalf("pam: exec.LookPath(\"python2\") error: %+v", err)
+			}
 			handler.SimplePAM = &SimplePAM{
 				CacheSize: 2048,
 			}
