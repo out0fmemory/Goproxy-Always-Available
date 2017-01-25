@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: M7UibacG/XgmqyiupCx76w
+! Checksum: /sgp3Oi+CIAmr6zA0wq8Ug
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Sun, 22 Jan 2017 15:09:24 +0100
+! Last Modified: Wed, 25 Jan 2017 12:54:04 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -474,21 +474,27 @@ blogspot.com
 .google.fr
 .google.gg
 .google.gl
+.google.gr
 .google.ie
 .google.is
 .google.it
 .google.jo
+.google.kz
+.google.mn
 .google.ms
 .google.nl
 .google.nu
 .google.no
 .google.ro
+.google.ru
+.google.rw
 .google.sc
 .google.sh
 .google.sk
 .google.sm
 .google.sn
 .google.tk
+.google.tm
 .google.to
 .google.tt
 .google.vu
@@ -516,7 +522,7 @@ blogspot.com
 ||googleplay.com
 ||googleplus.com
 ||googlesource.com
-!--||googlesyndication.com
+||googlesyndication.com
 !--||googletagmanager.com
 !--||googletagservices.com
 ||googleusercontent.com
@@ -790,6 +796,7 @@ alliance.org.hk
 ||allmovie.com
 .alphaporno.com
 ||alternate-tools.com
+alternativeto.net/software
 alvinalexander.com
 alwaysdata.com
 ||alwaysdata.com
@@ -1064,6 +1071,7 @@ blinw.com
 ||blip.tv/
 .blockcn.com
 ||blockcn.com
+||blockless.com
 ||blog.de
 .blog.jp
 |http://blog.jp
@@ -1471,6 +1479,7 @@ hkupop.hku.hk
 ||cmule.org
 ||cms.gov
 |http://vpn.cmu.edu
+|http://vpn.sv.cmu.edu
 .cn6.eu
 .cna.com.tw
 ||cna.com.tw
@@ -1523,7 +1532,9 @@ corumcollege.com
 ||couchdbwiki.com
 ||cotweet.com
 cpj.org
-||cpj.org/
+||cpj.org
+.cq99.us
+|http://cq99.us
 crackle.com
 ||crackle.com
 ||crchina.org
@@ -4527,10 +4538,10 @@ savevid.com
 ||say2.info
 .sbme.me
 |http://sbme.me
+.sbs.com.au/yourlanguage
 .scasino.com
 |http://www.sciencemag.org/content/344/6187/953
 .sciencenets.com
-||scihub.org
 .scmp.com
 .scmpchinese.com
 ||scramble.io
@@ -4779,6 +4790,7 @@ southnews.com.tw
 sowers.org.hk
 ||wlx.sowiki.net
 ||spankbang.com
+.spankingtube.com
 .spankwire.com
 ||spb.com
 ||speakerdeck.com
@@ -4786,7 +4798,6 @@ spem.at
 ||spencertipping.com
 ||spicevpn.com
 .spike.com
-spinejs.com
 .spotflux.com
 ||spotflux.com
 .spring4u.info
@@ -4878,8 +4889,6 @@ sun1911.com
 ||surrenderat20.net
 .suyangg.com
 |http://suyangg.com
-||svwind.com
-||sweux.com
 .swissvpn.net
 ||swissvpn.net
 switchvpn.net
@@ -4888,7 +4897,6 @@ switchvpn.net
 .sydneytoday.com
 .sylfoundation.org
 ||syncback.com
-||sysadmin1138.net
 sysresccd.org
 .sytes.net
 blog.syx86.com/2009/09/puff
@@ -4900,7 +4908,6 @@ blog.syx86.cn/2009/09/puff
 .t35.com
 .t66y.com
 ||t66y.com
-||t88.ca
 .taa-usa.org
 |http://taa-usa.org
 .taaze.tw
@@ -4910,7 +4917,6 @@ tabtter.jp
 .tacem.org
 .taconet.com.tw
 ||taedp.org.tw
-||tafaward.com
 .tafm.org
 .tagwa.org.au
 tagwalk.com
@@ -4965,6 +4971,7 @@ blog.taragana.com
 .tbjyt.org
 ||tbpic.info
 tbs-rainbow.org
+.tbsec.org
 ||tbsec.org
 tbskkinabalu.page.tl
 .tbsmalaysia.org
@@ -4983,8 +4990,6 @@ tcnynj.org
 .tcsofbc.org
 .tcsovi.org
 teamamericany.com
-||techlifeweb.com
-!--technorati.com
 ||teck.in
 .teeniefuck.net
 teensinasia.com
@@ -5007,7 +5012,6 @@ theblemish.com
 |http://thedalailamamovie.com
 ||thedw.us
 thefrontier.hk/tf
-!--||thegatesnotes.com
 |http://thegioitinhoc.vn/
 .thegly.com
 .thehots.info
@@ -5214,7 +5218,6 @@ torrentprivacy.com
 ||torrentz.eu
 ||torvpn.com
 ||totalvpn.com
-||toutfr.com
 towngain.com
 toypark.in
 toytractorshow.com
@@ -5222,17 +5225,13 @@ toytractorshow.com
 .tpi.org.tw
 ||tpi.org.tw
 traffichaus.com
-||transgressionism.org
 ||transparency.org
-||travelinlocal.com
 ||treemall.com.tw
 trendsmap.com
 ||trendsmap.com
 .trialofccp.org
 ||trialofccp.org
 .trimondi.de/SDLE
-||tripod.com
-@@||www.tripod.com
 .trouw.nl
 |http://trouw.nl
 .trt.net.tr
@@ -5306,7 +5305,6 @@ tuitwit.com
 |http://tushycash.com
 .tuvpn.com
 ||tuvpn.com
-||tuxtraining.com
 |http://tuzaijidi.com
 |http://*.tuzaijidi.com
 .tw01.org
