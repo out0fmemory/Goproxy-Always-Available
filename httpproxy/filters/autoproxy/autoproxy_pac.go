@@ -32,7 +32,7 @@ func (f *Filter) ProxyPacRoundTrip(ctx context.Context, req *http.Request) (cont
 		port = "80"
 	}
 
-	if v, ok := f.ProxyPacCache.Get(req.RequestURI); ok {
+	if v, ok := f.ProxyPacCache.Get(req.URL.Path); ok {
 		if s, ok := v.(string); ok {
 			s = fixProxyPac(s, req)
 			return ctx, &http.Response{
@@ -133,7 +133,7 @@ function FindProxyForURL(url, host) {
 	}
 
 	s := buf.String()
-	f.ProxyPacCache.Set(req.RequestURI, s, time.Now().Add(15*time.Minute))
+	f.ProxyPacCache.Set(req.URL.Path, s, time.Now().Add(15*time.Minute))
 
 	s = fixProxyPac(s, req)
 	resp = &http.Response{

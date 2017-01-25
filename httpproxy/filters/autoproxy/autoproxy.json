@@ -27,6 +27,7 @@
 	},
 	"IndexFiles": {
 		"Enabled": true,
+		"SeverName": "",
 		"Files": [
 			"proxy.pac",
 			"GoProxyAPN.mobileconfig",
