@@ -3,6 +3,7 @@ goproxy-vps
 goproxy-vps.log*
 *.user.toml
 *phus.lu
+*.f3322.net
 *.crt
 *.key
 *.pem
