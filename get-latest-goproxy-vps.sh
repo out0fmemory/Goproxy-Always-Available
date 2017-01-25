@@ -23,7 +23,7 @@ case $(uname -s)/$(uname -m) in
 		;;
 	Linux/arm* )
 		FILENAME_PREFIX=goproxy-vps_linux_arm
-		if grep -q ld-linux-armhf.so ./goproxy; then
+		if grep -q ld-linux-armhf.so ./goproxy-vps 2>/dev/null; then
 			FILENAME_PREFIX=goproxy-vps_linux_arm_cgo
 		fi
 		;;
