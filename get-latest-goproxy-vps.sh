@@ -100,6 +100,7 @@ esac
 tar -xvpf ${FILENAME%.*} --strip-components $(tar -tf ${FILENAME%.*} | head -1 | grep -c '/')
 rm -f ${FILENAME%.*}
 
+if [ ! -f goproxy-vps.user.toml ]; then
 if [[ ! -f goproxy-vps.toml || -n $(grep 'server_name = "example.org"' goproxy-vps.toml 2>/dev/null) ]]; then
 
         echo "4. Configure goproxy-vps"
@@ -123,6 +124,7 @@ EOF
 		echo '#proxy_auth_method = "pam"' >>goproxy-vps.toml
 	fi
 
+fi
 fi
 
 echo "Done"
