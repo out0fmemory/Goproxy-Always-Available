@@ -323,7 +323,7 @@ type Config struct {
 	Server []struct {
 		Enabled    bool     `toml:"enabled"`
 		Listen     []string `toml:"listen"`
-		ServerName string   `toml:"server_name"`
+		ServerName []string   `toml:"server_name"`
 
 		ParentProxy string `toml:"parent_proxy"`
 
@@ -464,8 +464,10 @@ func main() {
 			glog.Fatalf("unsupport proxy_auth_method(%+v)", server.ProxyAuthMethod)
 		}
 
-		handlers[server.ServerName] = handler
-		domains = append(domains, server.ServerName)
+		for _, servername := range server.ServerName {
+			handlers[servername] = handler
+			domains = append(domains, servername)
+		}
 	}
 
 	m := autocert.Manager{
