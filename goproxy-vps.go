@@ -323,13 +323,13 @@ func (h *ProxyHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 }
 
 type CertManager struct {
-	Domains  []string
-	Autocert bool
-	Keyfile  string
-	Certfile string
+	Domains         []string
+	DisableAutocert bool
+	Keyfile         string
+	Certfile        string
 
 	once    sync.Once
-	cert *tls.Certificate
+	cert    *tls.Certificate
 	manager *autocert.Manager
 }
 
@@ -367,9 +367,9 @@ type Config struct {
 		Mode     string `toml:"mode"`
 	}
 	HTTPS struct {
-		Autocert bool   `toml:"autocert"`
-		Keyfile  string `toml:"keyfile"`
-		Certfile string `toml:"certfile"`
+		DisableAutocert bool   `toml:"disable_autocert"`
+		Keyfile         string `toml:"keyfile"`
+		Certfile        string `toml:"certfile"`
 	}
 	Server []struct {
 		Enabled    bool     `toml:"enabled"`
@@ -525,8 +525,8 @@ func main() {
 	}
 
 	m := &CertManager{
-		Domains:  domains,
-		Autocert: true,
+		Domains:         domains,
+		DisableAutocert: config.HTTPS.DisableAutocert,
 	}
 
 	srv := &http.Server{

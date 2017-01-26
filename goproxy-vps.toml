@@ -3,7 +3,7 @@ log_level = 2
 mode = "https"
 
 [https]
-autocert = true
+disable_autocert = false
 keyfile = ""
 certfile = ""
 
