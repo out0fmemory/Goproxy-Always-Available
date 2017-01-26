@@ -345,6 +345,9 @@ func (cm *CertManager) init() {
 
 func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	cm.once.Do(cm.init)
+	if hello.ServerName == "" {
+		hello.ServerName = cm.Domains[0]
+	}
 	return cm.manager.GetCertificate(hello)
 }
 
