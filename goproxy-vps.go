@@ -273,7 +273,7 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			if xff == "" {
 				req.Header.Set("X-Forwarded-For", ip)
 			} else {
-				req.Header.Set("X-Forwarded-For", xff + ", " + ip)
+				req.Header.Set("X-Forwarded-For", xff+", "+ip)
 			}
 		}
 	}
@@ -322,9 +322,41 @@ func (h *ProxyHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 	helpers.IOCopy(rw, resp.Body)
 }
 
+type CertManager struct {
+	Domains  []string
+	Autocert bool
+	Keyfile  string
+	Certfile string
+
+	once    sync.Once
+	cache   lrucache.Cache
+	manager *autocert.Manager
+}
+
+func (cm *CertManager) init() {
+	cm.cache = lrucache.NewLRUCache(128)
+
+	cm.manager = &autocert.Manager{
+		Prompt:     autocert.AcceptTOS,
+		Cache:      autocert.DirCache("."),
+		HostPolicy: autocert.HostWhitelist(cm.Domains...),
+	}
+}
+
+func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	cm.once.Do(cm.init)
+	return cm.manager.GetCertificate(hello)
+}
+
 type Config struct {
 	Default struct {
-		LogLevel int `toml:"log_level"`
+		LogLevel int    `toml:"log_level"`
+		Mode     string `toml:"mode"`
+	}
+	HTTPS struct {
+		Autocert bool   `toml:"autocert"`
+		Keyfile  string `toml:"keyfile"`
+		Certfile string `toml:"certfile"`
 	}
 	Server []struct {
 		Enabled    bool     `toml:"enabled"`
@@ -479,10 +511,9 @@ func main() {
 		}
 	}
 
-	m := autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache("."),
-		HostPolicy: autocert.HostWhitelist(domains...),
+	m := &CertManager{
+		Domains:  domains,
+		Autocert: true,
 	}
 
 	srv := &http.Server{

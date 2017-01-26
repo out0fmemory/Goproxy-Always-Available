@@ -1,5 +1,11 @@
 [default]
 log_level = 2
+mode = "https"
+
+[https]
+autocert = true
+keyfile = ""
+certfile = ""
 
 [[server]]
 listen = [":443"]
