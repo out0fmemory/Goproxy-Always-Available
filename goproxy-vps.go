@@ -329,12 +329,18 @@ type CertManager struct {
 	Certfile string
 
 	once    sync.Once
-	cache   lrucache.Cache
+	cert *tls.Certificate
 	manager *autocert.Manager
 }
 
 func (cm *CertManager) init() {
-	cm.cache = lrucache.NewLRUCache(128)
+	if cm.Keyfile != "" && cm.Certfile != "" {
+		c, err := tls.LoadX509KeyPair(cm.Certfile, cm.Keyfile)
+		if err != nil {
+			glog.Fatalf("tls.LoadX509KeyPair(%#v, %#v) error: %+v", cm.Certfile, cm.Keyfile, err)
+		}
+		cm.cert = &c
+	}
 
 	cm.manager = &autocert.Manager{
 		Prompt:     autocert.AcceptTOS,
@@ -346,7 +352,11 @@ func (cm *CertManager) init() {
 func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
 	cm.once.Do(cm.init)
 	if hello.ServerName == "" {
-		hello.ServerName = cm.Domains[0]
+		if cm.cert != nil {
+			return cm.cert, nil
+		} else {
+			hello.ServerName = cm.Domains[0]
+		}
 	}
 	return cm.manager.GetCertificate(hello)
 }
