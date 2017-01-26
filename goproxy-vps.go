@@ -133,6 +133,8 @@ type ProxyHandler struct {
 func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
+	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
+
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
 	params := http.Header{}
 	for key, values := range req.Header {
@@ -207,11 +209,10 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		var w io.Writer
 		var r io.Reader
 
-		switch req.ProtoMajor {
-		case 2:
+		if h2 {
 			w = FlushWriter{rw}
 			r = req.Body
-		default:
+		} else {
 			hijacker, ok := rw.(http.Hijacker)
 			if !ok {
 				http.Error(rw, fmt.Sprintf("%#v is not http.Hijacker", rw), http.StatusBadGateway)
@@ -257,7 +258,7 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.URL.Scheme = "http"
 	}
 
-	if req.ProtoMajor == 2 && req.ProtoMinor == 0 {
+	if h2 {
 		req.ProtoMajor = 1
 		req.ProtoMinor = 1
 		req.Proto = "HTTP/1.1"
@@ -287,6 +288,11 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 		}
 		return
+	}
+
+	if h2 {
+		resp.Header.Del("Connection")
+		resp.Header.Del("Keep-Alive")
 	}
 
 	for key, values := range resp.Header {
