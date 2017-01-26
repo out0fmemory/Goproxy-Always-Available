@@ -60,7 +60,7 @@ function init_github() {
 function build_go() {
 	pushd ${WORKING_DIR}
 
-	curl -k https://storage.googleapis.com/golang/go1.7.1.linux-amd64.tar.gz | tar xz
+	curl -k https://storage.googleapis.com/golang/go1.4.3.linux-amd64.tar.gz | tar xz
 	mv go goroot_bootstrap
 
 	git clone --branch ${GOBRANCH} https://github.com/phuslu/go
