@@ -390,14 +390,18 @@ type Config struct {
 }
 
 type Handler struct {
+	Domains  []string
 	Handlers map[string]http.Handler
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	handler, ok := h.Handlers[req.TLS.ServerName]
 	if !ok {
-		http.Error(rw, "403 Forbidden", http.StatusForbidden)
-		return
+		handler, ok = h.Handlers[h.Domains[0]]
+		if !ok {
+			http.Error(rw, "403 Forbidden", http.StatusForbidden)
+			return
+		}
 	}
 	handler.ServeHTTP(rw, req)
 }
@@ -474,8 +478,10 @@ func main() {
 		DisableCompression:  false,
 	}
 
-	domains := []string{}
-	handlers := map[string]http.Handler{}
+	h := &Handler{
+		Handlers: map[string]http.Handler{},
+		Domains:  []string{},
+	}
 	for _, server := range config.Server {
 		handler := &ProxyHandler{
 			Transport: transport,
@@ -525,20 +531,18 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			handlers[servername] = handler
-			domains = append(domains, servername)
+			h.Domains = append(h.Domains, servername)
+			h.Handlers[servername] = handler
 		}
 	}
 
 	m := &CertManager{
-		Domains:         domains,
+		Domains:         h.Domains,
 		DisableAutocert: config.HTTPS.DisableAutocert,
 	}
 
 	srv := &http.Server{
-		Handler: &Handler{
-			Handlers: handlers,
-		},
+		Handler: h,
 		TLSConfig: &tls.Config{
 			MinVersion:     tls.VersionTLS12,
 			GetCertificate: m.GetCertificate,
