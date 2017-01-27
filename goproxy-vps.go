@@ -5,6 +5,7 @@ package main
 import (
 	"crypto/tls"
 	"encoding/base64"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -23,6 +24,7 @@ import (
 	"sync"
 	"time"
 
+	"golang.org/x/net/context"
 	"github.com/BurntSushi/toml"
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
@@ -329,40 +331,54 @@ func (h *ProxyHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 }
 
 type CertManager struct {
-	Domains         []string
-	DisableAutocert bool
-	Keyfile         string
-	Certfile        string
-
-	once    sync.Once
-	cert    *tls.Certificate
+	hosts []string
+	certs  map[string] *tls.Certificate
 	manager *autocert.Manager
 }
 
-func (cm *CertManager) init() {
-	if cm.Keyfile != "" && cm.Certfile != "" {
-		c, err := tls.LoadX509KeyPair(cm.Certfile, cm.Keyfile)
-		if err != nil {
-			glog.Fatalf("tls.LoadX509KeyPair(%#v, %#v) error: %+v", cm.Certfile, cm.Keyfile, err)
+func (cm *CertManager) Add(host string, certfile, keyfile string) error {
+	if cm.manager == nil {
+		cm.manager = &autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			Cache:      autocert.DirCache("."),
+			HostPolicy: cm.HostPolicy(),
 		}
-		cm.cert = &c
 	}
 
-	cm.manager = &autocert.Manager{
-		Prompt:     autocert.AcceptTOS,
-		Cache:      autocert.DirCache("."),
-		HostPolicy: autocert.HostWhitelist(cm.Domains...),
+	if cm.certs == nil {
+		cm.certs = make(map[string]*tls.Certificate)
+	}
+
+	if certfile != "" && keyfile != "" {
+		cert, err := tls.LoadX509KeyPair(certfile, keyfile)
+		if err != nil {
+			return err
+		}
+		cm.certs[host] = &cert
+	} else {
+		cm.certs[host] = nil
+	}
+
+	cm.hosts = append(cm.hosts, host)
+
+	return nil
+}
+
+func (cm *CertManager) HostPolicy() autocert.HostPolicy {
+	return func(_ context.Context, host string) error {
+		if _, ok := cm.certs[host]; !ok {
+			return errors.New("acme/autocert: host not configured")
+		}
+		return nil
 	}
 }
 
 func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	cm.once.Do(cm.init)
 	if hello.ServerName == "" {
-		if cm.cert != nil {
-			return cm.cert, nil
-		} else {
-			hello.ServerName = cm.Domains[0]
-		}
+		hello.ServerName = cm.hosts[0]
+	}
+	if cert, ok := cm.certs[hello.ServerName]; ok && cert != nil {
+		return cert, nil
 	}
 	return cm.manager.GetCertificate(hello)
 }
@@ -370,17 +386,13 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 type Config struct {
 	Default struct {
 		LogLevel int    `toml:"log_level"`
-		Mode     string `toml:"mode"`
-	}
-	HTTPS struct {
-		DisableAutocert bool   `toml:"disable_autocert"`
-		Keyfile         string `toml:"keyfile"`
-		Certfile        string `toml:"certfile"`
 	}
 	Server []struct {
-		Enabled    bool     `toml:"enabled"`
-		Listen     []string `toml:"listen"`
-		ServerName []string `toml:"server_name"`
+		Listen    string `toml:"listen"`
+
+		ServerName string `toml:"server_name"`
+		Keyfile         string `toml:"keyfile"`
+		Certfile        string `toml:"certfile"`
 
 		ParentProxy string `toml:"parent_proxy"`
 
@@ -478,6 +490,7 @@ func main() {
 		DisableCompression:  false,
 	}
 
+	cm := &CertManager{}
 	h := &Handler{
 		Handlers: map[string]http.Handler{},
 		Domains:  []string{},
@@ -530,22 +543,17 @@ func main() {
 			glog.Fatalf("unsupport proxy_auth_method(%+v)", server.ProxyAuthMethod)
 		}
 
-		for _, servername := range server.ServerName {
-			h.Domains = append(h.Domains, servername)
-			h.Handlers[servername] = handler
-		}
+		cm.Add(server.ServerName, server.Certfile, server.Keyfile)
+		h.Domains = append(h.Domains, server.ServerName)
+		h.Handlers[server.ServerName] = handler
 	}
 
-	m := &CertManager{
-		Domains:         h.Domains,
-		DisableAutocert: config.HTTPS.DisableAutocert,
-	}
 
 	srv := &http.Server{
 		Handler: h,
 		TLSConfig: &tls.Config{
 			MinVersion:     tls.VersionTLS12,
-			GetCertificate: m.GetCertificate,
+			GetCertificate: cm.GetCertificate,
 		},
 	}
 
@@ -553,7 +561,7 @@ func main() {
 
 	seen := make(map[string]struct{})
 	for _, server := range config.Server {
-		for _, addr := range server.Listen {
+		addr := server.Listen
 			if _, ok := seen[addr]; ok {
 				continue
 			}
@@ -564,7 +572,6 @@ func main() {
 			}
 			glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
 			go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
-		}
 	}
 
 	select {}
