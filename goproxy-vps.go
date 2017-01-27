@@ -24,7 +24,6 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/net/context"
 	"github.com/BurntSushi/toml"
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
@@ -32,6 +31,7 @@ import (
 	"github.com/phuslu/goproxy/httpproxy/proxy"
 	"github.com/phuslu/net/http2"
 	"golang.org/x/crypto/acme/autocert"
+	"golang.org/x/net/context"
 )
 
 var (
@@ -331,8 +331,8 @@ func (h *ProxyHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 }
 
 type CertManager struct {
-	hosts []string
-	certs  map[string] *tls.Certificate
+	hosts   []string
+	certs   map[string]*tls.Certificate
 	manager *autocert.Manager
 }
 
@@ -385,14 +385,14 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 
 type Config struct {
 	Default struct {
-		LogLevel int    `toml:"log_level"`
+		LogLevel int `toml:"log_level"`
 	}
 	Server []struct {
-		Listen    string `toml:"listen"`
+		Listen string `toml:"listen"`
 
 		ServerName string `toml:"server_name"`
-		Keyfile         string `toml:"keyfile"`
-		Certfile        string `toml:"certfile"`
+		Keyfile    string `toml:"keyfile"`
+		Certfile   string `toml:"certfile"`
 
 		ParentProxy string `toml:"parent_proxy"`
 
@@ -548,7 +548,6 @@ func main() {
 		h.Handlers[server.ServerName] = handler
 	}
 
-
 	srv := &http.Server{
 		Handler: h,
 		TLSConfig: &tls.Config{
@@ -562,16 +561,16 @@ func main() {
 	seen := make(map[string]struct{})
 	for _, server := range config.Server {
 		addr := server.Listen
-			if _, ok := seen[addr]; ok {
-				continue
-			}
-			seen[addr] = struct{}{}
-			ln, err := net.Listen("tcp", addr)
-			if err != nil {
-				glog.Fatalf("Listen(%s) error: %s", addr, err)
-			}
-			glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
-			go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+		if _, ok := seen[addr]; ok {
+			continue
+		}
+		seen[addr] = struct{}{}
+		ln, err := net.Listen("tcp", addr)
+		if err != nil {
+			glog.Fatalf("Listen(%s) error: %s", addr, err)
+		}
+		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
+		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 	}
 
 	select {}
