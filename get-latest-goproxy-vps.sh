@@ -111,8 +111,7 @@ if [ ! -f goproxy-vps.user.toml ]; then
 log_level = 2
 
 [[server]]
-enabled = false
-listen = [":443"]
+listen = ":443"
 server_name = "${server_name}"
 proxy_fallback = "http://127.0.0.1:80"
 EOF
