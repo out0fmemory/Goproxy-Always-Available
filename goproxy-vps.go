@@ -16,12 +16,11 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
-	"os/user"
 	"path/filepath"
-	"runtime"
 	"strconv"
 	"strings"
 	"sync"
+	"syscall"
 	"time"
 
 	"github.com/BurntSushi/toml"
@@ -91,13 +90,8 @@ func (p *SimplePAM) init() {
 		glog.Fatalf("os.Stat(%#v) error: %+v", p.path, err)
 	}
 
-	switch runtime.GOOS {
-	case "linux", "freebsd", "darwin":
-		if u, err := user.Current(); err == nil && u.Uid == "0" {
-			glog.Warningf("If you want to use system native pwauth, please run as root, otherwise please add/edit pwauth.txt.")
-		}
-	case "windows":
-		glog.Warningf("Current platform %+v not support native pwauth, please add/edit pwauth.txt.", runtime.GOOS)
+	if syscall.Geteuid() != 0 {
+		glog.Warningf("Please run as root if you want to use pam auth")
 	}
 }
 
@@ -531,8 +525,8 @@ func main() {
 
 		switch server.ProxyAuthMethod {
 		case "pam":
-			if _, err := exec.LookPath("python2"); err != nil {
-				glog.Fatalf("pam: exec.LookPath(\"python2\") error: %+v", err)
+			if _, err := exec.LookPath("python"); err != nil {
+				glog.Fatalf("pam: exec.LookPath(\"python\") error: %+v", err)
 			}
 			handler.SimplePAM = &SimplePAM{
 				CacheSize: 2048,
