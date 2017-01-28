@@ -23,8 +23,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/BurntSushi/toml"
 	"github.com/cloudflare/golibs/lrucache"
+	"github.com/naoina/toml"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/goproxy/httpproxy/helpers"
 	"github.com/phuslu/goproxy/httpproxy/proxy"
@@ -379,19 +379,19 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 
 type Config struct {
 	Default struct {
-		LogLevel int `toml:"log_level"`
+		LogLevel int
 	}
 	Server []struct {
-		Listen string `toml:"listen"`
+		Listen string
 
-		ServerName string `toml:"server_name"`
-		Keyfile    string `toml:"keyfile"`
-		Certfile   string `toml:"certfile"`
+		ServerName string
+		Keyfile    string
+		Certfile   string
 
-		ParentProxy string `toml:"parent_proxy"`
+		ParentProxy string
 
-		ProxyFallback   string `toml:"proxy_fallback"`
-		ProxyAuthMethod string `toml:"proxy_auth_method"`
+		ProxyFallback   string
+		ProxyAuthMethod string
 	}
 }
 
@@ -434,7 +434,7 @@ func main() {
 				os.Exit(1)
 			}
 
-			_, err = toml.Decode(string(tomlData), &config)
+			err = toml.Unmarshal(tomlData, &config)
 			if err != nil {
 				fmt.Fprintf(os.Stderr, "toml.Decode(%s) error: %+v\n", tomlData, err)
 				os.Exit(1)
