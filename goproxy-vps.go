@@ -335,7 +335,7 @@ func (cm *CertManager) Add(host string, certfile, keyfile string) error {
 		cm.manager = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			Cache:      autocert.DirCache("."),
-			HostPolicy: cm.HostPolicy(),
+			HostPolicy: cm.HostPolicy,
 		}
 	}
 
@@ -358,13 +358,11 @@ func (cm *CertManager) Add(host string, certfile, keyfile string) error {
 	return nil
 }
 
-func (cm *CertManager) HostPolicy() autocert.HostPolicy {
-	return func(_ context.Context, host string) error {
-		if _, ok := cm.certs[host]; !ok {
-			return errors.New("acme/autocert: host not configured")
-		}
-		return nil
+func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
+	if _, ok := cm.certs[host]; !ok {
+		return errors.New("acme/autocert: host not configured")
 	}
+	return nil
 }
 
 func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
