@@ -379,7 +379,7 @@ type Config struct {
 	Default struct {
 		LogLevel int
 	}
-	Server []struct {
+	HTTP2 []struct {
 		Listen string
 
 		ServerName string
@@ -487,7 +487,7 @@ func main() {
 		Handlers: map[string]http.Handler{},
 		Domains:  []string{},
 	}
-	for _, server := range config.Server {
+	for _, server := range config.HTTP2 {
 		handler := &ProxyHandler{
 			Transport: transport,
 		}
@@ -551,7 +551,7 @@ func main() {
 	http2.ConfigureServer(srv, &http2.Server{})
 
 	seen := make(map[string]struct{})
-	for _, server := range config.Server {
+	for _, server := range config.HTTP2 {
 		addr := server.Listen
 		if _, ok := seen[addr]; ok {
 			continue

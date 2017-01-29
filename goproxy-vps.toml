@@ -1,15 +1,13 @@
 [default]
 log_level = 2
 
-[[server]]
+[[http2]]
 listen = ":443"
 server_name = "example.org"
-autocert = true
 proxy_fallback = "http://127.0.0.1:80"
 
-[[server]]
+[[http2]]
 listen = ":443"
 server_name = "proxy.example.org"
-autocert = true
 parent_proxy = "http://127.0.0.1:8080"
 proxy_auth_method = "pam"
