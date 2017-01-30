@@ -27,6 +27,9 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 SUDO=$(test $(id -u) = 0 || echo sudo)
 DOAMIN_FILE=acme_domain.txt
 
+linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
+cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
+
 start() {
     echo -n "Starting ${PACKAGE_DESC}: "
     nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &
@@ -35,7 +38,8 @@ start() {
 
 stop() {
     echo -n "Stopping ${PACKAGE_DESC}: "
-    killall goproxy-vps && echo "${PACKAGE_NAME}" || echo "${PACKAGE_NAME}"
+    local pid=$(ps ax | grep ./goproxy-vps | head -1 | awk '{print $1}')
+    test "$pid" = "$$" ||  kill $pid  && echo "${PACKAGE_NAME}" || echo "${PACKAGE_NAME}"
 }
 
 restart() {
@@ -53,9 +57,6 @@ if [ -n "${SUDO}" ]; then
     echo "ERROR: Please run as root"
     exit 1
 fi
-
-linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
-cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 case "$1" in
     start)
