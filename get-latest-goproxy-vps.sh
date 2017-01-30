@@ -126,6 +126,6 @@ fi
 echo "Done"
 echo
 
-SUDO=$(test $(id -u) = 0 || echo sudo)
+SUDO=$(test $(id -u) = 0 -a -z "${SUDO_USER}" || echo sudo)
 RESTART=$(pgrep goproxy-vps >/dev/null && echo restart || echo start)
 echo "Please run \"${SUDO} $(pwd)/goproxy-vps.sh ${RESTART}\""
