@@ -189,15 +189,6 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		flusher, ok := rw.(http.Flusher)
-		if !ok {
-			http.Error(rw, fmt.Sprintf("%#v is not http.Flusher", rw), http.StatusBadGateway)
-			return
-		}
-
-		rw.WriteHeader(http.StatusOK)
-		flusher.Flush()
-
 		hijacker, ok := rw.(http.Hijacker)
 		if !ok {
 			http.Error(rw, fmt.Sprintf("%#v is not http.Hijacker", rw), http.StatusBadGateway)
@@ -208,6 +199,9 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			http.Error(rw, err.Error(), http.StatusBadGateway)
 			return
 		}
+
+		io.WriteString(lconn, "HTTP/1.1 200 OK\r\n\r\n")
+
 		defer lconn.Close()
 		defer conn.Close()
 
