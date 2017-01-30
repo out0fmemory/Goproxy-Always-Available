@@ -3,11 +3,11 @@ log_level = 2
 
 [[http2]]
 listen = ":443"
-server_name = "example.org"
+server_name = ["example.org"]
 proxy_fallback = "http://127.0.0.1:80"
 
 [[http2]]
 listen = ":443"
-server_name = "proxy.example.org"
+server_name = ["proxy.example.org"]
 parent_proxy = "http://127.0.0.1:8080"
 proxy_auth_method = "pam"

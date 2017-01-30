@@ -119,9 +119,10 @@ func (p *SimplePAM) Authenticate(username, password string) error {
 }
 
 type ProxyHandler struct {
-	ServerName string
-	Fallback   *url.URL
-	Dial       func(network, address string) (net.Conn, error)
+	ServerName   string
+	Fallback     *url.URL
+	DisableProxy bool
+	Dial         func(network, address string) (net.Conn, error)
 	*http.Transport
 	*SimplePAM
 }
@@ -141,6 +142,11 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	for key := range params {
 		req.Header.Del(key)
+	}
+
+	if h.DisableProxy && req.Host != req.TLS.ServerName {
+		http.Error(rw, "403 Forbidden", http.StatusForbidden)
+		return
 	}
 
 	if h.SimplePAM != nil && req.Host != req.TLS.ServerName {
@@ -382,13 +388,14 @@ type Config struct {
 	HTTP2 []struct {
 		Listen string
 
-		ServerName string
+		ServerName []string
 		Keyfile    string
 		Certfile   string
 
 		ParentProxy string
 
 		ProxyFallback   string
+		DisableProxy    bool
 		ProxyAuthMethod string
 	}
 }
@@ -497,6 +504,7 @@ func main() {
 			if err != nil {
 				glog.Fatalf("url.Parse(%+v) error: %+v", server.ProxyFallback, err)
 			}
+			handler.DisableProxy = server.DisableProxy
 		}
 
 		if server.ParentProxy != "" {
@@ -535,9 +543,11 @@ func main() {
 			glog.Fatalf("unsupport proxy_auth_method(%+v)", server.ProxyAuthMethod)
 		}
 
-		cm.Add(server.ServerName, server.Certfile, server.Keyfile)
-		h.Domains = append(h.Domains, server.ServerName)
-		h.Handlers[server.ServerName] = handler
+		for _, servername := range server.ServerName {
+			cm.Add(servername, server.Certfile, server.Keyfile)
+			h.Domains = append(h.Domains, servername)
+			h.Handlers[servername] = handler
+		}
 	}
 
 	srv := &http.Server{
