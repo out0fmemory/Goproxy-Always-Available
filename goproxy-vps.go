@@ -398,6 +398,13 @@ type Config struct {
 		DisableProxy    bool
 		ProxyAuthMethod string
 	}
+	HTTP struct {
+		Listen string
+
+		ParentProxy string
+
+		ProxyAuthMethod string
+	}
 }
 
 type Handler struct {
@@ -573,6 +580,66 @@ func main() {
 		}
 		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
 		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
+	}
+
+	if config.HTTP.Listen != "" {
+		server := config.HTTP
+		addr := server.Listen
+		if _, ok := seen[addr]; ok {
+			glog.Fatalf("goproxy-vps: addr(%#v) already listened by http2", addr)
+		}
+
+		ln, err := net.Listen("tcp", addr)
+		if err != nil {
+			glog.Fatalf("Listen(%s) error: %s", addr, err)
+		}
+
+		handler := &ProxyHandler{
+			Transport: transport,
+		}
+
+		if server.ParentProxy != "" {
+			handler.Transport = &http.Transport{}
+			*handler.Transport = *transport
+
+			fixedURL, err := url.Parse(server.ParentProxy)
+			if err != nil {
+				glog.Fatalf("url.Parse(%#v) error: %+v", server.ParentProxy, err)
+			}
+
+			switch fixedURL.Scheme {
+			case "http":
+				handler.Transport.Proxy = http.ProxyURL(fixedURL)
+				fallthrough
+			default:
+				dialer2, err := proxy.FromURL(fixedURL, dialer, nil)
+				if err != nil {
+					glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
+				}
+				handler.Dial = dialer2.Dial
+			}
+		}
+
+		switch server.ProxyAuthMethod {
+		case "pam":
+			if _, err := exec.LookPath("python"); err != nil {
+				glog.Fatalf("pam: exec.LookPath(\"python\") error: %+v", err)
+			}
+			handler.SimplePAM = &SimplePAM{
+				CacheSize: 2048,
+			}
+		case "":
+			break
+		default:
+			glog.Fatalf("unsupport proxy_auth_method(%+v)", server.ProxyAuthMethod)
+		}
+
+		srv := &http.Server{
+			Handler: h,
+		}
+
+		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
+		go srv.Serve(ln)
 	}
 
 	select {}
