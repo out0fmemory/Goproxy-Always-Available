@@ -118,8 +118,7 @@ func (p *SimplePAM) Authenticate(username, password string) error {
 	return nil
 }
 
-type ProxyHandler struct {
-	ServerName   string
+type HTTP2Handler struct {
 	Fallback     *url.URL
 	DisableProxy bool
 	Dial         func(network, address string) (net.Conn, error)
@@ -127,7 +126,7 @@ type ProxyHandler struct {
 	*SimplePAM
 }
 
-func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
 	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
@@ -310,7 +309,7 @@ func (h *ProxyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	helpers.IOCopy(rw, r)
 }
 
-func (h *ProxyHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
+func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *http.Request) {
 	data := "Proxy Authentication Required"
 	resp := &http.Response{
 		StatusCode: http.StatusProxyAuthRequired,
@@ -502,7 +501,7 @@ func main() {
 		Domains:  []string{},
 	}
 	for _, server := range config.HTTP2 {
-		handler := &ProxyHandler{
+		handler := &HTTP2Handler{
 			Transport: transport,
 		}
 
@@ -594,7 +593,7 @@ func main() {
 			glog.Fatalf("Listen(%s) error: %s", addr, err)
 		}
 
-		handler := &ProxyHandler{
+		handler := &HTTP2Handler{
 			Transport: transport,
 		}
 
