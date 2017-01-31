@@ -22,7 +22,6 @@
 set -e
 
 PACKAGE_NAME=goproxy-vps
-PACKAGE_DESC="a go proxy vps"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 SUDO=$(test $(id -u) = 0 || echo sudo)
 DOAMIN_FILE=acme_domain.txt
@@ -31,15 +30,30 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    echo -n "Starting ${PACKAGE_DESC}: "
     nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &
-    echo "${PACKAGE_NAME}"
+    local pid=$!
+    echo -n "Starting ${PACKAGE_NAME}(${pid}): "
+    sleep 1
+    if ps ax | grep "^${pid} " >/dev/null 2>&1; then
+        echo "OK"
+    else
+        echo "Failed"
+    fi
 }
 
 stop() {
-    echo -n "Stopping ${PACKAGE_DESC}: "
-    local pid=$(ps ax | grep ./goproxy-vps | head -1 | awk '{print $1}')
-    test "$pid" = "$$" ||  kill $pid  && echo "${PACKAGE_NAME}" || echo "${PACKAGE_NAME}"
+    for pid in $(ps ax | grep ./goproxy-vps | awk '{print $1}')
+    do
+        local exe=$(ls -l /proc/${pid}/exe 2>/dev/null | sed "s/.*->\s*//")
+        if test "$exe" = "$(pwd)/goproxy-vps"; then
+            echo -n "Stopping ${PACKAGE_NAME}(${pid}): "
+            if kill $pid; then
+                echo "OK"
+            else
+                echo "Failed"
+            fi
+        fi
+    done
 }
 
 restart() {
