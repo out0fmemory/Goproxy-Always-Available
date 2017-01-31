@@ -30,7 +30,7 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    nohup ./goproxy-vps >./goproxy-vps.log 2>&1 &
+    nohup ./goproxy-vps >>./goproxy-vps.log 2>&1 &
     local pid=$!
     echo -n "Starting ${PACKAGE_NAME}(${pid}): "
     sleep 1
