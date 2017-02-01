@@ -24,7 +24,6 @@ set -e
 PACKAGE_NAME=goproxy-vps
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 SUDO=$(test $(id -u) = 0 || echo sudo)
-DOAMIN_FILE=acme_domain.txt
 
 linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
@@ -63,8 +62,17 @@ restart() {
     start
 }
 
+autostart() {
+    ln -sf $(pwd)/goproxy-vps.sh /etc/init.d/goproxy-vps
+    if command -v update-rc.d >/dev/null ; then
+        update-rc.d goproxy-vps defaults
+    elif command -v chkconfig >/dev/null ; then
+        chkconfig goproxy-vps on
+    fi
+}
+
 usage() {
-    echo "Usage: [sudo] $(basename "$0") {start|stop|restart}" >&2
+    echo "Usage: [sudo] $(basename "$0") {start|stop|restart|autostart}" >&2
     exit 1
 }
 
@@ -83,9 +91,13 @@ case "$1" in
     restart)
         restart
         ;;
+    autostart)
+        autostart
+        ;;
     *)
         usage
         ;;
 esac
 
 exit $?
+
