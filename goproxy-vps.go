@@ -717,6 +717,7 @@ func main() {
 	srv := &http.Server{
 		Handler: h,
 		TLSConfig: &tls.Config{
+			MaxVersion:     tls.VersionTLS13,
 			MinVersion:     tls.VersionTLS12,
 			GetCertificate: cm.GetCertificate,
 		},
