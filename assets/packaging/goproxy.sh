@@ -22,31 +22,57 @@
 set -e
 
 PACKAGE_NAME=goproxy
-PACKAGE_DESC="a go proxy"
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 SUDO=$(test $(id -u) = 0 || echo sudo)
 
+linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
+cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
+
 start() {
-    echo -n "Starting ${PACKAGE_DESC}: "
-    local log_dir=$(test -d "/var/log" && echo "/var/log/${PACKAGE_NAME}" || echo "$(pwd)/logs")
-    mkdir -p ${log_dir}
-    if busybox start-stop-daemon --help 2>/dev/null ; then
-        busybox start-stop-daemon -S -b -x ./goproxy -- -v=2 -logtostderr=0 -log_dir=/var/log/goproxy
+    mkdir -p ./logs
+
+    if command -v nohup >/dev/null ; then
+        nohup ./goproxy -v=2 -logtostderr=0 -log_dir=./logs >/dev/null 2>&1 &
+        local pid=$!
+    elif busybox start-stop-daemon --help 2>/dev/null ; then
+        busybox start-stop-daemon -S -b -x ./goproxy -- -v=2 -logtostderr=0 -log_dir=./logs
+        local pid=$!
     else
-        nohup ./goproxy -v=2 -logtostderr=0 -log_dir=${log_dir} >/dev/null 2>&1 &
+        echo "please install nohup"
+        exit 1
     fi
-    echo "${PACKAGE_NAME}."
+
+    echo -n "Starting ${PACKAGE_NAME}(${pid}): "
+
+    sleep 1
+    if ps ax | grep "^${pid} " >/dev/null 2>&1; then
+        echo "OK"
+    else
+        echo "Failed"
+    fi
+
     if [ -d '/etc/logrotate.d/' ]; then
         if [ ! -f '/etc/logrotate.d/goproxy' ]; then
-            echo "Dont Forget: $(SUDO) cp $(pwd)/logrotate.conf /etc/logrotate.d/goproxy"
+            echo
+            echo "please \"${SUDO} cp $(pwd)/logrotate.conf /etc/logrotate.d/goproxy\""
         fi
     fi
 }
 
 stop() {
-    echo -n "Stopping ${PACKAGE_DESC}: "
-    killall goproxy
-    echo "${PACKAGE_NAME}."
+    for pid in $(ps ax | grep './goproxy ' | awk '{print $1}')
+    do
+        local exe=$(ls -l /proc/${pid}/exe 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
+        local cwd=$(ls -l /proc/${pid}/cwd 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
+        if test "$(basename "$exe")" = "goproxy" -a "$cwd" = "$(pwd)"; then
+            echo -n "Stopping ${PACKAGE_NAME}(${pid}): "
+            if kill $pid; then
+                echo "OK"
+            else
+                echo "Failed"
+            fi
+        fi
+    done
 }
 
 restart() {
@@ -55,13 +81,19 @@ restart() {
     start
 }
 
+autostart() {
+    ln -sf $(pwd)/goproxy.sh /etc/init.d/goproxy
+    if command -v update-rc.d >/dev/null ; then
+        update-rc.d goproxy defaults
+    elif command -v chkconfig >/dev/null ; then
+        chkconfig goproxy on
+    fi
+}
+
 usage() {
     echo "Usage: [sudo] $(basename "$0") {start|stop|restart}" >&2
     exit 1
 }
-
-linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
-cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 case "$1" in
     start)
@@ -72,6 +104,9 @@ case "$1" in
         ;;
     restart)
         restart
+        ;;
+    autostart)
+        autostart
         ;;
     *)
         usage
