@@ -29,11 +29,12 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    nohup ./goproxy-vps >>./goproxy-vps.log 2>&1 &
+    local log_file=$(cat goproxy-vps.user.toml goproxy-vps.toml 2>/dev/null | awk -F= '/daemon_stderr\s*=/{gsub(/ /, "", $2); gsub(/"/, "", $2); print $2; exit}')
+    nohup ./goproxy-vps >>${log_file:-goproxy-vps.log} 2>&1 &
     local pid=$!
     echo -n "Starting ${PACKAGE_NAME}(${pid}): "
     sleep 1
-    if ps ax | grep "^${pid} " >/dev/null 2>&1; then
+    if ps ax | grep "^${pid}" >/dev/null 2>&1; then
         echo "OK"
     else
         echo "Failed"
@@ -41,7 +42,7 @@ start() {
 }
 
 stop() {
-    for pid in $(ps ax | grep ./goproxy-vps | awk '{print $1}')
+    for pid in $(ps ax | grep -v grep | grep ./goproxy-vps | awk '{print $1}')
     do
         local exe=$(ls -l /proc/${pid}/exe 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
         local cwd=$(ls -l /proc/${pid}/cwd 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')

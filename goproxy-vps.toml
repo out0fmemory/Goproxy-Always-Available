@@ -1,5 +1,6 @@
 [default]
 log_level = 2
+daemon_stderr = "./goproxy-vps.log"
 
 [[http2]]
 listen = ":443"

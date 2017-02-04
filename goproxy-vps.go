@@ -541,6 +541,7 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 type Config struct {
 	Default struct {
 		LogLevel int
+		DaemonStderr string
 	}
 	HTTP2 []struct {
 		Listen string
