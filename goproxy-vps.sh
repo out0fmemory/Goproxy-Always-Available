@@ -29,12 +29,12 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    local log_file=$(cat goproxy-vps.user.toml goproxy-vps.toml 2>/dev/null | awk -F= '/daemon_stderr\s*=/{gsub(/ /, "", $2); gsub(/"/, "", $2); print $2; exit}')
+    local log_file=$(cat goproxy-vps.user.toml goproxy-vps.toml 2>/dev/null | awk -F= '/daemon_stderr/{gsub(/ /, "", $2); gsub(/"/, "", $2); print $2; exit}')
     nohup ./goproxy-vps >>${log_file:-goproxy-vps.log} 2>&1 &
     local pid=$!
     echo -n "Starting ${PACKAGE_NAME}(${pid}): "
     sleep 1
-    if ps ax | grep "^${pid}" >/dev/null 2>&1; then
+    if ps ax | grep "${pid} " >/dev/null 2>&1; then
         echo "OK"
     else
         echo "Failed"
