@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: /sgp3Oi+CIAmr6zA0wq8Ug
+! Checksum: J95zvypkXQI5dTQw4SmKBw
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 25 Jan 2017 12:54:04 +0100
+! Last Modified: Fri, 03 Feb 2017 11:20:47 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -16,6 +16,7 @@
 ! https://github.com/gfwlist/gfwlist/issues/.
 
 !---------403/451/520 & URL Redirects---------
+||2dbook.com
 ||4tern.com
 !--ehentai
 |http://85.17.73.31/
@@ -90,6 +91,7 @@
 .javlibrary.com
 ||javlibrary.com
 ||jcpenney.com
+||jims.net
 ||juliepost.com
 ||kawaiikawaii.jp
 ||khatrimaza.org
@@ -418,6 +420,7 @@ d1c37gjwa26taa.cloudfront.net
 ||1e100.net
 ||abc.xyz
 ||admob.com
+||adsense.com
 ||agoogleaday.com
 ||ampproject.org
 ||android.com
@@ -426,6 +429,8 @@ d1c37gjwa26taa.cloudfront.net
 ||appspot.com
 blogspot.com
 /^https?:\/\/[^\/]+blogspot\.(.*)/
+.blogspot.hk
+.blogspot.jp
 ||certificate-transparency.org
 ||chrome.com
 ||chromecast.com
@@ -594,6 +599,7 @@ blogspot.com
 @@|http://www.v2ex.com
 
 !------------------Numerics---------------------
+.030buy.com
 .0rz.tw
 |http://0rz.tw
 ||0to255.com
@@ -1432,9 +1438,10 @@ christianstudy.com
 ||christianstudy.com
 christusrex.org/www1/sdc
 ||chromeadblock.com
+.chubold.com
 chubun.com
 chuizi.net
-||christiantimes.org.hk
+christiantimes.org.hk
 .chrlawyers.hk
 |http://chrlawyers.hk
 .churchinhongkong.org/b5/index.php
@@ -1736,6 +1743,7 @@ dongtaiwang.com
 ||dotplane.com
 ||dotsub.com
 ||dougscripts.com
+||douhokanko.net
 ||doujincafe.com
 dowei.org
 !--||doxygen.org
@@ -1750,6 +1758,7 @@ dpp.org.tw
 ||drgan.net
 .drmingxia.org
 |http://drmingxia.org
+||dropbooks.tv
 ||dropbox.com
 ||api.dropboxapi.com
 ||dropboxusercontent.com
@@ -1806,6 +1815,8 @@ xys.dxiong.com
 .e-gold.com
 ||g.e-hentai.org
 ||lofi.e-hentai.org
+.e-hentaidb.com
+|http://e-hentaidb.com
 e-info.org.tw
 .e-traderland.net/board
 .e-zone.com.hk/discuz
@@ -1909,6 +1920,7 @@ erabaru.net
 |http://erktv.com
 ||ernestmandel.org
 ||erodaizensyu.com
+||erodoujinlog.com
 ||erodoujinworld.com
 ||eromanga-kingdom.com
 ||eromangadouzin.com
@@ -2289,7 +2301,9 @@ www.ftchinese.com/story/001067479
 .ftchinese.com/story/001068483
 .ftchinese.com/story/001069373
 .ftchinese.com/story/001069516
+.ftchinese.com/story/001071106
 .ftchinese.com/video/1437
+.ftchinese.com/video/1882
 .ftchinese.com/comments
 fucd.com
 .fuckcnnic.net
@@ -2890,6 +2904,7 @@ hkbc.net
 ||hkbookcity.com
 .hkchurch.org
 .hkcmi.edu
+||hkcnews.com
 ||hkcoc.com
 hkday.net
 .hkdailynews.com.hk/china.php
@@ -3305,6 +3320,7 @@ juziyue.com
 .jyxf.net
 
 !--------------------KK-------------------------
+||k-doujin.net
 ||ka-wai.com
 .kagyuoffice.org
 ||kagyuoffice.org
@@ -3314,6 +3330,7 @@ juziyue.com
 ||kakao.com
 .kankan.today
 .kannewyork.com
+||kannewyork.com
 .kanshifang.com
 ||kanshifang.com
 kanzhongguo.com
@@ -3455,6 +3472,8 @@ abitno.linpie.com/use-ipv6-to-fuck-gfw
 ||line.me
 .linglingfa.com
 ||lingvodics.com
+.link-o-rama.com
+|http://link-o-rama.com
 .linkideo.com
 ||api.linksalpha.com
 ||apidocs.linksalpha.com
@@ -3700,9 +3719,9 @@ mixpod.com
 .mk5000.com
 .mlcool.com
 ||mmaaxx.com
-plurktop.mmdays.com
 .mmmca.com
 ||mobatek.net
+|http://mobile01.com
 .mobile01.com
 ||mobileways.de
 .mobypicture.com
@@ -4167,6 +4186,7 @@ penisbot.com
 .perfectgirls.net
 perfectvpn.net
 .persecutionblog.com
+.persiankitty.com
 pfd.org.hk
 phapluan.org
 phayul.com
@@ -4705,6 +4725,7 @@ bbs.skykiwi.com
 m.slandr.net
 ||slavasoft.com
 .slaytizle.com
+.sleazydream.com
 ||slheng.com
 .slideshare.net
 forum.slime.com.tw
@@ -4806,6 +4827,8 @@ spem.at
 ||sproxy.info
 squarespace.com
 ||srocket.us
+.ss-link.com
+||ss-link.com
 ||ssh91.com
 .sspro.ml
 |http://sspro.ml
@@ -5043,6 +5066,7 @@ thevivekspot.com
 |http://thisav.com
 .thlib.org
 ||thomasbernhard.org
+.thongdreams.com
 threatchaos.com
 ||throughnightsfire.com
 .thumbzilla.com
