@@ -29,8 +29,10 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    local log_file=$(cat goproxy-vps.user.toml goproxy-vps.toml 2>/dev/null | awk -F= '/daemon_stderr/{gsub(/ /, "", $2); gsub(/"/, "", $2); print $2; exit}')
-    nohup ./goproxy-vps >>${log_file:-goproxy-vps.log} 2>&1 &
+    local daemon_stderr=$(cat goproxy-vps.user.toml goproxy-vps.toml 2>/dev/null | awk -F= '/daemon_stderr/{gsub(/ /, "", $2); gsub(/"/, "", $2); print $2; exit}')
+    local log_file=${daemon_stderr:-goproxy-vps.log}
+    log_file=$(cd $(dirname ${log_file}); echo $(pwd -P)/$(basename ${log_file}))
+    nohup ./goproxy-vps >>${log_file} 2>&1 &
     local pid=$!
     echo -n "Starting ${PACKAGE_NAME}(${pid}): "
     sleep 1
@@ -38,6 +40,21 @@ start() {
         echo "OK"
     else
         echo "Failed"
+    fi
+
+    if test -f ${log_file}; then
+        if test -d /etc/logrotate.d; then
+            cat <<EOF > /etc/logrotate.d/goproxy-vps
+${log_file} {
+	daily
+	copytruncate
+	missingok
+	notifempty
+	rotate 2
+	compress
+}
+EOF
+        fi
     fi
 }
 
