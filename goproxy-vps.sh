@@ -86,6 +86,8 @@ autostart() {
         update-rc.d goproxy-vps defaults
     elif command -v chkconfig >/dev/null ; then
         chkconfig goproxy-vps on
+    elif command -v systemctl >/dev/null ; then
+        systemctl enable goproxy-vps
     fi
 }
 
