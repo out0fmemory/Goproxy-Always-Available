@@ -306,6 +306,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	var username, password string
 	if h.SimplePAM != nil && req.Host != req.TLS.ServerName {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
@@ -319,8 +320,8 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			case "Basic":
 				if userpass, err := base64.StdEncoding.DecodeString(parts[1]); err == nil {
 					parts := strings.Split(string(userpass), ":")
-					username := parts[0]
-					password := parts[1]
+					username = parts[0]
+					password = parts[1]
 
 					if err := h.SimplePAM.Authenticate(username, password); err != nil {
 						http.Error(rw, "403 Forbidden", http.StatusForbidden)
@@ -343,7 +344,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			port = "443"
 		}
 
-		glog.Infof("[%v 0x%04x] %s \"%s %s:%s %s\" - -", req.TLS.ServerName, req.TLS.Version, req.RemoteAddr, req.Method, host, port, req.Proto)
+		glog.Infof("[%v 0x%04x %s] %s \"%s %s:%s %s\" - -", req.TLS.ServerName, req.TLS.Version, username, req.RemoteAddr, req.Method, host, port, req.Proto)
 
 		dial := h.Dial
 		if dial == nil {
@@ -411,7 +412,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Body = nil
 	}
 
-	glog.Infof("[%v 0x%04x] %s \"%s %s %s\" - -", req.TLS.ServerName, req.TLS.Version, req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+	glog.Infof("[%v 0x%04x %s] %s \"%s %s %s\" - -", req.TLS.ServerName, req.TLS.Version, username, req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
 	if req.URL.Scheme == "" {
 		req.URL.Scheme = "http"
