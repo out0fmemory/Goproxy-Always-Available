@@ -44,10 +44,17 @@ OBJECTS += $(OBJECTDIR)/$(GOPROXY_EXE)
 SOURCES :=
 SOURCES += $(REPO)/README.md
 SOURCES += $(REPO)/httpproxy/httpproxy.json
-SOURCES += $(wildcard $(REPO)/httpproxy/filters/*/*.json)
-SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
+SOURCES += $(REPO)/httpproxy/filters/auth/auth.json
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/17monipdb.dat
+SOURCES += $(REPO)/httpproxy/filters/autoproxy/autoproxy.json
+SOURCES += $(REPO)/httpproxy/filters/autoproxy/gfwlist.txt
 SOURCES += $(REPO)/httpproxy/filters/autoproxy/ip.html
+SOURCES += $(REPO)/httpproxy/filters/autorange/autorange.json
+SOURCES += $(REPO)/httpproxy/filters/direct/direct.json
+SOURCES += $(REPO)/httpproxy/filters/gae/gae.json
+SOURCES += $(REPO)/httpproxy/filters/php/php.json
+SOURCES += $(REPO)/httpproxy/filters/rewrite/rewrite.json
+SOURCES += $(REPO)/httpproxy/filters/stripssl/stripssl.json
 SOURCES += $(REPO)/assets/packaging/gae.user.json.example
 
 ifeq ($(GOOS)_$(GOARCH), windows_amd64)
