@@ -261,7 +261,7 @@ function build_repo_ex() {
 	popd
 }
 
-function release_repo_ci() {
+function release_github() {
 	pushd ${WORKING_DIR}
 
 	if [ ${#GITHUB_TOKEN} -eq 0 ]; then
@@ -356,7 +356,7 @@ build_http2
 build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
-	release_repo_ci
+	release_github
 	release_sourceforge
 	clean
 fi
