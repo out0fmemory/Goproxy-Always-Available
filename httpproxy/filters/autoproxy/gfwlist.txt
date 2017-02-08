@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: J95zvypkXQI5dTQw4SmKBw
+! Checksum: UVj4HTnJ+3ve15KTcIsctQ
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Fri, 03 Feb 2017 11:20:47 +0100
+! Last Modified: Tue, 07 Feb 2017 12:40:34 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -573,6 +573,7 @@ blogspot.com
 ||youtube.com
 ||youtube-nocookie.com
 ||youtubeeducation.com
+||youtubegaming.com
 ||ytimg.com
 ||zynamics.com
 
@@ -827,6 +828,8 @@ www1.american.edu/ted/ice/tibet
 ||amnestyusa.org
 .amnyemachen.org
 .amoiist.com
+.andygod.com
+|http://andygod.com
 annatam.com/chinese
 ||anchorfree.com
 !--GHS
@@ -2301,6 +2304,7 @@ www.ftchinese.com/story/001067479
 .ftchinese.com/story/001068483
 .ftchinese.com/story/001069373
 .ftchinese.com/story/001069516
+.ftchinese.com/story/001070307
 .ftchinese.com/story/001071106
 .ftchinese.com/video/1437
 .ftchinese.com/video/1882
@@ -2364,6 +2368,10 @@ gati.org.tw
 .gaycn.net
 ||gaymap.cc
 .gaytube.com
+!--||gaytube.com
+||images-gaytube.com
+.gaywatch.com
+|http://gaywatch.com
 .gazotube.com
 ||gazotube.com
 ||gcc.org.hk
@@ -2424,6 +2432,7 @@ gigporno.ru
 |https://gist.github.com
 http://cthlo.github.io/hktv
 !--|http://onionhacker.github.io
+||sodatea.github.io
 wsgzao.github.io
 ||wsgzao.github.io
 !--.github.io
@@ -2431,7 +2440,6 @@ wsgzao.github.io
 .gizlen.net
 ||gizlen.net
 .gjczz.com
-||glennhilton.com
 globaljihad.net
 globalmediaoutreach.com
 globalmuseumoncommunism.org
@@ -3259,6 +3267,8 @@ jbtalks.com
 jbtalks.my
 .jdwsy.com
 jeanyim.com
+||jfqu36.club
+||jfqu37.xyz
 ||jgoodies.com
 .jiangweiping.com
 ||jiangweiping.com
@@ -3279,6 +3289,7 @@ zhao.jinhai.de
 jingpin.org
 ||jingpin.org
 jinpianwang.com
+.jinroukong.com
 ac.jiruan.net
 ||jitouch.com
 .jizzthis.com
@@ -3624,7 +3635,6 @@ mcreasite.com
 .meetav.com
 ||meetup.com
 mefeedia.com
-.megaporn.com
 ||megaproxy.com
 ||megarotic.com
 megavideo.com
@@ -5652,10 +5662,10 @@ videobam.com
 ||videomega.tv
 .videomo.com
 videopediaworld.com
+.videopress.com
 .vidinfo.org/video
 vietdaikynguyen.com
 .vijayatemple.org
-||viki.com
 vimeo.com
 ||vimeo.com
 ||vimperator.org
@@ -5936,6 +5946,7 @@ winwhispers.info
 ||wjbk.org
 |http://wn.com
 .wnacg.com
+.wnacg.org
 .wo.tc
 ||woeser.com
 |http://woesermiddle-way.net/
