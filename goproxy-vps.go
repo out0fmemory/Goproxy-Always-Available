@@ -357,19 +357,19 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			return
 		}
 
-		flusher, ok := rw.(http.Flusher)
-		if !ok {
-			http.Error(rw, fmt.Sprintf("%#v is not http.Flusher", rw), http.StatusBadGateway)
-			return
-		}
-
-		rw.WriteHeader(http.StatusOK)
-		flusher.Flush()
-
 		var w io.Writer
 		var r io.Reader
 
 		if h2 {
+			flusher, ok := rw.(http.Flusher)
+			if !ok {
+				http.Error(rw, fmt.Sprintf("%#v is not http.Flusher", rw), http.StatusBadGateway)
+				return
+			}
+
+			rw.WriteHeader(http.StatusOK)
+			flusher.Flush()
+
 			w = FlushWriter{rw}
 			r = req.Body
 		} else {
@@ -387,6 +387,8 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 			w = lconn
 			r = lconn
+
+			io.WriteString(lconn, "HTTP/1.1 200 OK\r\n\r\n")
 		}
 
 		defer conn.Close()
@@ -541,7 +543,7 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 
 type Config struct {
 	Default struct {
-		LogLevel int
+		LogLevel     int
 		DaemonStderr string
 	}
 	HTTP2 []struct {
