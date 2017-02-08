@@ -17,7 +17,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -496,7 +495,7 @@ type CertManager struct {
 	manager *autocert.Manager
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string) error {
 	if cm.manager == nil {
 		cm.manager = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
@@ -509,13 +508,20 @@ func (cm *CertManager) Add(host string, certfile, keyfile string) error {
 		cm.certs = make(map[string]*tls.Certificate)
 	}
 
-	if certfile != "" && keyfile != "" {
+	switch {
+	case pem != "":
+		cert, err := tls.X509KeyPair([]byte(pem), []byte(pem))
+		if err != nil {
+			return err
+		}
+		cm.certs[host] = &cert
+	case certfile != "" && keyfile != "":
 		cert, err := tls.LoadX509KeyPair(certfile, keyfile)
 		if err != nil {
 			return err
 		}
 		cm.certs[host] = &cert
-	} else {
+	default:
 		cm.certs[host] = nil
 	}
 
@@ -552,6 +558,7 @@ type Config struct {
 		ServerName []string
 		Keyfile    string
 		Certfile   string
+		PEM        string
 
 		ParentProxy string
 
@@ -591,37 +598,52 @@ func main() {
 		return
 	}
 
-	var config Config
+	helpers.SetFlagsIfAbsent(map[string]string{
+		"logtostderr": "true",
+		"v":           "2",
+	})
+	flag.Parse()
 
-	exe, err := os.Executable()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "os.Executable() error: %+v\n", err)
-		os.Exit(1)
-	}
+	filename := flag.Arg(0)
 
-	for _, filename := range []string{exe + ".user.toml", exe + ".toml"} {
-		if _, err := os.Stat(filename); err == nil {
-			tomlData, err := ioutil.ReadFile(filename)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "ioutil.ReadFile(%#v) error: %+v\n", filename, err)
-				os.Exit(1)
-			}
-
-			err = toml.Unmarshal(tomlData, &config)
-			if err != nil {
-				fmt.Fprintf(os.Stderr, "toml.Decode(%s) error: %+v\n", tomlData, err)
-				os.Exit(1)
-			}
-
-			break
+	var tomlData []byte
+	var err error
+	switch {
+	case strings.HasPrefix(filename, "data:text/x-toml;base64,"):
+		parts := strings.Split(filename, ",")
+		tomlData, err = base64.StdEncoding.DecodeString(parts[1])
+		if err != nil {
+			glog.Fatalf("base64.StdEncoding.DecodeString(%+v) error: %+v", parts[1], err)
+		}
+	case strings.HasPrefix(filename, "https://"):
+		glog.Infof("http.Get(%+v) ...", filename)
+		resp, err := http.Get(filename)
+		if err != nil {
+			glog.Fatalf("http.Get(%+v) error: %+v", filename, err)
+		}
+		defer resp.Body.Close()
+		tomlData, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			glog.Fatalf("ioutil.ReadAll(%+v) error: %+v", resp.Body, err)
+		}
+	case filename == "":
+		if _, err := os.Stat("goproxy-vps.user.toml"); err == nil {
+			filename = "goproxy-vps.user.toml"
+		} else {
+			filename = "goproxy-vps.toml"
+		}
+		fallthrough
+	default:
+		tomlData, err = ioutil.ReadFile(filename)
+		if err != nil {
+			glog.Fatalf("ioutil.ReadFile(%+v) error: %+v", filename, err)
 		}
 	}
 
-	helpers.SetFlagsIfAbsent(map[string]string{
-		"logtostderr": "true",
-		"v":           strconv.Itoa(config.Default.LogLevel),
-	})
-	flag.Parse()
+	var config Config
+	if err = toml.Unmarshal(tomlData, &config); err != nil {
+		glog.Fatalf("toml.Decode(%s) error: %+v\n", tomlData, err)
+	}
 
 	dialer := &helpers.Dialer{
 		Dialer: &net.Dialer{
@@ -712,7 +734,7 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM)
 			h.Domains = append(h.Domains, servername)
 			h.Handlers[servername] = handler
 		}
