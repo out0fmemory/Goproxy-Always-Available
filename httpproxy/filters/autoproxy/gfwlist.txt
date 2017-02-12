@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: UVj4HTnJ+3ve15KTcIsctQ
+! Checksum: DRkh6F3Tz/ZOYqF7nx9JDA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 07 Feb 2017 12:40:34 +0100
+! Last Modified: Fri, 10 Feb 2017 12:36:24 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -40,6 +40,7 @@
 ||images.comico.tw
 ||static.comico.tw
 ||crossfire.co.kr
+||d2pass.com
 ||darpa.mil
 ||desipro.de
 ||dish.com
@@ -140,6 +141,7 @@
 ||qq.co.za
 ||r18.com
 |http://radiko.jp
+||ramcity.com.au
 ||rd.com
 ||rdio.com
 ||sadistic-v.com
@@ -789,6 +791,7 @@ voa-11.akacast.akamaistream.net
 alexlur.org
 ||alforattv.net
 .alhayat.com
+.alicejapan.co.jp
 aliengu.com
 ||alkasir.com
 ||allconnected.co
@@ -884,7 +887,9 @@ appledaily.com
 ||appsocks.net
 ||appsto.re
 ||archives.gov
-archive.is
+.archive.is
+|http://archive.is
+.archive.fo
 ||archive.org
 .arctosia.com
 |http://arctosia.com
@@ -974,6 +979,7 @@ bannedbook.org
 .barenakedislam.com
 ||barnabu.co.uk
 bartvpn.com
+.bastillepost.com
 bayvoice.net
 ||bayvoice.net
 dajusha.baywords.com
@@ -1452,6 +1458,8 @@ christiantimes.org.hk
 .cineastentreff.de
 .cipfg.org
 ||circlethebayfortibet.org
+.citizencn.com
+||citizencn.com
 |http://citizenlab.org
 |http://www.citizenlab.org
 ||citizenscommission.hk
@@ -1463,6 +1471,7 @@ city9x.com
 .citytalk.tw/event
 .civicparty.hk
 ||civicparty.hk
+.civildisobediencemovement.org
 civilhrfront.org
 ||civilhrfront.org
 .civiliangunner.com
@@ -1592,6 +1601,7 @@ cytode.us
 |http://d-fukyu.com
 cl.d0z.net
 .d100.net
+||d100.net
 .d2bay.com
 |http://d2bay.com
 .dabr.co.uk
@@ -1644,6 +1654,7 @@ dalianmeng.org
 ||danke4china.net
 .danwei.org
 daolan.net
+.daozhongxing.org
 darktoy.net
 ||dastrassi.org
 blog.daum.net/_blog
@@ -1945,6 +1956,8 @@ etvonline.hk
 ||eu.org
 .eucasino.com
 .eulam.com
+.eurekavpt.com
+||eurekavpt.com
 eeas.europa.eu/delegations/china/press_corner/all_news/news/2015/20150716_zh
 eeas.europa.eu/statements-eeas/2015/151022
 .evschool.net
@@ -1998,6 +2011,7 @@ falundafa-dc.org
 falun-ny.net
 ||falundafaindia.org
 falundafamuseum.org
+.falungong.club
 .falungong.de
 falungong.org.uk
 ||falunhr.org
@@ -2068,6 +2082,7 @@ feer.com
 |http://ff.im
 fffff.at
 fflick.com
+.ffvpn.com
 fgmtv.net
 .fgmtv.org
 .fhreports.net
@@ -2080,7 +2095,6 @@ fgmtv.net
 fillthesquare.org
 filmingfortibet.org
 .filthdump.com
-||finalion.jp
 .finchvpn.com
 ||finchvpn.com
 !--findbook.tw
@@ -2305,7 +2319,12 @@ www.ftchinese.com/story/001067479
 .ftchinese.com/story/001069373
 .ftchinese.com/story/001069516
 .ftchinese.com/story/001070307
+.ftchinese.com/story/001070809
+.ftchinese.com/story/001070990
+.ftchinese.com/story/001071042
 .ftchinese.com/story/001071106
+.ftchinese.com/story/001071181
+.ftchinese.com/story/001071208
 .ftchinese.com/video/1437
 .ftchinese.com/video/1882
 .ftchinese.com/comments
@@ -2418,6 +2437,7 @@ gfw.org.ua
 .ghostpath.com
 ||ghostpath.com
 ||ghut.org
+.gifree.com
 ||giga-web.jp
 |tw.gigacircle.com
 |http://cn.giganews.com/
@@ -2911,6 +2931,7 @@ hkbc.net
 .hkbookcity.com
 ||hkbookcity.com
 .hkchurch.org
+hkci.org.hk
 .hkcmi.edu
 ||hkcnews.com
 ||hkcoc.com
@@ -3043,6 +3064,7 @@ ebook.hyread.com.tw
 ||i818hk.com
 .i-cable.com
 .i-part.com.tw
+.iamtopone.com
 iask.ca
 ||iask.ca
 iask.bz
@@ -3081,7 +3103,8 @@ idemocracy.asia
 .idreamx.com
 forum.idsam.com
 .idv.tw
-ieasynews.net
+.ieasy5.com
+|http://ieasy5.com
 .ied2k.net
 .ienergy1.com
 |http://if.ttt/
@@ -3797,6 +3820,7 @@ myactimes.com
 .myav.com.tw/bbs
 .mybbs.us
 .myca168.com
+.mycanadanow.com
 ||bbs.mychat.to
 ||mychinamyhome.com
 .mychinamyhome.com
@@ -4010,6 +4034,7 @@ nylon-angel.com
 nylonstockingsonline.com
 !--nysingtao.com
 !--||nyt.com
+.nytchina.com
 nytcn.me
 ||nytco.com
 |http://nyti.ms/
@@ -4031,8 +4056,11 @@ oclp.hk
 ||october-review.org
 offbeatchina.com
 officeoftibet.com
+|http://ofile.org
 ||ogaoga.org
 twtr2src.ogaoga.org
+.ogate.org
+||ogate.org
 www2.ohchr.org/english/bodies/cat/docs/ngos/II_China_41.pdf
 .oikos.com.tw/v4
 .oiktv.com
@@ -4112,6 +4140,7 @@ oyghan.com/wps
 .ozchinese.com/bbs
 ||ow.ly
 bbs.ozchinese.com
+|https://ozvoice.org
 .ozxw.com
 .ozyoyo.com
 
@@ -4312,6 +4341,7 @@ pureinsight.org
 .power.com
 ||power.com
 powerapple.com
+||powerapple.com
 ||abc.pp.ru
 heix.pp.ru
 ||prayforchina.net
@@ -4625,6 +4655,7 @@ sexinsex.net
 ||sftuk.org
 shadow.ma
 .shadowsky.xyz
+||www.shadowsocks.com
 .shadowsocks.com
 .shadowsocks.org
 ||shadowsocks.org
@@ -4890,6 +4921,7 @@ cn.streetvoice.com/article
 cn.streetvoice.com/diary
 cn2.streetvoice.com
 tw.streetvoice.com
+.strikingly.com
 ||strongvpn.com
 .strongwindpress.com
 .student.tw/db
@@ -5318,6 +5350,7 @@ bbs.tuitui.info
 ||tunnelbear.com
 .tuo8.cc
 .tuo8.club
+||tuo8.club
 .tuo8.fit
 .tuo8.hk
 .tuo8.in
@@ -5327,6 +5360,7 @@ bbs.tuitui.info
 ||tuo8.org
 .tuo8.pw
 |http://tuo8.pw
+||tuo8.red
 .tuo8.space
 tuitwit.com
 .turansam.org
@@ -5334,7 +5368,6 @@ tuitwit.com
 |http://turbobit.net
 .turbohide.com
 ||turbohide.com
-||turningtorso.com
 .tushycash.com
 |http://tushycash.com
 .tuvpn.com
@@ -5710,7 +5743,10 @@ vocn.tv
 .vpn4all.com
 .vpnaccount.org
 |http://vpnaccount.org
-||www.vpncup.com
+.vpnaccounts.com
+||vpnaccounts.com
+.vpncup.com
+||vpncup.com
 vpnbook.com
 .vpncoupons.com
 |http://vpncoupons.com
@@ -6116,6 +6152,7 @@ yangjianli.com
 .yasni.co.uk
 ||yasni.co.uk
 ||yasukuni.or.jp
+.yayabay.com/forum
 .ydy.com
 .yeahteentube.com
 ||yeahteentube.com
