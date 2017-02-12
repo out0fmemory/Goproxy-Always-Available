@@ -5,6 +5,7 @@ daemon_stderr = "./goproxy-vps.log"
 [[http2]]
 listen = ":443"
 server_name = ["example.org"]
+verify_client_pem = """"""
 proxy_fallback = "http://127.0.0.1:80"
 
 [[http2]]

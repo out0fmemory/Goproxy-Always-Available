@@ -4,6 +4,7 @@ package main
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"errors"
 	"flag"
@@ -492,10 +493,11 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 type CertManager struct {
 	hosts   []string
 	certs   map[string]*tls.Certificate
+	cpools  map[string]*x509.CertPool
 	manager *autocert.Manager
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string, pem string) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cpem string) error {
 	if cm.manager == nil {
 		cm.manager = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
@@ -506,6 +508,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string) er
 
 	if cm.certs == nil {
 		cm.certs = make(map[string]*tls.Certificate)
+	}
+
+	if cm.cpools == nil {
+		cm.cpools = make(map[string]*x509.CertPool)
 	}
 
 	switch {
@@ -523,6 +529,18 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string) er
 		cm.certs[host] = &cert
 	default:
 		cm.certs[host] = nil
+	}
+
+	if cpem != "" {
+		cert, err := x509.ParseCertificate([]byte(cpem))
+		if err != nil {
+			return err
+		}
+
+		certPool := x509.NewCertPool()
+		certPool.AddCert(cert)
+
+		cm.cpools[host] = certPool
 	}
 
 	cm.hosts = append(cm.hosts, host)
@@ -547,6 +565,30 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 	return cm.manager.GetCertificate(hello)
 }
 
+func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+	if hello.ServerName == "" {
+		hello.ServerName = cm.hosts[0]
+	}
+
+	cert, err := cm.GetCertificate(hello)
+	if err != nil {
+		return nil, err
+	}
+
+	config := &tls.Config{
+		MaxVersion:   tls.VersionTLS13,
+		MinVersion:   tls.VersionTLS12,
+		Certificates: []tls.Certificate{*cert},
+	}
+
+	if p, ok := cm.cpools[hello.ServerName]; ok {
+		config.ClientAuth = tls.RequireAndVerifyClientCert
+		config.ClientCAs = p
+	}
+
+	return config, nil
+}
+
 type Config struct {
 	Default struct {
 		LogLevel     int
@@ -564,6 +606,7 @@ type Config struct {
 
 		ProxyFallback   string
 		DisableProxy    bool
+		VerifyClientPEM string
 		ProxyAuthMethod string
 	}
 	HTTP struct {
@@ -734,7 +777,7 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.VerifyClientPEM)
 			h.Domains = append(h.Domains, servername)
 			h.Handlers[servername] = handler
 		}
@@ -743,9 +786,7 @@ func main() {
 	srv := &http.Server{
 		Handler: h,
 		TLSConfig: &tls.Config{
-			MaxVersion:     tls.VersionTLS13,
-			MinVersion:     tls.VersionTLS12,
-			GetCertificate: cm.GetCertificate,
+			GetConfigForClient: cm.GetConfigForClient,
 		},
 	}
 
