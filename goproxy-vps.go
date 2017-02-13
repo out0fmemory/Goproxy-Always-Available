@@ -289,6 +289,13 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
 
+	var reqHostname string
+	if host, _, err := net.SplitHostPort(req.Host); err == nil {
+		reqHostname = host
+	} else {
+		reqHostname = req.Host
+	}
+
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
 	params := http.Header{}
 	for key, values := range req.Header {
@@ -301,13 +308,13 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	if h.DisableProxy && req.Host != req.TLS.ServerName {
+	if h.DisableProxy && reqHostname != req.TLS.ServerName {
 		http.Error(rw, "403 Forbidden", http.StatusForbidden)
 		return
 	}
 
 	var username, password string
-	if h.SimplePAM != nil && req.Host != req.TLS.ServerName {
+	if h.SimplePAM != nil && reqHostname != req.TLS.ServerName {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -426,7 +433,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Proto = "HTTP/1.1"
 	}
 
-	if req.URL.Host == req.TLS.ServerName && h.Fallback != nil {
+	if reqHostname == req.TLS.ServerName && h.Fallback != nil {
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Host = h.Fallback.Host
