@@ -351,7 +351,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			port = "443"
 		}
 
-		glog.Infof("[%v 0x%04x %s] %s \"%s %s:%s %s\" - -", req.TLS.ServerName, req.TLS.Version, username, req.RemoteAddr, req.Method, host, port, req.Proto)
+		glog.Infof("[%v 0x%04x %s] %s \"%s %s %s\" - -", req.TLS.ServerName, req.TLS.Version, username, req.RemoteAddr, req.Method, req.Host, req.Proto)
 
 		dial := h.Dial
 		if dial == nil {
@@ -583,9 +583,12 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 	}
 
 	config := &tls.Config{
-		MaxVersion:   tls.VersionTLS13,
-		MinVersion:   tls.VersionTLS12,
-		Certificates: []tls.Certificate{*cert},
+		MaxVersion:        tls.VersionTLS13,
+		MinVersion:        tls.VersionTLS12,
+		Certificates:      []tls.Certificate{*cert},
+		Max0RTTDataSize:   100 * 1024,
+		Accept0RTTData:    true,
+		AllowShortHeaders: true,
 	}
 
 	if p, ok := cm.cpools[hello.ServerName]; ok {
