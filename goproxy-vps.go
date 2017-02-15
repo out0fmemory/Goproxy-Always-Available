@@ -434,6 +434,10 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	if reqHostname == req.TLS.ServerName && h.Fallback != nil {
+		if h.Fallback.Scheme == "file" {
+			http.FileServer(http.Dir(h.Fallback.Path)).ServeHTTP(rw, req)
+			return
+		}
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Host = h.Fallback.Host
