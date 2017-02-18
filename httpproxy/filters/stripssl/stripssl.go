@@ -195,9 +195,10 @@ func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 			return nil, err
 		}
 		config = &tls.Config{
-			Certificates: []tls.Certificate{*cert},
-			MaxVersion:   tls.VersionTLS13,
-			MinVersion:   tls.VersionTLS10,
+			Certificates:             []tls.Certificate{*cert},
+			MaxVersion:               tls.VersionTLS13,
+			MinVersion:               tls.VersionTLS10,
+			PreferServerCipherSuites: true,
 		}
 		f.TLSConfigCache.Set(name, config, time.Now().Add(f.CAExpiry))
 	}
