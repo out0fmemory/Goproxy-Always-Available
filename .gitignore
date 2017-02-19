@@ -7,6 +7,8 @@ cache/
 *.key
 *.user.json
 addto-startup.vbs
+goproxy.log
+goproxy.sh
 goproxy-gtk.desktop
 goproxy-gtk.py
 goproxy-logo.png

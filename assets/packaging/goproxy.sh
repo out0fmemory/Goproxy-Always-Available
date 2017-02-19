@@ -29,10 +29,9 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    mkdir -p ./logs
-
+    local log_file=./goproxy.log
     if command -v nohup >/dev/null ; then
-        nohup ./goproxy -v=2 -logtostderr=0 -log_dir=./logs >/dev/null 2>&1 &
+        nohup ./goproxy >>${log_file} 2>&1 &
         local pid=$!
     elif busybox start-stop-daemon --help 2>/dev/null ; then
         busybox start-stop-daemon -S -b -x ./goproxy -- -v=2 -logtostderr=0 -log_dir=./logs
@@ -51,16 +50,24 @@ start() {
         echo "Failed"
     fi
 
-    if [ -d '/etc/logrotate.d/' ]; then
-        if [ ! -f '/etc/logrotate.d/goproxy' ]; then
-            echo
-            echo "please \"${SUDO} cp $(pwd)/logrotate.conf /etc/logrotate.d/goproxy\""
+    if test -f ${log_file}; then
+        if test -d /etc/logrotate.d; then
+            cat <<EOF > /etc/logrotate.d/goproxy
+${log_file} {
+    daily
+    copytruncate
+    missingok
+    notifempty
+    rotate 2
+    compress
+}
+EOF
         fi
     fi
 }
 
 stop() {
-    for pid in $(ps ax | grep './goproxy ' | awk '{print $1}')
+    for pid in $(ps ax | awk '/goproxy(\s|$)/{print $1}')
     do
         local exe=$(ls -l /proc/${pid}/exe 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
         local cwd=$(ls -l /proc/${pid}/cwd 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
@@ -114,3 +121,4 @@ case "$1" in
 esac
 
 exit $?
+
