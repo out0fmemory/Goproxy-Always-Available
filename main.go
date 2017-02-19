@@ -1,6 +1,7 @@
 package main
 
 import (
+	"crypto/tls"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -24,6 +25,7 @@ import (
 
 var (
 	version  = "r9999"
+	tls13rev = tls.TLS13Reversion
 	http2rev = "?????"
 )
 
@@ -61,8 +63,8 @@ func main() {
 	}
 
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
-GoProxy Version    : %s (go/%s http2/%s %s/%s)`,
-		version, gover, http2rev, runtime.GOOS, runtime.GOARCH)
+GoProxy Version    : %s (go/%s tls13/%s http2/%s %s/%s)`,
+		version, gover, tls13rev, http2rev, runtime.GOOS, runtime.GOARCH)
 	for profile, config := range config {
 		if !config.Enabled {
 			continue
