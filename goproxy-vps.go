@@ -609,7 +609,8 @@ type Config struct {
 		DaemonStderr string
 	}
 	HTTP2 []struct {
-		Listen string
+		Network string
+		Listen  string
 
 		ServerName []string
 		Keyfile    string
@@ -624,7 +625,8 @@ type Config struct {
 		ProxyAuthMethod string
 	}
 	HTTP struct {
-		Listen string
+		Network string
+		Listen  string
 
 		ParentProxy string
 
@@ -808,12 +810,16 @@ func main() {
 
 	seen := make(map[string]struct{})
 	for _, server := range config.HTTP2 {
+		network := server.Network
+		if network == "" {
+			network = "tcp"
+		}
 		addr := server.Listen
-		if _, ok := seen[addr]; ok {
+		if _, ok := seen[network+":"+addr]; ok {
 			continue
 		}
-		seen[addr] = struct{}{}
-		ln, err := net.Listen("tcp", addr)
+		seen[network+":"+addr] = struct{}{}
+		ln, err := net.Listen(network, addr)
 		if err != nil {
 			glog.Fatalf("Listen(%s) error: %s", addr, err)
 		}
@@ -823,12 +829,16 @@ func main() {
 
 	if config.HTTP.Listen != "" {
 		server := config.HTTP
+		network := server.Network
+		if network == "" {
+			network = "tcp"
+		}
 		addr := server.Listen
-		if _, ok := seen[addr]; ok {
+		if _, ok := seen[network+":"+addr]; ok {
 			glog.Fatalf("goproxy-vps: addr(%#v) already listened by http2", addr)
 		}
 
-		ln, err := net.Listen("tcp", addr)
+		ln, err := net.Listen(network, addr)
 		if err != nil {
 			glog.Fatalf("Listen(%s) error: %s", addr, err)
 		}
