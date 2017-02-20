@@ -79,6 +79,9 @@ func (h *https) Dial(network, addr string) (net.Conn, error) {
 		config = v.(*tls.Config)
 	} else {
 		config = &tls.Config{
+			MinVersion:         tls.VersionTLS10,
+			MaxVersion:         tls.VersionTLS13,
+			Max0RTTDataSize:    100 * 1024,
 			InsecureSkipVerify: true,
 			ServerName:         h.hostname,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1024),
