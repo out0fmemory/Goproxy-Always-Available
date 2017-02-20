@@ -277,6 +277,7 @@ func (h *HTTPHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *ht
 }
 
 type HTTP2Handler struct {
+	ServerNames []string
 	Fallback     *url.URL
 	DisableProxy bool
 	Dial         func(network, address string) (net.Conn, error)
@@ -287,14 +288,13 @@ type HTTP2Handler struct {
 func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
-	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
-
-	var reqHostname string
+	reqHostname := req.Host
 	if host, _, err := net.SplitHostPort(req.Host); err == nil {
 		reqHostname = host
-	} else {
-		reqHostname = req.Host
 	}
+
+	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
+	var isProxyRequest bool = !helpers.ContainsString(h.ServerNames, reqHostname)
 
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
 	params := http.Header{}
@@ -308,13 +308,13 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	if h.DisableProxy && reqHostname != req.TLS.ServerName {
+	if isProxyRequest && h.DisableProxy {
 		http.Error(rw, "403 Forbidden", http.StatusForbidden)
 		return
 	}
 
 	var username, password string
-	if h.SimplePAM != nil && reqHostname != req.TLS.ServerName {
+	if isProxyRequest && h.SimplePAM != nil {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -433,7 +433,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Proto = "HTTP/1.1"
 	}
 
-	if reqHostname == req.TLS.ServerName && h.Fallback != nil {
+	if !isProxyRequest && h.Fallback != nil {
 		if h.Fallback.Scheme == "file" {
 			http.FileServer(http.Dir(h.Fallback.Path)).ServeHTTP(rw, req)
 			return
@@ -587,12 +587,14 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 	}
 
 	config := &tls.Config{
-		MaxVersion:        tls.VersionTLS13,
-		MinVersion:        tls.VersionTLS12,
-		Certificates:      []tls.Certificate{*cert},
-		Max0RTTDataSize:   100 * 1024,
-		Accept0RTTData:    true,
-		AllowShortHeaders: true,
+		MaxVersion:               tls.VersionTLS13,
+		MinVersion:               tls.VersionTLS12,
+		Certificates:             []tls.Certificate{*cert},
+		Max0RTTDataSize:          100 * 1024,
+		Accept0RTTData:           true,
+		AllowShortHeaders:        true,
+		PreferServerCipherSuites: true,
+		NextProtos:               []string{"h2", "http/1.1"},
 	}
 
 	if p, ok := cm.cpools[hello.ServerName]; ok {
@@ -612,7 +614,7 @@ type Config struct {
 		Network string
 		Listen  string
 
-		ServerName []string
+		ServerName  []string
 		Keyfile    string
 		Certfile   string
 		PEM        string
@@ -635,14 +637,14 @@ type Config struct {
 }
 
 type Handler struct {
-	Domains  []string
+	ServerNames  []string
 	Handlers map[string]http.Handler
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	handler, ok := h.Handlers[req.TLS.ServerName]
 	if !ok {
-		handler, ok = h.Handlers[h.Domains[0]]
+		handler, ok = h.Handlers[h.ServerNames[0]]
 		if !ok {
 			http.Error(rw, "403 Forbidden", http.StatusForbidden)
 			return
@@ -741,10 +743,11 @@ func main() {
 	cm := &CertManager{}
 	h := &Handler{
 		Handlers: map[string]http.Handler{},
-		Domains:  []string{},
+		ServerNames:  []string{},
 	}
 	for _, server := range config.HTTP2 {
 		handler := &HTTP2Handler{
+			ServerNames: server.ServerName,
 			Transport: transport,
 		}
 
@@ -794,7 +797,7 @@ func main() {
 
 		for _, servername := range server.ServerName {
 			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.VerifyClientPEM)
-			h.Domains = append(h.Domains, servername)
+			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 		}
 	}
