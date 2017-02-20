@@ -21,13 +21,19 @@ import (
 )
 
 func HTTPS(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (Dialer, error) {
-	if _, _, err := net.SplitHostPort(addr); err != nil {
+	var hostname string
+
+	if host, _, err := net.SplitHostPort(addr); err == nil {
+		hostname = host
+	} else {
+		hostname = addr
 		addr = net.JoinHostPort(addr, "443")
 	}
 
 	s := &https{
 		network:  network,
 		addr:     addr,
+		hostname: hostname,
 		forward:  forward,
 		resolver: resolver,
 		cache:    lrucache.NewLRUCache(128),
@@ -43,6 +49,7 @@ func HTTPS(network, addr string, auth *Auth, forward Dialer, resolver Resolver) 
 type https struct {
 	user, password string
 	network, addr  string
+	hostname       string
 	forward        Dialer
 	resolver       Resolver
 	cache          lrucache.Cache
@@ -67,18 +74,13 @@ func (h *https) Dial(network, addr string) (net.Conn, error) {
 		}
 	}()
 
-	host, _, err := net.SplitHostPort(h.addr)
-	if err != nil {
-		return nil, err
-	}
-
 	var config *tls.Config
 	if v, ok := h.cache.GetNotStale(h.addr); ok {
 		config = v.(*tls.Config)
 	} else {
 		config = &tls.Config{
 			InsecureSkipVerify: true,
-			ServerName:         host,
+			ServerName:         h.hostname,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1024),
 		}
 		h.cache.Set(h.addr, config, time.Now().Add(2*time.Hour))

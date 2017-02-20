@@ -17,13 +17,19 @@ import (
 )
 
 func HTTP1(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (Dialer, error) {
-	if _, _, err := net.SplitHostPort(addr); err != nil {
-		addr = net.JoinHostPort(addr, "80")
+	var hostname string
+
+	if host, _, err := net.SplitHostPort(addr); err == nil {
+		hostname = host
+	} else {
+		hostname = addr
+		addr = net.JoinHostPort(addr, "443")
 	}
 
 	s := &http1{
 		network:  network,
 		addr:     addr,
+		hostname: hostname,
 		forward:  forward,
 		resolver: resolver,
 	}
@@ -38,6 +44,7 @@ func HTTP1(network, addr string, auth *Auth, forward Dialer, resolver Resolver) 
 type http1 struct {
 	user, password string
 	network, addr  string
+	hostname       string
 	forward        Dialer
 	resolver       Resolver
 }
