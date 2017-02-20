@@ -506,6 +506,7 @@ type CertManager struct {
 	certs   map[string]*tls.Certificate
 	cpools  map[string]*x509.CertPool
 	manager *autocert.Manager
+	cache   lrucache.Cache
 }
 
 func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string) error {
@@ -525,6 +526,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 
 	if cm.cpools == nil {
 		cm.cpools = make(map[string]*x509.CertPool)
+	}
+
+	if cm.cache == nil {
+		cm.cache = lrucache.NewLRUCache(128)
 	}
 
 	switch {
@@ -591,6 +596,10 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		hello.ServerName = cm.hosts[0]
 	}
 
+	if v, ok := cm.cache.GetNotStale(hello.ServerName); ok {
+		return v.(*tls.Config), nil
+	}
+
 	cert, err := cm.GetCertificate(hello)
 	if err != nil {
 		return nil, err
@@ -611,6 +620,8 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		config.ClientAuth = tls.RequireAndVerifyClientCert
 		config.ClientCAs = p
 	}
+
+	cm.cache.Set(hello.ServerName, config, time.Now().Add(2*time.Hour))
 
 	return config, nil
 }
