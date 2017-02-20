@@ -277,7 +277,7 @@ func (h *HTTPHandler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *ht
 }
 
 type HTTP2Handler struct {
-	ServerNames []string
+	ServerNames  []string
 	Fallback     *url.URL
 	DisableProxy bool
 	Dial         func(network, address string) (net.Conn, error)
@@ -508,7 +508,9 @@ type CertManager struct {
 	manager *autocert.Manager
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cpem string) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string) error {
+	var err error
+
 	if cm.manager == nil {
 		cm.manager = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
@@ -542,8 +544,16 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cp
 		cm.certs[host] = nil
 	}
 
-	if cpem != "" {
-		cert, err := x509.ParseCertificate([]byte(cpem))
+	var asn1Data []byte = []byte(capem)
+
+	if cafile != "" {
+		if asn1Data, err = ioutil.ReadFile(cafile); err != nil {
+			glog.Fatalf("ioutil.ReadFile(%#v) error: %+v", cafile, err)
+		}
+	}
+
+	if len(asn1Data) > 0 {
+		cert, err := x509.ParseCertificate(asn1Data)
 		if err != nil {
 			return err
 		}
@@ -614,16 +624,19 @@ type Config struct {
 		Network string
 		Listen  string
 
-		ServerName  []string
-		Keyfile    string
-		Certfile   string
-		PEM        string
+		ServerName []string
+
+		Keyfile  string
+		Certfile string
+		PEM      string
+
+		ClientAuthFile string
+		ClientAuthPem  string
 
 		ParentProxy string
 
 		ProxyFallback   string
 		DisableProxy    bool
-		VerifyClientPEM string
 		ProxyAuthMethod string
 	}
 	HTTP struct {
@@ -637,8 +650,8 @@ type Config struct {
 }
 
 type Handler struct {
-	ServerNames  []string
-	Handlers map[string]http.Handler
+	ServerNames []string
+	Handlers    map[string]http.Handler
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -742,13 +755,13 @@ func main() {
 
 	cm := &CertManager{}
 	h := &Handler{
-		Handlers: map[string]http.Handler{},
-		ServerNames:  []string{},
+		Handlers:    map[string]http.Handler{},
+		ServerNames: []string{},
 	}
 	for _, server := range config.HTTP2 {
 		handler := &HTTP2Handler{
 			ServerNames: server.ServerName,
-			Transport: transport,
+			Transport:   transport,
 		}
 
 		if server.ProxyFallback != "" {
@@ -796,7 +809,7 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.VerifyClientPEM)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 		}
