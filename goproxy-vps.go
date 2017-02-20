@@ -802,6 +802,7 @@ func main() {
 					glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
 				}
 				handler.Dial = dialer2.Dial
+				handler.Transport.Dial = dialer2.Dial
 			}
 		}
 
@@ -893,6 +894,7 @@ func main() {
 					glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
 				}
 				handler.Dial = dialer2.Dial
+				handler.Transport.Dial = dialer2.Dial
 			}
 		}
 
