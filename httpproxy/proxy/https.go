@@ -118,15 +118,19 @@ func (h *https) Dial(network, addr string) (net.Conn, error) {
 		}
 	}
 
-	b := new(bytes.Buffer)
+	b := bufPool.Get().(*bytes.Buffer)
+	b.Reset()
 
-	fmt.Fprintf(b, "CONNECT %s:%s HTTP/1.1\r\n", host, portStr)
+	fmt.Fprintf(b, "CONNECT %s:%s HTTP/1.0\r\n", host, portStr)
 	if h.user != "" {
 		fmt.Fprintf(b, "Proxy-Authorization: Basic %s\r\n", base64.StdEncoding.EncodeToString([]byte(h.user+":"+h.password)))
 	}
 	io.WriteString(b, "\r\n")
 
-	if _, err := conn.Write(b.Bytes()); err != nil {
+	bb := b.Bytes()
+	bufPool.Put(b)
+
+	if _, err := conn.Write(bb); err != nil {
 		return nil, errors.New("proxy: failed to write greeting to HTTP proxy at " + h.addr + ": " + err.Error())
 	}
 
@@ -142,7 +146,7 @@ func (h *https) Dial(network, addr string) (net.Conn, error) {
 		total += n
 		buf = buf[n:]
 
-		if i := bytes.Index(b0, []byte("\r\n\r\n")); i > 0 {
+		if i := bytes.Index(b0, CRLFCRLF); i > 0 {
 			conn = &preReaderConn{conn, b0[i+4 : total]}
 			b0 = b0[:i+4]
 			break
