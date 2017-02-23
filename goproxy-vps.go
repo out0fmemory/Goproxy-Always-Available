@@ -502,22 +502,37 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 }
 
 type CertManager struct {
-	hosts   []string
-	certs   map[string]*tls.Certificate
-	cpools  map[string]*x509.CertPool
-	manager *autocert.Manager
-	cache   lrucache.Cache
+	hosts    []string
+	rsaHosts map[string]struct{}
+	certs    map[string]*tls.Certificate
+	cpools   map[string]*x509.CertPool
+	ecc      *autocert.Manager
+	rsa      *autocert.Manager
+	cache    lrucache.Cache
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, rsa bool) error {
 	var err error
 
-	if cm.manager == nil {
-		cm.manager = &autocert.Manager{
+	if cm.ecc == nil {
+		cm.ecc = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			Cache:      autocert.DirCache("."),
 			HostPolicy: cm.HostPolicy,
 		}
+	}
+
+	if cm.rsa == nil {
+		cm.rsa = &autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			Cache:      autocert.DirCache("."),
+			HostPolicy: cm.HostPolicy,
+			ForceRSA:   true,
+		}
+	}
+
+	if cm.rsaHosts == nil {
+		cm.rsaHosts = make(map[string]struct{})
 	}
 
 	if cm.certs == nil {
@@ -547,6 +562,9 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 		cm.certs[host] = &cert
 	default:
 		cm.certs[host] = nil
+		if rsa {
+			cm.rsaHosts[host] = struct{}{}
+		}
 	}
 
 	var asn1Data []byte = []byte(capem)
@@ -581,16 +599,6 @@ func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
 	return nil
 }
 
-func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
-	if hello.ServerName == "" {
-		hello.ServerName = cm.hosts[0]
-	}
-	if cert, ok := cm.certs[hello.ServerName]; ok && cert != nil {
-		return cert, nil
-	}
-	return cm.manager.GetCertificate(hello)
-}
-
 func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
 	if hello.ServerName == "" {
 		hello.ServerName = cm.hosts[0]
@@ -600,9 +608,17 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		return v.(*tls.Config), nil
 	}
 
-	cert, err := cm.GetCertificate(hello)
-	if err != nil {
-		return nil, err
+	cert, ok := cm.certs[hello.ServerName]
+	if !ok || cert == nil {
+		var err error
+		if _, ok := cm.rsaHosts[hello.ServerName]; ok {
+			cert, err = cm.rsa.GetCertificate(hello)
+		} else {
+			cert, err = cm.ecc.GetCertificate(hello)
+		}
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	config := &tls.Config{
@@ -635,7 +651,8 @@ type Config struct {
 		Network string
 		Listen  string
 
-		ServerName []string
+		ServerName      []string
+		SignRsaAutocert bool
 
 		Keyfile  string
 		Certfile string
@@ -821,7 +838,7 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, server.SignRsaAutocert)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 		}

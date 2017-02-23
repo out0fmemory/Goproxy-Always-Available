@@ -13,3 +13,7 @@ listen = ":443"
 server_name = ["proxy.example.org"]
 proxy_fallback = "file:///var/www/html"
 proxy_auth_method = "pam"
+
+[http]
+listen = ":8087"
+parent_proxy = "https://example.org"
