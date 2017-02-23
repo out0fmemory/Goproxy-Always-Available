@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: NaR45rwTwqwb8ugQ+jBAwg
+! Checksum: pNGrM1YWz95Xuit9zkRuCg
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Fri, 17 Feb 2017 05:32:33 +0100
+! Last Modified: Wed, 22 Feb 2017 06:13:39 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -673,6 +673,7 @@ zhao.1984.city
 .3a5a.com
 3arabtv.com
 .3boys2girls.com
+.3proxy.ru
 .3ren.ca
 .3tui.net
 ||4bluestones.biz
@@ -1873,6 +1874,7 @@ eastern-ark.com
 ebookbrowse.com
 ebookee.com
 ||ecfa.org.tw
+||ecimg.tw
 ecministry.net
 .economist.com
 bbs.ecstart.com
@@ -3695,6 +3697,7 @@ mcfog.com
 mcreasite.com
 .md-t.org
 ||md-t.org
+||meansys.com
 .media.org.hk
 .mediachinese.com
 ||mediachinese.com
@@ -4718,6 +4721,7 @@ sexinsex.net
 ||shadeyouvpn.com
 shadow.ma
 .shadowsky.xyz
+.shadowsocks.asia
 ||www.shadowsocks.com
 .shadowsocks.com
 .shadowsocks.org
@@ -4925,6 +4929,8 @@ sowers.org.hk
 spem.at
 ||spencertipping.com
 ||spicevpn.com
+.spideroak.com
+||spideroak.com
 .spike.com
 .spotflux.com
 ||spotflux.com
@@ -4932,7 +4938,6 @@ spem.at
 |http://spring4u.info
 ||sproutcore.com
 ||sproxy.info
-squarespace.com
 ||srocket.us
 .ss-link.com
 ||ss-link.com
@@ -4955,7 +4960,6 @@ usinfo.state.gov
 ||starp2p.com
 .startpage.com
 ||startpage.com
-.state168.com
 ||static-economist.com
 ||stc.com.sa
 steamcommunity.com/groups/LibetTibet
