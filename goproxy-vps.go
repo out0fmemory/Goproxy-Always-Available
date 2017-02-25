@@ -442,13 +442,14 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Host = h.Fallback.Host
 		if ip, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
-			req.Header.Set("X-Real-IP", ip)
 			xff := req.Header.Get("X-Forwarded-For")
 			if xff == "" {
 				req.Header.Set("X-Forwarded-For", ip)
 			} else {
 				req.Header.Set("X-Forwarded-For", xff+", "+ip)
 			}
+			req.Header.Set("X-Forwarded-Proto", "https")
+			req.Header.Set("X-Real-IP", ip)
 		}
 	}
 
