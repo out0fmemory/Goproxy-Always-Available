@@ -137,6 +137,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		},
 	}
 	switch config.TLSConfig.Version {
+	case "TLSv13", "TLSv1.3":
+		googleTLSConfig.MinVersion = tls.VersionTLS13
 	case "TLSv12", "TLSv1.2":
 		googleTLSConfig.MinVersion = tls.VersionTLS12
 	case "TLSv11", "TLSv1.1":
