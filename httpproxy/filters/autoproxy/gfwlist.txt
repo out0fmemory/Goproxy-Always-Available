@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: pNGrM1YWz95Xuit9zkRuCg
+! Checksum: 1g+Mav6SIhKWSXgIwiDKvA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 22 Feb 2017 06:13:39 +0100
+! Last Modified: Sat, 25 Feb 2017 05:34:29 +0100
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -385,6 +385,7 @@ d1c37gjwa26taa.cloudfront.net
 ||d3rhr7kgmtrq1v.cloudfront.net
 
 !!---DtDNS---
+!###https://www.dtdns.com/dtsite/faq
 .3d-game.com
 .4irc.com
 .b0ne.com
@@ -401,6 +402,12 @@ d1c37gjwa26taa.cloudfront.net
 .slyip.com
 .slyip.net
 .suroot.com
+
+!!---DynDNS---
+!###https://help.dyn.com/list-of-dyn-dns-pro-remote-access-domain-names/
+.dyndns.org
+.dyndns-pics.com
+.is-a-hunter.com
 
 !!---Facebook---
 ||facebook.br
@@ -1006,6 +1013,7 @@ dajusha.baywords.com
 .bbc.co.uk/zhongwen
 .bbc.com/ukchina
 .bbc.com/zhongwen
+.bbc.com%2Fzhongwen
 news.bbc.co.uk/onthisday*newsid_2496000/2496277
 newsforums.bbc.co.uk
 .bbcchinese.com
@@ -1838,7 +1846,6 @@ dwnews.net
 ||dwnews.net
 xys.dxiong.com
 ||dynawebinc.com
-.dyndns.org
 .dzze.com
 
 !--------------------EE-------------------------
@@ -6204,6 +6211,8 @@ xyy69.info
 
 !--------------------YY-------------------------
 page.bid.yahoo.com
+tw.bid.yahoo.com
+|https://tw.bid.yahoo.com
 blogs.yahoo.co.jp
 buy.yahoo.com.tw/gdsale
 hk.yahoo.com
