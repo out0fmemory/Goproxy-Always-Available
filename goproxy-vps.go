@@ -718,6 +718,9 @@ func main() {
 		if err != nil {
 			glog.Fatalf("base64.StdEncoding.DecodeString(%+v) error: %+v", parts[1], err)
 		}
+	case os.Getenv("GOPROXY_VPS_CONFIG_URL") != "":
+		filename = os.Getenv("GOPROXY_VPS_CONFIG_URL")
+		fallthrough
 	case strings.HasPrefix(filename, "https://"):
 		glog.Infof("http.Get(%+v) ...", filename)
 		resp, err := http.Get(filename)
