@@ -4,10 +4,11 @@ PACKAGE = goproxy-vps
 
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
+GOEXE ?= $(shell test $(GOOS) = "windows" && echo ".exe")
 CGO_ENABLED ?= 0
 GOARM ?= 6
 
-GOPROXY_VPS_EXE = $(PACKAGE)
+GOPROXY_VPS_EXE = $(PACKAGE)$(GOEXE)
 GOPROXY_VPS_DISTCMD = XZ_OPT=-9 tar cvJpf
 GOPROXY_VPS_DISTEXT = .tar.xz
 GOPROXY_VPS_DIST = $(PACKAGE)_$(GOOS)_$(GOARCH)-r$(REVSION)$(GOPROXY_VPS_DISTEXT)
