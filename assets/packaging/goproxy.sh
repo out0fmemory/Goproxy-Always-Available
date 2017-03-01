@@ -30,6 +30,7 @@ cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || tr
 
 start() {
     local log_file=./goproxy.log
+    log_file=$(cd $(dirname ${log_file}); echo $(pwd -P)/$(basename ${log_file}))
     if command -v nohup >/dev/null ; then
         nohup ./goproxy >>${log_file} 2>&1 &
         local pid=$!
