@@ -93,6 +93,8 @@ func FromURL(u *url.URL, forward Dialer, resolver Resolver) (Dialer, error) {
 		return HTTP1("tcp", u.Host, auth, forward, resolver)
 	case "https":
 		return HTTPS("tcp", u.Host, auth, forward, resolver)
+	case "https+h2":
+		return HTTP2("tcp", u.Host, auth, forward, resolver)
 	case "ssh", "ssh2":
 		return SSH2("tcp", u.Host, auth, forward, resolver)
 	}
