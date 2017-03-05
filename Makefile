@@ -6,7 +6,7 @@ GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 GOEXE ?= $(shell test $(GOOS) = "windows" && echo ".exe")
 CGO_ENABLED ?= 0
-GOARM ?= 6
+GOARM ?= 5
 
 GOPROXY_VPS_EXE = $(PACKAGE)$(GOEXE)
 GOPROXY_VPS_DISTCMD = XZ_OPT=-9 tar cvJpf
