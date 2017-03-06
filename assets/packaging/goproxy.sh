@@ -1,11 +1,4 @@
 #!/bin/sh
-#
-#       /etc/rc.d/init.d/goproxy
-#
-#       a go proxy
-#
-# chkconfig:   2345 95 05
-# description: a go proxy
 
 ### BEGIN INIT INFO
 # Provides:       goproxy
@@ -15,13 +8,13 @@
 # Should-Stop:
 # Default-Start: 2 3 4 5
 # Default-Stop:  0 1 6
-# Short-Description: start and stop goproxy
-# Description: a go proxy
+# Short-Description: start and stop daemon script
+# Description: a daemon script
 ### END INIT INFO
 
 set -e
 
-PACKAGE_NAME=goproxy
+EXECUTABLE=$(basename "${0}" | sed -r 's/\.[^.]+$//')
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:${PATH}
 SUDO=$(test $(id -u) = 0 || echo sudo)
 
@@ -29,23 +22,20 @@ linkpath=$(ls -l "$0" | sed "s/.*->\s*//")
 cd "$(dirname "$0")" && test -f "$linkpath" && cd "$(dirname "$linkpath")" || true
 
 start() {
-    local log_file=./goproxy.log
+    local log_file=${EXECUTABLE}.log
     log_file=$(cd $(dirname ${log_file}); echo $(pwd -P)/$(basename ${log_file}))
+
     if command -v nohup >/dev/null ; then
-        nohup ./goproxy >>${log_file} 2>&1 &
-        local pid=$!
-    elif busybox start-stop-daemon --help 2>/dev/null ; then
-        busybox start-stop-daemon -S -b -x ./goproxy -- -v=2 -logtostderr=0 -log_dir=./logs
-        local pid=$!
+        nohup ./${EXECUTABLE} >>${log_file} 2>&1 &
     else
         echo "please install nohup"
         exit 1
     fi
 
-    echo -n "Starting ${PACKAGE_NAME}(${pid}): "
-
+    local pid=$!
+    echo -n "Starting ${EXECUTABLE}(${pid}): "
     sleep 1
-    if ps ax | grep "^${pid} " >/dev/null 2>&1; then
+    if ps ax | grep "${pid} " >/dev/null 2>&1; then
         echo "OK"
     else
         echo "Failed"
@@ -53,7 +43,7 @@ start() {
 
     if test -f ${log_file}; then
         if test -d /etc/logrotate.d; then
-            cat <<EOF > /etc/logrotate.d/goproxy
+            cat <<EOF > /etc/logrotate.d/${EXECUTABLE}
 ${log_file} {
     daily
     copytruncate
@@ -68,12 +58,12 @@ EOF
 }
 
 stop() {
-    for pid in $(ps ax | awk '/goproxy(\s|$)/{print $1}')
+    for pid in $(ps ax | awk "/${EXECUTABLE}(\\s|\$)/{print \$1}")
     do
         local exe=$(ls -l /proc/${pid}/exe 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
         local cwd=$(ls -l /proc/${pid}/cwd 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
-        if test "$(basename "$exe")" = "goproxy" -a "$cwd" = "$(pwd)"; then
-            echo -n "Stopping ${PACKAGE_NAME}(${pid}): "
+        if test "$(basename "$exe")" = "${EXECUTABLE}" -a "$cwd" = "$(pwd)"; then
+            echo -n "Stopping ${EXECUTABLE}(${pid}): "
             if kill $pid; then
                 echo "OK"
             else
@@ -90,18 +80,25 @@ restart() {
 }
 
 autostart() {
-    ln -sf $(pwd)/goproxy.sh /etc/init.d/goproxy
+    ln -sf $(pwd)/${EXECUTABLE}.sh /etc/init.d/${EXECUTABLE}
     if command -v update-rc.d >/dev/null ; then
-        update-rc.d goproxy defaults
+        update-rc.d ${EXECUTABLE} defaults
     elif command -v chkconfig >/dev/null ; then
-        chkconfig goproxy on
+        chkconfig ${EXECUTABLE} on
+    elif command -v systemctl >/dev/null ; then
+        systemctl enable ${EXECUTABLE}
     fi
 }
 
 usage() {
-    echo "Usage: [sudo] $(basename "$0") {start|stop|restart}" >&2
+    echo "Usage: [sudo] $(basename "$0") {start|stop|restart|autostart}" >&2
     exit 1
 }
+
+if [ -n "${SUDO}" ]; then
+    echo "ERROR: Please run as root"
+    exit 1
+fi
 
 case "$1" in
     start)
