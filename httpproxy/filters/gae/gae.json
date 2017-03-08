@@ -54,13 +54,14 @@
 		// "*.youtube.com": "google_hk",
 	},
 	"ForceGAE": [
-		"business.google.com",
-		"domains.google.com",
 		"books.google.com",
+		"business.google.com",
+		"clients1.google.com/ocsp",
+		"domains.google.com",
+		"plus.google.com/$",
+		"scholar.googleusercontent.com",
 		"www.google.com/maps",
 		"www.google.com/patents",
-		"plus.google.com/$",
-		"clients1.google.com/ocsp",
 	],
 	"TLSConfig": {
 		"Version": "TLSv1.2",
