@@ -503,6 +503,8 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 }
 
 type CertManager struct {
+	RejectNilSni bool
+
 	hosts    []string
 	rsaHosts map[string]struct{}
 	certs    map[string]*tls.Certificate
@@ -602,6 +604,10 @@ func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
 
 func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
 	if hello.ServerName == "" {
+		if cm.RejectNilSni {
+			hello.Conn.Close()
+			return nil, nil
+		}
 		hello.ServerName = cm.hosts[0]
 	}
 
@@ -647,6 +653,7 @@ type Config struct {
 	Default struct {
 		LogLevel     int
 		DaemonStderr string
+		RejectNilSni bool
 	}
 	HTTP2 []struct {
 		Network string
@@ -785,7 +792,9 @@ func main() {
 		DisableCompression:  false,
 	}
 
-	cm := &CertManager{}
+	cm := &CertManager{
+		RejectNilSni: config.Default.RejectNilSni,
+	}
 	h := &Handler{
 		Handlers:    map[string]http.Handler{},
 		ServerNames: []string{},

@@ -1,5 +1,6 @@
 [default]
 log_level = 2
+reject_nil_sni = false
 daemon_stderr = "./goproxy-vps.log"
 
 [[http2]]
