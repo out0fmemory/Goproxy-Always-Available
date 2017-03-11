@@ -73,6 +73,15 @@ case $(uname -s)/$(uname -m) in
 		;;
 esac
 
+if ./goproxy -version >/dev/null 2>&1; then
+	GOPROXY_OS=$(./goproxy -os)
+	GOPROXY_ARCH=$(./goproxy -arch)
+	if test "${GOPROXY_OS}" = "darwin"; then
+		GOPROXY_OS=macos
+	fi
+	FILENAME_PREFIX=goproxy_${GOPROXY_OS}_${GOPROXY_ARCH}
+fi
+
 LOCALVERSION=$(./goproxy -version 2>/dev/null || :)
 echo "0. Local Goproxy version ${LOCALVERSION}"
 
