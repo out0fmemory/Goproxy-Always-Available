@@ -26,6 +26,11 @@ else ifeq ($(GOOS), darwin)
 	GOPROXY_STAGEDIR = $(STAGEDIR)
 	GOPROXY_DISTCMD = BZIP=-9 tar cvjpf
 	GOPROXY_DISTEXT = .tar.bz2
+else ifneq (,$(findstring mips,$(GOARCH)))
+	GOPROXY_EXE = $(PACKAGE)
+	GOPROXY_STAGEDIR = $(STAGEDIR)
+	GOPROXY_DISTCMD = GZIP=-9 tar cvzpf
+	GOPROXY_DISTEXT = .tar.gz
 else
 	GOPROXY_EXE = $(PACKAGE)
 	GOPROXY_STAGEDIR = $(STAGEDIR)/$(PACKAGE)
