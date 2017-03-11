@@ -54,6 +54,9 @@ case $(uname -s)/$(uname -m) in
 		;;
 	Linux/mips )
 		FILENAME_PREFIX=goproxy_linux_mips
+		if hexdump -s 5 -n 1 $SHELL | grep -q 0001; then
+			FILENAME_PREFIX=goproxy_linux_mipsle
+		fi
 		;;
 	FreeBSD/x86_64 )
 		FILENAME_PREFIX=goproxy_freebsd_amd64
