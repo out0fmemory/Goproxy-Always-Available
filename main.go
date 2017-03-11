@@ -35,9 +35,20 @@ func init() {
 
 func main() {
 
-	if len(os.Args) > 1 && os.Args[1] == "-version" {
-		fmt.Print(version)
-		return
+	if len(os.Args) > 1 {
+		var line string
+		switch os.Args[1] {
+		case "-version":
+			line = version
+		case "-arch":
+			line = runtime.GOARCH
+		case "-os":
+			line = runtime.GOOS
+		}
+		if line != "" {
+			fmt.Print(line)
+			return
+		}
 	}
 
 	helpers.SetFlagsIfAbsent(map[string]string{
