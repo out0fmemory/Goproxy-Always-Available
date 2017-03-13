@@ -23,7 +23,7 @@ if [ -f "httpproxy.json" ]; then
 fi
 
 if [ -d cache ]; then
-	find cache -name "*.crt" -mtime +90 -delete
+	rm -rf $(find cache -name "*.crt" -mtime +90)
 fi
 
 FILENAME_PREFIX=
