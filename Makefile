@@ -16,6 +16,10 @@ else ifeq ($(GOOS), darwin)
 	GOPROXY_VPS_EXE = $(PACKAGE)
 	GOPROXY_VPS_DISTCMD = BZIP=-9 tar cvjpf
 	GOPROXY_VPS_DISTEXT = .tar.bz2
+else ifneq (,$(findstring arm,$(GOARCH)))
+	GOPROXY_VPS_EXE = $(PACKAGE)
+	GOPROXY_VPS_DISTCMD = BZIP=-9 tar cvjpf
+	GOPROXY_VPS_DISTEXT = .tar.bz2
 else ifneq (,$(findstring mips,$(GOARCH)))
 	GOPROXY_VPS_EXE = $(PACKAGE)
 	GOPROXY_VPS_DISTCMD = GZIP=-9 tar cvzpf
