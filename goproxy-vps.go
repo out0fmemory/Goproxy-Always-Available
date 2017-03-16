@@ -510,6 +510,7 @@ type CertManager struct {
 	cpools map[string]*x509.CertPool
 	ecc    *autocert.Manager
 	rsa    *autocert.Manager
+	cache  lrucache.Cache
 }
 
 func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string) error {
@@ -538,6 +539,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 
 	if cm.cpools == nil {
 		cm.cpools = make(map[string]*x509.CertPool)
+	}
+
+	if cm.cache == nil {
+		cm.cache = lrucache.NewLRUCache(128)
 	}
 
 	switch {
@@ -619,10 +624,24 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		hello.ServerName = cm.hosts[0]
 	}
 
+	cacheKey := hello.ServerName
+	if !helpers.HasECCCiphers(hello.CipherSuites) {
+		cacheKey += ",rsa"
+	}
+
+	if v, ok := cm.cache.GetNotStale(cacheKey); ok {
+		return v.(*tls.Config), nil
+	}
+
+	cert, err := cm.GetCertificate(hello)
+	if err != nil {
+		return nil, err
+	}
+
 	config := &tls.Config{
 		MaxVersion:               tls.VersionTLS13,
 		MinVersion:               tls.VersionTLS12,
-		GetCertificate:           cm.GetCertificate,
+		Certificates:             []tls.Certificate{*cert},
 		Max0RTTDataSize:          100 * 1024,
 		Accept0RTTData:           true,
 		AllowShortHeaders:        true,
@@ -634,6 +653,8 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		config.ClientAuth = tls.RequireAndVerifyClientCert
 		config.ClientCAs = p
 	}
+
+	cm.cache.Set(cacheKey, config, time.Now().Add(2*time.Hour))
 
 	return config, nil
 }
