@@ -505,22 +505,20 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 type CertManager struct {
 	RejectNilSni bool
 
-	hosts    []string
-	rsaHosts map[string]struct{}
-	certs    map[string]*tls.Certificate
-	cpools   map[string]*x509.CertPool
-	ecc      *autocert.Manager
-	rsa      *autocert.Manager
-	cache    lrucache.Cache
+	hosts  []string
+	certs  map[string]*tls.Certificate
+	cpools map[string]*x509.CertPool
+	ecc    *autocert.Manager
+	rsa    *autocert.Manager
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, rsa bool) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string) error {
 	var err error
 
 	if cm.ecc == nil {
 		cm.ecc = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			Cache:      autocert.DirCache("."),
+			Cache:      autocert.DirCache("ecc"),
 			HostPolicy: cm.HostPolicy,
 		}
 	}
@@ -528,14 +526,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 	if cm.rsa == nil {
 		cm.rsa = &autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
-			Cache:      autocert.DirCache("."),
+			Cache:      autocert.DirCache("rsa"),
 			HostPolicy: cm.HostPolicy,
 			ForceRSA:   true,
 		}
-	}
-
-	if cm.rsaHosts == nil {
-		cm.rsaHosts = make(map[string]struct{})
 	}
 
 	if cm.certs == nil {
@@ -544,10 +538,6 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 
 	if cm.cpools == nil {
 		cm.cpools = make(map[string]*x509.CertPool)
-	}
-
-	if cm.cache == nil {
-		cm.cache = lrucache.NewLRUCache(128)
 	}
 
 	switch {
@@ -565,9 +555,6 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 		cm.certs[host] = &cert
 	default:
 		cm.certs[host] = nil
-		if rsa {
-			cm.rsaHosts[host] = struct{}{}
-		}
 	}
 
 	var asn1Data []byte = []byte(capem)
@@ -602,6 +589,27 @@ func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
 	return nil
 }
 
+func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	cert, _ := cm.certs[hello.ServerName]
+	if cert != nil {
+		return cert, nil
+	}
+
+	if helpers.HasECCCiphers(hello.CipherSuites) {
+		cert, err := cm.ecc.GetCertificate(hello)
+		switch {
+		case cert != nil:
+			return cert, nil
+		case err != nil && strings.HasSuffix(hello.ServerName, ".acme.invalid"):
+			break
+		default:
+			return nil, err
+		}
+	}
+
+	return cm.rsa.GetCertificate(hello)
+}
+
 func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
 	if hello.ServerName == "" {
 		if cm.RejectNilSni {
@@ -611,27 +619,10 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		hello.ServerName = cm.hosts[0]
 	}
 
-	if v, ok := cm.cache.GetNotStale(hello.ServerName); ok {
-		return v.(*tls.Config), nil
-	}
-
-	cert, ok := cm.certs[hello.ServerName]
-	if !ok || cert == nil {
-		var err error
-		if _, ok := cm.rsaHosts[hello.ServerName]; ok {
-			cert, err = cm.rsa.GetCertificate(hello)
-		} else {
-			cert, err = cm.ecc.GetCertificate(hello)
-		}
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	config := &tls.Config{
 		MaxVersion:               tls.VersionTLS13,
 		MinVersion:               tls.VersionTLS12,
-		Certificates:             []tls.Certificate{*cert},
+		GetCertificate:           cm.GetCertificate,
 		Max0RTTDataSize:          100 * 1024,
 		Accept0RTTData:           true,
 		AllowShortHeaders:        true,
@@ -639,37 +630,10 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		NextProtos:               []string{"h2", "http/1.1"},
 	}
 
-	if _, ok := cm.rsaHosts[hello.ServerName]; ok {
-		config.MinVersion = tls.VersionTLS10
-		config.CipherSuites = []uint16{
-			// tls 1.3
-			tls.TLS_AES_128_GCM_SHA256,
-			tls.TLS_AES_256_GCM_SHA384,
-			tls.TLS_CHACHA20_POLY1305_SHA256,
-			// tls 1.2
-			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
-			tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
-			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-			// tls 1.0/1.1
-			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-			tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
-			tls.TLS_RSA_WITH_AES_256_CBC_SHA256,
-			tls.TLS_RSA_WITH_AES_128_CBC_SHA256,
-			tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			tls.TLS_RSA_WITH_AES_128_CBC_SHA,
-			tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
-		}
-	}
-
 	if p, ok := cm.cpools[hello.ServerName]; ok {
 		config.ClientAuth = tls.RequireAndVerifyClientCert
 		config.ClientCAs = p
 	}
-
-	cm.cache.Set(hello.ServerName, config, time.Now().Add(2*time.Hour))
 
 	return config, nil
 }
@@ -684,8 +648,7 @@ type Config struct {
 		Network string
 		Listen  string
 
-		ServerName      []string
-		SignRsaAutocert bool
+		ServerName []string
 
 		Keyfile  string
 		Certfile string
@@ -876,7 +839,7 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, server.SignRsaAutocert)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 		}
