@@ -13,6 +13,7 @@ export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
 export GOBRANCH=${GOBRANCH:-master}
+export GOBRANCH_FOLLOW=${GOBRANCH_FOLLOW:-true}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
@@ -65,8 +66,10 @@ function build_go() {
 
 	git clone --branch ${GOBRANCH} https://github.com/phuslu/go
 	cd go/src
-	git remote add -f upstream https://github.com/golang/go
-	git rebase upstream/${GOBRANCH}
+	if [ "${GOBRANCH_FOLLOW}" = "true" ]; then
+		git remote add -f upstream https://github.com/golang/go
+		git rebase upstream/${GOBRANCH}
+	fi
 	bash ./make.bash
 	grep -q 'machine github.com' ~/.netrc && git push -f origin ${GOBRANCH}
 
