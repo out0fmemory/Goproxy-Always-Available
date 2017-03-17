@@ -624,8 +624,10 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		hello.ServerName = cm.hosts[0]
 	}
 
+	hasECC := helpers.HasECCCiphers(hello.CipherSuites)
+
 	cacheKey := hello.ServerName
-	if !helpers.HasECCCiphers(hello.CipherSuites) {
+	if !hasECC {
 		cacheKey += ",rsa"
 	}
 
@@ -640,7 +642,7 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 
 	config := &tls.Config{
 		MaxVersion:               tls.VersionTLS13,
-		MinVersion:               tls.VersionTLS12,
+		MinVersion:               tls.VersionTLS10,
 		Certificates:             []tls.Certificate{*cert},
 		Max0RTTDataSize:          100 * 1024,
 		Accept0RTTData:           true,
