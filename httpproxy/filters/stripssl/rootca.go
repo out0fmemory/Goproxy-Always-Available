@@ -187,7 +187,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 
 	if fs, ok := store.(*storage.FileStore); ok {
 		if storage.NotExist(store, certDir) {
-			if err := os.Mkdir(filepath.Join(fs.Dirname, certDir), 0777); err != nil {
+			if err := os.MkdirAll(filepath.Join(fs.Dirname, certDir), 0777); err != nil {
 				return nil, err
 			}
 		}
