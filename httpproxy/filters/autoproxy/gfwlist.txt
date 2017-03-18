@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: V2R8/qXPCFhn1aARkMtnKg
+! Checksum: t4nutoPiVQX8Vb+ptav7lA
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 08 Mar 2017 21:45:14 -0500
+! Last Modified: Thu, 16 Mar 2017 05:25:42 -0400
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -30,6 +30,7 @@
 ||athenaeizou.com
 ||azubu.tv
 !--||barracuda.com
+||bash-hackers.org
 ||beeg.com
 ||bloombergview.com
 ||boysmaster.com
@@ -87,6 +88,7 @@ share.dmhy.org
 |http://imgmega.com/*.jpeg.html
 |http://imgmega.com/*.png.html
 |http://imgur.com/upload
+|https://imgur.com/upload
 ||javhub.net
 ||javhuge.com
 .javlibrary.com
@@ -113,6 +115,7 @@ share.dmhy.org
 ||kb.monitorware.com
 ||monster.com
 ||moodyz.com
+||msha.gov
 ||muzu.tv
 ||mvg.jp
 ||nationwide.com
@@ -189,6 +192,10 @@ share.dmhy.org
 !-------------Non-Latin Domain Names------------
 ||xn--4gq171p.com
 ||xn--p8j9a0d9c9a.xn--q9jyb4c
+
+!-----------------DNS Poisoning-----------------
+!---Amazon---
+!-||cdn-images.mailchimp.com
 
 !----------------Frauds & Scams-----------------
 china-mmm.jp.net
@@ -405,7 +412,9 @@ d1c37gjwa26taa.cloudfront.net
 
 !!---DynDNS---
 !###https://help.dyn.com/list-of-dyn-dns-pro-remote-access-domain-names/
+.blogdns.org
 .dyndns.org
+.dyndns-ip.com
 .dyndns-pics.com
 .is-a-hunter.com
 
@@ -452,6 +461,7 @@ blogspot.com
 ||chromestatus.com
 ||chromium.org
 ||com.google
+||creativelab5.com
 ||data-vocabulary.org
 ||deepmind.com
 ||deja.com
@@ -527,15 +537,16 @@ blogspot.com
 ||googleartproject.com
 ||googleblog.com
 ||googlebot.com
+||googlecapital.com
 ||googlecode.com
 ||googlecommerce.com
 ||googledomains.com
 ||googleearth.com
 ||googledrive.com
 ||googlegroups.com
-||googlecapital.com
 ||googlehosted.com
 ||googleideas.com
+||googleinsidesearch.com
 ||googlelabs.com
 ||googlemail.com
 ||googleplay.com
@@ -570,11 +581,13 @@ blogspot.com
 ||recaptcha.net
 ||redhotlabs.com
 ||registry.google
+||savethedate.foo
 ||schema.org
 ||shattered.io
 |http://sipml5.org/
 ||stories.google
 ||synergyse.com
+||teachparentstech.org
 ||tensorflow.org
 ||thinkwithgoogle.com
 ||tiltbrush.com
@@ -817,6 +830,7 @@ aliengu.com
 ||allconnected.co
 .alldrawnsex.com
 ||alldrawnsex.com
+.allervpn.com
 ||allfinegirls.com
 .allgirlmassage.com
 allgirlsallowed.org
@@ -1311,6 +1325,7 @@ catholic.org.tw
 !-.ccc.de
 !-||ccc.de
 ||cccat.cc
+||cccat.co
 .ccdtr.org
 ||ccdtr.org
 .cchere.com
@@ -2225,6 +2240,7 @@ whitebear.freebearblog.org
 ||freegao.com
 .free-hada-now.org
 freeilhamtohti.org
+.freekwonpyong.org
 .freelotto.com
 ||freelotto.com
 freeman2.com
@@ -2892,6 +2908,7 @@ hahlo.com
 bbs.hasi.wang
 have8.com
 @@||haygo.com
+.hclips.com
 ||hdtvb.net
 .hdzog.com
 |http://hdzog.com
@@ -2909,6 +2926,7 @@ have8.com
 ||helplinfen.com
 ||helloandroid.com
 ||helloqueer.com
+.helloss.pw
 hellotxt.com
 ||hellotxt.com
 .hentai.to
@@ -2968,6 +2986,8 @@ himalayanglacier.com
 times.hinet.net
 .hitomi.la
 |http://hitomi.la
+.hiwifi.com
+@@||hiwifi.com
 hizbuttahrir.org
 hizb-ut-tahrir.info
 hizb-ut-tahrir.org
@@ -3332,6 +3352,8 @@ jamaat.org
 |http://jamyangnorbu.com
 ||janwongphoto.com
 ||japan-whores.com
+.jav2be.com
+||jav2be.com
 .jav68.tv
 .javhd.com
 .javhip.com
@@ -3474,6 +3496,10 @@ killwall.com
 ||kk-whys.co.jp
 !--||kmt.org.tw
 .knowledgerush.com/kr/encyclopedia
+.kobo.com
+||kobo.com
+.kobobooks.com
+||kobobooks.com
 ||kodingen.com
 @@||www.kodingen.com
 ||kompozer.net
@@ -3571,6 +3597,7 @@ limiao.net
 linkuswell.com
 abitno.linpie.com/use-ipv6-to-fuck-gfw
 ||line.me
+||line-apps.com
 .linglingfa.com
 ||lingvodics.com
 .link-o-rama.com
@@ -3726,6 +3753,7 @@ mcreasite.com
 .meetav.com
 ||meetup.com
 mefeedia.com
+||mega.nz
 ||megaproxy.com
 ||megarotic.com
 megavideo.com
@@ -4020,6 +4048,7 @@ newyorktimes.com
 
 ||nexton-net.jp
 nexttv.com.tw
+.nfjtyd.com
 ||co.ng.mil
 ||nga.mil
 ngensis.com
@@ -4559,6 +4588,7 @@ rcinet.ca
 |http://readydown.com
 .realcourage.org
 .realraptalk.com
+.realsexpass.com
 .recordhistory.org
 .recovery.org.tw
 |http://online.recoveryversion.org
@@ -5894,6 +5924,7 @@ vpnhq.com
 .vporn.com
 ||vporn.com
 .vpser.net
+@@||vpser.net
 vraiesagesse.net
 ||vtunnel.com
 ||vuku.cc
@@ -6259,6 +6290,7 @@ pulse.yahoo.com
 upcoming.yahoo.com
 video.yahoo.com
 ||yahoo.com.hk
+||duckduckgo-owned-server.yahoo.net
 ||yakbutterblues.com
 yam.com
 ||yam.com
