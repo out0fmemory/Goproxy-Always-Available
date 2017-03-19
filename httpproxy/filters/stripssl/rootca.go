@@ -199,7 +199,7 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 }
 
 func (c *RootCA) issueRSA(commonName string, vaildFor time.Duration) error {
-	certFile := c.toFilename(commonName, ".crt")
+	certFile := c.toFilename(commonName, false)
 
 	csrTemplate := &x509.CertificateRequest{
 		Signature: []byte(commonName),
@@ -286,15 +286,15 @@ func GetCommonName(domain string) string {
 	return domain
 }
 
-func (c *RootCA) toFilename(commonName, suffix string) string {
+func (c *RootCA) toFilename(commonName string, ecc bool) string {
 	if strings.HasPrefix(commonName, "*.") {
 		commonName = commonName[1:]
 	}
-	return c.certDir + "/" + commonName + suffix
+	return c.certDir + "/rsa/" + commonName + ".crt"
 }
 
 func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tls.Certificate, error) {
-	certFile := c.toFilename(commonName, ".crt")
+	certFile := c.toFilename(commonName, ecc)
 
 	if storage.NotExist(c.store, certFile) {
 		glog.V(2).Infof("Issue %s certificate for %#v...", c.name, commonName)
