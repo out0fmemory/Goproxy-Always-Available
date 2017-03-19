@@ -2,6 +2,8 @@ package stripssl
 
 import (
 	"bytes"
+	"crypto/ecdsa"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -198,6 +200,71 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 	return rootCA, nil
 }
 
+func (c *RootCA) issueECC(commonName string, vaildFor time.Duration) error {
+	certFile := c.toFilename(commonName, true)
+
+	csrTemplate := &x509.CertificateRequest{
+		Signature: []byte(commonName),
+		Subject: pkix.Name{
+			Country:            []string{"CN"},
+			Organization:       []string{commonName},
+			OrganizationalUnit: []string{c.name},
+			CommonName:         commonName,
+		},
+		DNSNames: []string{commonName},
+	}
+
+	priv, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	if err != nil {
+		return err
+	}
+
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, csrTemplate, priv)
+	if err != nil {
+		return err
+	}
+
+	csr, err := x509.ParseCertificateRequest(csrBytes)
+	if err != nil {
+		return err
+	}
+
+	certTemplate := &x509.Certificate{
+		Subject:            csr.Subject,
+		DNSNames:           []string{commonName},
+		PublicKeyAlgorithm: csr.PublicKeyAlgorithm,
+		PublicKey:          csr.PublicKey,
+		SerialNumber:       big.NewInt(time.Now().UnixNano()),
+		NotBefore:          time.Now().Add(-time.Duration(30 * 24 * time.Hour)),
+		NotAfter:           time.Now().Add(vaildFor),
+		KeyUsage:           x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
+		ExtKeyUsage: []x509.ExtKeyUsage{
+			x509.ExtKeyUsageServerAuth,
+			x509.ExtKeyUsageClientAuth,
+		},
+	}
+
+	certBytes, err := x509.CreateCertificate(rand.Reader, certTemplate, c.ca, csr.PublicKey, c.priv)
+	if err != nil {
+		return err
+	}
+
+	b := new(bytes.Buffer)
+	pem.Encode(b, &pem.Block{Type: "CERTIFICATE", Bytes: certBytes})
+
+	b1, err := x509.MarshalECPrivateKey(priv)
+	if err != nil {
+		return err
+	}
+	pem.Encode(b, &pem.Block{Type: "EC PRIVATE KEY", Bytes: b1})
+
+	if _, err = c.store.Put(certFile, http.Header{}, ioutil.NopCloser(b)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *RootCA) issueRSA(commonName string, vaildFor time.Duration) error {
 	certFile := c.toFilename(commonName, false)
 
@@ -290,7 +357,15 @@ func (c *RootCA) toFilename(commonName string, ecc bool) string {
 	if strings.HasPrefix(commonName, "*.") {
 		commonName = commonName[1:]
 	}
-	return c.certDir + "/rsa/" + commonName + ".crt"
+
+	var sepDir string
+	if ecc {
+		sepDir = "/ecc/"
+	} else {
+		sepDir = "/rsa/"
+	}
+
+	return c.certDir + sepDir + commonName + ".crt"
 }
 
 func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tls.Certificate, error) {
@@ -301,7 +376,15 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tl
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		if storage.NotExist(c.store, certFile) {
-			if err := c.issueRSA(commonName, vaildFor); err != nil {
+			var err error
+
+			if ecc {
+				err = c.issueECC(commonName, vaildFor)
+			} else {
+				err = c.issueRSA(commonName, vaildFor)
+			}
+
+			if err != nil {
 				return nil, err
 			}
 		}
