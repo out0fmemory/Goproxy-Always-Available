@@ -3,7 +3,6 @@
 		"Name": "GoProxy",
 		"Dirname": "cache",
 		"Duration": 31536000,
-		"RSABits": 2048,
 		"Portable": true,
 	},
 	"Ports": [

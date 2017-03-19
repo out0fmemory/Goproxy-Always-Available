@@ -29,7 +29,6 @@ type Config struct {
 		Dirname  string
 		Name     string
 		Duration int
-		RsaBits  int
 		Portable bool
 	}
 	Ports   []int
@@ -68,7 +67,6 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	onceCA.Do(func() {
 		defaultCA, err = NewRootCA(config.RootCA.Name,
 			time.Duration(config.RootCA.Duration)*time.Second,
-			config.RootCA.RsaBits,
 			config.RootCA.Dirname,
 			config.RootCA.Portable)
 		if err != nil {
@@ -190,7 +188,7 @@ func (f *Filter) issue(host string) (_ *tls.Config, err error) {
 	var config interface{}
 	var ok bool
 	if config, ok = f.TLSConfigCache.Get(name); !ok {
-		cert, err := f.CA.Issue(name, f.CAExpiry, f.CA.RsaBits())
+		cert, err := f.CA.Issue(name, f.CAExpiry)
 		if err != nil {
 			return nil, err
 		}

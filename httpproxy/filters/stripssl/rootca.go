@@ -25,12 +25,15 @@ import (
 	"../../storage"
 )
 
+const (
+	rsaBits int = 2048
+)
+
 type RootCA struct {
 	store    storage.Store
 	name     string
 	keyFile  string
 	certFile string
-	rsaBits  int
 	certDir  string
 	mu       *sync.Mutex
 
@@ -39,7 +42,7 @@ type RootCA struct {
 	derBytes []byte
 }
 
-func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string, portable bool) (*RootCA, error) {
+func NewRootCA(name string, vaildFor time.Duration, certDir string, portable bool) (*RootCA, error) {
 	keyFile := name + ".key"
 	certFile := name + ".crt"
 
@@ -59,7 +62,6 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 		name:     name,
 		keyFile:  keyFile,
 		certFile: certFile,
-		rsaBits:  rsaBits,
 		certDir:  certDir,
 		mu:       new(sync.Mutex),
 	}
@@ -196,7 +198,7 @@ func NewRootCA(name string, vaildFor time.Duration, rsaBits int, certDir string,
 	return rootCA, nil
 }
 
-func (c *RootCA) issue(commonName string, vaildFor time.Duration, rsaBits int) error {
+func (c *RootCA) issue(commonName string, vaildFor time.Duration) error {
 	certFile := c.toFilename(commonName, ".crt")
 
 	csrTemplate := &x509.CertificateRequest{
@@ -284,10 +286,6 @@ func GetCommonName(domain string) string {
 	return domain
 }
 
-func (c *RootCA) RsaBits() int {
-	return c.rsaBits
-}
-
 func (c *RootCA) toFilename(commonName, suffix string) string {
 	if strings.HasPrefix(commonName, "*.") {
 		commonName = commonName[1:]
@@ -295,7 +293,7 @@ func (c *RootCA) toFilename(commonName, suffix string) string {
 	return c.certDir + "/" + commonName + suffix
 }
 
-func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (*tls.Certificate, error) {
+func (c *RootCA) Issue(commonName string, vaildFor time.Duration) (*tls.Certificate, error) {
 	certFile := c.toFilename(commonName, ".crt")
 
 	if storage.NotExist(c.store, certFile) {
@@ -303,7 +301,7 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, rsaBits int) (
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		if storage.NotExist(c.store, certFile) {
-			if err := c.issue(commonName, vaildFor, rsaBits); err != nil {
+			if err := c.issue(commonName, vaildFor); err != nil {
 				return nil, err
 			}
 		}
