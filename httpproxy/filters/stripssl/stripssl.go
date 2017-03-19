@@ -145,7 +145,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 	var c net.Conn = conn
 	if needStripSSL {
-		config, err := f.issue(req.Host)
+		config, err := f.issue(req)
 		if err != nil {
 			conn.Close()
 			return ctx, nil, err
@@ -178,17 +178,20 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	return ctx, filters.DummyRequest, nil
 }
 
-func (f *Filter) issue(host string) (_ *tls.Config, err error) {
+func (f *Filter) issue(req *http.Request) (_ *tls.Config, err error) {
+	host := req.Host
+
 	if h, _, err := net.SplitHostPort(host); err == nil {
 		host = h
 	}
 
 	name := GetCommonName(host)
+	ecc := false
 
 	var config interface{}
 	var ok bool
 	if config, ok = f.TLSConfigCache.Get(name); !ok {
-		cert, err := f.CA.Issue(name, f.CAExpiry)
+		cert, err := f.CA.Issue(name, f.CAExpiry, ecc)
 		if err != nil {
 			return nil, err
 		}

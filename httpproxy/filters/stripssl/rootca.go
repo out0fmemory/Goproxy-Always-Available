@@ -198,7 +198,7 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 	return rootCA, nil
 }
 
-func (c *RootCA) issue(commonName string, vaildFor time.Duration) error {
+func (c *RootCA) issueRSA(commonName string, vaildFor time.Duration) error {
 	certFile := c.toFilename(commonName, ".crt")
 
 	csrTemplate := &x509.CertificateRequest{
@@ -293,7 +293,7 @@ func (c *RootCA) toFilename(commonName, suffix string) string {
 	return c.certDir + "/" + commonName + suffix
 }
 
-func (c *RootCA) Issue(commonName string, vaildFor time.Duration) (*tls.Certificate, error) {
+func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tls.Certificate, error) {
 	certFile := c.toFilename(commonName, ".crt")
 
 	if storage.NotExist(c.store, certFile) {
@@ -301,7 +301,7 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration) (*tls.Certific
 		c.mu.Lock()
 		defer c.mu.Unlock()
 		if storage.NotExist(c.store, certFile) {
-			if err := c.issue(commonName, vaildFor); err != nil {
+			if err := c.issueRSA(commonName, vaildFor); err != nil {
 				return nil, err
 			}
 		}
