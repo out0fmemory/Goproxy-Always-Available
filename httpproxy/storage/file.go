@@ -91,7 +91,7 @@ func (s *FileStore) Put(name string, header http.Header, data io.ReadCloser) (*h
 
 	filename := filepath.Join(s.Dirname, name)
 
-	if err := os.MkdirAll(filepath.Dir(filename), 0644); err != nil {
+	if err := os.MkdirAll(filepath.Dir(filename), 0755); err != nil {
 		return nil, err
 	}
 
