@@ -145,10 +145,43 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 
 	var c net.Conn = conn
 	if needStripSSL {
-		config, err := f.issue(req)
-		if err != nil {
-			conn.Close()
-			return ctx, nil, err
+		GetConfigForClient := func(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+			host := req.Host
+
+			if h, _, err := net.SplitHostPort(host); err == nil {
+				host = h
+			}
+
+			name := GetCommonName(host)
+			ecc := helpers.HasECCCiphers(hello.CipherSuites)
+
+			var cacheKey string
+			if ecc {
+				cacheKey = name
+			} else {
+				cacheKey = name + ",rsa"
+			}
+
+			var config interface{}
+			var ok bool
+			if config, ok = f.TLSConfigCache.Get(cacheKey); !ok {
+				cert, err := f.CA.Issue(name, f.CAExpiry, ecc)
+				if err != nil {
+					return nil, err
+				}
+				config = &tls.Config{
+					Certificates:             []tls.Certificate{*cert},
+					MaxVersion:               tls.VersionTLS13,
+					MinVersion:               tls.VersionTLS10,
+					PreferServerCipherSuites: true,
+				}
+				f.TLSConfigCache.Set(cacheKey, config, time.Now().Add(f.CAExpiry))
+			}
+			return config.(*tls.Config), nil
+		}
+
+		config := &tls.Config{
+			GetConfigForClient: GetConfigForClient,
 		}
 
 		tlsConn := tls.Server(conn, config)
@@ -176,32 +209,4 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 	go helpers.IOCopy(c, loConn)
 
 	return ctx, filters.DummyRequest, nil
-}
-
-func (f *Filter) issue(req *http.Request) (_ *tls.Config, err error) {
-	host := req.Host
-
-	if h, _, err := net.SplitHostPort(host); err == nil {
-		host = h
-	}
-
-	name := GetCommonName(host)
-	ecc := false
-
-	var config interface{}
-	var ok bool
-	if config, ok = f.TLSConfigCache.Get(name); !ok {
-		cert, err := f.CA.Issue(name, f.CAExpiry, ecc)
-		if err != nil {
-			return nil, err
-		}
-		config = &tls.Config{
-			Certificates:             []tls.Certificate{*cert},
-			MaxVersion:               tls.VersionTLS13,
-			MinVersion:               tls.VersionTLS10,
-			PreferServerCipherSuites: true,
-		}
-		f.TLSConfigCache.Set(name, config, time.Now().Add(f.CAExpiry))
-	}
-	return config.(*tls.Config), nil
 }
