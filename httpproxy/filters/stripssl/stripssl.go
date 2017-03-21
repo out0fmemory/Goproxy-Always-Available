@@ -30,7 +30,6 @@ type Config struct {
 		Name     string
 		Duration int
 		Portable bool
-		ECC      bool
 	}
 	Ports   []int
 	Ignores []string
@@ -40,7 +39,6 @@ type Config struct {
 type Filter struct {
 	Config
 	CA             *RootCA
-	ECC            bool
 	CAExpiry       time.Duration
 	TLSConfigCache lrucache.Cache
 	Ports          map[string]struct{}
@@ -79,7 +77,6 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 	f := &Filter{
 		Config:         *config,
 		CA:             defaultCA,
-		ECC:            config.RootCA.ECC,
 		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
 		Ports:          make(map[string]struct{}),
@@ -189,7 +186,7 @@ func (f *Filter) issue(req *http.Request) (_ *tls.Config, err error) {
 	}
 
 	name := GetCommonName(host)
-	ecc := f.ECC
+	ecc := false
 
 	var config interface{}
 	var ok bool

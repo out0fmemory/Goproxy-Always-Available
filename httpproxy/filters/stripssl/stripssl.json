@@ -4,7 +4,6 @@
 		"Dirname": "cache",
 		"Duration": 31536000,
 		"Portable": true,
-		"ECC": false,
 	},
 	"Ports": [
 		443,
