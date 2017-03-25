@@ -524,7 +524,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				// f.MultiDialer.ClearCache()
 				helpers.CloseConnections(tr)
 			}
-			if ne, ok := err.(*net.OpError); ok {
+			if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
 				if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
 					if f.GAETransport.MultiDialer != nil {
 						duration := 5 * time.Minute
