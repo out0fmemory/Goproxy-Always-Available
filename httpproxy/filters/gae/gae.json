@@ -54,6 +54,7 @@
 		// "*.youtube.com": "google_hk",
 	},
 	"ForceGAE": [
+		"appengine.google.com",
 		"books.google.com",
 		"business.google.com",
 		"clients1.google.com",
