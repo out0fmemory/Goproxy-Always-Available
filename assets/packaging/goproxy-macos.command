@@ -370,7 +370,7 @@ def precheck():
     if not has_user_json:
         alert = NSAlert.alloc().init()
         alert.setMessageText_('Please configure your goproxy at first.')
-        alert.setInformativeText_('e.g. add a new gae.user.json')
+        alert.setInformativeText_('For example, add a new gae.user.json')
         alert.setAlertStyle_(NSWarningAlertStyle)
         alert.addButtonWithTitle_('OK')
         NSApp.activateIgnoringOtherApps_(True)
