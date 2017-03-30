@@ -142,6 +142,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				return resp1, nil
 			}
 		default:
+			if resp1.Header.Get("Content-Encoding") == "br" {
+				resp1.Header.Del("Content-Encoding")
+			}
 			return resp1, nil
 		}
 	}
