@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/phuslu/glog"
@@ -143,24 +142,6 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				return resp1, nil
 			}
 		default:
-			if resp1.Header.Get("Content-Encoding") == "br" &&
-				strings.HasPrefix(resp1.Header.Get("Content-Type"), "text/html") &&
-				resp1.Body != nil {
-				b := make([]byte, 64)
-
-				n, err := resp1.Body.Read(b)
-				if err != nil {
-					return nil, err
-				}
-
-				b1 := b[:n]
-
-				if !helpers.IsBinary(b[:n]) {
-					resp1.Header.Del("Content-Encoding")
-				}
-
-				resp1.Body = helpers.NewMultiReadCloser(bytes.NewReader(b1), resp1.Body)
-			}
 			return resp1, nil
 		}
 	}
