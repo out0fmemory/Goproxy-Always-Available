@@ -103,8 +103,9 @@ rm -f ${FILENAME%.*}
 if [ ! -f goproxy-vps.user.toml ]; then
         echo "4. Configure goproxy-vps"
 
-        read -ep "Please input your domain: " server_name </dev/tty
-        read -ep "Enable PAM Auth for goproxy-vps? [y/N]:" pam_auth </dev/tty
+        read_p=$(test -n "$BASH_VERSION" && echo 'read -ep' || echo 'read -p')
+        $read_p "Please input your domain: " server_name </dev/tty
+        $read_p "Enable PAM Auth for goproxy-vps? [y/N]:" pam_auth </dev/tty
 
         cat <<EOF >goproxy-vps.toml
 [default]
