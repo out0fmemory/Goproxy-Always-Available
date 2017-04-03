@@ -3,6 +3,7 @@
 import sys
 import ctypes
 import ctypes.util
+import commands
 
 class PamHandle(ctypes.Structure):
     """wrapper class for pam_handle_t pointer"""
@@ -159,15 +160,18 @@ class pam():
 
         return auth_success
 
-
-def authenticate(mode, *args, **kwargs):
+def authenticate(mode, username, password):
     """
     Compatibility function for older versions of python-pam.
     """
     if mode == 'pam':
         p = pam()
-        p.authenticate(*args, **kwargs)
+        p.authenticate(username, password)
         return p.code, p.reason
+    elif mode == 'htpasswd':
+        cmd = 'htpasswd -vb htpasswd.txt "%s" "%s"' % (username, password)
+        code, reason = commands.getstatusoutput(cmd)
+        return code, reason.strip()
     else:
         return 127, 'Unknown auth method: {}'.format(mode)
 
@@ -178,4 +182,3 @@ if __name__ == "__main__":
     code, reason = authenticate(mode, username, password)
     sys.stderr.write(reason)
     sys.exit(code)
-
