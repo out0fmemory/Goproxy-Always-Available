@@ -22,10 +22,6 @@ if [ -f "httpproxy.json" ]; then
 	fi
 fi
 
-if [ -d cache ]; then
-	rm -rf $(find cache -name "*.crt" -mtime +90)
-fi
-
 FILENAME_PREFIX=
 case $(uname -s)/$(uname -m) in
 	Linux/x86_64 )
