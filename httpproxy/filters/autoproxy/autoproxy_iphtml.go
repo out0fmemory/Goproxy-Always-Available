@@ -57,7 +57,7 @@ func (f *Filter) IPHTMLRoundTrip(ctx context.Context, req *http.Request) (contex
 		//rawips := req.FormValue("rawips")
 		jsonips := req.FormValue("jsonips")
 		filename := "gae.user.json"
-		if storage.NotExist(store, filename) {
+		if storage.IsNotExist(store.Head(filename)) {
 			filename = "gae.json"
 		}
 		if len(jsonips) > 0 {

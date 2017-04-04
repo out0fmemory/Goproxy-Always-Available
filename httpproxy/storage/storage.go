@@ -48,7 +48,6 @@ func LookupStoreByFilterName(name string) Store {
 	return store
 }
 
-func NotExist(store Store, name string) bool {
-	resp, err := store.Head(name)
+func IsNotExist(resp *http.Response, err error) bool {
 	return os.IsNotExist(err) || (resp != nil && resp.StatusCode == http.StatusNotFound)
 }

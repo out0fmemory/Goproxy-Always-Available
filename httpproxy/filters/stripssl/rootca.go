@@ -68,7 +68,7 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 		mu:       new(sync.Mutex),
 	}
 
-	if storage.NotExist(store, certFile) {
+	if storage.IsNotExist(store.Head(certFile)) {
 		glog.Infof("Generating RootCA for %s/%s", keyFile, certFile)
 		template := x509.Certificate{
 			IsCA:         true,
@@ -190,7 +190,7 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 	}
 
 	if fs, ok := store.(*storage.FileStore); ok {
-		if storage.NotExist(store, certDir) {
+		if storage.IsNotExist(store.Head(certDir)) {
 			if err := os.MkdirAll(filepath.Join(fs.Dirname, certDir), 0777); err != nil {
 				return nil, err
 			}
@@ -371,11 +371,11 @@ func (c *RootCA) toFilename(commonName string, ecc bool) string {
 func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tls.Certificate, error) {
 	certFile := c.toFilename(commonName, ecc)
 
-	if storage.NotExist(c.store, certFile) {
+	if storage.IsNotExist(c.store.Head(certFile)) {
 		glog.V(2).Infof("Issue %s certificate for %#v...", c.name, commonName)
 		c.mu.Lock()
 		defer c.mu.Unlock()
-		if storage.NotExist(c.store, certFile) {
+		if storage.IsNotExist(c.store.Head(certFile)) {
 			var err error
 
 			if ecc {
