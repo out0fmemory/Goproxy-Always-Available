@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
 	"flag"
 	"fmt"
 	"math/rand"
@@ -25,7 +24,7 @@ import (
 
 var (
 	version  = "r9999"
-	tls13rev = tls.TLS13Reversion
+	tls13rev = "?????"
 	http2rev = "?????"
 )
 

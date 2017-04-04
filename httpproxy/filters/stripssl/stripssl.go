@@ -171,7 +171,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 				}
 				config = &tls.Config{
 					Certificates:             []tls.Certificate{*cert},
-					MaxVersion:               tls.VersionTLS13,
+					MaxVersion:               tls.VersionTLS12,
 					MinVersion:               tls.VersionTLS10,
 					PreferServerCipherSuites: true,
 				}
