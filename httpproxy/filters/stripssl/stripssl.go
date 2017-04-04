@@ -175,7 +175,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 					MinVersion:               tls.VersionTLS10,
 					PreferServerCipherSuites: true,
 				}
-				f.TLSConfigCache.Set(cacheKey, config, time.Now().Add(f.CAExpiry))
+				f.TLSConfigCache.Set(cacheKey, config, time.Now().Add(7*24*time.Hour))
 			}
 			return config.(*tls.Config), nil
 		}
