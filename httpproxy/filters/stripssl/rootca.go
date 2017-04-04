@@ -384,7 +384,6 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tl
 	case storage.IsNotExist(resp, err):
 		glog.V(2).Infof("Issue %s certificate for %#v...", c.name, commonName)
 		c.mu.Lock()
-		defer c.mu.Unlock()
 		if storage.IsNotExist(c.store.Head(certFile)) {
 			var err error
 
@@ -394,13 +393,14 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tl
 				err = c.issueRSA(commonName, vaildFor)
 			}
 			if err != nil {
+				c.mu.Unlock()
 				return nil, err
 			}
-
-			resp, err = c.store.Get(certFile)
-			if err != nil {
-				return nil, err
-			}
+		}
+		c.mu.Unlock()
+		resp, err = c.store.Get(certFile)
+		if err != nil {
+			return nil, err
 		}
 	case err != nil:
 		return nil, err
