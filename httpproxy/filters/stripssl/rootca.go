@@ -371,7 +371,17 @@ func (c *RootCA) toFilename(commonName string, ecc bool) string {
 func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tls.Certificate, error) {
 	certFile := c.toFilename(commonName, ecc)
 
-	if storage.IsNotExist(c.store.Head(certFile)) {
+	resp, err := c.store.Get(certFile)
+	switch {
+	case err == nil && resp.StatusCode == http.StatusOK:
+		t, err := time.Parse(storage.DateFormat, resp.Header.Get("Last-Modified"))
+		if err == nil && time.Now().Sub(t) < 3*30*24*time.Hour {
+			break
+		}
+		resp.Body.Close()
+		c.store.Delete(certFile)
+		fallthrough
+	case storage.IsNotExist(resp, err):
 		glog.V(2).Infof("Issue %s certificate for %#v...", c.name, commonName)
 		c.mu.Lock()
 		defer c.mu.Unlock()
@@ -383,19 +393,20 @@ func (c *RootCA) Issue(commonName string, vaildFor time.Duration, ecc bool) (*tl
 			} else {
 				err = c.issueRSA(commonName, vaildFor)
 			}
+			if err != nil {
+				return nil, err
+			}
 
+			resp, err = c.store.Get(certFile)
 			if err != nil {
 				return nil, err
 			}
 		}
-	}
-
-	resp, err := c.store.Get(certFile)
-	if err != nil {
+	case err != nil:
 		return nil, err
 	}
-	defer resp.Body.Close()
 
+	defer resp.Body.Close()
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
