@@ -89,6 +89,17 @@ function build_go() {
 	popd
 }
 
+function rebuild_go_with_tls13() {
+	pushd ${WORKING_DIR}
+
+	cd go/src
+	git cherry-pick $(git log -1 --oneline --format="%h" origin/tls13)
+	bash ./make.bash
+	grep -q 'machine github.com' ~/.netrc && git push -f origin HEAD:tls13
+
+	popd
+}
+
 function build_glog() {
 	pushd ${WORKING_DIR}
 
@@ -359,6 +370,7 @@ build_glog
 build_http2
 build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
+	rebuild_go_with_tls13
 	build_repo_ex
 	release_github
 	release_sourceforge
