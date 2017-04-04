@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -30,7 +31,6 @@ import (
 	"github.com/phuslu/goproxy/httpproxy/proxy"
 	"github.com/phuslu/net/http2"
 	"golang.org/x/crypto/acme/autocert"
-	"golang.org/x/net/context"
 )
 
 var (
