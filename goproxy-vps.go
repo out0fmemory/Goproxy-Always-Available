@@ -69,7 +69,7 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 	return tc, nil
 }
 
-type SimplePAM struct {
+type SimpleAuth struct {
 	CacheSize uint
 
 	path  string
@@ -77,7 +77,7 @@ type SimplePAM struct {
 	once  sync.Once
 }
 
-func (p *SimplePAM) init() {
+func (p *SimpleAuth) init() {
 	p.cache = lrucache.NewLRUCache(p.CacheSize)
 
 	exe, err := os.Executable()
@@ -95,7 +95,7 @@ func (p *SimplePAM) init() {
 	}
 }
 
-func (p *SimplePAM) Authenticate(username, password string) error {
+func (p *SimpleAuth) Authenticate(username, password string) error {
 	p.once.Do(p.init)
 
 	auth := username + ":" + password
@@ -109,7 +109,7 @@ func (p *SimplePAM) Authenticate(username, password string) error {
 	err := cmd.Run()
 
 	if err != nil {
-		glog.Warningf("SimplePAM: username=%v password=%v error: %+v", username, password, err)
+		glog.Warningf("SimpleAuth: username=%v password=%v error: %+v", username, password, err)
 		time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
 		return err
 	}
@@ -121,7 +121,7 @@ func (p *SimplePAM) Authenticate(username, password string) error {
 type HTTPHandler struct {
 	Dial func(network, address string) (net.Conn, error)
 	*http.Transport
-	*SimplePAM
+	*SimpleAuth
 }
 
 func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -139,7 +139,7 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	if h.SimplePAM != nil {
+	if h.SimpleAuth != nil {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -155,7 +155,7 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 					username := parts[0]
 					password := parts[1]
 
-					if err := h.SimplePAM.Authenticate(username, password); err != nil {
+					if err := h.SimpleAuth.Authenticate(username, password); err != nil {
 						http.Error(rw, "403 Forbidden", http.StatusForbidden)
 					}
 				}
@@ -282,7 +282,7 @@ type HTTP2Handler struct {
 	DisableProxy bool
 	Dial         func(network, address string) (net.Conn, error)
 	*http.Transport
-	*SimplePAM
+	*SimpleAuth
 }
 
 func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
@@ -314,7 +314,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	var username, password string
-	if isProxyRequest && h.SimplePAM != nil {
+	if isProxyRequest && h.SimpleAuth != nil {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -330,7 +330,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 					username = parts[0]
 					password = parts[1]
 
-					if err := h.SimplePAM.Authenticate(username, password); err != nil {
+					if err := h.SimpleAuth.Authenticate(username, password); err != nil {
 						http.Error(rw, "403 Forbidden", http.StatusForbidden)
 					}
 				}
@@ -852,7 +852,7 @@ func main() {
 			if _, err := exec.LookPath("python"); err != nil {
 				glog.Fatalf("pam: exec.LookPath(\"python\") error: %+v", err)
 			}
-			handler.SimplePAM = &SimplePAM{
+			handler.SimpleAuth = &SimpleAuth{
 				CacheSize: 2048,
 			}
 		case "":
@@ -944,7 +944,7 @@ func main() {
 			if _, err := exec.LookPath("python"); err != nil {
 				glog.Fatalf("pam: exec.LookPath(\"python\") error: %+v", err)
 			}
-			handler.SimplePAM = &SimplePAM{
+			handler.SimpleAuth = &SimpleAuth{
 				CacheSize: 2048,
 			}
 		case "":
