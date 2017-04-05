@@ -106,7 +106,7 @@ func (p *SimpleAuth) Authenticate(username, password string) error {
 	}
 
 	cmd := exec.Command(p.path, p.Mode)
-	glog.Info("SimpleAuth exec cmd=%#v", cmd)
+	//glog.Infof("SimpleAuth exec cmd=%#v", cmd)
 	cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
 	err := cmd.Run()
 
