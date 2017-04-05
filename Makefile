@@ -5,7 +5,7 @@ PACKAGE = goproxy-vps
 GOOS ?= $(shell go env GOOS)
 GOARCH ?= $(shell go env GOARCH)
 GOEXE ?= $(shell test $(GOOS) = "windows" && echo ".exe")
-CGO_ENABLED ?= 0
+CGO_ENABLED = 0
 GOARM ?= 5
 
 ifeq ($(GOOS), windows)
