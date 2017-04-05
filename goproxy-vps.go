@@ -70,6 +70,7 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 }
 
 type SimpleAuth struct {
+	Mode      string
 	CacheSize uint
 
 	path  string
@@ -98,13 +99,14 @@ func (p *SimpleAuth) init() {
 func (p *SimpleAuth) Authenticate(username, password string) error {
 	p.once.Do(p.init)
 
-	auth := username + ":" + password
+	auth := p.Mode + ":" + username + ":" + password
 
 	if _, ok := p.cache.GetNotStale(auth); ok {
 		return nil
 	}
 
-	cmd := exec.Command(p.path)
+	cmd := exec.Command(p.path, p.Mode)
+	glog.Info("SimpleAuth exec cmd=%#v", cmd)
 	cmd.Stdin = strings.NewReader(username + "\n" + password + "\n")
 	err := cmd.Run()
 
@@ -848,11 +850,12 @@ func main() {
 		}
 
 		switch server.ProxyAuthMethod {
-		case "pam":
+		case "pam", "htpasswd":
 			if _, err := exec.LookPath("python"); err != nil {
 				glog.Fatalf("pam: exec.LookPath(\"python\") error: %+v", err)
 			}
 			handler.SimpleAuth = &SimpleAuth{
+				Mode:      server.ProxyAuthMethod,
 				CacheSize: 2048,
 			}
 		case "":
