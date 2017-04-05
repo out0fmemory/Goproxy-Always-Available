@@ -105,6 +105,11 @@ def pwauth_pam_authenticate(username, password, service='login'):
     return retval, pam_strerror(handle, retval)
 
 
+def pwauth_htpasswd_authenticate(username, password, passwordfile='htpasswd.txt'):
+    cmd = 'htpasswd -vb "%s" "%s" "%s"' % (passwordfile, username, password)
+    status, output = commands.getstatusoutput(cmd)
+    return status, output.strip()
+
 def authenticate(mode, username, password):
     """
     Compatibility function for older versions of python-pam.
@@ -112,8 +117,7 @@ def authenticate(mode, username, password):
     if mode == 'pam':
         return pwauth_pam_authenticate(username, password)
     elif mode == 'htpasswd':
-        cmd = 'htpasswd -vb htpasswd.txt "%s" "%s"' % (username, password)
-        return commands.getstatusoutput(cmd)
+        return pwauth_htpasswd_authenticate(username, password)
     else:
         return 127, 'Unknown auth method: {}'.format(mode)
 
