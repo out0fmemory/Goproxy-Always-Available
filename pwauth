@@ -101,8 +101,9 @@ def pwauth_pam_authenticate(username, password, service='login'):
     retval = pam_authenticate(handle, 0)
     if retval == 0:
         pam_setcred(handle, PAM_REINITIALIZE_CRED);
+    reason = pam_strerror(handle, retval)
     pam_end(handle, retval)
-    return retval, pam_strerror(handle, retval)
+    return retval, reason
 
 
 def pwauth_htpasswd_authenticate(username, password, passwordfile='htpasswd.txt'):
