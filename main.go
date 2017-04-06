@@ -24,7 +24,6 @@ import (
 
 var (
 	version  = "r9999"
-	tls13rev = "?????"
 	http2rev = "?????"
 )
 
