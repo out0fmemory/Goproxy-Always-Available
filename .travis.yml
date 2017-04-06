@@ -3,10 +3,6 @@ sudo: false
 
 language: bash
 
-env:
-  global:
-    - GOBRANCH=master
-
 script:
   - cd /tmp
   - bash -xe < <(curl -kL https://github.com/phuslu/goproxy/raw/master/assets/build/ci.sh)

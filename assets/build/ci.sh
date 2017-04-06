@@ -12,8 +12,7 @@ export GOROOT_BOOTSTRAP=${WORKING_DIR}/goroot_bootstrap
 export GOROOT=${WORKING_DIR}/go
 export GOPATH=${WORKING_DIR}/gopath
 export PATH=$GOROOT/bin:$GOPATH/bin:$PATH
-export GOBRANCH=${GOBRANCH:-master}
-export GOBRANCH_FOLLOW=${GOBRANCH_FOLLOW:-true}
+export GOTIP_FOLLOW=${GOTIP_FOLLOW:-true}
 
 if [ ${#GITHUB_TOKEN} -eq 0 ]; then
 	echo "WARNING: \$GITHUB_TOKEN is not set!"
@@ -64,14 +63,14 @@ function build_go() {
 	curl -k https://storage.googleapis.com/golang/go1.4.3.linux-amd64.tar.gz | tar xz
 	mv go goroot_bootstrap
 
-	git clone --branch ${GOBRANCH} https://github.com/phuslu/go
+	git clone --branch master https://github.com/phuslu/go
 	cd go/src
-	if [ "${GOBRANCH_FOLLOW}" = "true" ]; then
+	if [ "${GOTIP_FOLLOW}" = "true" ]; then
 		git remote add -f upstream https://github.com/golang/go
-		git rebase upstream/${GOBRANCH}
+		git rebase upstream/master
 	fi
 	bash ./make.bash
-	grep -q 'machine github.com' ~/.netrc && git push -f origin ${GOBRANCH}
+	grep -q 'machine github.com' ~/.netrc && git push -f origin master
 
 	set +ex
 	echo '================================================================================'
@@ -261,7 +260,7 @@ function build_repo_ex() {
 	git fetch origin server.vps
 	git reset --hard origin/server.vps
 
-	git clone --branch ${GOBRANCH} https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
+	git clone --branch master https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
 	for OSARCH in linux/amd64 linux/386 linux/arm64 linux/arm linux/mips linux/mipsle windows/amd64 darwin/amd64
