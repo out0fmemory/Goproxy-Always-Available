@@ -106,6 +106,7 @@ def pwauth_pam_authenticate(username, password, service='login'):
 
 
 def pwauth_htpasswd_authenticate(username, password, passwordfile='htpasswd.txt'):
+    passwordfile = next((x for x in (passwordfile, '.htpasswd', 'htpasswd', 'passwordfile') if os.path.isfile(x)), passwordfile)
     cmd = 'htpasswd -vb "%s" "%s" "%s"' % (passwordfile, username, password)
     status, output = commands.getstatusoutput(cmd)
     return status, output.strip()
