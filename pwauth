@@ -110,17 +110,14 @@ def pwauth_pam_authenticate(username, password, service='login'):
 def pwauth_htpasswd_authenticate(username, password, passwordfile='htpasswd.txt'):
     libaprutil = ctypes.CDLL(ctypes.util.find_library("aprutil-1"))
     passwordfile = next((x for x in (passwordfile, '.htpasswd', 'htpasswd', 'passwordfile') if os.path.isfile(x)), passwordfile)
-    info = dict(x.strip().split(':', 1) for x in open(passwordfile))
-    if username not in info:
+    hashstr = next((b for a, b in (x.strip().split(':', 1) for x in open(passwordfile)) if a == username), '')
+    if not hashstr:
         return 0x1, 'username %r not exists in %r' % (username, passwordfile)
-    retval = libaprutil.apr_password_validate(password, info[username])
+    retval = libaprutil.apr_password_validate(password, hashstr)
     reason = 'Success' if retval == 0 else 'Errno=%r' % retval
     return retval, reason
 
 def authenticate(mode, username, password):
-    """
-    Compatibility function for older versions of python-pam.
-    """
     if mode == 'pam':
         return pwauth_pam_authenticate(username, password)
     elif mode == 'htpasswd':
