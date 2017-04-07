@@ -9,7 +9,7 @@ server_name = ["example.org"]
 proxy_fallback = "http://127.0.0.1:80"
 client_auth_pem = """"""
 
-[[http2]]
+[[https]]
 listen = ":443"
 server_name = ["proxy.example.org"]
 proxy_fallback = "file:///var/www/html"
