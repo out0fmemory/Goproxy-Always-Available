@@ -92,9 +92,14 @@ function rebuild_go_with_tls13() {
 	pushd ${WORKING_DIR}
 
 	cd go/src
-	git cherry-pick $(git log -1 --oneline --format="%h" origin/tls13)
-	bash ./make.bash
-	grep -q 'machine github.com' ~/.netrc && git push -f origin HEAD:tls13
+
+	if git log --oneline -5 master | grep 'tls-tris' 2>&1 >/dev/null; then
+		echo 'tls-tris already land on master'
+	else
+		git cherry-pick $(git log -1 --oneline --format="%h" origin/tls13)
+		bash ./make.bash
+		grep -q 'machine github.com' ~/.netrc && git push -f origin HEAD:tls13
+	fi
 
 	popd
 }
