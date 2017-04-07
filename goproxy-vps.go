@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -512,12 +513,13 @@ type CertManager struct {
 	hosts  []string
 	certs  map[string]*tls.Certificate
 	cpools map[string]*x509.CertPool
+	h2     map[string]struct{}
 	ecc    *autocert.Manager
 	rsa    *autocert.Manager
 	cache  lrucache.Cache
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, h2 bool) error {
 	var err error
 
 	if cm.ecc == nil {
@@ -539,6 +541,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 
 	if cm.certs == nil {
 		cm.certs = make(map[string]*tls.Certificate)
+	}
+
+	if cm.h2 == nil {
+		cm.h2 = make(map[string]struct{})
 	}
 
 	if cm.cpools == nil {
@@ -584,6 +590,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 		certPool.AddCert(cert)
 
 		cm.cpools[host] = certPool
+	}
+
+	if h2 {
+		cm.h2[host] = struct{}{}
 	}
 
 	cm.hosts = append(cm.hosts, host)
@@ -652,12 +662,15 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		Accept0RTTData:           true,
 		AllowShortHeaders:        true,
 		PreferServerCipherSuites: true,
-		NextProtos:               []string{"h2", "http/1.1"},
 	}
 
 	if p, ok := cm.cpools[hello.ServerName]; ok {
 		config.ClientAuth = tls.RequireAndVerifyClientCert
 		config.ClientCAs = p
+	}
+
+	if _, ok := cm.h2[hello.ServerName]; ok {
+		config.NextProtos = []string{"h2", "http/1.1"}
 	}
 
 	cm.cache.Set(cacheKey, config, time.Now().Add(2*time.Hour))
@@ -672,6 +685,8 @@ type Config struct {
 		RejectNilSni bool
 	}
 	HTTP2 []struct {
+		DisableHttp2 bool
+
 		Network string
 		Listen  string
 
@@ -767,6 +782,9 @@ func main() {
 			glog.Fatalf("ioutil.ReadFile(%+v) error: %+v", filename, err)
 		}
 	}
+
+	tomlData = bytes.Replace(tomlData, []byte("\r\n"), []byte("\n"), -1)
+	tomlData = bytes.Replace(tomlData, []byte("\n[[https]]"), []byte("\n[[http2]]\ndisable_http2=true"), -1)
 
 	var config Config
 	if err = toml.Unmarshal(tomlData, &config); err != nil {
@@ -867,7 +885,7 @@ func main() {
 		}
 
 		for _, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, !server.DisableHttp2)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 		}
