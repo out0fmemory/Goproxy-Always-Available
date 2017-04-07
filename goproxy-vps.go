@@ -8,6 +8,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
+	"encoding/binary"
 	"errors"
 	"flag"
 	"fmt"
@@ -20,6 +21,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -509,6 +511,7 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 
 type CertManager struct {
 	RejectNilSni bool
+	Dial         func(network, addr string) (net.Conn, error)
 
 	hosts  []string
 	certs  map[string]*tls.Certificate
@@ -517,6 +520,7 @@ type CertManager struct {
 	ecc    *autocert.Manager
 	rsa    *autocert.Manager
 	cache  lrucache.Cache
+	sni    map[string]string
 }
 
 func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, h2 bool) error {
@@ -601,6 +605,22 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 	return nil
 }
 
+func (cm *CertManager) AddSniProxy(serverNames []string, host string, port int) error {
+	if cm.sni == nil {
+		cm.sni = make(map[string]string)
+	}
+
+	portStr := "443"
+	if port != 0 {
+		portStr = strconv.Itoa(port)
+	}
+	for _, name := range serverNames {
+		cm.sni[name] = net.JoinHostPort(host, portStr)
+	}
+
+	return nil
+}
+
 func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
 	if _, ok := cm.certs[host]; !ok {
 		return errors.New("acme/autocert: host not configured")
@@ -629,7 +649,42 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 	return cm.rsa.GetCertificate(hello)
 }
 
+type preReaderConn struct {
+	net.Conn
+	data []byte
+}
+
+func (r *preReaderConn) Read(b []byte) (int, error) {
+	if r.data == nil {
+		return r.Conn.Read(b)
+	} else {
+		n := copy(b, r.data)
+		if n < len(r.data) {
+			r.data = r.data[n:]
+		} else {
+			r.data = nil
+		}
+		return n, nil
+	}
+}
+
 func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
+	if addr, ok := cm.sni[hello.ServerName]; ok {
+		remote, err := cm.Dial("tcp", addr)
+		if err != nil {
+			return nil, err
+		}
+		b := new(bytes.Buffer)
+		b.Write([]byte{0x16, 0x03, 0x01})
+		binary.Write(b, binary.BigEndian, uint16(len(hello.Raw)))
+		b.Write(hello.Raw)
+		local := &preReaderConn{hello.Conn, b.Bytes()}
+		glog.Infof("Sniproxy: forward %#v to %#v", local, remote)
+		go helpers.IOCopy(remote, local)
+		helpers.IOCopy(local, remote)
+		return nil, io.EOF
+	}
+
 	if hello.ServerName == "" {
 		if cm.RejectNilSni {
 			hello.Conn.Close()
@@ -712,6 +767,11 @@ type Config struct {
 		ParentProxy string
 
 		ProxyAuthMethod string
+	}
+	Sniproxy []struct {
+		ServerName []string
+		Host       string
+		Port       int
 	}
 }
 
@@ -827,6 +887,7 @@ func main() {
 
 	cm := &CertManager{
 		RejectNilSni: config.Default.RejectNilSni,
+		Dial:         dialer.Dial,
 	}
 	h := &Handler{
 		Handlers:    map[string]http.Handler{},
@@ -889,6 +950,10 @@ func main() {
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 		}
+	}
+
+	for _, server := range config.Sniproxy {
+		cm.AddSniProxy(server.ServerName, server.Host, server.Port)
 	}
 
 	srv := &http.Server{
