@@ -41,33 +41,6 @@ class PamConv(ctypes.Structure):
     _fields_ = [ ("conv", conv_func), ("appdata_ptr", ctypes.c_void_p) ]
 
 
-libc                      = ctypes.CDLL(ctypes.util.find_library("c"))
-libpam                    = ctypes.CDLL(ctypes.util.find_library("pam"))
-
-calloc                    = libc.calloc
-calloc.restype            = ctypes.c_void_p
-calloc.argtypes           = [ctypes.c_size_t, ctypes.c_size_t]
-
-pam_end                   = libpam.pam_end
-pam_end.restype           = ctypes.c_int
-pam_end.argtypes          = [PamHandle, ctypes.c_int]
-
-pam_start                 = libpam.pam_start
-pam_start.restype         = ctypes.c_int
-pam_start.argtypes        = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(PamConv), ctypes.POINTER(PamHandle)]
-
-pam_setcred               = libpam.pam_setcred
-pam_setcred.restype       = ctypes.c_int
-pam_setcred.argtypes      = [PamHandle, ctypes.c_int]
-
-pam_strerror              = libpam.pam_strerror
-pam_strerror.restype      = ctypes.c_char_p
-pam_strerror.argtypes     = [PamHandle, ctypes.c_int]
-
-pam_authenticate          = libpam.pam_authenticate
-pam_authenticate.restype  = ctypes.c_int
-pam_authenticate.argtypes = [PamHandle, ctypes.c_int]
-
 def pwauth_pam_authenticate(username, password, service='login'):
     """Returns True if the given username and password authenticate for the
     given service.  Returns False otherwise
@@ -78,6 +51,33 @@ def pwauth_pam_authenticate(username, password, service='login'):
 
     ``service``: the PAM service to authenticate against.
                  Defaults to 'login'"""
+    libc                      = ctypes.CDLL(ctypes.util.find_library("c"))
+    libpam                    = ctypes.CDLL(ctypes.util.find_library("pam"))
+
+    calloc                    = libc.calloc
+    calloc.restype            = ctypes.c_void_p
+    calloc.argtypes           = [ctypes.c_size_t, ctypes.c_size_t]
+
+    pam_end                   = libpam.pam_end
+    pam_end.restype           = ctypes.c_int
+    pam_end.argtypes          = [PamHandle, ctypes.c_int]
+
+    pam_start                 = libpam.pam_start
+    pam_start.restype         = ctypes.c_int
+    pam_start.argtypes        = [ctypes.c_char_p, ctypes.c_char_p, ctypes.POINTER(PamConv), ctypes.POINTER(PamHandle)]
+
+    pam_setcred               = libpam.pam_setcred
+    pam_setcred.restype       = ctypes.c_int
+    pam_setcred.argtypes      = [PamHandle, ctypes.c_int]
+
+    pam_strerror              = libpam.pam_strerror
+    pam_strerror.restype      = ctypes.c_char_p
+    pam_strerror.argtypes     = [PamHandle, ctypes.c_int]
+
+    pam_authenticate          = libpam.pam_authenticate
+    pam_authenticate.restype  = ctypes.c_int
+    pam_authenticate.argtypes = [PamHandle, ctypes.c_int]
+
     @conv_func
     def my_conv(n_messages, messages, p_response, app_data):
         """Simple conversation function that responds to any
