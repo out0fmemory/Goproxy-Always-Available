@@ -649,40 +649,33 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 	return cm.rsa.GetCertificate(hello)
 }
 
-type preReaderConn struct {
-	net.Conn
-	data []byte
-}
-
-func (r *preReaderConn) Read(b []byte) (int, error) {
-	if r.data == nil {
-		return r.Conn.Read(b)
-	} else {
-		n := copy(b, r.data)
-		if n < len(r.data) {
-			r.data = r.data[n:]
-		} else {
-			r.data = nil
-		}
-		return n, nil
+func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string) (*tls.Config, error) {
+	remote, err := cm.Dial("tcp", addr)
+	if err != nil {
+		return nil, err
 	}
+
+	b := new(bytes.Buffer)
+	b.Write([]byte{0x16, 0x03, 0x01})
+	binary.Write(b, binary.BigEndian, uint16(len(hello.Raw)))
+
+	r := io.MultiReader(b, bytes.NewReader(hello.Raw), hello.Conn)
+
+	glog.Infof("Sniproxy: forward %#v to %#v", hello.Conn, remote)
+	go helpers.IOCopy(remote, r)
+	helpers.IOCopy(hello.Conn, remote)
+
+	remote.Close()
+	hello.Conn.Close()
+
+	return nil, io.EOF
 }
 
 func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
-	if addr, ok := cm.sni[hello.ServerName]; ok {
-		remote, err := cm.Dial("tcp", addr)
-		if err != nil {
-			return nil, err
+	if cm.sni != nil {
+		if addr, ok := cm.sni[hello.ServerName]; ok {
+			return cm.Forward(hello, addr)
 		}
-		b := new(bytes.Buffer)
-		b.Write([]byte{0x16, 0x03, 0x01})
-		binary.Write(b, binary.BigEndian, uint16(len(hello.Raw)))
-		b.Write(hello.Raw)
-		local := &preReaderConn{hello.Conn, b.Bytes()}
-		glog.Infof("Sniproxy: forward %#v to %#v", local, remote)
-		go helpers.IOCopy(remote, local)
-		helpers.IOCopy(local, remote)
-		return nil, io.EOF
 	}
 
 	if hello.ServerName == "" {
