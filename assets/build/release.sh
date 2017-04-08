@@ -50,7 +50,7 @@ env GIT_COMMITTER_DATE='Mon Jul 12 10:00 2010 +0800' git commit --amend --no-edi
 git push -f origin master
 popd
 
-if false; then
+if true; then
 
 GITHUB_RELEASE_URL=https://github.com/aktau/github-release/releases/download/v0.6.2/linux-amd64-github-release.tar.bz2
 GITHUB_RELEASE_BIN=$(pwd)/$(curl -kL ${GITHUB_RELEASE_URL} | tar xjpv | head -1)
