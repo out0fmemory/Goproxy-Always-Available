@@ -650,6 +650,10 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 }
 
 func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string) (*tls.Config, error) {
+	if addr[0] == ':' {
+		addr = hello.ServerName + addr
+	}
+
 	remote, err := cm.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
