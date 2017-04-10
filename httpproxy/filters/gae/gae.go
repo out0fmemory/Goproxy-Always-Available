@@ -252,7 +252,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	t1 := &http.Transport{
-		Dial:                  md.Dial,
 		DialTLS:               md.DialTLS,
 		DisableKeepAlives:     config.Transport.DisableKeepAlives,
 		DisableCompression:    config.Transport.DisableCompression,
