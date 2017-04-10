@@ -15,9 +15,9 @@ import (
 )
 
 type MultiDialer struct {
-	Dialer interface {
-		Dial(network, addr string) (net.Conn, error)
-	}
+	KeepAlive         time.Duration
+	Timeout           time.Duration
+	DualStack         bool
 	Resolver          *Resolver
 	SSLVerify         bool
 	LogToStderr       bool
@@ -82,10 +82,6 @@ func (d *MultiDialer) LookupAlias(alias string) (addrs []string, err error) {
 	}
 
 	return addrs, nil
-}
-
-func (d *MultiDialer) Dial(network, address string) (net.Conn, error) {
-	return d.Dialer.Dial(network, address)
 }
 
 func (d *MultiDialer) DialTLS(network, address string) (net.Conn, error) {
@@ -172,11 +168,12 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 		break
 	}
 
-	if dialer, ok := d.Dialer.(*net.Dialer); ok {
-		return tls.DialWithDialer(dialer, network, address, d.TLSConfig)
-	} else {
-		return tls.Dial(network, address, d.TLSConfig)
+	dialer := &net.Dialer{
+		KeepAlive: d.KeepAlive,
+		Timeout:   d.Timeout,
+		DualStack: d.DualStack,
 	}
+	return tls.DialWithDialer(dialer, network, address, d.TLSConfig)
 }
 
 func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.Config) (net.Conn, error) {
@@ -192,7 +189,12 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 	for _, addr := range addrs {
 		go func(addr string, c chan<- connWithError) {
 			// start := time.Now()
-			conn, err := d.Dialer.Dial(network, addr)
+			dialer := &net.Dialer{
+				KeepAlive: d.KeepAlive,
+				Timeout:   d.Timeout,
+				DualStack: d.DualStack,
+			}
+			conn, err := dialer.Dial(network, addr)
 			if err != nil {
 				d.TLSConnDuration.Del(addr)
 				d.TLSConnError.Set(addr, err, time.Now().Add(d.ErrorConnExpiry))

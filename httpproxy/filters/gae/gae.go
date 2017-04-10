@@ -197,12 +197,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		hostmap[key] = helpers.UniqueStrings(value)
 	}
 
-	d := &net.Dialer{
-		KeepAlive: time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
-		Timeout:   time.Duration(config.Transport.Dialer.Timeout) * time.Second,
-		DualStack: config.Transport.Dialer.DualStack,
-	}
-
 	r := &helpers.Resolver{
 		LRUCache:    lrucache.NewLRUCache(config.Transport.Dialer.DNSCacheSize),
 		DNSExpiry:   time.Duration(config.Transport.Dialer.DNSCacheExpiry) * time.Second,
@@ -218,7 +212,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	md := &helpers.MultiDialer{
-		Dialer:            d,
+		KeepAlive:         time.Duration(config.Transport.Dialer.KeepAlive) * time.Second,
+		Timeout:           time.Duration(config.Transport.Dialer.Timeout) * time.Second,
+		DualStack:         config.Transport.Dialer.DualStack,
 		Resolver:          r,
 		SSLVerify:         config.SSLVerify,
 		LogToStderr:       flag.Lookup("logtostderr") != nil,
@@ -267,7 +263,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
 		}
 
-		dialer, err := proxy.FromURL(fixedURL, d, &helpers.MultiResolver{md})
+		dialer0 := &net.Dialer{
+			KeepAlive: md.KeepAlive,
+			Timeout:   md.Timeout,
+			DualStack: md.DualStack,
+		}
+
+		dialer, err := proxy.FromURL(fixedURL, dialer0, &helpers.MultiResolver{md})
 		if err != nil {
 			glog.Fatalf("proxy.FromURL(%#v) error: %s", fixedURL.String(), err)
 		}
