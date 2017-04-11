@@ -192,6 +192,7 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 			// start := time.Now()
 			raddr, err := net.ResolveTCPAddr(network, addr)
 			if err != nil {
+				glog.Warningf("net.ResolveTCPAddr(%#v, %+v) err=%+v", network, addr, err)
 				lane <- connWithError{nil, err}
 				return
 			}
@@ -203,7 +204,7 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 			if err != nil {
 				d.TLSConnDuration.Del(addr)
 				d.TLSConnError.Set(addr, err, time.Now().Add(d.ErrorConnExpiry))
-				lane <- connWithError{conn, err}
+				lane <- connWithError{nil, err}
 				return
 			}
 
