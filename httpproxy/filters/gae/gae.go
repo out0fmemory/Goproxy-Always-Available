@@ -361,6 +361,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				}
 			}
 
+			time.Sleep(5 * time.Minute)
+
 			for {
 				time.Sleep(time.Duration(2+rand.Intn(5)) * time.Second)
 				probe()
