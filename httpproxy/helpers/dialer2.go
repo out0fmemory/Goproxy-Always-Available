@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"bytes"
+	"context"
 	"crypto/sha256"
 	"crypto/tls"
 	"fmt"
@@ -189,12 +190,16 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 	for _, addr := range addrs {
 		go func(addr string, c chan<- connWithError) {
 			// start := time.Now()
-			dialer := &net.Dialer{
-				KeepAlive: d.KeepAlive,
-				Timeout:   d.Timeout,
-				DualStack: d.DualStack,
+			raddr, err := net.ResolveTCPAddr(network, addr)
+			if err != nil {
+				lane <- connWithError{nil, err}
+				return
 			}
-			conn, err := dialer.Dial(network, addr)
+
+			ctx, cancel := context.WithTimeout(context.Background(), d.Timeout)
+			defer cancel()
+
+			conn, err := net.DialTCPContext(ctx, network, nil, raddr)
 			if err != nil {
 				d.TLSConnDuration.Del(addr)
 				d.TLSConnError.Set(addr, err, time.Now().Add(d.ErrorConnExpiry))
@@ -202,10 +207,13 @@ func (d *MultiDialer) dialMultiTLS(network string, addrs []string, config *tls.C
 				return
 			}
 
+			if d.KeepAlive > 0 {
+				conn.SetKeepAlive(true)
+				conn.SetKeepAlivePeriod(d.KeepAlive)
+			}
+
 			if d.TLSConnReadBuffer > 0 {
-				if tc, ok := conn.(*net.TCPConn); ok {
-					tc.SetReadBuffer(d.TLSConnReadBuffer)
-				}
+				conn.SetReadBuffer(d.TLSConnReadBuffer)
 			}
 
 			if config == nil {
