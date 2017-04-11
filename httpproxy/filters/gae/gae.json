@@ -130,7 +130,7 @@
 			"SocketReadBuffer": 0,
 			"DualStack": false,
 			"KeepAlive": 5,
-			"Level": 14,
+			"Level": 8,
 			"Timeout": 8,
 		},
 		"Proxy": {
