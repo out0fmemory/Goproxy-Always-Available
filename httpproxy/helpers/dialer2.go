@@ -143,17 +143,21 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 							}
 							cert := certs[1]
 							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
-							if d.GoogleG2PKP != nil {
+							switch {
+							case d.GoogleG2PKP != nil:
 								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
-								if !bytes.Equal(pkp[:], d.GoogleG2PKP) {
-									defer conn.Close()
-									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
+								if bytes.Equal(pkp[:], d.GoogleG2PKP) {
+									break
 								}
-							} else {
-								if !strings.HasPrefix(cert.Subject.CommonName, "Google ") {
-									defer conn.Close()
-									return nil, fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
+								fallthrough
+							case !strings.HasPrefix(cert.Subject.CommonName, "Google "):
+								err := fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
+								glog.Warningf("MultiDailer: %v", err)
+								if ip, _, err := net.SplitHostPort(conn.RemoteAddr().String()); err == nil {
+									d.IPBlackList.Set(ip, struct{}{}, time.Time{})
 								}
+								conn.Close()
+								return nil, err
 							}
 						}
 					}
