@@ -296,6 +296,11 @@ func (d *MultiDialer) pickupTLSHosts(hosts []string, n int) []string {
 		hosts1 = append(hosts1, r.host)
 	}
 
+	if len(goods) == 0 {
+		ShuffleStrings(unknowns)
+		ShuffleStrings(bads)
+	}
+
 	for _, hosts2 := range [][]string{unknowns, bads} {
 		if len(hosts1) < n && len(hosts2) > 0 {
 			m := n - len(hosts1)
