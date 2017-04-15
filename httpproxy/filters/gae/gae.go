@@ -194,7 +194,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	hostmap := map[string][]string{}
 	for key, value := range config.HostMap {
-		hostmap[key] = helpers.UniqueStrings(value)
+		hosts := helpers.UniqueStrings(value)
+		helpers.ShuffleStrings(hosts)
+		hostmap[key] = hosts
 	}
 
 	r := &helpers.Resolver{
