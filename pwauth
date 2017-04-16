@@ -123,7 +123,7 @@ def authenticate(mode, username, password):
     elif mode == 'htpasswd':
         return pwauth_htpasswd_authenticate(username, password)
     else:
-        return 127, 'Unknown auth method: {}'.format(mode)
+        return 127, 'Unknown auth method: %r'% mode
 
 
 if __name__ == "__main__":
