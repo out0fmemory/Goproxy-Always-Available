@@ -290,12 +290,17 @@ func (d *MultiDialer) pickupTLSHosts(hosts []string, n int) []string {
 		}
 	}
 
-	hosts1 := make([]string, 0, n)
-
 	sort.Slice(goods, func(i, j int) bool { return goods[i].duration < goods[j].duration })
-	if len(goods) > n/2 {
-		goods = goods[:n/2]
+
+	m := n / 2
+	if len(bads) > 16*len(goods) {
+		n += m
 	}
+	if len(goods) > m {
+		goods = goods[:m]
+	}
+
+	hosts1 := make([]string, 0, n)
 	for _, r := range goods {
 		hosts1 = append(hosts1, r.host)
 	}
