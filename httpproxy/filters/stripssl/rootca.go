@@ -10,6 +10,7 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"io/ioutil"
 	"math/big"
 	"net"
@@ -161,6 +162,8 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 						return nil, err
 					}
 					rootCA.priv = priv
+				case "EC PRIVATE KEY":
+					return nil, fmt.Errorf("unsupported %#v certificate, name=%#v", b.Type, name)
 				}
 			}
 		}
