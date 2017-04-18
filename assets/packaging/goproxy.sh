@@ -25,6 +25,7 @@ start() {
     local log_file=${EXECUTABLE}.log
     log_file=$(cd $(dirname ${log_file}); echo $(pwd -P)/$(basename ${log_file}))
 
+    test $(ulimit -n) -lt 65535 && ulimit -n 65535
     if command -v nohup >/dev/null ; then
         nohup ./${EXECUTABLE} >>${log_file} 2>&1 &
     else
