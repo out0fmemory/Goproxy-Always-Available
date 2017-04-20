@@ -36,7 +36,7 @@ start() {
     local pid=$!
     echo -n "Starting ${EXECUTABLE}(${pid}): "
     sleep 1
-    if ps ax | grep "${pid} " >/dev/null 2>&1; then
+    if ls /proc/${pid}/cmdline >/dev/null 2>&1; then
         echo "OK"
     else
         echo "Failed"
@@ -59,7 +59,7 @@ EOF
 }
 
 stop() {
-    for pid in $(ps ax | awk "/${EXECUTABLE}(\\s|\$)/{print \$1}")
+    for pid in $( (ps ax 2>/dev/null || ps) | awk "/${EXECUTABLE}(\\s|\$)/{print \$1}")
     do
         local exe=$(ls -l /proc/${pid}/exe 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
         local cwd=$(ls -l /proc/${pid}/cwd 2>/dev/null | sed "s/.*->\s*//" | sed 's/\s*(deleted)\s*//')
@@ -120,4 +120,3 @@ case "$1" in
 esac
 
 exit $?
-
