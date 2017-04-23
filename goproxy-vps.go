@@ -9,6 +9,7 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"flag"
 	"fmt"
@@ -457,6 +458,9 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			}
 			req.Header.Set("X-Forwarded-Proto", "https")
 			req.Header.Set("X-Real-IP", ip)
+		}
+		if req.TLS.Unique0RTTToken != nil {
+			req.Header.Set("CF-0RTT-Unique", hex.EncodeToString(req.TLS.Unique0RTTToken))
 		}
 	}
 
