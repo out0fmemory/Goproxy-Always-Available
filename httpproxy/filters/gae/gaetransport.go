@@ -24,7 +24,9 @@ type Transport struct {
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	deadline := t.Deadline
-	for i := 0; i < t.RetryTimes; i++ {
+	retryTimes := t.RetryTimes
+	retryDelay := t.RetryDelay
+	for i := 0; i < retryTimes; i++ {
 		server := t.Servers.PickFetchServer(req, i)
 		req1, err := t.Servers.EncodeRequest(req, server, deadline)
 		if err != nil {
@@ -60,7 +62,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				return nil, err
 			}
 
-			if i == t.RetryTimes-1 {
+			if i == retryTimes-1 {
 				return nil, err
 			} else {
 				glog.Warningf("GAE: request \"%s\" error: %T(%v), retry...", req.URL.String(), err, err)
@@ -73,7 +75,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		}
 
 		if resp.StatusCode != http.StatusOK {
-			if i == t.RetryTimes-1 {
+			if i == retryTimes-1 {
 				return resp, nil
 			}
 
@@ -81,7 +83,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			case http.StatusServiceUnavailable:
 				glog.Warningf("GAE: %s over qouta, try switch to next appid...", server.Host)
 				t.Servers.ToggleBadServer(server)
-				time.Sleep(t.RetryDelay)
+				time.Sleep(retryDelay)
 				continue
 			case http.StatusFound,
 				http.StatusBadGateway,
@@ -112,7 +114,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 		if resp1 != nil {
 			resp1.Request = req
 		}
-		if i == t.RetryTimes-1 {
+		if i == retryTimes-1 {
 			return resp, err
 		}
 
@@ -128,14 +130,16 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			case bytes.Contains(body, []byte("DEADLINE_EXCEEDED")):
 				//FIXME: deadline += 10 * time.Second
 				glog.Warningf("GAE: %s urlfetch %#v get DEADLINE_EXCEEDED, retry with deadline=%s...", req1.Host, req.URL.String(), deadline)
+				time.Sleep(deadline)
 				continue
 			case bytes.Contains(body, []byte("ver quota")):
 				glog.Warningf("GAE: %s urlfetch %#v get over quota, retry...", req1.Host, req.URL.String())
-				time.Sleep(t.RetryDelay)
+				t.Servers.ToggleBadServer(server)
+				time.Sleep(retryDelay)
 				continue
 			case bytes.Contains(body, []byte("urlfetch: CLOSED")):
 				glog.Warningf("GAE: %s urlfetch %#v get urlfetch: CLOSED, retry...", req1.Host, req.URL.String())
-				time.Sleep(t.RetryDelay)
+				time.Sleep(retryDelay)
 				continue
 			default:
 				resp1.Body = ioutil.NopCloser(bytes.NewReader(body))

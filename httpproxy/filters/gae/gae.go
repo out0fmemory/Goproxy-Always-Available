@@ -381,7 +381,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			MultiDialer:  md,
 			Servers:      NewServers(config.AppIDs, config.Password, config.SSLVerify),
 			Deadline:     time.Duration(config.Transport.ResponseHeaderTimeout-2) * time.Second,
-			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Second,
+			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Millisecond,
 			RetryTimes:   config.Transport.RetryTimes,
 		},
 		DirectTransport:    tr,
