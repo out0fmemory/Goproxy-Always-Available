@@ -130,6 +130,20 @@ function build_http2() {
 	popd
 }
 
+function build_bogo() {
+	pushd ${WORKING_DIR}
+
+	git clone https://github.com/google/boringssl $GOPATH/src/github.com/google/boringssl
+	cd $GOPATH/src/github.com/google/boringssl/ssl/test/runner
+	sed -i -E 's#"./(curve25519|poly1305)"#"golang.org/x/crypto/\1"#g' *.go
+	sed -i -E 's#"./(ed25519)"#"github.com/google/boringssl/ssl/test/runner/\1"#g' *.go
+	sed -i -E 's#"./(internal/edwards25519)"#"github.com/google/boringssl/ssl/test/runner/ed25519/\1"#g' ed25519/*.go
+	git commit -m "change imports" -s -a
+	go get -x github.com/google/boringssl/ssl/test/runner
+
+	popd
+}
+
 function build_repo() {
 	pushd ${WORKING_DIR}
 
@@ -372,6 +386,7 @@ init_github
 build_go
 build_glog
 build_http2
+build_bogo
 build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	rebuild_go_with_tls13
