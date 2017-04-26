@@ -84,6 +84,7 @@ func (h *https) Dial(network, addr string) (net.Conn, error) {
 			InsecureSkipVerify: true,
 			ServerName:         h.hostname,
 			ClientSessionCache: tls.NewLRUClientSessionCache(1024),
+			MaxEarlyDataSize:   100 * 1024,
 			// Max0RTTDataSize:    100 * 1024,
 		}
 		h.cache.Set(h.addr, config, time.Now().Add(2*time.Hour))
