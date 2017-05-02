@@ -76,6 +76,7 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 type SimpleAuth struct {
 	Mode      string
 	CacheSize uint
+	Builtin   map[string]string
 
 	path  string
 	cache lrucache.Cache
@@ -102,6 +103,12 @@ func (p *SimpleAuth) init() {
 
 func (p *SimpleAuth) Authenticate(username, password string) error {
 	p.once.Do(p.init)
+
+	if p.Builtin != nil {
+		if v, ok := p.Builtin[username]; ok && v == password {
+			return nil
+		}
+	}
 
 	auth := p.Mode + ":" + username + ":" + password
 
@@ -757,9 +764,11 @@ type Config struct {
 
 		ParentProxy string
 
-		ProxyFallback   string
-		DisableProxy    bool
-		ProxyAuthMethod string
+		ProxyFallback string
+		DisableProxy  bool
+
+		ProxyAuthMethod  string
+		ProxyBuiltinAuth map[string]string
 	}
 	HTTP struct {
 		Network string
@@ -767,7 +776,8 @@ type Config struct {
 
 		ParentProxy string
 
-		ProxyAuthMethod string
+		ProxyAuthMethod  string
+		ProxyBuiltinAuth map[string]string
 	}
 	Sniproxy []struct {
 		ServerName []string
@@ -940,6 +950,11 @@ func main() {
 				Mode:      server.ProxyAuthMethod,
 				CacheSize: 2048,
 			}
+		case "builtin":
+			handler.SimpleAuth = &SimpleAuth{
+				Mode:    server.ProxyAuthMethod,
+				Builtin: server.ProxyBuiltinAuth,
+			}
 		case "":
 			break
 		default:
@@ -1035,6 +1050,11 @@ func main() {
 			}
 			handler.SimpleAuth = &SimpleAuth{
 				CacheSize: 2048,
+			}
+		case "builtin":
+			handler.SimpleAuth = &SimpleAuth{
+				Mode:    server.ProxyAuthMethod,
+				Builtin: server.ProxyBuiltinAuth,
 			}
 		case "":
 			break
