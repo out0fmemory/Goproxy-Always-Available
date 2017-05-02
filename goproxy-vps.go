@@ -107,6 +107,11 @@ func (p *SimpleAuth) Authenticate(username, password string) error {
 	if p.Builtin != nil {
 		if v, ok := p.Builtin[username]; ok && v == password {
 			return nil
+		} else {
+			err := errors.New("wrong username or password")
+			glog.Warningf("SimpleAuth: builtin username=%v password=%v error: %+v", username, password, err)
+			time.Sleep(time.Duration(5+rand.Intn(6)) * time.Second)
+			return err
 		}
 	}
 
