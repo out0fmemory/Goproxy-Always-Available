@@ -560,6 +560,8 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				switch {
 				case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
 					duration = 1 * time.Hour
+				case resp.StatusCode >= 301 && strings.Contains(resp.Header.Get("Location"), "hangouts.google.com"):
+					duration = 2 * time.Hour
 				case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
 					server := resp.Header.Get("Server")
 					if server != "gws" && !strings.HasPrefix(server, "gvs") {
