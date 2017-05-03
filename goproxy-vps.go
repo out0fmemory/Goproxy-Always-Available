@@ -84,6 +84,10 @@ type SimpleAuth struct {
 }
 
 func (p *SimpleAuth) init() {
+	if p.Mode == "builtin" {
+		return
+	}
+
 	p.cache = lrucache.NewLRUCache(p.CacheSize)
 
 	exe, err := os.Executable()
