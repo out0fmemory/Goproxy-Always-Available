@@ -825,11 +825,18 @@ func main() {
 	var tomlData []byte
 	var err error
 	switch {
-	case strings.HasPrefix(filename, "data:text/x-toml;base64,"):
-		parts := strings.Split(filename, ",")
-		tomlData, err = base64.StdEncoding.DecodeString(parts[1])
+	case strings.HasPrefix(filename, "data:text/x-toml;"):
+		parts := strings.SplitN(filename, ",", 2)
+		switch parts[0] {
+		case "data:text/x-toml;base64":
+			tomlData, err = base64.StdEncoding.DecodeString(parts[1])
+		case "data:text/x-toml;utf8":
+			tomlData = []byte(parts[1])
+		default:
+			err = fmt.Errorf("Unkown data scheme: %#v", parts[0])
+		}
 		if err != nil {
-			glog.Fatalf("base64.StdEncoding.DecodeString(%+v) error: %+v", parts[1], err)
+			glog.Fatalf("Parse(%+v) error: %+v", parts[1], err)
 		}
 	case os.Getenv("GOPROXY_VPS_CONFIG_URL") != "":
 		filename = os.Getenv("GOPROXY_VPS_CONFIG_URL")
