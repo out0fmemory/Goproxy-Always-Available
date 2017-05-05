@@ -20,9 +20,16 @@ import (
 )
 
 const (
-	Version  = "1.0"
-	Password = "123456"
+	Version = "1.0"
 )
+
+var Password = func() string {
+	if s := os.Getenv("PASSWORD"); s != "" {
+		return s
+	} else {
+		return "123456"
+	}
+}()
 
 var (
 	secureTransport *http.Transport = &http.Transport{
@@ -206,7 +213,7 @@ func handler(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	for key, _  := range params {
+	for key := range params {
 		req1.Header.Del(paramsPreifx + key)
 	}
 
