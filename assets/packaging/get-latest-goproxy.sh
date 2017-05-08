@@ -97,7 +97,7 @@ for USER_JSON_FILE in *.user.json; do
 	if echo "${USER_JSON_LINE}" | grep -q AUTO_UPDATE_URL; then
 		USER_JSON_URL=${USER_JSON_LINE#* }
 		echo "Update ${USER_JSON_FILE} with ${USER_JSON_URL}"
-		curl -k "${USER_JSON_URL}" >${USER_JSON_FILE}.tmp
+		curl -fk "${USER_JSON_URL}" >${USER_JSON_FILE}.tmp
 		mv ${USER_JSON_FILE}.tmp ${USER_JSON_FILE}
 	fi
 done
