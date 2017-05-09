@@ -250,7 +250,7 @@ class GoProxyMacOS(NSObject):
         self.console_window.contentView().addSubview_(self.scroll_view)
 
         # Update Proxy Menu
-        self.updateproxystate_(None)
+        AppHelper.callLater(2, self.updateproxystate_, None)
         # Hide dock icon
         NSApp.setActivationPolicy_(NSApplicationActivationPolicyProhibited)
 
