@@ -233,7 +233,7 @@ EOF
 	cp ${WORKING_DIR}/${GITHUB_REPO}/assets/packaging/goproxy-macos.icns GoProxy.app/Contents/Resources/
 	cat <<EOF > GoProxy.app/Contents/Info.plist
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
         <key>CFBundleExecutable</key>
@@ -368,6 +368,21 @@ function release_sourceforge() {
 	popd
 }
 
+function release_github_pages() {
+	pushd ${WORKING_DIR}/
+
+	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
+	rm -rf ${GITHUB_USER}.github.io/goproxy
+	mkdir -p ${GITHUB_USER}.github.io/goproxy
+	cd ${WORKING_DIR}/r${RELEASE}/
+	cp goproxy_windows_amd64-* goproxy_macos_app-* goproxy_linux_amd64-* ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy
+	cd ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy
+	git add *
+	git commit -m "update goproxy" -s -a
+	git push origin master
+
+	popd
+}
 function clean() {
 	set +ex
 
@@ -393,5 +408,6 @@ if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
 	release_github
 	release_sourceforge
+	release_github_pages
 	clean
 fi
