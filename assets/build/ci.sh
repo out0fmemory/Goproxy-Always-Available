@@ -372,10 +372,10 @@ function release_github_pages() {
 	pushd ${WORKING_DIR}/
 
 	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
-	rm -rf ${GITHUB_USER}.github.io/goproxy
 	mkdir -p ${GITHUB_USER}.github.io/goproxy
+	rm -rf ${GITHUB_USER}.github.io/goproxy/goproxy_*
 	cd ${WORKING_DIR}/r${RELEASE}/
-	cp goproxy_windows_amd64-* goproxy_macos_app-* goproxy_linux_amd64-* ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy
+	cp goproxy_windows_amd64-* goproxy_macos_app-* goproxy_linux_amd64-* ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy/
 	cd ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy
 	git add *
 	git commit -m "update goproxy" -s -a
@@ -383,6 +383,7 @@ function release_github_pages() {
 
 	popd
 }
+
 function clean() {
 	set +ex
 
