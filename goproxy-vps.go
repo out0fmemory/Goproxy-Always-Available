@@ -141,6 +141,8 @@ func (p *SimpleAuth) Authenticate(username, password string) error {
 }
 
 type HTTPHandler struct {
+	ServerNames  []string
+	Fallback     *url.URL
 	Dial func(network, address string) (net.Conn, error)
 	*http.Transport
 	*SimpleAuth
@@ -161,7 +163,9 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del(key)
 	}
 
-	if h.SimpleAuth != nil {
+	var isProxyRequest bool = !helpers.ContainsString(h.ServerNames, req.URL.Hostname())
+
+	if isProxyRequest && h.SimpleAuth != nil {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -190,6 +194,30 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 
 		req.Header.Del("Proxy-Authorization")
+	}
+
+	if !isProxyRequest {
+		if h.Fallback == nil {
+			http.FileServer(http.Dir("/var/www/html")).ServeHTTP(rw, req)
+			return
+		}
+		if h.Fallback.Scheme == "file" {
+			http.FileServer(http.Dir(h.Fallback.Path)).ServeHTTP(rw, req)
+			return
+		}
+		req.URL.Scheme = h.Fallback.Scheme
+		req.URL.Scheme = h.Fallback.Scheme
+		req.URL.Host = h.Fallback.Host
+		if ip, _, err := net.SplitHostPort(req.RemoteAddr); err == nil {
+			xff := req.Header.Get("X-Forwarded-For")
+			if xff == "" {
+				req.Header.Set("X-Forwarded-For", ip)
+			} else {
+				req.Header.Set("X-Forwarded-For", xff+", "+ip)
+			}
+			req.Header.Set("X-Forwarded-Proto", "https")
+			req.Header.Set("X-Real-IP", ip)
+		}
 	}
 
 	if req.Method == http.MethodConnect {
@@ -783,7 +811,10 @@ type Config struct {
 		Network string
 		Listen  string
 
+		ServerName []string
+
 		ParentProxy string
+		ProxyFallback string
 
 		ProxyAuthMethod  string
 		ProxyBuiltinAuth map[string]string
@@ -1033,7 +1064,15 @@ func main() {
 		}
 
 		handler := &HTTPHandler{
+			ServerNames: config.HTTP.ServerName,
 			Transport: transport,
+		}
+
+		if server.ProxyFallback != "" {
+			handler.Fallback, err = url.Parse(server.ProxyFallback)
+			if err != nil {
+				glog.Fatalf("url.Parse(%+v) error: %+v", server.ProxyFallback, err)
+			}
 		}
 
 		if server.ParentProxy != "" {
