@@ -374,9 +374,25 @@ function release_github_pages() {
 	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
 	mkdir -p ${GITHUB_USER}.github.io/goproxy
 	rm -rf ${GITHUB_USER}.github.io/goproxy/goproxy_*
-	cd ${WORKING_DIR}/r${RELEASE}/
-	cp goproxy_windows_amd64-* goproxy_macos_app-* goproxy_linux_amd64-* ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy/
-	cd ${WORKING_DIR}/${GITHUB_USER}.github.io/goproxy
+	cd ${GITHUB_USER}.github.io/goproxy
+
+	cp ${WORKING_DIR}/r${RELEASE}/goproxy_linux_amd64-r${RELEASE}.tar.xz .
+	xz -d goproxy_linux_amd64-r${RELEASE}.tar.xz
+	mkdir -p goproxy && cp gae.user.json goproxy/
+	tar rvf goproxy_linux_amd64-r${RELEASE}.tar goproxy/gae.user.json
+	rm -rf goproxy
+	xz -9 goproxy_linux_amd64-r${RELEASE}.tar
+
+	cp ${WORKING_DIR}/r${RELEASE}/goproxy_macos_app-r${RELEASE}.tar.bz2 .
+	bzip2 -d goproxy_macos_app-r${RELEASE}.tar.bz2
+	mkdir -p GoProxy.app/Contents/MacOS && cp gae.user.json GoProxy.app/Contents/MacOS/
+	tar rvf goproxy_macos_app-r${RELEASE}.tar GoProxy.app/Contents/MacOS/gae.user.json
+	rm -rf GoProxy.app/Contents/MacOS
+	bzip2 -9 goproxy_macos_app-r${RELEASE}.tar
+
+	cp ${WORKING_DIR}/r${RELEASE}/goproxy_windows_amd64-r${RELEASE}.7z .
+	7za a -t7z -mmt -mx9 -y goproxy_windows_amd64-r${RELEASE}.7z gae.user.json
+
 	git add *
 	git commit -m "update goproxy" -s -a
 	git push origin master
