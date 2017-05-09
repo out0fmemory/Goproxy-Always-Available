@@ -371,6 +371,26 @@ class GoProxyMacOS(NSObject):
         NSApp.terminate_(self)
 
 
+def get_executables():
+    MAXPATHLEN = 1024
+    PROC_PIDPATHINFO_MAXSIZE = MAXPATHLEN * 4
+    PROC_ALL_PIDS = 1
+    libc = ctypes.CDLL(ctypes.util.find_library('c'))
+    number_of_pids = libc.proc_listpids(PROC_ALL_PIDS, 0, None, 0)
+    pid_list = (ctypes.c_uint32 * (number_of_pids * 2))()
+    libc.proc_listpids(PROC_ALL_PIDS, 0, pid_list, ctypes.sizeof(pid_list))
+    results = []
+    path_size = PROC_PIDPATHINFO_MAXSIZE
+    path_buffer = ctypes.create_string_buffer('\0'*path_size,path_size)
+    for pid in pid_list:
+        # re-use the buffer
+        ctypes.memset(path_buffer, 0, path_size)
+        return_code = libc.proc_pidpath(pid, path_buffer, path_size)
+        if path_buffer.value:
+            results.append((pid, path_buffer.value))
+    return results
+
+
 def precheck():
     has_user_json = glob.glob('*.user.json') != []
     if not has_user_json:
@@ -382,12 +402,9 @@ def precheck():
         NSApp.activateIgnoringOtherApps_(True)
         pressed = alert.runModal()
         os.system('open "%s"' % os.path.dirname(__file__))
-    ps_ax = os.popen('ps ax').read()
-    if '/goproxy\n' in ps_ax:
-        line = next(x for x in ps_ax.splitlines() if x.strip().endswith('/goproxy'))
-        pid = int(line.strip().split()[0])
-        os.kill(pid, 9)
-
+    for pid, path in get_executables():
+        if path.endswith('/goproxy'):
+            os.kill(pid, 9)
 
 
 def main():
