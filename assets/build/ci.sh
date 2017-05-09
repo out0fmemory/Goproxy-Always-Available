@@ -393,6 +393,9 @@ function release_github_pages() {
 	cp ${WORKING_DIR}/r${RELEASE}/goproxy_windows_amd64-r${RELEASE}.7z .
 	7za a -t7z -mmt -mx9 -y goproxy_windows_amd64-r${RELEASE}.7z gae.user.json
 
+	local switchy_version=$(curl https://github.com/FelisCatus/SwitchyOmega/releases/latest | grep -oP '/tag/\Kv[0-9.]+')
+	curl -LOJ https://github.com/FelisCatus/SwitchyOmega/releases/download/${switchy_version}/SwitchyOmega.crx
+
 	git add *
 	git commit -m "update goproxy" -s -a
 	git push origin master
