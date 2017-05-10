@@ -371,7 +371,14 @@ function release_sourceforge() {
 function release_github_pages() {
 	pushd ${WORKING_DIR}/
 
+	pushd /tmp
+	wget https://github.com/git-lfs/git-lfs/releases/download/v2.1.0/git-lfs-linux-amd64-2.1.0.tar.gz
+	tar xvf git-lfs-linux-amd64-2.1.0.tar.gz
+	export PATH=$PATH:$(pwd)/git-lfs-2.1.0/
+	popd
+
 	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
+	(cd ${GITHUB_USER}.github.io && git lfs update)
 	mkdir -p ${GITHUB_USER}.github.io/goproxy
 	rm -rf ${GITHUB_USER}.github.io/goproxy/goproxy_*
 	cd ${GITHUB_USER}.github.io/goproxy
