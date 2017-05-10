@@ -371,41 +371,23 @@ function release_sourceforge() {
 function release_github_pages() {
 	pushd ${WORKING_DIR}/
 
-	pushd /tmp
-	wget https://github.com/git-lfs/git-lfs/releases/download/v2.1.0/git-lfs-linux-amd64-2.1.0.tar.gz
-	tar xvf git-lfs-linux-amd64-2.1.0.tar.gz
-	export PATH=$PATH:$(pwd)/git-lfs-2.1.0/
-	popd
-
 	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
-	(cd ${GITHUB_USER}.github.io && git lfs update)
 	mkdir -p ${GITHUB_USER}.github.io/goproxy
-	rm -rf ${GITHUB_USER}.github.io/goproxy/goproxy_*
 	cd ${GITHUB_USER}.github.io/goproxy
 
-	cp ${WORKING_DIR}/r${RELEASE}/goproxy_linux_amd64-r${RELEASE}.tar.xz .
-	xz -d goproxy_linux_amd64-r${RELEASE}.tar.xz
-	mkdir -p goproxy && cp gae.user.json goproxy/
-	tar rvf goproxy_linux_amd64-r${RELEASE}.tar goproxy/gae.user.json
-	rm -rf goproxy
-	xz -9 goproxy_linux_amd64-r${RELEASE}.tar
-
-	cp ${WORKING_DIR}/r${RELEASE}/goproxy_macos_app-r${RELEASE}.tar.bz2 .
-	bzip2 -d goproxy_macos_app-r${RELEASE}.tar.bz2
-	mkdir -p GoProxy.app/Contents/MacOS && cp gae.user.json GoProxy.app/Contents/MacOS/
-	tar rvf goproxy_macos_app-r${RELEASE}.tar GoProxy.app/Contents/MacOS/gae.user.json
-	rm -rf GoProxy.app/Contents/MacOS
-	bzip2 -9 goproxy_macos_app-r${RELEASE}.tar
-
-	cp ${WORKING_DIR}/r${RELEASE}/goproxy_windows_amd64-r${RELEASE}.7z .
-	7za a -t7z -mmt -mx9 -y goproxy_windows_amd64-r${RELEASE}.7z gae.user.json
-
-	local switchy_version=$(curl https://github.com/FelisCatus/SwitchyOmega/releases/latest | grep -oP '/tag/\Kv[0-9.]+')
-	curl -L https://github.com/FelisCatus/SwitchyOmega/releases/download/${switchy_version}/SwitchyOmega.crx >SwitchyOmega.crx
+	for FILE in \
+			goproxy_linux_amd64-r${RELEASE}.tar.xz \
+			goproxy_macos_app-r${RELEASE}.tar.bz2 \
+			goproxy_windows_amd64-r${RELEASE}.7z
+	do
+		cat <<EOF > ${FILE}.url
+[InternetShortcut]
+URL=https://github.com/phuslu/goproxy-ci/releases/download/r${RELEASE}/${FILE}
+EOF
+	done
 
 	git add *
 	git commit -m "update goproxy" -s -a
-	git pull --rebase origin master
 	git push origin master
 
 	popd
