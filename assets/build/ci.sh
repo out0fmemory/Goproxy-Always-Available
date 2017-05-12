@@ -380,9 +380,11 @@ function release_github_pages() {
 			goproxy_macos_app-r${RELEASE}.tar.bz2 \
 			goproxy_windows_amd64-r${RELEASE}.7z
 	do
+		SIZE=$(/bin/ls -l ${WORKING_DIR}/r${RELEASE}/${FILE} | awk '{print $5}')
 		cat <<EOF > ${FILE}.url
 [InternetShortcut]
 URL=https://github.com/phuslu/goproxy-ci/releases/download/r${RELEASE}/${FILE}
+SIZE=${SIZE}
 EOF
 	done
 
