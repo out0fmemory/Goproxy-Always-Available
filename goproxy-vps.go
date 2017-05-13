@@ -141,9 +141,9 @@ func (p *SimpleAuth) Authenticate(username, password string) error {
 }
 
 type HTTPHandler struct {
-	ServerNames  []string
-	Fallback     *url.URL
-	Dial func(network, address string) (net.Conn, error)
+	ServerNames []string
+	Fallback    *url.URL
+	Dial        func(network, address string) (net.Conn, error)
 	*http.Transport
 	*SimpleAuth
 }
@@ -813,7 +813,7 @@ type Config struct {
 
 		ServerName []string
 
-		ParentProxy string
+		ParentProxy   string
 		ProxyFallback string
 
 		ProxyAuthMethod  string
@@ -845,7 +845,7 @@ func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 func main() {
 	if len(os.Args) > 1 && os.Args[1] == "-version" {
-		fmt.Print(version)
+		fmt.Println(version)
 		return
 	}
 
@@ -1065,7 +1065,7 @@ func main() {
 
 		handler := &HTTPHandler{
 			ServerNames: config.HTTP.ServerName,
-			Transport: transport,
+			Transport:   transport,
 		}
 
 		if server.ProxyFallback != "" {
