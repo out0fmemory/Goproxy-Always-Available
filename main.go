@@ -44,7 +44,7 @@ func main() {
 			line = runtime.GOOS
 		}
 		if line != "" {
-			fmt.Print(line)
+			fmt.Println(line)
 			return
 		}
 	}
