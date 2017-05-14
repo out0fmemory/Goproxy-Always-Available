@@ -1,5 +1,5 @@
 {
-	"TLSVersion": "TLSv1.3",
+	"TLSVersion": "TLSv1.2",
 	"RootCA": {
 		"Name": "GoProxy",
 		"Dirname": "cache",
