@@ -24,7 +24,8 @@ const (
 )
 
 type Config struct {
-	RootCA struct {
+	TLSVersion string
+	RootCA     struct {
 		Filename string
 		Dirname  string
 		Name     string
@@ -40,6 +41,7 @@ type Filter struct {
 	Config
 	CA             *RootCA
 	CAExpiry       time.Duration
+	TLSMaxVersion  uint16
 	TLSConfigCache lrucache.Cache
 	Ports          map[string]struct{}
 	Ignores        map[string]struct{}
@@ -76,12 +78,24 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 
 	f := &Filter{
 		Config:         *config,
+		TLSMaxVersion:  tls.VersionTLS12,
 		CA:             defaultCA,
 		CAExpiry:       time.Duration(config.RootCA.Duration) * time.Second,
 		TLSConfigCache: lrucache.NewMultiLRUCache(4, 4096),
 		Ports:          make(map[string]struct{}),
 		Ignores:        make(map[string]struct{}),
 		Sites:          helpers.NewHostMatcher(config.Sites),
+	}
+
+	switch config.TLSVersion {
+	case "TLSv1.3":
+		f.TLSMaxVersion = tls.VersionTLS13
+	case "TLSv1.2":
+		f.TLSMaxVersion = tls.VersionTLS12
+	case "TLSv1.1":
+		f.TLSMaxVersion = tls.VersionTLS11
+	case "TLSv1", "TLSv0":
+		f.TLSMaxVersion = tls.VersionTLS10
 	}
 
 	for _, port := range config.Ports {
@@ -171,7 +185,7 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 				}
 				config = &tls.Config{
 					Certificates:             []tls.Certificate{*cert},
-					MaxVersion:               tls.VersionTLS13,
+					MaxVersion:               f.TLSMaxVersion,
 					MinVersion:               tls.VersionTLS10,
 					PreferServerCipherSuites: true,
 				}
