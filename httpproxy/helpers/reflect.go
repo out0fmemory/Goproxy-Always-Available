@@ -27,14 +27,6 @@ func ReflectRemoteIPFromResponse(resp *http.Response) (net.IP, error) {
 }
 
 func ReflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
-	// if v := reflect.ValueOf(resp).Elem().FieldByName("RemoteAddr"); v.IsValid() {
-	// 	return v.String(), nil
-	// }
-	return reflectRemoteAddrFromResponse(resp)
-}
-
-func reflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
-
 	if resp.Body == nil {
 		return "", fmt.Errorf("ReflectRemoteAddrFromResponse: cannot reflect %#v for %v", resp, resp.Request.URL.String())
 	}
@@ -87,4 +79,12 @@ func reflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
 	}
 
 	return "", fmt.Errorf("ReflectRemoteAddrFromResponse: unsupport %#v Type=%s", v, v.Type().String())
+}
+
+func ReflectSysFDFromConn(c net.Conn) (int, error) {
+	v := reflect.ValueOf(c)
+	netfd := v.Elem().FieldByName("conn").FieldByName("fd").Elem()
+	// fd = int(fe.FieldByName("sysfd").Int())
+	fd := int(netfd.FieldByName("pfd").FieldByName("Sysfd").Int())
+	return fd, nil
 }

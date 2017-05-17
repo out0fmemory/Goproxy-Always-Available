@@ -12,7 +12,7 @@ func TestReflectRemoteAddrFromResponseHTTP(t *testing.T) {
 		t.Errorf("http.Get(%#v) error: %v", u, err)
 	}
 
-	addr, err := reflectRemoteAddrFromResponse(resp)
+	addr, err := ReflectRemoteAddrFromResponse(resp)
 	if err != nil {
 		t.Errorf("reflectRemoteAddrFromResponse(%T) error: %v", resp, err)
 	}
@@ -27,7 +27,7 @@ func TestReflectRemoteAddrFromResponseHTTPS(t *testing.T) {
 		t.Errorf("http.Get(%#v) error: %v", u, err)
 	}
 
-	addr, err := reflectRemoteAddrFromResponse(resp)
+	addr, err := ReflectRemoteAddrFromResponse(resp)
 	if err != nil {
 		t.Errorf("reflectRemoteAddrFromResponse(%T) error: %v", resp, err)
 	}
