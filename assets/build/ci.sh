@@ -190,28 +190,30 @@ function build_repo() {
 
 	make GOARCH=amd64 -C ./assets/taskbar
 	cp -f ./assets/taskbar/goproxy-gui.exe ./assets/packaging/goproxy-gui.exe
-	make GOOS=windows GOARCH=amd64 CGO_ENABLED=0
+	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 bash -xe make.bash
 
 	make GOARCH=386 -C ./assets/taskbar
 	cp -f ./assets/taskbar/goproxy-gui_x86.exe ./assets/packaging/goproxy-gui.exe
-	make GOOS=windows GOARCH=386 CGO_ENABLED=0
+	GOOS=windows GOARCH=386 CGO_ENABLED=0 bash -xe make.bash
 
 	cat <<EOF |
-make GOOS=darwin GOARCH=amd64 CGO_ENABLED=0
-make GOOS=freebsd GOARCH=386 CGO_ENABLED=0
-make GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0
-make GOOS=freebsd GOARCH=arm CGO_ENABLED=0
-make GOOS=linux GOARCH=386 CGO_ENABLED=0
-make GOOS=linux GOARCH=amd64 CGO_ENABLED=0
-make GOOS=linux GOARCH=arm CGO_ENABLED=0
-make GOOS=linux GOARCH=arm CGO_ENABLED=1
-make GOOS=linux GOARCH=arm64 CGO_ENABLED=0
-make GOOS=linux GOARCH=mips CGO_ENABLED=0
-make GOOS=linux GOARCH=mips64 CGO_ENABLED=0
-make GOOS=linux GOARCH=mips64le CGO_ENABLED=0
-make GOOS=linux GOARCH=mipsle CGO_ENABLED=0
+GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+GOOS=freebsd GOARCH=386 CGO_ENABLED=0 ./make.bash
+GOOS=freebsd GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+GOOS=freebsd GOARCH=arm CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=386 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=arm CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=arm CGO_ENABLED=1 ./make.bash
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=mips CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=mips64 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=mips64le CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=mipsle CGO_ENABLED=0 ./make.bash
 EOF
 	xargs --max-procs=5 -n1 -i bash -c {}
+
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 bash -xe make.bash check
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
