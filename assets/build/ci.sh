@@ -188,13 +188,10 @@ function build_repo() {
 		fi
 	fi
 
-	make GOARCH=amd64 -C ./assets/taskbar
-	cp -f ./assets/taskbar/goproxy-gui.exe ./assets/packaging/goproxy-gui.exe
-	GOOS=windows GOARCH=amd64 CGO_ENABLED=0 bash -xe make.bash
-
-	make GOARCH=386 -C ./assets/taskbar
-	cp -f ./assets/taskbar/goproxy-gui_x86.exe ./assets/packaging/goproxy-gui.exe
-	GOOS=windows GOARCH=386 CGO_ENABLED=0 bash -xe make.bash
+	pushd ./assets/taskbar
+	env GOARCH=amd64 ./make.bash
+	env GOARCH=386 ./make.bash
+	popd
 
 	cat <<EOF |
 GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 ./make.bash
@@ -210,6 +207,8 @@ GOOS=linux GOARCH=mips CGO_ENABLED=0 ./make.bash
 GOOS=linux GOARCH=mips64 CGO_ENABLED=0 ./make.bash
 GOOS=linux GOARCH=mips64le CGO_ENABLED=0 ./make.bash
 GOOS=linux GOARCH=mipsle CGO_ENABLED=0 ./make.bash
+GOOS=windows GOARCH=386 CGO_ENABLED=0 ./make.bash
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 ./make.bash
 EOF
 	xargs --max-procs=5 -n1 -i bash -c {}
 

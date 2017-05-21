@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -ex
 
 REVSION=$(git rev-list --count HEAD)
 HTTP2REV=$(cd ${GOPATH}/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h")
@@ -52,6 +52,11 @@ if [ "${CGO_ENABLED}" = "1" ]; then
     GOPROXY_DIST=${DISTDIR}/${PACKAGE}_${GOOS}_${GOARCH}_cgo-r${REVSION}${GOPROXY_DISTEXT}
 fi
 
+GOPROXY_GUI_EXE=${REPO}/assets/taskbar/${GOARCH}/goproxy-gui.exe
+if [ ! -f "${GOPROXY_GUI_EXE}" ]; then
+    GOPROXY_GUI_EXE=${REPO}/assets/packaging/goproxy-gui.exe
+fi
+
 OBJECTS=${OBJECTDIR}/${GOPROXY_EXE}
 
 SOURCES="${REPO}/README.md \
@@ -69,14 +74,9 @@ SOURCES="${REPO}/README.md \
         ${REPO}/httpproxy/filters/stripssl/stripssl.json \
         ${REPO}/httpproxy/httpproxy.json"
 
-if [ "${GOOS}_${GOARCH}" = "windows_amd64" ]; then
+if [ "${GOOS}" = "windows" ]; then
     SOURCES="${SOURCES} \
-             ${REPO}/assets/packaging/goproxy-gui.exe \
-             ${REPO}/assets/packaging/addto-startup.vbs \
-             ${REPO}/assets/packaging/get-latest-goproxy.cmd"
-elif [ "${GOOS}_${GOARCH}" = "windows_386" ]; then
-    SOURCES="${SOURCES} \
-             ${REPO}/assets/packaging/goproxy-gui.exe \
+             ${GOPROXY_GUI_EXE} \
              ${REPO}/assets/packaging/addto-startup.vbs \
              ${REPO}/assets/packaging/get-latest-goproxy.cmd"
 elif [ "${GOOS}_${GOARCH}_${CGO_ENABLED}" = "linux_arm_0" ]; then

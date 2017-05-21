@@ -226,7 +226,7 @@ BOOL SetWindowsProxyForAllRasConnections(WCHAR* szProxy)
         "%ALLUSERSPROFILE%\\Application Data\\Microsoft\\Network\\Connections\\Pbk\\rasphone.pbk",
     };
 
-    for (int i = 0; i < sizeof(szRasPbk) / sizeof(szRasPbk)[0]; i++)
+    for (unsigned int i = 0; i < sizeof(szRasPbk) / sizeof(szRasPbk)[0]; i++)
     {
         char szPath[2048] = "";
         if (ExpandEnvironmentStringsA(szRasPbk[i], szPath, sizeof(szPath)/sizeof(szPath[0])))
