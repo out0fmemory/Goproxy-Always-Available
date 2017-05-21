@@ -4,6 +4,7 @@ set -ex
 
 REVSION=$(git rev-list --count HEAD)
 HTTP2REV=$(cd ${GOPATH}/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h")
+LDFLAGS="-s -w -X main.version=r${REVSION} -X main.http2rev=${HTTP2REV}"
 
 GOOS=${GOOS:-$(go env GOOS)}
 GOARCH=${GOARCH:-$(go env GOARCH)}
@@ -110,7 +111,6 @@ build () {
         GOARM=${GOARM} \
         CGO_ENABLED=${CGO_ENABLED} \
         CC=${CC} \
-        LDFLAGS="-s -w -X main.version=r${REVSION} -X main.http2rev=${HTTP2REV}" \
     go build -v -ldflags="${LDFLAGS}" -o ${OBJECTDIR}/${GOPROXY_EXE} .
 }
 

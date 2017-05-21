@@ -22,7 +22,7 @@ if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
 	echo "WARNING: \$SOURCEFORGE_PASSWORD is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc make sha1sum timeout
+for CMD in curl awk git tar bzip2 xz 7za gcc sha1sum timeout
 do
 	if ! type -p ${CMD}; then
 		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
@@ -212,7 +212,7 @@ GOOS=windows GOARCH=amd64 CGO_ENABLED=0 ./make.bash
 EOF
 	xargs --max-procs=5 -n1 -i bash -c {}
 
-	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 bash -xe make.bash check
+	GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./make.bash check
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
@@ -283,14 +283,22 @@ function build_repo_ex() {
 	git clone --branch master https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
-	for OSARCH in linux/amd64 linux/386 linux/arm64 linux/arm linux/mips linux/mipsle windows/amd64 darwin/amd64
-	do
-		rm -rf goproxy-vps
-		make GOOS=${OSARCH%/*} GOARCH=${OSARCH#*/}
-	done
+	cat <<EOF |
+GOOS=darwin GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=386 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=arm CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=arm64 CGO_ENABLED=0 ./make.bash
+GOOS=linux GOARCH=mipsle CGO_ENABLED=0 ./make.bash
+GOOS=windows GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+EOF
+	xargs --max-procs=5 -n1 -i bash -c {}
 
+	local files=$(find ./build -type f -name "*.gz" -or -name "*.bz2" -or -name "*.xz")
+	cp ${files} ${WORKING_DIR}/r${RELEASE}
+
+	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
-	cp -r $(/bin/ls *.{gz,bz2,xz}) ${WORKING_DIR}/r${RELEASE}
 
 	popd
 }
