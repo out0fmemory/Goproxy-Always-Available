@@ -10,7 +10,7 @@ GoProxy 对 golang 周边库做了一些修改。具体的改动请见，
 
 - 保证系统安装了如下工具 awk/git/tar/bzip2/xz/7za/gcc/make/sha1sum/timeout/xargs，检查命令：
 ```bash
-for CMD in curl awk git tar bzip2 xz 7za gcc make sha1sum timeout xargs
+for CMD in curl awk git tar bzip2 xz 7za gcc sha1sum timeout xargs
 do
 	if ! type -p ${CMD}; then
 		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
@@ -26,7 +26,7 @@ export GOPATH=~/workspace/goproxy/gopath
 
 cd ~/workspace/goproxy/
 
-curl -k https://storage.googleapis.com/golang/go1.7.linux-amd64.tar.gz | tar xz
+curl -k https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar xz
 mv go goroot_bootstrap
 
 git clone --depth 1 https://github.com/phuslu/go
@@ -50,11 +50,11 @@ go build -v
 ```
 - 打包 goproxy
 ```bash
-make
+./make.bash
 ```
 - 交叉编译+打包 goproxy
 ```bash
-make GOOS=windows GOARCH=amd64
+GOOS=windows GOARCH=amd64 ./make.bash
 ```
 - 一键编译 GoProxy
 ```bash
