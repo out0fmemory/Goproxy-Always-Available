@@ -922,13 +922,8 @@ func main() {
 		},
 	}
 
-	if ips, err := helpers.LocalIPv4s(); err == nil {
-		for _, ip := range ips {
-			dialer.Resolver.BlackList.Set(ip.String(), struct{}{}, time.Time{})
-		}
-		for _, s := range []string{"127.0.0.1", "::1"} {
-			dialer.Resolver.BlackList.Set(s, struct{}{}, time.Time{})
-		}
+	for _, s := range []string{"127.0.0.1", "::1"} {
+		dialer.Resolver.BlackList.Set(s, struct{}{}, time.Time{})
 	}
 
 	transport := &http.Transport{
