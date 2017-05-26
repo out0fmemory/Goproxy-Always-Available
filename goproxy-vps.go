@@ -783,6 +783,7 @@ type Config struct {
 		LogLevel     int
 		DaemonStderr string
 		RejectNilSni bool
+		DnsTtl       int
 	}
 	HTTP2 []struct {
 		DisableHttp2 bool
@@ -918,7 +919,7 @@ func main() {
 		Resolver: &helpers.Resolver{
 			LRUCache:  lrucache.NewLRUCache(8 * 1024),
 			BlackList: lrucache.NewLRUCache(1024),
-			DNSExpiry: 8 * time.Hour,
+			DNSExpiry: time.Duration(config.Default.DnsTtl) * time.Second,
 		},
 	}
 
