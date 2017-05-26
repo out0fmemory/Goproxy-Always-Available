@@ -3,14 +3,8 @@ package helpers
 import (
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/phuslu/glog"
-)
-
-const (
-	DefaultDNSCacheExpiry time.Duration = time.Hour
-	DefaultDNSCacheSize   uint          = 8 * 1024
 )
 
 type Dialer struct {

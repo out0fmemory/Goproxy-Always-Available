@@ -11,6 +11,10 @@ import (
 	"github.com/phuslu/glog"
 )
 
+const (
+	DefaultDNSCacheExpiry time.Duration = 600 * time.Second
+)
+
 type Resolver struct {
 	LRUCache    lrucache.Cache
 	BlackList   lrucache.Cache
@@ -71,7 +75,7 @@ func (r *Resolver) LookupIP(name string) ([]net.IP, error) {
 
 		if r.LRUCache != nil && len(ips) > 0 {
 			if r.DNSExpiry == 0 {
-				r.LRUCache.Set(name, ips, time.Time{})
+				r.LRUCache.Set(name, ips, time.Now().Add(DefaultDNSCacheExpiry))
 			} else {
 				r.LRUCache.Set(name, ips, time.Now().Add(r.DNSExpiry))
 			}
