@@ -780,10 +780,11 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 
 type Config struct {
 	Default struct {
-		LogLevel     int
-		DaemonStderr string
-		RejectNilSni bool
-		DnsTtl       int
+		LogLevel        int
+		DaemonStderr    string
+		RejectNilSni    bool
+		DnsTtl          int
+		IdleConnTimeout int
 	}
 	HTTP2 []struct {
 		DisableHttp2 bool
@@ -935,8 +936,12 @@ func main() {
 		},
 		TLSHandshakeTimeout: 16 * time.Second,
 		MaxIdleConnsPerHost: 8,
-		IdleConnTimeout:     180,
+		IdleConnTimeout:     180 * time.Second,
 		DisableCompression:  false,
+	}
+
+	if config.Default.IdleConnTimeout > 0 {
+		transport.IdleConnTimeout = time.Duration(config.Default.IdleConnTimeout) * time.Second
 	}
 
 	cm := &CertManager{
