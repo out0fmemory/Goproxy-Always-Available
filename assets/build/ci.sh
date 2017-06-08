@@ -178,7 +178,7 @@ function build_repo() {
 	go test -v ./httpproxy/helpers
 
 	if curl -m 3 https://pki.google.com >/dev/null ; then
-		GoogleG2PKP=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -inform der -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl base64)
+		GoogleG2PKP=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl base64)
 		sed -i -r "s/\"GoogleG2PKP\": \".+\"/\"GoogleG2PKP\": \"$GoogleG2PKP\"/g" httpproxy/filters/gae/gae.json
 		if git status -s | grep -q 'gae.json' ; then
 			git diff
