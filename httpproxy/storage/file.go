@@ -107,6 +107,10 @@ func (s *FileStore) Put(name string, header http.Header, data io.ReadCloser) (*h
 		return nil, err
 	}
 
+	if err = os.Chmod(f.Name(), 0644); err != nil {
+		return nil, err
+	}
+
 	if err = os.Rename(f.Name(), filename); err != nil {
 		return nil, err
 	}
