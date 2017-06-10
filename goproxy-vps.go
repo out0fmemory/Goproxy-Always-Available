@@ -345,7 +345,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
-	var isProxyRequest bool = !helpers.ContainsString(h.ServerNames, reqHostname)
+	var isProxyRequest bool = !helpers.ContainsString(h.ServerNames, reqHostname) && h.ServerNames[0] != "*"
 
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
 	params := http.Header{}
@@ -829,16 +829,17 @@ type Config struct {
 type Handler struct {
 	ServerNames []string
 	Handlers    map[string]http.Handler
+	Default     http.Handler
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	handler, ok := h.Handlers[req.TLS.ServerName]
 	if !ok {
-		handler, ok = h.Handlers[h.ServerNames[0]]
-		if !ok {
-			http.Error(rw, "403 Forbidden", http.StatusForbidden)
-			return
-		}
+		handler = h.Default
+	}
+	if handler == nil {
+		http.Error(rw, "403 Forbidden", http.StatusForbidden)
+		return
 	}
 	handler.ServeHTTP(rw, req)
 }
@@ -1015,6 +1016,10 @@ func main() {
 			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, !server.DisableHttp2)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
+			if servername == "*" {
+				glog.V(3).Infof("Set handler=%#v as default HTTP/2 handler", handler)
+				h.Default = handler
+			}
 		}
 	}
 
