@@ -141,9 +141,9 @@ func (p *SimpleAuth) Authenticate(username, password string) error {
 }
 
 type HTTPHandler struct {
-	ServerNames []string
-	Fallback    *url.URL
-	Dial        func(network, address string) (net.Conn, error)
+	Fallback     *url.URL
+	DisableProxy bool
+	Dial         func(network, address string) (net.Conn, error)
 	*http.Transport
 	*SimpleAuth
 }
@@ -151,21 +151,7 @@ type HTTPHandler struct {
 func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	var err error
 
-	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
-	params := http.Header{}
-	for key, values := range req.Header {
-		if strings.HasPrefix(key, paramsPreifx) {
-			params[key] = values
-		}
-	}
-
-	for key := range params {
-		req.Header.Del(key)
-	}
-
-	var isProxyRequest bool = !helpers.ContainsString(h.ServerNames, req.URL.Hostname())
-
-	if isProxyRequest && h.SimpleAuth != nil {
+	if !h.DisableProxy && h.SimpleAuth != nil {
 		auth := req.Header.Get("Proxy-Authorization")
 		if auth == "" {
 			h.ProxyAuthorizationReqiured(rw, req)
@@ -196,7 +182,7 @@ func (h *HTTPHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Header.Del("Proxy-Authorization")
 	}
 
-	if !isProxyRequest {
+	if h.DisableProxy {
 		if h.Fallback == nil {
 			http.FileServer(http.Dir("/var/www/html")).ServeHTTP(rw, req)
 			return
@@ -811,10 +797,10 @@ type Config struct {
 		Network string
 		Listen  string
 
-		ServerName []string
+		ParentProxy string
 
-		ParentProxy   string
 		ProxyFallback string
+		DisableProxy  bool
 
 		ProxyAuthMethod  string
 		ProxyBuiltinAuth map[string]string
@@ -1074,8 +1060,7 @@ func main() {
 		}
 
 		handler := &HTTPHandler{
-			ServerNames: config.HTTP.ServerName,
-			Transport:   transport,
+			Transport: transport,
 		}
 
 		if server.ProxyFallback != "" {
@@ -1083,6 +1068,10 @@ func main() {
 			if err != nil {
 				glog.Fatalf("url.Parse(%+v) error: %+v", server.ProxyFallback, err)
 			}
+		}
+
+		if server.DisableProxy {
+			handler.DisableProxy = server.DisableProxy
 		}
 
 		if server.ParentProxy != "" {
