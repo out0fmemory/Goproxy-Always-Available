@@ -670,9 +670,6 @@ func (cm *CertManager) AddSniProxy(serverNames []string, host string, port int) 
 }
 
 func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
-	if _, ok := cm.certs[host]; !ok {
-		return errors.New("acme/autocert: host not configured")
-	}
 	return nil
 }
 
