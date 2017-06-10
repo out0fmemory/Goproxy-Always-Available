@@ -1,6 +1,6 @@
 # Usage: https://hub.docker.com/r/phuslu/goproxy-vps/
 
-FROM alpine:3.5
+FROM alpine:3.6
 
 RUN apk add --no-cache curl xz tar && \
 	mkdir /tmp/goproxy-vps && \

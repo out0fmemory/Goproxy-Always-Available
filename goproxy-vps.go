@@ -874,6 +874,8 @@ func main() {
 		if err != nil {
 			glog.Fatalf("Parse(%+v) error: %+v", parts[1], err)
 		}
+	case strings.HasPrefix(filename, "["):
+		tomlData = []byte(filename)
 	case os.Getenv("GOPROXY_VPS_CONFIG_URL") != "":
 		filename = os.Getenv("GOPROXY_VPS_CONFIG_URL")
 		fallthrough
