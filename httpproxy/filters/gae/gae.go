@@ -18,6 +18,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
+	"github.com/phuslu/quic-go/h2quic"
 
 	"../../filters"
 	"../../helpers"
@@ -37,6 +38,7 @@ type Config struct {
 	ForceIPv6       bool
 	DisableHTTP2    bool
 	ForceHTTP2      bool
+	EnableQuic      bool
 	EnableDeadProbe bool
 	EnableRemoteDNS bool
 	SiteToAlias     map[string]string
@@ -239,6 +241,22 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	var tr http.RoundTripper
+
+	if config.EnableQuic {
+		ResolveUDPAddr := func(network, addr string) (*net.UDPAddr, error) {
+			if ips, err := r.LookupIP(addr); err == nil {
+				return &net.UDPAddr{
+					IP:   ips[0],
+					Port: 443,
+				}, nil
+			}
+			return net.ResolveUDPAddr(network, addr)
+		}
+		tr = &h2quic.QuicRoundTripper{
+			ResolveUDPAddr: ResolveUDPAddr,
+		}
+		glog.Fatalf("quic is coming soon, abort")
+	}
 
 	GetConnectMethodAddr := func(addr string) string {
 		if host, port, err := net.SplitHostPort(addr); err == nil {
