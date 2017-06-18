@@ -18,6 +18,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
+	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
 
 	"../../filters"
@@ -243,17 +244,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	var tr http.RoundTripper
 
 	if config.EnableQuic {
-		ResolveUDPAddr := func(network, addr string) (*net.UDPAddr, error) {
-			if ips, err := r.LookupIP(addr); err == nil {
-				return &net.UDPAddr{
-					IP:   ips[0],
-					Port: 443,
-				}, nil
+		DialAddr := func(hostname string, config *quic.Config) (quic.Session, error) {
+			if hosts, err := r.LookupHost(hostname); err == nil {
+				hostname = hosts[0]
 			}
-			return net.ResolveUDPAddr(network, addr)
+			return quic.DialAddr(hostname, config)
 		}
 		tr = &h2quic.QuicRoundTripper{
-			ResolveUDPAddr: ResolveUDPAddr,
+			DialAddr: DialAddr,
 		}
 		glog.Fatalf("quic is coming soon, abort")
 	}
