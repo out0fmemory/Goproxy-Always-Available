@@ -13,6 +13,7 @@ import (
 
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
+	quic "github.com/phuslu/quic-go"
 )
 
 type MultiDialer struct {
@@ -142,7 +143,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 								return nil, fmt.Errorf("Wrong certificate of %s: PeerCertificates=%#v", conn.RemoteAddr(), certs)
 							}
 							cert := certs[1]
-							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
+							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, cert.Subject)
 							switch {
 							case d.GoogleG2PKP != nil:
 								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
@@ -253,6 +254,112 @@ func (d *MultiDialer) dialMultiTLS(network string, hosts []string, port string, 
 				}
 			}(len(hosts) - 1 - i)
 			return r.c, nil
+		}
+	}
+	return nil, r.e
+}
+
+func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, error) {
+	if d.LogToStderr {
+		SetConsoleTextColorGreen()
+	}
+	glog.V(2).Infof("MULTIDIALER DialQuic(%#v) with good_addrs=%d, bad_addrs=%d", address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	if d.LogToStderr {
+		SetConsoleTextColorReset()
+	}
+
+	if cfg == nil {
+		cfg = &quic.Config{
+			TLSConfig:        d.TLSConfig,
+			HandshakeTimeout: d.Timeout,
+		}
+	}
+
+	if host, port, err := net.SplitHostPort(address); err == nil {
+		if alias0, ok := d.SiteToAlias.Lookup(host); ok {
+			alias := alias0.(string)
+			if hosts, err := d.LookupAlias(alias); err == nil {
+				var config *quic.Config
+
+				isGoogleAddr := false
+				switch {
+				case strings.HasPrefix(alias, "google_"):
+					config = &quic.Config{
+						TLSConfig:        d.GoogleTLSConfig,
+						HandshakeTimeout: d.Timeout,
+					}
+					isGoogleAddr = true
+				case cfg == nil:
+					config = &quic.Config{
+						TLSConfig: &tls.Config{
+							InsecureSkipVerify: !d.SSLVerify,
+							ServerName:         address,
+						},
+						HandshakeTimeout: d.Timeout,
+					}
+				default:
+					config = cfg
+				}
+				glog.V(3).Infof("DialQuic(%#v) alais=%#v set quic.Config=%#v", address, alias, config)
+
+				sess, err := d.dialMultiQuic(hosts, port, config)
+				if err != nil {
+					return nil, err
+				}
+				if d.SSLVerify && isGoogleAddr {
+					// TODO: verify google certificates
+				}
+				return sess, nil
+			}
+		}
+	}
+
+	return quic.DialAddr(address, cfg)
+}
+
+func (d *MultiDialer) dialMultiQuic(hosts []string, port string, config *quic.Config) (quic.Session, error) {
+	glog.V(3).Infof("dialMultiQuic( %v, %#v)", hosts, config)
+	type sessWithError struct {
+		s quic.Session
+		e error
+	}
+
+	hosts = d.pickupTLSHosts(hosts, d.Level)
+	lane := make(chan sessWithError, len(hosts))
+
+	for _, host := range hosts {
+		go func(host string, c chan<- sessWithError) {
+			addr := net.JoinHostPort(host, port)
+
+			start := time.Now()
+			sess, err := quic.DialAddr(addr, config)
+			end := time.Now()
+
+			if err != nil {
+				d.TLSConnDuration.Del(host)
+				d.TLSConnError.Set(host, err, end.Add(d.ErrorConnExpiry))
+			} else {
+				d.TLSConnDuration.Set(host, end.Sub(start), end.Add(d.GoodConnExpiry))
+			}
+
+			lane <- sessWithError{sess, err}
+		}(host, lane)
+	}
+
+	var r sessWithError
+	for i := range hosts {
+		r = <-lane
+		if r.e == nil {
+			go func(count int) {
+				var r1 sessWithError
+				for ; count > 0; count-- {
+					r1 = <-lane
+					if r1.s != nil {
+						r1.s.Close(nil)
+					}
+				}
+			}(len(hosts) - 1 - i)
+			return r.s, nil
 		}
 	}
 	return nil, r.e
