@@ -18,7 +18,6 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
-	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
 
 	"../../filters"
@@ -243,19 +242,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	var tr http.RoundTripper
 
-	if config.EnableQuic {
-		DialAddr := func(hostname string, config *quic.Config) (quic.Session, error) {
-			if hosts, err := r.LookupHost(hostname); err == nil {
-				hostname = hosts[0]
-			}
-			return quic.DialAddr(hostname, config)
-		}
-		tr = &h2quic.QuicRoundTripper{
-			DialAddr: DialAddr,
-		}
-		glog.Fatalf("quic is coming soon, abort")
-	}
-
 	GetConnectMethodAddr := func(addr string) string {
 		if host, port, err := net.SplitHostPort(addr); err == nil {
 			if alias, ok := md.SiteToAlias.Lookup(host); ok {
@@ -276,6 +262,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	if config.Transport.Proxy.Enabled {
+		if config.EnableQuic {
+			glog.Fatalf("EnableQuic is confilict with Transport!")
+		}
 		fixedURL, err := url.Parse(config.Transport.Proxy.URL)
 		if err != nil {
 			glog.Fatalf("url.Parse(%#v) error: %s", config.Transport.Proxy.URL, err)
@@ -315,6 +304,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Warningf("GAE: Error enabling Transport HTTP/2 support: %v", err)
 		}
 		tr = t1
+	case config.EnableQuic:
+		tr = &h2quic.QuicRoundTripper{
+			DialAddr: md.DialQuic,
+		}
 	default:
 		tr = t1
 	}
