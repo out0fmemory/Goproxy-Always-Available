@@ -306,7 +306,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		tr = t1
 	case config.EnableQuic:
 		tr = &h2quic.QuicRoundTripper{
-			DialAddr: md.DialQuic,
+			DisableCompression: true,
+			DialAddr:           md.DialQuic,
 		}
 	default:
 		tr = t1
