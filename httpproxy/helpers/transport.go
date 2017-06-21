@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	"github.com/phuslu/net/http2"
+	"github.com/phuslu/quic-go/h2quic"
 )
 
 var (
@@ -37,6 +38,13 @@ func CloseConnections(tr http.RoundTripper) bool {
 		t.CloseConnections(f)
 		return true
 	}
+	if t, ok := tr.(*h2quic.QuicRoundTripper); ok {
+		f := func(addr net.Addr, idle bool) bool {
+			return true
+		}
+		t.CloseConnections(f)
+		return true
+	}
 	return false
 }
 
@@ -53,6 +61,9 @@ func CloseConnectionByRemoteHost(tr http.RoundTripper, host string) bool {
 		return true
 	case *http2.Transport:
 		tr.(*http2.Transport).CloseConnections(f)
+		return true
+	case *h2quic.QuicRoundTripper:
+		tr.(*h2quic.QuicRoundTripper).CloseConnections(f)
 		return true
 	}
 	return false
