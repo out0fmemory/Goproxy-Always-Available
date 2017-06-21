@@ -547,6 +547,11 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 						glog.Warningf("GAE: %s \"DIRECT\" timeout, add to blacklist for %v", ip, duration)
 						f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 					}
+
+					if ne.Net == "udp" {
+						glog.Warningf("GAE: Quic %s \"DIRECT\" timeout, close connection to it", ip)
+						helpers.CloseConnectionByRemoteHost(tr, ip)
+					}
 				}
 			}
 			if err.Error() == "unexpected EOF" {
