@@ -549,6 +549,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					}
 
 					if ne.Net == "udp" {
+						// TODO: fix quic-go timeout bugs
 						glog.Warningf("GAE: Quic %s \"DIRECT\" timeout, close connection to it", ip)
 						helpers.CloseConnectionByRemoteHost(tr, ip)
 					}
