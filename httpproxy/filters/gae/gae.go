@@ -532,32 +532,29 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		glog.Warningf("%s \"GAE %s %s %s %s\" error: %T(%v)", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, err, err)
-		if tr == f.DirectTransport {
-			if ne, ok := err.(interface {
-				Timeout() bool
-			}); ok && ne.Timeout() {
-				// f.MultiDialer.ClearCache()
-				// TODO: close by remote address
-				helpers.CloseConnections(tr)
-			}
-			if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
-				if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-					if f.GAETransport.MultiDialer != nil {
-						duration := 5 * time.Minute
-						glog.Warningf("GAE: %s \"DIRECT\" timeout, add to blacklist for %v", ip, duration)
-						f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-					}
+		if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
+			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
+				if f.GAETransport.MultiDialer != nil {
+					duration := 5 * time.Minute
+					glog.Warningf("GAE %#v %s error: %+v, add to blacklist for %v", prefix, ip, ne.Err, duration)
+					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+				}
 
-					if ne.Net == "udp" {
-						// TODO: fix quic-go timeout bugs
-						glog.Warningf("GAE: Quic %s \"DIRECT\" timeout, close connection to it", ip)
+				switch ne.Net {
+				case "udp":
+					// TODO: fix quic-go timeout bugs
+					glog.Warningf("GAE Quic %#v %s error: %+v, close connection to it", prefix, ip, ne.Err)
+					helpers.CloseConnectionByRemoteHost(tr, ip)
+				default:
+					if ne.Timeout() {
+						glog.Warningf("GAE: TLS %#v %s timeout: %+v, close connection to it", prefix, ip, ne.Err)
 						helpers.CloseConnectionByRemoteHost(tr, ip)
 					}
 				}
 			}
-			if err.Error() == "unexpected EOF" {
-				helpers.CloseConnections(tr)
-			}
+		}
+		if err.Error() == "unexpected EOF" {
+			helpers.CloseConnections(tr)
 		}
 		if resp != nil && resp.Body != nil {
 			resp.Body.Close()
