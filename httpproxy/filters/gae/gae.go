@@ -305,9 +305,13 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 		tr = t1
 	case config.EnableQuic:
-		tr = &h2quic.QuicRoundTripper{
-			DisableCompression: true,
-			DialAddr:           md.DialQuic,
+		tr = &QuicTransport{
+			RoundTripper: &h2quic.QuicRoundTripper{
+				DisableCompression: true,
+				DialAddr:           md.DialQuic,
+			},
+			MultiDialer: md,
+			RetryTimes:  2,
 		}
 	default:
 		tr = t1
@@ -542,7 +546,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 
 				switch ne.Net {
 				case "udp":
-					// TODO: fix quic-go timeout bugs
 					glog.Warningf("GAE Quic %s %s error: %+v, close connection to it", prefix, ip, ne.Err)
 					helpers.CloseConnectionByRemoteHost(tr, ip)
 				default:
