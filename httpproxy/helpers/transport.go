@@ -24,14 +24,14 @@ var (
 
 func CloseConnections(tr http.RoundTripper) bool {
 	if t, ok := tr.(*http.Transport); ok {
-		f := func(conn net.Conn, idle bool) bool {
+		f := func(addr net.Addr, idle bool) bool {
 			return true
 		}
 		t.CloseConnections(f)
 		return true
 	}
 	if t, ok := tr.(*http2.Transport); ok {
-		f := func(conn net.Conn, idle bool) bool {
+		f := func(addr net.Addr, idle bool) bool {
 			return true
 		}
 		t.CloseConnections(f)
@@ -40,9 +40,12 @@ func CloseConnections(tr http.RoundTripper) bool {
 	return false
 }
 
-func CloseConnectionByRemoteAddr(tr http.RoundTripper, addr string) bool {
-	f := func(conn net.Conn, idle bool) bool {
-		return conn != nil && conn.RemoteAddr().String() == addr
+func CloseConnectionByRemoteHost(tr http.RoundTripper, host string) bool {
+	f := func(addr net.Addr, idle bool) bool {
+		if host1, _, err := net.SplitHostPort(addr.String()); err == nil {
+			return host == host1
+		}
+		return false
 	}
 	switch tr.(type) {
 	case *http.Transport:
