@@ -88,22 +88,6 @@ function build_go() {
 	popd
 }
 
-function rebuild_go_with_tls13() {
-	pushd ${WORKING_DIR}
-
-	cd go/src
-
-	if git log --oneline -5 master | grep 'tls-tris' 2>&1 >/dev/null; then
-		echo 'tls-tris already land on master'
-	else
-		git cherry-pick $(git log -1 --oneline --format="%h" origin/tls13)
-		bash ./make.bash
-		grep -q 'machine github.com' ~/.netrc && git push -f origin HEAD:tls13
-	fi
-
-	popd
-}
-
 function build_glog() {
 	pushd ${WORKING_DIR}
 
@@ -426,7 +410,6 @@ build_http2
 build_bogo
 build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
-	rebuild_go_with_tls13
 	build_repo_ex
 	release_github
 	release_sourceforge
