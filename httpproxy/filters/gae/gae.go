@@ -335,7 +335,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
-	if config.EnableDeadProbe && !config.Transport.Proxy.Enabled {
+	if config.EnableDeadProbe && !config.Transport.Proxy.Enabled && !config.EnableQuic {
 		go func() {
 			probe := func() {
 				c, err := net.DialTimeout("tcp", net.JoinHostPort(config.DNSServers[0], "53"), 300*time.Millisecond)
