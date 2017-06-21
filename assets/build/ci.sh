@@ -128,6 +128,19 @@ function build_bogo() {
 	popd
 }
 
+function build_quicgo() {
+	pushd ${WORKING_DIR}
+
+	git clone https://github.com/phuslu/quic-go $GOPATH/src/github.com/phuslu/quic-go
+	cd $GOPATH/src/github.com/phuslu/quic-go
+	git remote add -f upstream https://github.com/lucas-clemente/quic-go
+	git rebase upstream/master
+	go get -v github.com/phuslu/quic-go/h2quic
+	grep -q 'machine github.com' ~/.netrc && git push -f origin master
+
+	popd
+}
+
 function build_repo() {
 	pushd ${WORKING_DIR}
 
@@ -408,6 +421,7 @@ build_go
 build_glog
 build_http2
 build_bogo
+build_quicgo
 build_repo
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
