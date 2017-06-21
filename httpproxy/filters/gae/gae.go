@@ -308,6 +308,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		tr = &QuicTransport{
 			RoundTripper: &h2quic.QuicRoundTripper{
 				DisableCompression: true,
+				HandshakeTimeout:   md.Timeout,
 				DialAddr:           md.DialQuic,
 			},
 			MultiDialer: md,
