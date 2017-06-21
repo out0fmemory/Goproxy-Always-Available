@@ -536,18 +536,18 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
 				if f.GAETransport.MultiDialer != nil {
 					duration := 5 * time.Minute
-					glog.Warningf("GAE %#v %s error: %+v, add to blacklist for %v", prefix, ip, ne.Err, duration)
+					glog.Warningf("GAE %s %s error: %+v, add to blacklist for %v", prefix, ip, ne.Err, duration)
 					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 				}
 
 				switch ne.Net {
 				case "udp":
 					// TODO: fix quic-go timeout bugs
-					glog.Warningf("GAE Quic %#v %s error: %+v, close connection to it", prefix, ip, ne.Err)
+					glog.Warningf("GAE Quic %s %s error: %+v, close connection to it", prefix, ip, ne.Err)
 					helpers.CloseConnectionByRemoteHost(tr, ip)
 				default:
 					if ne.Timeout() {
-						glog.Warningf("GAE: TLS %#v %s timeout: %+v, close connection to it", prefix, ip, ne.Err)
+						glog.Warningf("GAE: TLS %s %s timeout: %+v, close connection to it", prefix, ip, ne.Err)
 						helpers.CloseConnectionByRemoteHost(tr, ip)
 					}
 				}
