@@ -133,7 +133,7 @@
 			"DualStack": false,
 			"KeepAlive": 5,
 			"Level": 12,
-			"Timeout": 8,
+			"Timeout": 5,
 		},
 		"Proxy": {
 			"Enabled": false,
