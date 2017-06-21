@@ -537,6 +537,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 				Timeout() bool
 			}); ok && ne.Timeout() {
 				// f.MultiDialer.ClearCache()
+				// TODO: close by remote address
 				helpers.CloseConnections(tr)
 			}
 			if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
