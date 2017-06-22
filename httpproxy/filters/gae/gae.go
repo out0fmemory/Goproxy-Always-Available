@@ -288,6 +288,16 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	switch {
+	case config.EnableQuic:
+		tr = &QuicTransport{
+			RoundTripper: &h2quic.QuicRoundTripper{
+				DisableCompression: true,
+				HandshakeTimeout:   md.Timeout,
+				DialAddr:           md.DialQuic,
+			},
+			MultiDialer: md,
+			RetryTimes:  2,
+		}
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTP2=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.Transport.Proxy.Enabled && config.ForceHTTP2:
@@ -304,16 +314,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			glog.Warningf("GAE: Error enabling Transport HTTP/2 support: %v", err)
 		}
 		tr = t1
-	case config.EnableQuic:
-		tr = &QuicTransport{
-			RoundTripper: &h2quic.QuicRoundTripper{
-				DisableCompression: true,
-				HandshakeTimeout:   md.Timeout,
-				DialAddr:           md.DialQuic,
-			},
-			MultiDialer: md,
-			RetryTimes:  2,
-		}
 	default:
 		tr = t1
 	}
