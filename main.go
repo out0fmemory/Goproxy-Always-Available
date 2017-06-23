@@ -23,8 +23,7 @@ import (
 )
 
 var (
-	version  = "r9999"
-	http2rev = "?????"
+	version = "r9999"
 )
 
 func init() {
@@ -72,8 +71,8 @@ func main() {
 	}
 
 	fmt.Fprintf(os.Stderr, `------------------------------------------------------
-GoProxy Version    : %s (go/%s http2/%s %s/%s)`,
-		version, gover, http2rev, runtime.GOOS, runtime.GOARCH)
+GoProxy Version    : %s (go/%s %s/%s)`,
+		version, gover, runtime.GOOS, runtime.GOARCH)
 	for profile, config := range config {
 		if !config.Enabled {
 			continue
