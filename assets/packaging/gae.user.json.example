@@ -2,6 +2,7 @@
 	"AppIDs": [
 		"goagenta",
 	],
+	// "EnableQuic": true,
 	// "DisableHTTP2": true,
 	// "EnableRemoteDNS": true,
 	// "ForceHTTP2": true,
