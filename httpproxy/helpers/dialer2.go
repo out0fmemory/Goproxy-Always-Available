@@ -272,6 +272,7 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 		cfg = &quic.Config{
 			TLSConfig:        d.TLSConfig,
 			HandshakeTimeout: d.Timeout,
+			IdleTimeout:      d.Timeout,
 		}
 	}
 
@@ -287,6 +288,7 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 					config = &quic.Config{
 						TLSConfig:        d.GoogleTLSConfig,
 						HandshakeTimeout: d.Timeout,
+						IdleTimeout:      d.Timeout,
 					}
 					isGoogleAddr = true
 				case cfg == nil:
@@ -296,6 +298,7 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 							ServerName:         address,
 						},
 						HandshakeTimeout: d.Timeout,
+						IdleTimeout:      d.Timeout,
 					}
 				default:
 					config = cfg
