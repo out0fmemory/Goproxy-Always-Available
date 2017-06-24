@@ -36,7 +36,15 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
 			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-				shouldClose := ne.Timeout() || ne.Net == "udp"
+				var shouldClose bool
+
+				switch ne.Net {
+				case "udp":
+					shouldClose = true
+				case "tcp", "tcp4", "tcp6":
+					shouldClose = ne.Timeout() || ne.Op == "read"
+				}
+
 				if shouldClose {
 					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
 					helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
@@ -46,6 +54,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 						t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 					}
 				}
+			}
+			if err.Error() == "unexpected EOF" {
+				helpers.CloseConnections(t.RoundTripper)
 			}
 		}
 
@@ -79,32 +90,6 @@ func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 		resp, err := t.RoundTripper.RoundTrip(req1)
 
 		if err != nil {
-
-			isTimeoutError := false
-			if ne, ok := err.(interface {
-				Timeout() bool
-			}); ok && ne.Timeout() {
-				isTimeoutError = true
-			}
-			if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
-				isTimeoutError = true
-			}
-
-			if isTimeoutError {
-				glog.Warningf("GAE: \"%s %s\" timeout: %v, helpers.CloseConnections(%T)", req.Method, req.URL.String(), err, t.RoundTripper)
-				helpers.CloseConnections(t.RoundTripper)
-				if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
-					if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-						if t.MultiDialer != nil {
-							duration := 5 * time.Minute
-							glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
-							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-						}
-					}
-				}
-				return nil, err
-			}
-
 			if i == retryTimes-1 {
 				return nil, err
 			} else {
