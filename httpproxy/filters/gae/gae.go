@@ -263,7 +263,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	if config.Transport.Proxy.Enabled {
 		if config.EnableQuic {
-			glog.Fatalf("EnableQuic is confilict with Transport!")
+			glog.Fatalf("EnableQuic is conflict with Proxy setting!")
 		}
 		fixedURL, err := url.Parse(config.Transport.Proxy.URL)
 		if err != nil {
