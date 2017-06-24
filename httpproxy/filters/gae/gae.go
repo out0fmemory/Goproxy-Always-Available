@@ -82,8 +82,8 @@ type Config struct {
 
 type Filter struct {
 	Config
-	GAETransport       *Transport
-	DirectTransport    http.RoundTripper
+	GAETransport       *GAETransport
+	DirectTransport    *Transport
 	ForceHTTPSMatcher  *helpers.HostMatcher
 	ForceGAEStrings    []string
 	ForceGAESuffixs    []string
@@ -240,7 +240,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		md.IPBlackList.Set(ip, struct{}{}, time.Time{})
 	}
 
-	var tr http.RoundTripper
+	tr := &Transport{
+		MultiDialer: md,
+		RetryTimes:  2,
+	}
 
 	GetConnectMethodAddr := func(addr string) string {
 		if host, port, err := net.SplitHostPort(addr); err == nil {
@@ -289,21 +292,17 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	switch {
 	case config.EnableQuic:
-		tr = &QuicTransport{
-			RoundTripper: &h2quic.QuicRoundTripper{
-				DisableCompression: true,
-				HandshakeTimeout:   md.Timeout,
-				DialAddr:           md.DialQuic,
-			},
-			MultiDialer: md,
-			RetryTimes:  2,
+		tr.RoundTripper = &h2quic.QuicRoundTripper{
+			DisableCompression: true,
+			HandshakeTimeout:   md.Timeout,
+			DialAddr:           md.DialQuic,
 		}
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTP2=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
 	case config.Transport.Proxy.Enabled && config.ForceHTTP2:
 		glog.Fatalf("GAE: Proxy.Enabled=%v and ForceHTTP2=%v is conflict!", config.Transport.Proxy.Enabled, config.ForceHTTP2)
 	case config.ForceHTTP2:
-		tr = &http2.Transport{
+		tr.RoundTripper = &http2.Transport{
 			DialTLS:            md.DialTLS2,
 			TLSClientConfig:    md.GoogleTLSConfig,
 			DisableCompression: config.Transport.DisableCompression,
@@ -313,9 +312,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		if err != nil {
 			glog.Warningf("GAE: Error enabling Transport HTTP/2 support: %v", err)
 		}
-		tr = t1
+		tr.RoundTripper = t1
 	default:
-		tr = t1
+		tr.RoundTripper = t1
 	}
 
 	forceHTTPSMatcherStrings := make([]string, 0)
@@ -391,7 +390,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	f := &Filter{
 		Config: *config,
-		GAETransport: &Transport{
+		GAETransport: &GAETransport{
 			RoundTripper: tr,
 			MultiDialer:  md,
 			Servers:      NewServers(config.AppIDs, config.Password, config.SSLVerify),
@@ -545,15 +544,9 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 				}
 
-				switch ne.Net {
-				case "udp":
-					glog.Warningf("GAE Quic %s %s error: %+v, close connection to it", prefix, ip, ne.Err)
+				if ne.Timeout() {
+					glog.Warningf("GAE: %s %s timeout: %+v, close connection to it", prefix, ip, ne.Err)
 					helpers.CloseConnectionByRemoteHost(tr, ip)
-				default:
-					if ne.Timeout() {
-						glog.Warningf("GAE: TLS %s %s timeout: %+v, close connection to it", prefix, ip, ne.Err)
-						helpers.CloseConnectionByRemoteHost(tr, ip)
-					}
 				}
 			}
 		}

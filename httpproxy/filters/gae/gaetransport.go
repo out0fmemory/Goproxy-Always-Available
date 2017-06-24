@@ -14,6 +14,49 @@ import (
 )
 
 type Transport struct {
+	RoundTripper http.RoundTripper
+	MultiDialer  *helpers.MultiDialer
+	RetryDelay   time.Duration
+	RetryTimes   int
+}
+
+func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
+	var err error
+	var resp *http.Response
+	for i := 0; i < t.RetryTimes; i++ {
+		resp, err = t.RoundTripper.RoundTrip(req)
+
+		if err == nil {
+			return resp, nil
+		}
+
+		if i == t.RetryTimes-1 {
+			break
+		}
+
+		if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
+			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
+				shouldClose := ne.Timeout() || ne.Net == "udp"
+				if shouldClose {
+					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
+					helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
+					if t.MultiDialer != nil {
+						duration := 5 * time.Minute
+						glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
+						t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+					}
+				}
+			}
+		}
+
+		if t.RetryDelay > 0 {
+			time.Sleep(t.RetryDelay)
+		}
+	}
+	return resp, err
+}
+
+type GAETransport struct {
 	http.RoundTripper
 	MultiDialer *helpers.MultiDialer
 	Servers     *Servers
@@ -22,7 +65,7 @@ type Transport struct {
 	RetryTimes  int
 }
 
-func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
+func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	deadline := t.Deadline
 	retryTimes := t.RetryTimes
 	retryDelay := t.RetryDelay
@@ -50,7 +93,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			if isTimeoutError {
 				glog.Warningf("GAE: \"%s %s\" timeout: %v, helpers.CloseConnections(%T)", req.Method, req.URL.String(), err, t.RoundTripper)
 				helpers.CloseConnections(t.RoundTripper)
-				if ne, ok := err.(*net.OpError); ok {
+				if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
 					if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
 						if t.MultiDialer != nil {
 							duration := 5 * time.Minute
