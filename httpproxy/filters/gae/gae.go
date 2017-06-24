@@ -1,7 +1,6 @@
 package gae
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"encoding/base64"
@@ -83,7 +82,7 @@ type Config struct {
 type Filter struct {
 	Config
 	GAETransport       *GAETransport
-	DirectTransport    *Transport
+	Transport          *Transport
 	ForceHTTPSMatcher  *helpers.HostMatcher
 	ForceGAEStrings    []string
 	ForceGAESuffixs    []string
@@ -245,15 +244,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		RetryTimes:  2,
 	}
 
-	GetConnectMethodAddr := func(addr string) string {
-		if host, port, err := net.SplitHostPort(addr); err == nil {
-			if alias, ok := md.SiteToAlias.Lookup(host); ok {
-				addr = net.JoinHostPort(alias.(string), port)
-			}
-		}
-		return addr
-	}
-
 	t1 := &http.Transport{
 		DialTLS:               md.DialTLS,
 		DisableKeepAlives:     config.Transport.DisableKeepAlives,
@@ -261,7 +251,14 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 		IdleConnTimeout:       time.Duration(config.Transport.IdleConnTimeout) * time.Second,
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
-		GetConnectMethodAddr:  GetConnectMethodAddr,
+		GetConnectMethodAddr: func(addr string) string {
+			if host, port, err := net.SplitHostPort(addr); err == nil {
+				if alias, ok := md.SiteToAlias.Lookup(host); ok {
+					addr = net.JoinHostPort(alias.(string), port)
+				}
+			}
+			return addr
+		},
 	}
 
 	if config.Transport.Proxy.Enabled {
@@ -398,7 +395,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Millisecond,
 			RetryTimes:   config.Transport.RetryTimes,
 		},
-		DirectTransport:    tr,
+		Transport:          tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(forceHTTPSMatcherStrings),
 		ForceGAEMatcher:    helpers.NewHostMatcher(forceGAEMatcherStrings),
 		ForceGAEStrings:    forceGAEStrings,
@@ -476,7 +473,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 
 		if req.URL.Scheme != "http" && !f.shouldForceGAE(req) {
-			tr = f.DirectTransport
+			tr = f.Transport
 			if s := req.Header.Get("Connection"); s != "" {
 				if s1 := strings.ToLower(s); s != s1 {
 					req.Header.Set("Connection", s1)
@@ -485,7 +482,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 		}
 	}
 
-	if tr != f.DirectTransport && req.Method == http.MethodOptions {
+	if tr != f.Transport && req.Method == http.MethodOptions {
 		if v, ok := f.FakeOptionsMatcher.Lookup(req.Host); ok {
 			resp := &http.Response{
 				StatusCode:    http.StatusOK,
@@ -529,7 +526,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	}
 
 	prefix := "FETCH"
-	if tr == f.DirectTransport {
+	if tr == f.Transport {
 		prefix = "DIRECT"
 	}
 
@@ -540,43 +537,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 			resp.Body.Close()
 		}
 		return ctx, nil, err
-	}
-
-	if tr == f.DirectTransport && resp.StatusCode >= http.StatusBadRequest {
-		body, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			resp.Body.Close()
-			return ctx, nil, err
-		}
-		if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
-			if ip, _, err := net.SplitHostPort(addr); err == nil {
-				var duration time.Duration
-				switch {
-				case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
-					duration = 1 * time.Hour
-				case resp.StatusCode >= 301 && strings.Contains(resp.Header.Get("Location"), "hangouts.google.com"):
-					duration = 2 * time.Hour
-				case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
-					server := resp.Header.Get("Server")
-					if server != "gws" && !strings.HasPrefix(server, "gvs") {
-						if md := f.GAETransport.MultiDialer; md != nil && md.TLSConnDuration.Len() > 10 {
-							duration = 5 * time.Minute
-						}
-					}
-				}
-
-				if duration > 0 && f.GAETransport.MultiDialer != nil {
-					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
-					f.GAETransport.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-
-					if !helpers.CloseConnectionByRemoteHost(tr, ip) {
-						glog.Warningf("GAE: CloseConnectionByRemoteHost(%T, %#v) failed.", tr, ip)
-					}
-				}
-			}
-		}
-		resp.Body.Close()
-		resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 	}
 
 	if resp != nil && resp.Header != nil {

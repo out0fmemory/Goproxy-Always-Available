@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/phuslu/glog"
@@ -16,7 +17,6 @@ import (
 type Transport struct {
 	RoundTripper http.RoundTripper
 	MultiDialer  *helpers.MultiDialer
-	RetryDelay   time.Duration
 	RetryTimes   int
 }
 
@@ -26,11 +26,54 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	for i := 0; i < t.RetryTimes; i++ {
 		resp, err = t.RoundTripper.RoundTrip(req)
 
-		if err == nil {
-			return resp, nil
+		if i == t.RetryTimes-1 {
+			break
 		}
 
-		if i == t.RetryTimes-1 {
+		if err == nil && resp != nil {
+			if resp.StatusCode == http.StatusOK || strings.HasSuffix(req.Host, GAEDomain) {
+				break
+			}
+		}
+
+		if resp != nil && resp.StatusCode >= http.StatusBadRequest {
+			body, err := ioutil.ReadAll(resp.Body)
+			if err != nil {
+				resp.Body.Close()
+				return nil, err
+			}
+
+			if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
+				if ip, _, err := net.SplitHostPort(addr); err == nil {
+					var duration time.Duration
+					switch {
+					case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
+						duration = 1 * time.Hour
+					case resp.StatusCode >= 301 && strings.Contains(resp.Header.Get("Location"), "hangouts.google.com"):
+						duration = 2 * time.Hour
+					case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
+						server := resp.Header.Get("Server")
+						if server != "gws" && !strings.HasPrefix(server, "gvs") {
+							if t.MultiDialer.TLSConnDuration.Len() > 10 {
+								duration = 5 * time.Minute
+							}
+						}
+					}
+
+					if duration > 0 && t.MultiDialer != nil {
+						glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
+						t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+
+						if !helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip) {
+							glog.Warningf("GAE: CloseConnectionByRemoteHost(%T, %#v) failed.", t.RoundTripper, ip)
+						}
+					}
+				}
+			}
+
+			resp.Body.Close()
+			resp.Body = ioutil.NopCloser(bytes.NewReader(body))
+
 			break
 		}
 
@@ -59,11 +102,8 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				helpers.CloseConnections(t.RoundTripper)
 			}
 		}
-
-		if t.RetryDelay > 0 {
-			time.Sleep(t.RetryDelay)
-		}
 	}
+
 	return resp, err
 }
 
