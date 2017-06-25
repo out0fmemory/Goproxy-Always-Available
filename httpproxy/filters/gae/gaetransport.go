@@ -24,6 +24,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var err error
 	var resp *http.Response
 	for i := 0; i < t.RetryTimes; i++ {
+		glog.V(3).Info("GAE %T.RoundTrip(retry=%d) for %#v", t, i, req.URL.String())
 		resp, err = t.RoundTripper.RoundTrip(req)
 
 		if i == t.RetryTimes-1 {
