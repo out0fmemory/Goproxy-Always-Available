@@ -38,7 +38,7 @@ func CloseConnections(tr http.RoundTripper) bool {
 		t.CloseConnections(f)
 		return true
 	}
-	if t, ok := tr.(*h2quic.QuicRoundTripper); ok {
+	if t, ok := tr.(*h2quic.RoundTripper); ok {
 		f := func(addr net.Addr, idle bool) bool {
 			return true
 		}
@@ -62,8 +62,8 @@ func CloseConnectionByRemoteHost(tr http.RoundTripper, host string) bool {
 	case *http2.Transport:
 		tr.(*http2.Transport).CloseConnections(f)
 		return true
-	case *h2quic.QuicRoundTripper:
-		tr.(*h2quic.QuicRoundTripper).CloseConnections(f)
+	case *h2quic.RoundTripper:
+		tr.(*h2quic.RoundTripper).CloseConnections(f)
 		return true
 	}
 	return false

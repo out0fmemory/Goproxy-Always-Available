@@ -17,6 +17,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
+	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
 
 	"../../filters"
@@ -289,10 +290,15 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 	switch {
 	case config.EnableQuic:
-		tr.RoundTripper = &h2quic.QuicRoundTripper{
+		tr.RoundTripper = &h2quic.RoundTripper{
 			DisableCompression: true,
-			HandshakeTimeout:   md.Timeout,
-			DialAddr:           md.DialQuic,
+			QuicConfig: &quic.Config{
+				TLSConfig:                     md.TLSConfig,
+				HandshakeTimeout:              md.Timeout,
+				IdleTimeout:                   md.Timeout,
+				RequestConnectionIDTruncation: true,
+			},
+			DialAddr: md.DialQuic,
 		}
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTP2=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)
