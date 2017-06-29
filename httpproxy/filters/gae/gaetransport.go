@@ -48,12 +48,12 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				if shouldClose {
 					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
 					helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
-					break
 					if t.MultiDialer != nil {
 						duration := 5 * time.Minute
 						glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
 						t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 					}
+					break
 				}
 			}
 			if err.Error() == "unexpected EOF" {
