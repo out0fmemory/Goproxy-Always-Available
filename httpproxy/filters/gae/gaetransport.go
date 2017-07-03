@@ -36,16 +36,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 		if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
 			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-				var shouldClose bool
-
-				switch ne.Net {
-				case "udp":
-					shouldClose = true
-				case "tcp", "tcp4", "tcp6":
-					shouldClose = ne.Timeout() || ne.Op == "read"
-				}
-
-				if shouldClose {
+				if ne.Timeout() || ne.Op == "read" {
 					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
 					helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
 					if t.MultiDialer != nil {
