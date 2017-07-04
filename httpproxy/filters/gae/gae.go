@@ -390,10 +390,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				}
 			}
 
-			time.Sleep(2 * time.Minute)
+			time.Sleep(1 * time.Minute)
 
 			for {
-				time.Sleep(time.Duration(2+rand.Intn(5)) * time.Second)
+				time.Sleep(time.Duration(2+rand.Intn(4)) * time.Second)
 				probe()
 			}
 		}()
