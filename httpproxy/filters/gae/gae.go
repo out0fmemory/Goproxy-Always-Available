@@ -411,7 +411,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 						helpers.CloseConnections(tr.RoundTripper)
 					}
 				}
-			case <-time.After(4 * time.Second):
+			case <-time.After(3 * time.Second):
 				glog.V(2).Infof("GAE EnableDeadProbe probeQuic timed out. Close all quic connections")
 				helpers.CloseConnections(tr.RoundTripper)
 			}
