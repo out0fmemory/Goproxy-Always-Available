@@ -259,7 +259,7 @@ func (d *MultiDialer) dialMultiTLS(network string, hosts []string, port string, 
 	return nil, r.e
 }
 
-func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, error) {
+func (d *MultiDialer) DialQuic(address string, tlsConfig *tls.Config, cfg *quic.Config) (quic.Session, error) {
 	if d.LogToStderr {
 		SetConsoleTextColorGreen()
 	}
@@ -268,9 +268,15 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 		SetConsoleTextColorReset()
 	}
 
+	if tlsConfig == nil {
+		tlsConfig = &tls.Config{
+			InsecureSkipVerify: !d.SSLVerify,
+			ServerName:         address,
+		}
+	}
+
 	if cfg == nil {
 		cfg = &quic.Config{
-			TLSConfig:                     d.TLSConfig,
 			HandshakeTimeout:              d.Timeout,
 			IdleTimeout:                   d.Timeout,
 			RequestConnectionIDTruncation: true,
@@ -287,7 +293,6 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 				switch {
 				case strings.HasPrefix(alias, "google_"):
 					config = &quic.Config{
-						TLSConfig:                     d.GoogleTLSConfig,
 						HandshakeTimeout:              d.Timeout,
 						IdleTimeout:                   d.Timeout,
 						RequestConnectionIDTruncation: true,
@@ -295,10 +300,6 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 					isGoogleAddr = true
 				case cfg == nil:
 					config = &quic.Config{
-						TLSConfig: &tls.Config{
-							InsecureSkipVerify: !d.SSLVerify,
-							ServerName:         address,
-						},
 						HandshakeTimeout:              d.Timeout,
 						IdleTimeout:                   d.Timeout,
 						RequestConnectionIDTruncation: true,
@@ -308,7 +309,7 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 				}
 				glog.V(3).Infof("DialQuic(%#v) alais=%#v set quic.Config=%#v", address, alias, config)
 
-				sess, err := d.dialMultiQuic(hosts, port, config)
+				sess, err := d.dialMultiQuic(hosts, port, tlsConfig, config)
 				if err != nil {
 					return nil, err
 				}
@@ -320,10 +321,10 @@ func (d *MultiDialer) DialQuic(address string, cfg *quic.Config) (quic.Session, 
 		}
 	}
 
-	return quic.DialAddr(address, cfg)
+	return quic.DialAddr(address, tlsConfig, cfg)
 }
 
-func (d *MultiDialer) dialMultiQuic(hosts []string, port string, config *quic.Config) (quic.Session, error) {
+func (d *MultiDialer) dialMultiQuic(hosts []string, port string, tlsConfig *tls.Config, config *quic.Config) (quic.Session, error) {
 	glog.V(3).Infof("dialMultiQuic( %v, %#v)", hosts, config)
 	type sessWithError struct {
 		s quic.Session
@@ -338,7 +339,7 @@ func (d *MultiDialer) dialMultiQuic(hosts []string, port string, config *quic.Co
 			addr := net.JoinHostPort(host, port)
 
 			start := time.Now()
-			sess, err := quic.DialAddr(addr, config)
+			sess, err := quic.DialAddr(addr, tlsConfig, config)
 			end := time.Now()
 
 			if err != nil {

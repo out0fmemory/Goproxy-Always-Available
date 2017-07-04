@@ -292,8 +292,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	case config.EnableQuic:
 		tr.RoundTripper = &h2quic.RoundTripper{
 			DisableCompression: true,
+			TLSClientConfig:    md.GoogleTLSConfig,
 			QuicConfig: &quic.Config{
-				TLSConfig:                     md.TLSConfig,
 				HandshakeTimeout:              md.Timeout,
 				IdleTimeout:                   md.Timeout,
 				RequestConnectionIDTruncation: true,
