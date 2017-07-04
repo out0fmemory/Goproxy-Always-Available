@@ -385,7 +385,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 					glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
 					s := strings.ToLower(err.Error())
 					if strings.HasPrefix(s, "net/http: request canceled") || strings.Contains(s, "timeout") {
-						helpers.CloseConnections(tr)
+						helpers.CloseConnections(tr.RoundTripper)
 					}
 				}
 			}
