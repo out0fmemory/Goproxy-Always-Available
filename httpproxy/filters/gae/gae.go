@@ -5,8 +5,6 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"flag"
-	"io"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -353,48 +351,82 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	if config.EnableDeadProbe && !config.Transport.Proxy.Enabled {
-		go func() {
-			probe := func() {
-				c, err := net.DialTimeout("tcp", net.JoinHostPort(config.DNSServers[0], "53"), 300*time.Millisecond)
-				if err != nil {
-					glog.V(3).Infof("GAE EnableDeadProbe connect DNSServer(%#v) failed: %+v", config.DNSServers[0], err)
-					return
-				}
-				c.Close()
+		isNetAvailable := func() bool {
+			c, err := net.DialTimeout("tcp", net.JoinHostPort(config.DNSServers[0], "53"), 300*time.Millisecond)
+			if err != nil {
+				glog.V(3).Infof("GAE EnableDeadProbe connect DNSServer(%#v) failed: %+v", config.DNSServers[0], err)
+				return false
+			}
+			c.Close()
+			return true
+		}
 
-				req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
-				ctx, cancel := context.WithTimeout(req.Context(), 2*time.Second)
-				defer cancel()
-				req = req.WithContext(ctx)
-				resp, err := tr.RoundTrip(req)
-				if resp != nil {
-					glog.V(3).Infof("GAE EnableDeadProbe \"%s %s\" %d -", req.Method, req.URL.String(), resp.StatusCode)
-					if resp.Body != nil {
-						io.Copy(ioutil.Discard, resp.Body)
-						resp.Body.Close()
-					}
-					if resp.StatusCode == http.StatusBadGateway {
-						if ip, err := helpers.ReflectRemoteIPFromResponse(resp); err == nil && ip != nil {
-							duration := 1 * time.Hour
-							glog.Warningf("GAE EnableDeadProbe: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
-							md.IPBlackList.Set(ip.String(), struct{}{}, time.Now().Add(duration))
-						}
-					}
+		probeTLS := func() {
+			if !isNetAvailable() {
+				return
+			}
+
+			req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
+			ctx, cancel := context.WithTimeout(req.Context(), 2*time.Second)
+			defer cancel()
+			req = req.WithContext(ctx)
+			resp, err := tr.RoundTrip(req)
+			if err != nil {
+				glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
+				s := strings.ToLower(err.Error())
+				if strings.HasPrefix(s, "net/http: request canceled") || strings.Contains(s, "timeout") {
+					helpers.CloseConnections(tr.RoundTripper)
 				}
-				if err != nil {
-					glog.V(2).Infof("GAE EnableDeadProbe \"%s %s\" error: %v", req.Method, req.URL.String(), err)
-					s := strings.ToLower(err.Error())
-					if strings.HasPrefix(s, "net/http: request canceled") || strings.Contains(s, "timeout") {
+			}
+			if resp != nil && resp.Body != nil {
+				resp.Body.Close()
+			}
+		}
+
+		probeQuic := func() {
+			if !isNetAvailable() {
+				return
+			}
+
+			c := make(chan error)
+
+			go func(c chan<- error) {
+				req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
+				resp, err := tr.RoundTrip(req)
+				c <- err
+				if resp != nil && resp.Body != nil {
+					resp.Body.Close()
+				}
+			}(c)
+
+			select {
+			case err := <-c:
+				if ne, ok := err.(*net.OpError); ok && err != nil {
+					glog.V(2).Infof("GAE EnableDeadProbe probeQuic error: %v", ne)
+					if ne.Addr != nil {
+						if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
+							helpers.CloseConnectionByRemoteHost(tr.RoundTripper, ip)
+						}
+					} else {
 						helpers.CloseConnections(tr.RoundTripper)
 					}
 				}
+			case <-time.After(4 * time.Second):
+				glog.V(2).Infof("GAE EnableDeadProbe probeQuic timed out. Close all quic connections")
+				helpers.CloseConnections(tr.RoundTripper)
 			}
 
-			time.Sleep(1 * time.Minute)
+		}
 
+		go func() {
+			time.Sleep(1 * time.Minute)
 			for {
 				time.Sleep(time.Duration(2+rand.Intn(4)) * time.Second)
-				probe()
+				if config.EnableQuic {
+					probeQuic()
+				} else {
+					probeTLS()
+				}
 			}
 		}()
 	}
