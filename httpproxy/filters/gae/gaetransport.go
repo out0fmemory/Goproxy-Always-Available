@@ -115,16 +115,9 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp.Body = &onErrorBody{
 				ReadCloser: resp.Body,
 				OnError: func(err error) {
-					if ne, ok := err.(*net.OpError); ok && ne.Op == "read" && ne.Addr != nil {
-						if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-							glog.Warningf("GAE %s resp.Body %s OnError: %#v, close connection to it", ne.Net, ip, ne.Err)
-							helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
-							if t.MultiDialer != nil {
-								duration := 5 * time.Minute
-								glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
-								t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-							}
-						}
+					if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
+						glog.Warningf("GAE %s resp.Body OnError: %+v, close all connection to it", ne.Net, ne.Err)
+						helpers.CloseConnections(t.RoundTripper)
 					}
 				},
 			}
