@@ -3,6 +3,7 @@ package gae
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -10,9 +11,23 @@ import (
 	"time"
 
 	"github.com/phuslu/glog"
+	"github.com/phuslu/quic-go/h2quic"
 
 	"../../helpers"
 )
+
+type onErrorBody struct {
+	io.ReadCloser
+	OnError func(error)
+}
+
+func (b *onErrorBody) Read(p []byte) (int, error) {
+	n, err := b.ReadCloser.Read(p)
+	if b.OnError != nil && err != nil {
+		b.OnError(err)
+	}
+	return n, err
+}
 
 type Transport struct {
 	RoundTripper http.RoundTripper
@@ -92,6 +107,27 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 			}
 			break
+		}
+	}
+
+	if resp != nil && resp.Body != nil {
+		if _, ok := t.RoundTripper.(*h2quic.RoundTripper); ok {
+			resp.Body = &onErrorBody{
+				ReadCloser: resp.Body,
+				OnError: func(err error) {
+					if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
+						if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
+							glog.Warningf("GAE %s resp.Body %s OnError: %#v, close connection to it", ne.Net, ip, ne.Err)
+							helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
+							if t.MultiDialer != nil {
+								duration := 5 * time.Minute
+								glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
+								t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+							}
+						}
+					}
+				},
+			}
 		}
 	}
 
