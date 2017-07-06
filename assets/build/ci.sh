@@ -427,6 +427,6 @@ if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
 	build_repo_ex
 	release_github
 	release_sourceforge
-	release_github_pages
+	#release_github_pages
 	clean
 fi
