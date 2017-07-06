@@ -115,7 +115,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp.Body = &onErrorBody{
 				ReadCloser: resp.Body,
 				OnError: func(err error) {
-					if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
+					if ne, ok := err.(*net.OpError); ok && ne.Op == "read" && ne.Addr != nil {
 						if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
 							glog.Warningf("GAE %s resp.Body %s OnError: %#v, close connection to it", ne.Net, ip, ne.Err)
 							helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
