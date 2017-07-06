@@ -280,6 +280,7 @@ func (d *MultiDialer) DialQuic(address string, tlsConfig *tls.Config, cfg *quic.
 			HandshakeTimeout:              d.Timeout,
 			IdleTimeout:                   d.Timeout,
 			RequestConnectionIDTruncation: true,
+			KeepAlive:                     true,
 		}
 	}
 
@@ -296,6 +297,7 @@ func (d *MultiDialer) DialQuic(address string, tlsConfig *tls.Config, cfg *quic.
 						HandshakeTimeout:              d.Timeout,
 						IdleTimeout:                   d.Timeout,
 						RequestConnectionIDTruncation: true,
+						KeepAlive:                     true,
 					}
 					isGoogleAddr = true
 				case cfg == nil:
@@ -303,6 +305,7 @@ func (d *MultiDialer) DialQuic(address string, tlsConfig *tls.Config, cfg *quic.
 						HandshakeTimeout:              d.Timeout,
 						IdleTimeout:                   d.Timeout,
 						RequestConnectionIDTruncation: true,
+						KeepAlive:                     true,
 					}
 				default:
 					config = cfg

@@ -304,6 +304,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				HandshakeTimeout:              md.Timeout,
 				IdleTimeout:                   md.Timeout,
 				RequestConnectionIDTruncation: true,
+				KeepAlive:                     true,
 			},
 			DialAddr:     md.DialQuic,
 			GetClientKey: GetHostnameCacheKey,
