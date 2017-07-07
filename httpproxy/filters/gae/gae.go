@@ -139,12 +139,8 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	switch config.TLSConfig.Version {
 	case "TLSv13", "TLSv1.3":
 		googleTLSConfig.MinVersion = tls.VersionTLS13
-	case "TLSv12", "TLSv1.2":
-		googleTLSConfig.MinVersion = tls.VersionTLS12
-	case "TLSv11", "TLSv1.1":
-		googleTLSConfig.MinVersion = tls.VersionTLS11
 	default:
-		googleTLSConfig.MinVersion = tls.VersionTLS10
+		googleTLSConfig.MinVersion = tls.VersionTLS12
 	}
 	pickupCiphers := func(names []string) []uint16 {
 		ciphers := make([]uint16, 0)
@@ -155,24 +151,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			}
 			ciphers = append(ciphers, cipher)
 		}
-		helpers.ShuffleUint16s(ciphers)
-		ciphers = ciphers[:1+rand.Intn(len(ciphers))]
-		ciphers1 := []uint16{}
-		for _, name := range []string{
-			"TLS_RSA_WITH_AES_256_CBC_SHA256",
-			"TLS_RSA_WITH_AES_256_GCM_SHA384",
-			"TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384",
-			"TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
-		} {
-			if !helpers.ContainsString(names, name) {
-				if c := helpers.Cipher(name); c != 0 {
-					ciphers1 = append(ciphers1, c)
-				}
-			}
-		}
-		helpers.ShuffleUint16s(ciphers1)
-		ciphers1 = ciphers1[:rand.Intn(len(ciphers1))]
-		ciphers = append(ciphers, ciphers1...)
 		helpers.ShuffleUint16s(ciphers)
 		return ciphers
 	}
