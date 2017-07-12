@@ -70,10 +70,14 @@ class GoProxyGTK:
 
     def __init__(self, window, terminal):
         self.window = window
+        self.terminal = terminal
+
         self.window.set_size_request(640, 480)
         self.window.set_position(gtk.WIN_POS_CENTER)
         self.window.connect('delete-event', self.delete_event)
-        self.terminal = terminal
+        colormap = self.window.get_screen().get_rgba_colormap()
+        if colormap:
+            gtk.widget_set_default_colormap(colormap)
 
         self.window.add(terminal)
         self.childpid = self.terminal.fork_command(
@@ -148,6 +152,7 @@ class GoProxyGTK:
 
     def on_child_exited(self, term):
         if self.terminal.get_child_exit_status() == 0:
+            gtk.widget_pop_colormap()
             gtk.main_quit()
         else:
             self.show_notify(self.fail_message)
@@ -199,9 +204,7 @@ def main():
     if os.path.isfile('goproxy-gtk.desktop'):
         rewrite_desktop('goproxy-gtk.desktop')
 
-    window = gtk.Window()
-    terminal = vte.Terminal()
-    GoProxyGTK(window, terminal)
+    GoProxyGTK(gtk.Window(), vte.Terminal())
     gtk.main()
 
 if __name__ == '__main__':
