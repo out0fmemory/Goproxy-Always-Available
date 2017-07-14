@@ -53,7 +53,12 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
 				if ne.Timeout() || ne.Op == "read" {
 					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
-					helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
+					switch ne.Net {
+					case "udp":
+						helpers.CloseConnections(t.RoundTripper)
+					default:
+						helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
+					}
 					if t.MultiDialer != nil {
 						duration := 5 * time.Minute
 						glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
