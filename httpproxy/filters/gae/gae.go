@@ -382,13 +382,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			case err := <-c:
 				if ne, ok := err.(*net.OpError); ok && err != nil {
 					glog.V(2).Infof("GAE EnableDeadProbe probeQuic error: %v", ne)
-					if ne.Addr != nil {
-						if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-							helpers.CloseConnectionByRemoteHost(tr.RoundTripper, ip)
-						}
-					} else {
-						helpers.CloseConnections(tr.RoundTripper)
-					}
+					helpers.CloseConnections(tr.RoundTripper)
 				}
 			case <-time.After(3 * time.Second):
 				glog.V(2).Infof("GAE EnableDeadProbe probeQuic timed out. Close all quic connections")
