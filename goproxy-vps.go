@@ -544,6 +544,17 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 	helpers.IOCopy(rw, resp.Body)
 }
 
+type QuicHandler struct {
+	Dial func(network, address string) (net.Conn, error)
+	*http.Transport
+	*SimpleAuth
+}
+
+func (h *QuicHandler) ServeConn(c net.Conn) {
+	// br := bufio.NewReader(conn)
+	return
+}
+
 type CertManager struct {
 	RejectNilSni bool
 	Dial         func(network, addr string) (net.Conn, error)
@@ -1001,11 +1012,11 @@ func main() {
 			glog.Fatalf("unsupport proxy_auth_method(%+v)", server.ProxyAuthMethod)
 		}
 
-		for _, servername := range server.ServerName {
+		for i, servername := range server.ServerName {
 			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, !server.DisableHttp2)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
-			if servername == "*" {
+			if i == 0 || servername == "*" {
 				glog.V(3).Infof("Set handler=%#v as default HTTP/2 handler", handler)
 				h.Default = handler
 			}
@@ -1043,11 +1054,25 @@ func main() {
 		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
 		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 
-		ln1, err := quicconn.Listen("udp", addr, srv.TLSConfig)
-		if err != nil {
-			glog.Fatalf("QUIC Listen(%s) error: %s", addr, err)
-		}
-		go srv.Serve(ln1)
+		go func() {
+			ln, err := quicconn.Listen("udp", addr, srv.TLSConfig)
+			if err != nil {
+				glog.Fatalf("QUIC Listen(%s) error: %s", addr, err)
+			}
+
+			handler := &QuicHandler{
+				Transport:  transport,
+				SimpleAuth: h.Default.(*HTTP2Handler).SimpleAuth,
+			}
+
+			for {
+				conn, err := ln.Accept()
+				if err != nil {
+					glog.Fatalf("%+v Accept error: %+v", ln.Addr(), err)
+				}
+				go handler.ServeConn(conn)
+			}
+		}()
 	}
 
 	if config.HTTP.Listen != "" {
