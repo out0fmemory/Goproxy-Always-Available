@@ -1069,6 +1069,8 @@ func main() {
 				conn, err := ln.Accept()
 				if err != nil {
 					glog.Fatalf("%+v Accept error: %+v", ln.Addr(), err)
+					time.Sleep(100 * time.Millisecond)
+					continue
 				}
 				go handler.ServeConn(conn)
 			}
