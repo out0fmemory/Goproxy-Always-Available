@@ -34,7 +34,7 @@ import (
 	"github.com/phuslu/goproxy/httpproxy/helpers"
 	"github.com/phuslu/goproxy/httpproxy/proxy"
 	"github.com/phuslu/net/http2"
-	"github.com/phuslu/quic-go/h2quic"
+	"github.com/phuslu/quic-conn"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -509,12 +509,6 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if h2 {
 		resp.Header.Del("Connection")
 		resp.Header.Del("Keep-Alive")
-	}
-
-	if !isProxyRequest && h.Fallback != nil {
-		if resp.Header.Get("Alt-Svc") == "" {
-			resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=86400")
-		}
 	}
 
 	for key, values := range resp.Header {
@@ -1044,16 +1038,16 @@ func main() {
 		seen[network+":"+addr] = struct{}{}
 		ln, err := net.Listen(network, addr)
 		if err != nil {
-			glog.Fatalf("Listen(%s) error: %s", addr, err)
+			glog.Fatalf("TLS Listen(%s) error: %s", addr, err)
 		}
 		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
 		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 
-		if uaddr, err := net.ResolveUDPAddr("udp", addr); err == nil {
-			if conn, err := net.ListenUDP("udp", uaddr); err == nil {
-				go (&h2quic.Server{Server: srv}).Serve(conn)
-			}
+		ln1, err := quicconn.Listen("udp", addr, srv.TLSConfig)
+		if err != nil {
+			glog.Fatalf("QUIC Listen(%s) error: %s", addr, err)
 		}
+		go srv.Serve(ln1)
 	}
 
 	if config.HTTP.Listen != "" {
