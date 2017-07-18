@@ -59,9 +59,9 @@ type quic struct {
 // Dial connects to the address addr on the network net via the HTTPS proxy.
 func (h *quic) Dial(network, addr string) (net.Conn, error) {
 	switch network {
-	case "udp":
+	case "tcp", "tcp6", "tcp4":
 	default:
-		return nil, errors.New("proxy: no support for HTTP proxy connections of type " + network)
+		return nil, errors.New("proxy: no support for QUIC proxy connections of type " + network)
 	}
 
 	var config *tls.Config
