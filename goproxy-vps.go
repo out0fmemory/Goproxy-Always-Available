@@ -3,6 +3,7 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -546,13 +547,50 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 
 type QuicHandler struct {
 	Dial func(network, address string) (net.Conn, error)
-	*http.Transport
 	*SimpleAuth
 }
 
-func (h *QuicHandler) ServeConn(c net.Conn) {
-	// br := bufio.NewReader(conn)
+func (h *QuicHandler) ServeConn(conn net.Conn) {
+	b := bufio.NewReader(conn)
+
+	req, err := http.ReadRequest(b)
+	if err != nil {
+		h.Close(conn, err)
+		return
+	}
+
+	if req.Method != http.MethodConnect {
+		h.Close(conn, errors.New("Only CONNECT method is supportted"))
+		return
+	}
+
+	host, port, err := net.SplitHostPort(req.Host)
+	if err != nil {
+		host = req.Host
+		port = "443"
+	}
+
+	glog.Infof("[quic %s] %s \"%s %s %s\" - -", "", req.RemoteAddr, req.Method, req.Host, req.Proto)
+
+	rconn, err := h.Dial("tcp", net.JoinHostPort(host, port))
+	if err != nil {
+		h.Close(conn, err)
+		return
+	}
+	defer rconn.Close()
+	defer conn.Close()
+
+	io.WriteString(conn, "HTTP/1.1 200 OK\r\n\r\n")
+
+	go helpers.IOCopy(conn, rconn)
+	helpers.IOCopy(rconn, b)
+
 	return
+}
+
+func (h *QuicHandler) Close(conn net.Conn, err error) {
+	fmt.Fprintf(conn, "HTTP/1.0 200 OK\r\n\r\n%+v", err)
+	conn.Close()
 }
 
 type CertManager struct {
@@ -1061,7 +1099,7 @@ func main() {
 			}
 
 			handler := &QuicHandler{
-				Transport:  transport,
+				Dial:       transport.Dial,
 				SimpleAuth: h.Default.(*HTTP2Handler).SimpleAuth,
 			}
 
