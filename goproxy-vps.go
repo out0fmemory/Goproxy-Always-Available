@@ -35,7 +35,7 @@ import (
 	"github.com/phuslu/goproxy/httpproxy/helpers"
 	"github.com/phuslu/goproxy/httpproxy/proxy"
 	"github.com/phuslu/net/http2"
-	"github.com/phuslu/quic-conn"
+	"github.com/phuslu/quic-go/h2quic"
 	"golang.org/x/crypto/acme/autocert"
 )
 
@@ -869,6 +869,11 @@ type Handler struct {
 }
 
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if req.TLS == nil {
+		// see https://github.com/lucas-clemente/quic-go/issues/746
+		req.TLS = &tls.ConnectionState{}
+	}
+
 	handler, ok := h.Handlers[req.TLS.ServerName]
 	if !ok {
 		handler = h.Default
@@ -1092,27 +1097,11 @@ func main() {
 		glog.Infof("goproxy-vps %s ListenAndServe on %s\n", version, ln.Addr().String())
 		go srv.Serve(tls.NewListener(TCPListener{ln.(*net.TCPListener)}, srv.TLSConfig))
 
-		go func() {
-			ln, err := quicconn.Listen("udp", addr, srv.TLSConfig)
-			if err != nil {
-				glog.Fatalf("QUIC Listen(%s) error: %s", addr, err)
+		if uaddr, err := net.ResolveUDPAddr("udp", addr); err == nil {
+			if conn, err := net.ListenUDP("udp", uaddr); err == nil {
+				go (&h2quic.Server{Server: srv}).Serve(conn)
 			}
-
-			handler := &QuicHandler{
-				Dial:       transport.Dial,
-				SimpleAuth: h.Default.(*HTTP2Handler).SimpleAuth,
-			}
-
-			for {
-				conn, err := ln.Accept()
-				if err != nil {
-					glog.Fatalf("%+v Accept error: %+v", ln.Addr(), err)
-					time.Sleep(100 * time.Millisecond)
-					continue
-				}
-				go handler.ServeConn(conn)
-			}
-		}()
+		}
 	}
 
 	if config.HTTP.Listen != "" {
