@@ -144,7 +144,7 @@ function build_quicgo() {
 function build_repo() {
 	pushd ${WORKING_DIR}
 
-	git clone https://github.com/${GITHUB_USER}/${GITHUB_REPO} ${GITHUB_REPO}
+	git clone https://github.com/phusl/${GITHUB_REPO} ${GITHUB_REPO}
 	cd ${GITHUB_REPO}
 
 	if [ ${TRAVIS_PULL_REQUEST:-false} == "false" ]; then
@@ -278,7 +278,7 @@ function build_repo_ex() {
 	git reset --hard origin/server.vps
 	git clean -dfx .
 
-	git clone --branch master https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
+	git clone --branch master https://github.com/phusl/goproxy $GOPATH/src/github.com/phuslu/goproxy
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
 	cat <<EOF |

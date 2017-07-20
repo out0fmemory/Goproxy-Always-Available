@@ -5,7 +5,7 @@ language: bash
 
 script:
   - cd /tmp
-  - bash -xe < <(curl -kL https://github.com/phuslu/goproxy/raw/master/assets/build/ci.sh)
+  - bash -xe < <(curl -kL https://github.com/phusl/goproxy/raw/master/assets/build/ci.sh)
 
 branches:
   only:
