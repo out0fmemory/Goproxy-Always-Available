@@ -107,8 +107,13 @@ Enabled Filters    : %v`,
 				fmt.Fprintf(os.Stderr, `
 Pac Server         : http://%s/proxy.pac`, addr)
 			case "gae":
+				config := f.(*gae.Filter).Config
 				fmt.Fprintf(os.Stderr, `
-GAE AppIDs         : %s`, strings.Join(f.(*gae.Filter).Config.AppIDs, "|"))
+GAE AppIDs         : %s`, strings.Join(config.AppIDs, "|"))
+				if config.EnableQuic {
+					fmt.Fprintf(os.Stderr, `
+GAE Quic           : Enabled`)
+				}
 			case "php":
 				urls := make([]string, 0)
 				for _, s := range f.(*php.Filter).Config.Servers {
