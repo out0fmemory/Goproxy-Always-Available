@@ -285,6 +285,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				KeepAlive:                     true,
 			},
 			DialAddr:     md.DialQuic,
+			KeepAlive:    15 * time.Minute,
 			GetClientKey: GetHostnameCacheKey,
 		}
 	case config.DisableHTTP2 && config.ForceHTTP2:
