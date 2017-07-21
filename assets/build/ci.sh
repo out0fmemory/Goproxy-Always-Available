@@ -155,7 +155,7 @@ function build_repo() {
 	fi
 
 	export RELEASE=$(git rev-list --count HEAD)
-	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/${GITHUB_REPO}/commit/%h) %s")
+	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/phusl/${GITHUB_REPO}/commit/%h) %s")
 	if [ -n "${TRAVIS_BUILD_ID}" ]; then
 		export RELEASE_DESCRIPTION=$(echo ${RELEASE_DESCRIPTION} | sed -E "s#^(r[0-9]+)#[\1](https://travis-ci.org/${GITHUB_USER}/${GITHUB_REPO}/builds/${TRAVIS_BUILD_ID})#g")
 	fi
