@@ -180,8 +180,8 @@ func main() {
 		}
 	}
 
-	for _, server := range config.Sniproxy {
-		cm.AddSniProxy(server.ServerName, server.Host, server.Port)
+	for _, server := range config.TLS {
+		cm.AddTLSProxy(server.ServerName, server.Host, server.Port)
 	}
 
 	srv := &http.Server{

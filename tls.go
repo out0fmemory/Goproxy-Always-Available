@@ -117,7 +117,7 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 	return nil
 }
 
-func (cm *CertManager) AddSniProxy(serverNames []string, host string, port int) error {
+func (cm *CertManager) AddTLSProxy(serverNames []string, host string, port int) error {
 	if cm.sni == nil {
 		cm.sni = make(map[string]string)
 	}

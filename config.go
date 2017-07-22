@@ -60,7 +60,7 @@ type Config struct {
 		ProxyAuthMethod  string
 		ProxyBuiltinAuth map[string]string
 	}
-	Sniproxy []struct {
+	TLS []struct {
 		ServerName []string
 		Host       string
 		Port       int
