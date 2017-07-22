@@ -26,29 +26,6 @@ var (
 	version = "r9999"
 )
 
-type Handler struct {
-	ServerNames []string
-	Handlers    map[string]http.Handler
-	Default     http.Handler
-}
-
-func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if req.TLS == nil {
-		// see https://github.com/lucas-clemente/quic-go/issues/746
-		req.TLS = &tls.ConnectionState{}
-	}
-
-	handler, ok := h.Handlers[req.TLS.ServerName]
-	if !ok {
-		handler = h.Default
-	}
-	if handler == nil {
-		http.Error(rw, "403 Forbidden", http.StatusForbidden)
-		return
-	}
-	handler.ServeHTTP(rw, req)
-}
-
 func main() {
 	var err error
 
