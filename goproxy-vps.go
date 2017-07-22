@@ -3,7 +3,6 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"context"
 	"crypto/tls"
@@ -512,6 +511,12 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		resp.Header.Del("Keep-Alive")
 	}
 
+	// if !isProxyRequest && h.Fallback != nil {
+	// 	if resp.Header.Get("Alt-Svc") == "" {
+	// 		resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=86400")
+	// 	}
+	// }
+
 	for key, values := range resp.Header {
 		for _, value := range values {
 			rw.Header().Add(key, value)
@@ -543,54 +548,6 @@ func (h *HTTP2Handler) ProxyAuthorizationReqiured(rw http.ResponseWriter, req *h
 	}
 	rw.WriteHeader(resp.StatusCode)
 	helpers.IOCopy(rw, resp.Body)
-}
-
-type QuicHandler struct {
-	Dial func(network, address string) (net.Conn, error)
-	*SimpleAuth
-}
-
-func (h *QuicHandler) ServeConn(conn net.Conn) {
-	b := bufio.NewReader(conn)
-
-	req, err := http.ReadRequest(b)
-	if err != nil {
-		h.Close(conn, err)
-		return
-	}
-
-	if req.Method != http.MethodConnect {
-		h.Close(conn, errors.New("Only CONNECT method is supportted"))
-		return
-	}
-
-	host, port, err := net.SplitHostPort(req.Host)
-	if err != nil {
-		host = req.Host
-		port = "443"
-	}
-
-	glog.Infof("[quic %s] %s \"%s %s %s\" - -", "", req.RemoteAddr, req.Method, req.Host, req.Proto)
-
-	rconn, err := h.Dial("tcp", net.JoinHostPort(host, port))
-	if err != nil {
-		h.Close(conn, err)
-		return
-	}
-	defer rconn.Close()
-	defer conn.Close()
-
-	io.WriteString(conn, "HTTP/1.1 200 OK\r\n\r\n")
-
-	go helpers.IOCopy(conn, rconn)
-	helpers.IOCopy(rconn, b)
-
-	return
-}
-
-func (h *QuicHandler) Close(conn net.Conn, err error) {
-	fmt.Fprintf(conn, "HTTP/1.0 200 OK\r\n\r\n%+v", err)
-	conn.Close()
 }
 
 type CertManager struct {
