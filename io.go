@@ -39,18 +39,18 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 
 type ConnWithData struct {
 	net.Conn
-	data []byte
+	Data []byte
 }
 
 func (c *ConnWithData) Read(b []byte) (int, error) {
-	if c.data == nil {
+	if c.Data == nil {
 		return c.Conn.Read(b)
 	} else {
-		n := copy(b, c.data)
-		if n < len(c.data) {
-			c.data = c.data[n:]
+		n := copy(b, c.Data)
+		if n < len(c.Data) {
+			c.Data = c.Data[n:]
 		} else {
-			c.data = nil
+			c.Data = nil
 		}
 		return n, nil
 	}

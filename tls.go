@@ -32,6 +32,7 @@ type CertManager struct {
 	rsa    *autocert.Manager
 	cache  lrucache.Cache
 	sni    map[string]string
+	snits  map[string]bool
 }
 
 func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, h2 bool) error {
@@ -119,6 +120,7 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 func (cm *CertManager) AddTLSProxy(serverNames []string, addr string, terminate bool) error {
 	if cm.sni == nil {
 		cm.sni = make(map[string]string)
+		cm.snits = make(map[string]bool)
 	}
 
 	if _, _, err := net.SplitHostPort(addr); err != nil {
@@ -127,6 +129,7 @@ func (cm *CertManager) AddTLSProxy(serverNames []string, addr string, terminate 
 
 	for _, name := range serverNames {
 		cm.sni[name] = addr
+		cm.snits[name] = terminate
 	}
 
 	return nil
@@ -157,12 +160,12 @@ func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certific
 	return cm.rsa.GetCertificate(hello)
 }
 
-func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string) (*tls.Config, error) {
+func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminate bool) (*tls.Config, error) {
 	if addr[0] == ':' {
 		addr = hello.ServerName + addr
 	}
 
-	remote, err := cm.Dial("tcp", addr)
+	rconn, err := cm.Dial("tcp", addr)
 	if err != nil {
 		return nil, err
 	}
@@ -171,14 +174,20 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string) (*tls.Co
 	b.Write([]byte{0x16, 0x03, 0x01})
 	binary.Write(b, binary.BigEndian, uint16(len(hello.Raw)))
 
-	r := io.MultiReader(b, bytes.NewReader(hello.Raw), hello.Conn)
+	data := b.Bytes()
+	data = append(data, hello.Raw...)
 
-	glog.Infof("Sniproxy: forward %#v to %#v", hello.Conn, remote)
-	go helpers.IOCopy(remote, r)
-	helpers.IOCopy(hello.Conn, remote)
+	lconn := &ConnWithData{
+		Conn: hello.Conn,
+		Data: data,
+	}
 
-	remote.Close()
-	hello.Conn.Close()
+	glog.Infof("TLS: forward %#v to %#v", lconn, rconn)
+	go helpers.IOCopy(rconn, lconn)
+	helpers.IOCopy(lconn, rconn)
+
+	rconn.Close()
+	lconn.Close()
 
 	return nil, io.EOF
 }
@@ -186,7 +195,7 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string) (*tls.Co
 func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Config, error) {
 	if cm.sni != nil {
 		if addr, ok := cm.sni[hello.ServerName]; ok {
-			return cm.Forward(hello, addr)
+			return cm.Forward(hello, addr, cm.snits[hello.ServerName])
 		}
 	}
 
