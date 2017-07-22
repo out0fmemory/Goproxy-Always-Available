@@ -62,8 +62,8 @@ type Config struct {
 	}
 	TLS []struct {
 		ServerName []string
-		Host       string
-		Port       int
+		Backend    string
+		Terminate  bool
 	}
 }
 

@@ -181,7 +181,7 @@ func main() {
 	}
 
 	for _, server := range config.TLS {
-		cm.AddTLSProxy(server.ServerName, server.Host, server.Port)
+		cm.AddTLSProxy(server.ServerName, server.Backend, server.Terminate)
 	}
 
 	srv := &http.Server{

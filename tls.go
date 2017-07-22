@@ -11,7 +11,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net"
-	"strconv"
 	"strings"
 	"time"
 
@@ -117,17 +116,17 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 	return nil
 }
 
-func (cm *CertManager) AddTLSProxy(serverNames []string, host string, port int) error {
+func (cm *CertManager) AddTLSProxy(serverNames []string, addr string, terminate bool) error {
 	if cm.sni == nil {
 		cm.sni = make(map[string]string)
 	}
 
-	portStr := "443"
-	if port != 0 {
-		portStr = strconv.Itoa(port)
+	if _, _, err := net.SplitHostPort(addr); err != nil {
+		addr = net.JoinHostPort(addr, "443")
 	}
+
 	for _, name := range serverNames {
-		cm.sni[name] = net.JoinHostPort(host, portStr)
+		cm.sni[name] = addr
 	}
 
 	return nil
