@@ -65,7 +65,10 @@ func main() {
 	})
 	flag.Parse()
 
-	config := NewConfig()
+	config, err := NewConfig(flag.Arg(0))
+	if err != nil {
+		glog.Fatalf("NewConfig(%#v) error: %+v", flag.Arg(0), err)
+	}
 
 	dialer := &helpers.Dialer{
 		Dialer: &net.Dialer{

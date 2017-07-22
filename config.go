@@ -5,7 +5,6 @@ package main
 import (
 	"bytes"
 	"encoding/base64"
-	"flag"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -67,10 +66,7 @@ type Config struct {
 	}
 }
 
-func NewConfig() *Config {
-
-	filename := flag.Arg(0)
-
+func NewConfig(filename string) (*Config, error) {
 	var tomlData []byte
 	var err error
 	switch {
@@ -85,7 +81,7 @@ func NewConfig() *Config {
 			err = fmt.Errorf("Unkown data scheme: %#v", parts[0])
 		}
 		if err != nil {
-			glog.Fatalf("Parse(%+v) error: %+v", parts[1], err)
+			return nil, fmt.Errorf("Parse(%+v) error: %+v", parts[1], err)
 		}
 	case strings.HasPrefix(filename, "["):
 		tomlData = []byte(filename)
@@ -96,12 +92,12 @@ func NewConfig() *Config {
 		glog.Infof("http.Get(%+v) ...", filename)
 		resp, err := http.Get(filename)
 		if err != nil {
-			glog.Fatalf("http.Get(%+v) error: %+v", filename, err)
+			return nil, fmt.Errorf("http.Get(%+v) error: %+v", filename, err)
 		}
 		defer resp.Body.Close()
 		tomlData, err = ioutil.ReadAll(resp.Body)
 		if err != nil {
-			glog.Fatalf("ioutil.ReadAll(%+v) error: %+v", resp.Body, err)
+			return nil, fmt.Errorf("ioutil.ReadAll(%+v) error: %+v", resp.Body, err)
 		}
 	case filename == "":
 		if _, err := os.Stat("goproxy-vps.user.toml"); err == nil {
@@ -113,7 +109,7 @@ func NewConfig() *Config {
 	default:
 		tomlData, err = ioutil.ReadFile(filename)
 		if err != nil {
-			glog.Fatalf("ioutil.ReadFile(%+v) error: %+v", filename, err)
+			return nil, fmt.Errorf("ioutil.ReadFile(%+v) error: %+v", filename, err)
 		}
 	}
 
@@ -122,8 +118,8 @@ func NewConfig() *Config {
 
 	var config Config
 	if err = toml.Unmarshal(tomlData, &config); err != nil {
-		glog.Fatalf("toml.Decode(%s) error: %+v\n", tomlData, err)
+		return nil, fmt.Errorf("toml.Decode(%s) error: %+v\n", tomlData, err)
 	}
 
-	return &config
+	return &config, nil
 }
