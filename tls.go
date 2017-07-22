@@ -3,11 +3,9 @@
 package main
 
 import (
-	"bytes"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/binary"
 	"io"
 	"io/ioutil"
 	"net"
@@ -170,11 +168,10 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 		return nil, err
 	}
 
-	b := new(bytes.Buffer)
-	b.Write([]byte{0x16, 0x03, 0x01})
-	binary.Write(b, binary.BigEndian, uint16(len(hello.Raw)))
-
-	data := b.Bytes()
+	length := uint16(len(hello.Raw))
+	data := make([]byte, 5+length)
+	data = append(data, 0x16, 0x03, 0x01)
+	data = append(data, byte(length>>8), byte(length&0xff))
 	data = append(data, hello.Raw...)
 
 	lconn := &ConnWithData{
