@@ -36,3 +36,22 @@ func (ln TCPListener) Accept() (c net.Conn, err error) {
 	tc.SetWriteBuffer(32 * 1024)
 	return tc, nil
 }
+
+type ConnWithData struct {
+	net.Conn
+	data []byte
+}
+
+func (c *ConnWithData) Read(b []byte) (int, error) {
+	if c.data == nil {
+		return c.Conn.Read(b)
+	} else {
+		n := copy(b, c.data)
+		if n < len(c.data) {
+			c.data = c.data[n:]
+		} else {
+			c.data = nil
+		}
+		return n, nil
+	}
+}
