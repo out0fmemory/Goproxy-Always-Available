@@ -174,9 +174,36 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 	data = append(data, byte(length>>8), byte(length&0xff))
 	data = append(data, hello.Raw...)
 
-	lconn := &ConnWithData{
+	var lconn net.Conn = &ConnWithData{
 		Conn: hello.Conn,
 		Data: data,
+	}
+
+	if terminate {
+		cert, err := cm.GetCertificate(hello)
+		if err != nil {
+			rconn.Close()
+			return nil, err
+		}
+
+		config := &tls.Config{
+			MaxVersion:               tls.VersionTLS13,
+			MinVersion:               tls.VersionTLS10,
+			Certificates:             []tls.Certificate{*cert},
+			Max0RTTDataSize:          100 * 1024,
+			Accept0RTTData:           true,
+			AllowShortHeaders:        true,
+			PreferServerCipherSuites: true,
+		}
+
+		tlsConn := tls.Client(lconn, config)
+		err = tlsConn.Handshake()
+		if err != nil {
+			rconn.Close()
+			return nil, err
+		}
+
+		lconn = tlsConn
 	}
 
 	glog.Infof("TLS: forward %#v to %#v", lconn, rconn)
