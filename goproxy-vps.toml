@@ -15,6 +15,11 @@ server_name = ["proxy.example.org"]
 proxy_fallback = "file:///var/www/html"
 proxy_auth_method = "pam"
 
+[[tls]]
+server_name = ["demo.example.org"]
+backend = "127.0.0.1:8443"
+terminate = false
+
 [http]
 listen = ":8087"
 parent_proxy = "https://example.org"

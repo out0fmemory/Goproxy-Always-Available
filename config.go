@@ -47,6 +47,11 @@ type Config struct {
 		ProxyAuthMethod  string
 		ProxyBuiltinAuth map[string]string
 	}
+	TLS []struct {
+		ServerName []string
+		Backend    string
+		Terminate  bool
+	}
 	HTTP struct {
 		Network string
 		Listen  string
@@ -58,11 +63,6 @@ type Config struct {
 
 		ProxyAuthMethod  string
 		ProxyBuiltinAuth map[string]string
-	}
-	TLS []struct {
-		ServerName []string
-		Backend    string
-		Terminate  bool
 	}
 }
 
