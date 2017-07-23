@@ -168,10 +168,9 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 		return nil, err
 	}
 
-	length := uint16(len(hello.Raw))
-	data := make([]byte, 5+length)
-	data = append(data, 0x16, 0x03, 0x01)
-	data = append(data, byte(length>>8), byte(length&0xff))
+	size := uint16(len(hello.Raw))
+	data := make([]byte, 0, 5+size)
+	data = append(data, 0x16, 0x03, 0x01, byte(size>>8), byte(size&0xff))
 	data = append(data, hello.Raw...)
 
 	var lconn net.Conn = &ConnWithData{
@@ -190,13 +189,10 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 			MaxVersion:               tls.VersionTLS13,
 			MinVersion:               tls.VersionTLS10,
 			Certificates:             []tls.Certificate{*cert},
-			Max0RTTDataSize:          100 * 1024,
-			Accept0RTTData:           true,
-			AllowShortHeaders:        true,
 			PreferServerCipherSuites: true,
 		}
 
-		tlsConn := tls.Client(lconn, config)
+		tlsConn := tls.Server(lconn, config)
 		err = tlsConn.Handshake()
 		if err != nil {
 			rconn.Close()
@@ -206,7 +202,7 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 		lconn = tlsConn
 	}
 
-	glog.Infof("TLS: forward %#v to %#v", lconn, rconn)
+	glog.Infof("TLS: forward %#v to %#v, ssl_terminate=%v", lconn.RemoteAddr().String(), rconn.RemoteAddr().String(), terminate)
 	go helpers.IOCopy(rconn, lconn)
 	helpers.IOCopy(lconn, rconn)
 
