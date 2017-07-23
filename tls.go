@@ -163,11 +163,6 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 		addr = hello.ServerName + addr
 	}
 
-	rconn, err := cm.Dial("tcp", addr)
-	if err != nil {
-		return nil, err
-	}
-
 	size := uint16(len(hello.Raw))
 	data := make([]byte, 0, 5+size)
 	data = append(data, 0x16, 0x03, 0x01, byte(size>>8), byte(size&0xff))
@@ -181,7 +176,6 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 	if terminate {
 		cert, err := cm.GetCertificate(hello)
 		if err != nil {
-			rconn.Close()
 			return nil, err
 		}
 
@@ -195,11 +189,16 @@ func (cm *CertManager) Forward(hello *tls.ClientHelloInfo, addr string, terminat
 		tlsConn := tls.Server(lconn, config)
 		err = tlsConn.Handshake()
 		if err != nil {
-			rconn.Close()
 			return nil, err
 		}
 
 		lconn = tlsConn
+	}
+
+	rconn, err := cm.Dial("tcp", addr)
+	if err != nil {
+		lconn.Close()
+		return nil, err
 	}
 
 	glog.Infof("TLS: forward %#v to %#v, ssl_terminate=%v", lconn.RemoteAddr().String(), rconn.RemoteAddr().String(), terminate)
