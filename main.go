@@ -112,7 +112,7 @@ Pac Server         : http://%s/proxy.pac`, addr)
 GAE AppIDs         : %s`, strings.Join(config.AppIDs, "|"))
 				if config.EnableQuic {
 					fmt.Fprintf(os.Stderr, `
-GAE Quic           : Enabled`)
+GAE Features       : quic`)
 				}
 			case "php":
 				urls := make([]string, 0)
