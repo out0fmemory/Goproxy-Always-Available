@@ -217,7 +217,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	if !isProxyRequest && h.Fallback != nil {
 		if resp.Header.Get("Alt-Svc") == "" {
-			resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=7200")
+			resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=2592000")
 		}
 	}
 
