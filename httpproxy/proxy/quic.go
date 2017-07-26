@@ -15,22 +15,6 @@ import (
 	"github.com/phuslu/quic-go/h2quic"
 )
 
-type QuicConn struct {
-	quic.Stream
-	Source net.Addr
-	Addr   net.Addr
-}
-
-func (c *QuicConn) LocalAddr() net.Addr {
-	return c.Source
-}
-
-func (c *QuicConn) RemoteAddr() net.Addr {
-	return c.Addr
-}
-
-var _ net.Conn = &QuicConn{}
-
 func QUIC(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (Dialer, error) {
 	var hostname string
 
@@ -98,9 +82,10 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 		return nil, errors.New("proxy: failed to read greeting from HTTP proxy at " + h.addr + ": " + resp.Status)
 	}
 
-	conn := &QuicConn{
-		Stream: resp.Body.(quic.Stream),
+	stream, ok := resp.Body.(quic.Stream)
+	if !ok || stream == nil {
+		return nil, errors.New("proxy: failed to convert resp.Body to a quic.Stream")
 	}
 
-	return conn, nil
+	return stream, nil
 }
