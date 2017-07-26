@@ -215,11 +215,11 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		resp.Header.Del("Keep-Alive")
 	}
 
-	// if !isProxyRequest && h.Fallback != nil {
-	// 	if resp.Header.Get("Alt-Svc") == "" {
-	// 		resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=86400")
-	// 	}
-	// }
+	if !isProxyRequest && h.Fallback != nil {
+		if resp.Header.Get("Alt-Svc") == "" {
+			resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=7200")
+		}
+	}
 
 	for key, values := range resp.Header {
 		for _, value := range values {
@@ -263,7 +263,9 @@ type Handler struct {
 func (h *Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	if req.TLS == nil {
 		// see https://github.com/lucas-clemente/quic-go/issues/746
-		req.TLS = &tls.ConnectionState{}
+		req.TLS = &tls.ConnectionState{
+			Version: 0xdead,
+		}
 	}
 
 	handler, ok := h.Handlers[req.TLS.ServerName]
