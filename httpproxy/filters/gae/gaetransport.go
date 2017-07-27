@@ -41,11 +41,17 @@ func (t *Transport) roundTrip(req *http.Request) (*http.Response, error) {
 		resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 
 		var shouldRetry bool
-		switch {
-		case err == h2quic.ErrNoCachedConn:
+		switch err {
+		case nil:
+			break
+		case h2quic.ErrNoCachedConn:
 			shouldRetry = true
-		case err != nil && strings.Contains(err.Error(), "PublicReset:"):
-			shouldRetry = true
+		default:
+			if ne, ok := err.(*net.OpError); ok && ne.Timeout() {
+				shouldRetry = true
+			} else if strings.Contains(err.Error(), "PublicReset:") {
+				shouldRetry = true
+			}
 		}
 
 		if shouldRetry {
@@ -77,7 +83,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
 					switch ne.Net {
 					case "udp":
-						helpers.CloseConnections(t.RoundTripper)
+						t.RoundTripper.(*h2quic.RoundTripper).Close()
 					default:
 						helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
 					}
