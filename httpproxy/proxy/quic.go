@@ -10,6 +10,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strings"
 
 	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
@@ -74,9 +75,19 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 	}
 
 	resp, err := h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
-	if err == h2quic.ErrNoCachedConn {
+
+	var shouldRetry bool
+	switch {
+	case err == h2quic.ErrNoCachedConn:
+		shouldRetry = true
+	case err != nil && strings.Contains(err.Error(), "PublicReset:"):
+		shouldRetry = true
+	}
+
+	if shouldRetry {
 		resp, err = h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
+
 	if err != nil {
 		return nil, err
 	}
