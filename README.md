@@ -1,4 +1,4 @@
-## goproxy-vps (a tls1.3/http2 and quic secure proxy)
+## goproxy-vps (a tls1.3/http2/quic secure proxy)
 [![Release](https://img.shields.io/badge/%20git.io-goproxy-blue.svg?style=social)](https://github.com/phuslu/goproxy/releases)
 
 * 讨论区 https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
