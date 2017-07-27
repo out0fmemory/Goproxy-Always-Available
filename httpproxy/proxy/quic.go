@@ -89,11 +89,17 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 	resp, err := h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 
 	var shouldRetry bool
-	switch {
-	case err == h2quic.ErrNoCachedConn:
+	switch err {
+	case nil:
+		break
+	case h2quic.ErrNoCachedConn:
 		shouldRetry = true
-	case err != nil && strings.Contains(err.Error(), "PublicReset:"):
-		shouldRetry = true
+	default:
+		if ne, ok := err.(*net.OpError); ok && ne.Timeout() {
+			shouldRetry = true
+		} else if strings.Contains(err.Error(), "PublicReset:") {
+			shouldRetry = true
+		}
 	}
 
 	if shouldRetry {
