@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
@@ -37,6 +38,14 @@ func QUIC(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (
 			DialAddr: func(address string, tlsConfig *tls.Config, cfg *quic.Config) (quic.Session, error) {
 				return quic.DialAddr(addr, tlsConfig, cfg)
 			},
+			QuicConfig: &quic.Config{
+				HandshakeTimeout:              5 * time.Second,
+				IdleTimeout:                   10 * time.Second,
+				RequestConnectionIDTruncation: true,
+				KeepAlive:                     true,
+			},
+			KeepAliveTimeout:      30 * time.Minute,
+			ResponseHeaderTimeout: 5 * time.Second,
 		},
 	}
 	if auth != nil {
