@@ -3,7 +3,9 @@ package helpers
 import (
 	"net"
 	"net/http"
+	"path"
 	"strconv"
+	"strings"
 
 	"github.com/phuslu/net/http2"
 	"github.com/phuslu/quic-go/h2quic"
@@ -108,4 +110,34 @@ func GetHostName(req *http.Request) string {
 	} else {
 		return req.Host
 	}
+}
+
+func IsStaticRequest(req *http.Request) bool {
+	switch path.Ext(req.URL.Path) {
+	case "bmp", "gif", "ico", "jpeg", "jpg", "png", "tif", "tiff",
+		"3gp", "3gpp", "avi", "f4v", "flv", "m4p", "mkv", "mp4",
+		"mp4v", "mpv4", "rmvb", ".webp", ".js", ".css":
+		return false
+	case "":
+		name := path.Base(req.URL.Path)
+		if strings.Contains(name, "play") ||
+			strings.Contains(name, "video") {
+			return false
+		}
+	default:
+		if req.Header.Get("Range") != "" ||
+			strings.Contains(req.Host, "img.") ||
+			strings.Contains(req.Host, "cache.") ||
+			strings.Contains(req.Host, "video.") ||
+			strings.Contains(req.Host, "static.") ||
+			strings.HasPrefix(req.Host, "img") ||
+			strings.HasPrefix(req.URL.Path, "/static") ||
+			strings.HasPrefix(req.URL.Path, "/asset") ||
+			strings.Contains(req.URL.Path, "static") ||
+			strings.Contains(req.URL.Path, "asset") ||
+			strings.Contains(req.URL.Path, "/cache/") {
+			return false
+		}
+	}
+	return false
 }
