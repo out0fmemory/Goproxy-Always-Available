@@ -35,6 +35,28 @@ type Transport struct {
 	RetryTimes   int
 }
 
+func (t *Transport) roundTrip(req *http.Request) (*http.Response, error) {
+	if t1, ok := t.RoundTripper.(*h2quic.RoundTripper); ok {
+
+		resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
+
+		var shouldRetry bool
+		switch {
+		case err == h2quic.ErrNoCachedConn:
+			shouldRetry = true
+		case err != nil && strings.Contains(err.Error(), "PublicReset:"):
+			shouldRetry = true
+		}
+
+		if shouldRetry {
+			resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
+		}
+
+		return resp, err
+	}
+	return t.RoundTripper.RoundTrip(req)
+}
+
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var err error
 	var resp *http.Response
@@ -43,7 +65,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			glog.Warningf("GAE %T.RoundTrip(retry=%d) for %#v", t, i, req.URL.String())
 		}
 
-		resp, err = t.RoundTripper.RoundTrip(req)
+		resp, err = t.roundTrip(req)
 
 		if i == t.RetryTimes-1 {
 			break
