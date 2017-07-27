@@ -11,7 +11,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"path"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -182,34 +181,7 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 }
 
 func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
-	perfer := true
-
-	switch path.Ext(req.URL.Path) {
-	case "bmp", "gif", "ico", "jpeg", "jpg", "png", "tif", "tiff",
-		"3gp", "3gpp", "avi", "f4v", "flv", "m4p", "mkv", "mp4",
-		"mp4v", "mpv4", "rmvb", ".webp", ".js", ".css":
-		perfer = false
-	case "":
-		name := path.Base(req.URL.Path)
-		if strings.Contains(name, "play") ||
-			strings.Contains(name, "video") {
-			perfer = false
-		}
-	default:
-		if req.Header.Get("Range") != "" ||
-			strings.Contains(req.Host, "img.") ||
-			strings.Contains(req.Host, "cache.") ||
-			strings.Contains(req.Host, "video.") ||
-			strings.Contains(req.Host, "static.") ||
-			strings.HasPrefix(req.Host, "img") ||
-			strings.HasPrefix(req.URL.Path, "/static") ||
-			strings.HasPrefix(req.URL.Path, "/asset") ||
-			strings.Contains(req.URL.Path, "static") ||
-			strings.Contains(req.URL.Path, "asset") ||
-			strings.Contains(req.URL.Path, "/cache/") {
-			perfer = false
-		}
-	}
+	perfer := !helpers.IsStaticRequest(req)
 
 	if base > 0 {
 		perfer = false

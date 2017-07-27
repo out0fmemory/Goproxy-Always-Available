@@ -6,8 +6,6 @@ import (
 	"math/rand"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
 
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
@@ -79,29 +77,8 @@ func (p *Filter) FilterName() string {
 
 func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Context, *http.Response, error) {
 	i := 0
-	switch path.Ext(req.URL.Path) {
-	case ".jpg", ".png", ".webp", ".bmp", ".gif", ".flv", ".mp4":
+	if helpers.IsStaticRequest(req) {
 		i = rand.Intn(len(f.Servers))
-	case "":
-		name := path.Base(req.URL.Path)
-		if strings.Contains(name, "play") ||
-			strings.Contains(name, "video") {
-			i = rand.Intn(len(f.Servers))
-		}
-	default:
-		if strings.Contains(req.Host, "img.") ||
-			strings.Contains(req.Host, "cache.") ||
-			strings.Contains(req.Host, "video.") ||
-			strings.Contains(req.Host, "static.") ||
-			strings.HasPrefix(req.Host, "img") ||
-			strings.HasPrefix(req.URL.Path, "/static") ||
-			strings.HasPrefix(req.URL.Path, "/asset") ||
-			strings.Contains(req.URL.Path, "min.js") ||
-			strings.Contains(req.URL.Path, "static") ||
-			strings.Contains(req.URL.Path, "asset") ||
-			strings.Contains(req.URL.Path, "/cache/") {
-			i = rand.Intn(len(f.Servers))
-		}
 	}
 
 	server := f.Servers[i]
