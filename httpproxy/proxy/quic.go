@@ -73,7 +73,10 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 		},
 	}
 
-	resp, err := h.transport.RoundTrip(req)
+	resp, err := h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
+	if err == h2quic.ErrNoCachedConn {
+		resp, err = h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
+	}
 	if err != nil {
 		return nil, err
 	}
