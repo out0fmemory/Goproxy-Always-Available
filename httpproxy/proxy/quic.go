@@ -95,7 +95,9 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 	case h2quic.ErrNoCachedConn:
 		shouldRetry = true
 	default:
-		if ne, ok := err.(*net.OpError); ok && ne.Timeout() {
+		if te, ok := err.(interface {
+			Timeout() bool
+		}); ok && te.Timeout() {
 			shouldRetry = true
 		} else if strings.Contains(err.Error(), "PublicReset:") {
 			shouldRetry = true

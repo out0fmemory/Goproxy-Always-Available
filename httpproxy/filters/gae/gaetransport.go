@@ -21,112 +21,117 @@ type Transport struct {
 	RetryTimes   int
 }
 
-func (t *Transport) roundTrip(req *http.Request) (*http.Response, error) {
-	if t1, ok := t.RoundTripper.(*h2quic.RoundTripper); ok {
+func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
+	t1 := t.RoundTripper.(*h2quic.RoundTripper)
 
-		resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
+	resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 
-		var shouldRetry bool
-		switch err {
-		case nil:
-			break
-		case h2quic.ErrNoCachedConn:
+	var shouldRetry bool
+	switch err {
+	case nil:
+		break
+	case h2quic.ErrNoCachedConn:
+		shouldRetry = true
+	default:
+		if te, ok := err.(interface {
+			Timeout() bool
+		}); ok && te.Timeout() {
 			shouldRetry = true
-		default:
-			if ne, ok := err.(*net.OpError); ok && ne.Timeout() {
-				shouldRetry = true
-			} else if strings.Contains(err.Error(), "PublicReset:") {
-				shouldRetry = true
+		} else if strings.Contains(err.Error(), "PublicReset:") {
+			shouldRetry = true
+		}
+	}
+
+	if shouldRetry {
+		resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
+	}
+
+	return resp, err
+}
+
+func (t *Transport) roundTripTLS(req *http.Request) (*http.Response, error) {
+	resp, err := t.RoundTripper.RoundTrip(req)
+
+	if ne, ok := err.(*net.OpError); ok && ne != nil {
+		switch {
+		case ne.Addr == nil:
+			break
+		case ne.Error() == "unexpected EOF":
+			helpers.CloseConnections(t.RoundTripper)
+		case ne.Timeout() || ne.Op == "read":
+			ip, _, _ := net.SplitHostPort(ne.Addr.String())
+			glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
+			helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
+			if t.MultiDialer != nil {
+				duration := 5 * time.Minute
+				glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
+				t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 			}
 		}
-
-		if shouldRetry {
-			resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
-		}
-
-		return resp, err
 	}
-	return t.RoundTripper.RoundTrip(req)
+
+	return resp, err
 }
 
 func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	var err error
 	var resp *http.Response
+
+	_, isQuic := t.RoundTripper.(*h2quic.RoundTripper)
+
 	for i := 0; i < t.RetryTimes; i++ {
 		if i > 0 {
-			glog.Warningf("GAE %T.RoundTrip(retry=%d) for %#v", t, i, req.URL.String())
+			glog.Warningf("GAE %T.RoundTrip(retry=%d) for %#v", t.RoundTripper, i, req.URL.String())
 		}
 
-		resp, err = t.roundTrip(req)
+		if isQuic {
+			resp, err = t.roundTripQuic(req)
+		} else {
+			resp, err = t.roundTripTLS(req)
+		}
 
-		if i == t.RetryTimes-1 {
+		if err == nil || i == t.RetryTimes-1 {
 			break
 		}
+	}
 
-		if ne, ok := err.(*net.OpError); ok && ne.Addr != nil {
-			if ip, _, err := net.SplitHostPort(ne.Addr.String()); err == nil {
-				if ne.Timeout() || ne.Op == "read" {
-					glog.Warningf("GAE %s RoundTrip %s error: %#v, close connection to it", ne.Net, ip, ne.Err)
-					switch ne.Net {
-					case "udp":
-						t.RoundTripper.(*h2quic.RoundTripper).Close()
-					default:
-						helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
-					}
-					if t.MultiDialer != nil {
-						duration := 5 * time.Minute
-						glog.Warningf("GAE: %s is timeout, add to blacklist for %v", ip, duration)
-						t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-					}
-				}
-			}
-			if err.Error() == "unexpected EOF" {
-				helpers.CloseConnections(t.RoundTripper)
-				break
-			}
+	if resp != nil && resp.StatusCode >= http.StatusBadRequest {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			resp.Body.Close()
+			return nil, err
 		}
 
-		if resp != nil && err == nil {
-			if resp.StatusCode >= http.StatusBadRequest {
-				body, err := ioutil.ReadAll(resp.Body)
-				if err != nil {
-					resp.Body.Close()
-					return nil, err
-				}
-
-				if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
-					if ip, _, err := net.SplitHostPort(addr); err == nil {
-						var duration time.Duration
-						switch {
-						case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
-							duration = 1 * time.Hour
-						case resp.StatusCode >= 301 && strings.Contains(resp.Header.Get("Location"), "hangouts.google.com"):
-							duration = 2 * time.Hour
-						case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
-							server := resp.Header.Get("Server")
-							if server != "gws" && !strings.HasPrefix(server, "gvs") {
-								if t.MultiDialer.TLSConnDuration.Len() > 10 {
-									duration = 5 * time.Minute
-								}
-							}
-						}
-
-						if duration > 0 && t.MultiDialer != nil {
-							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
-							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-
-							if !helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip) {
-								glog.Warningf("GAE: CloseConnectionByRemoteHost(%T, %#v) failed.", t.RoundTripper, ip)
-							}
+		if addr, err := helpers.ReflectRemoteAddrFromResponse(resp); err == nil {
+			if ip, _, err := net.SplitHostPort(addr); err == nil {
+				var duration time.Duration
+				switch {
+				case resp.StatusCode == http.StatusBadGateway && bytes.Contains(body, []byte("Please try again in 30 seconds.")):
+					duration = 1 * time.Hour
+				case resp.StatusCode >= 301 && strings.Contains(resp.Header.Get("Location"), "hangouts.google.com"):
+					duration = 2 * time.Hour
+				case resp.StatusCode == http.StatusNotFound && bytes.Contains(body, []byte("<ins>That’s all we know.</ins>")):
+					server := resp.Header.Get("Server")
+					if server != "gws" && !strings.HasPrefix(server, "gvs") {
+						if t.MultiDialer.TLSConnDuration.Len() > 10 {
+							duration = 5 * time.Minute
 						}
 					}
 				}
 
-				resp.Body.Close()
-				resp.Body = ioutil.NopCloser(bytes.NewReader(body))
+				if duration > 0 && t.MultiDialer != nil {
+					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
+					t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+
+					if !helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip) {
+						glog.Warningf("GAE: CloseConnectionByRemoteHost(%T, %#v) failed.", t.RoundTripper, ip)
+					}
+				}
 			}
-			break
 		}
+
+		resp.Body.Close()
+		resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 	}
 
 	return resp, err
