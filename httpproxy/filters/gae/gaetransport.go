@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/phuslu/glog"
+	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
 
 	"../../helpers"
@@ -19,6 +20,23 @@ type Transport struct {
 	RoundTripper http.RoundTripper
 	MultiDialer  *helpers.MultiDialer
 	RetryTimes   int
+}
+
+type QuicBody struct {
+	quic.Stream
+	OnTimeoutError func()
+}
+
+func (b *QuicBody) Read(data []byte) (int, error) {
+	n, err := b.Stream.Read(data)
+	if err != nil && b.OnTimeoutError != nil {
+		if te, ok := err.(interface {
+			Timeout() bool
+		}); ok && te.Timeout() {
+			b.OnTimeoutError()
+		}
+	}
+	return n, err
 }
 
 func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
@@ -44,6 +62,15 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 
 	if shouldRetry {
 		resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
+	}
+
+	if resp != nil && resp.Body != nil {
+		if stream, ok := resp.Body.(quic.Stream); ok {
+			resp.Body = &QuicBody{
+				Stream:         stream,
+				OnTimeoutError: func() { t1.Close() },
+			}
+		}
 	}
 
 	return resp, err
