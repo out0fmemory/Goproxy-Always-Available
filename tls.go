@@ -138,6 +138,8 @@ func (cm *CertManager) HostPolicy(_ context.Context, host string) error {
 }
 
 func (cm *CertManager) GetCertificate(hello *tls.ClientHelloInfo) (*tls.Certificate, error) {
+	hello.ServerName = strings.ToLower(hello.ServerName)
+
 	cert, _ := cm.certs[hello.ServerName]
 	if cert != nil {
 		return cert, nil
