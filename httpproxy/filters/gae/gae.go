@@ -411,12 +411,12 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	f := &Filter{
 		Config: *config,
 		GAETransport: &GAETransport{
-			RoundTripper: tr,
-			MultiDialer:  md,
-			Servers:      NewServers(config.AppIDs, config.Password, config.SSLVerify),
-			Deadline:     time.Duration(config.Transport.ResponseHeaderTimeout-2) * time.Second,
-			RetryDelay:   time.Duration(config.Transport.RetryDelay*1000) * time.Millisecond,
-			RetryTimes:   config.Transport.RetryTimes,
+			Transport:   tr,
+			MultiDialer: md,
+			Servers:     NewServers(config.AppIDs, config.Password, config.SSLVerify),
+			Deadline:    time.Duration(config.Transport.ResponseHeaderTimeout-2) * time.Second,
+			RetryDelay:  time.Duration(config.Transport.RetryDelay*1000) * time.Millisecond,
+			RetryTimes:  config.Transport.RetryTimes,
 		},
 		Transport:          tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(forceHTTPSMatcherStrings),

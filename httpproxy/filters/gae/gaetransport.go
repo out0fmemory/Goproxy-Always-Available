@@ -161,7 +161,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 }
 
 type GAETransport struct {
-	http.RoundTripper
+	Transport   *Transport
 	MultiDialer *helpers.MultiDialer
 	Servers     *Servers
 	Deadline    time.Duration
@@ -180,7 +180,7 @@ func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			return nil, fmt.Errorf("GAE EncodeRequest: %s", err.Error())
 		}
 
-		resp, err := t.RoundTripper.RoundTrip(req1)
+		resp, err := t.Transport.RoundTrip(req1)
 
 		if err != nil {
 			if i == retryTimes-1 {
@@ -188,7 +188,7 @@ func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			} else {
 				glog.Warningf("GAE: request \"%s\" error: %T(%v), retry...", req.URL.String(), err, err)
 				if err.Error() == "unexpected EOF" {
-					helpers.CloseConnections(t.RoundTripper)
+					helpers.CloseConnections(t.Transport.RoundTripper)
 					return nil, err
 				}
 				continue
@@ -218,8 +218,8 @@ func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 						}
 						if host, _, err := net.SplitHostPort(addr); err == nil {
-							if !helpers.CloseConnectionByRemoteHost(t.RoundTripper, host) {
-								glog.Warningf("GAE: CloseConnectionByRemoteAddr(%T, %#v) failed.", t.RoundTripper, addr)
+							if !helpers.CloseConnectionByRemoteHost(t.Transport.RoundTripper, host) {
+								glog.Warningf("GAE: CloseConnectionByRemoteAddr(%T, %#v) failed.", t.Transport.RoundTripper, addr)
 							}
 						}
 					}
