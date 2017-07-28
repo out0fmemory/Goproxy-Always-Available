@@ -3,7 +3,6 @@ package gae
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -15,19 +14,6 @@ import (
 
 	"../../helpers"
 )
-
-type onErrorBody struct {
-	io.ReadCloser
-	OnError func(error)
-}
-
-func (b *onErrorBody) Read(p []byte) (int, error) {
-	n, err := b.ReadCloser.Read(p)
-	if b.OnError != nil && err != nil {
-		b.OnError(err)
-	}
-	return n, err
-}
 
 type Transport struct {
 	RoundTripper http.RoundTripper
@@ -140,20 +126,6 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				resp.Body = ioutil.NopCloser(bytes.NewReader(body))
 			}
 			break
-		}
-	}
-
-	if resp != nil && resp.Body != nil {
-		if _, ok := t.RoundTripper.(*h2quic.RoundTripper); ok {
-			resp.Body = &onErrorBody{
-				ReadCloser: resp.Body,
-				OnError: func(err error) {
-					if ne, ok := err.(*net.OpError); ok && ne.Op == "read" {
-						glog.Warningf("GAE %s resp.Body OnError: %+v, close all connection to it", ne.Net, ne.Err)
-						helpers.CloseConnections(t.RoundTripper)
-					}
-				},
-			}
 		}
 	}
 
