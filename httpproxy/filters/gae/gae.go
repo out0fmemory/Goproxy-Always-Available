@@ -284,6 +284,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				RequestConnectionIDTruncation: true,
 				KeepAlive:                     true,
 			},
+			CloseClientIfTimeout:  true,
 			DialAddr:              md.DialQuic,
 			KeepAliveTimeout:      5 * time.Minute,
 			ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
