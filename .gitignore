@@ -1,6 +1,5 @@
 build/
 cache/
-*.crt
 *.db
 *.exe
 *.exe~

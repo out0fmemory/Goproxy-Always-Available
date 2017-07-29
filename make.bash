@@ -3,8 +3,7 @@
 set -ex
 
 REVSION=$(git rev-list --count HEAD)
-HTTP2REV=$(cd ${GOPATH}/src/github.com/phuslu/net/http2; git log --oneline -1 --format="%h")
-LDFLAGS="-s -w -X main.version=r${REVSION} -X main.http2rev=${HTTP2REV}"
+LDFLAGS="-s -w -X main.version=r${REVSION}"
 
 GOOS=${GOOS:-$(go env GOOS)}
 GOARCH=${GOARCH:-$(go env GOARCH)}
