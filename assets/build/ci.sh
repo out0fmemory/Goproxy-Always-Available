@@ -289,6 +289,7 @@ GOOS=linux GOARCH=arm CGO_ENABLED=0 ./make.bash
 GOOS=linux GOARCH=arm64 CGO_ENABLED=0 ./make.bash
 GOOS=linux GOARCH=mipsle CGO_ENABLED=0 ./make.bash
 GOOS=windows GOARCH=amd64 CGO_ENABLED=0 ./make.bash
+GOOS=windows GOARCH=386 CGO_ENABLED=0 ./make.bash
 EOF
 	xargs --max-procs=5 -n1 -i bash -c {}
 
