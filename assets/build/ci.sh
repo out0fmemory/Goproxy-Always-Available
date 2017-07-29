@@ -293,7 +293,7 @@ GOOS=windows GOARCH=386 CGO_ENABLED=0 ./make.bash
 EOF
 	xargs --max-procs=5 -n1 -i bash -c {}
 
-	local files=$(find ./build -type f -name "*.gz" -or -name "*.bz2" -or -name "*.xz")
+	local files=$(find ./build -type f -name "*.gz" -or -name "*.bz2" -or -name "*.xz" -or -name "*.7z")
 	cp ${files} ${WORKING_DIR}/r${RELEASE}
 
 	cd ${WORKING_DIR}/r${RELEASE}
