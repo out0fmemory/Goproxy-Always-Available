@@ -106,7 +106,7 @@ def upload(dirname, appid):
     with open(filename, 'rb') as fp:
         content = fp.read()
     with open(filename, 'wb') as fp:
-        fp.write(re.sub(r'application:\s*\S+', 'application: '+appid, content))
+        fp.write(re.sub(r'application:.*', 'application: '+appid, content))
     if os.name == 'nt':
         appcfg.main(['appcfg', 'rollback', dirname])
         appcfg.main(['appcfg', 'update', dirname])
