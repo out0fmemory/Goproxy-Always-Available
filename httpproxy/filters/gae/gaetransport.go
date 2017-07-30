@@ -54,6 +54,7 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 		if te, ok := err.(interface {
 			Timeout() bool
 		}); ok && te.Timeout() {
+			t1.Close()
 			shouldRetry = true
 		} else if strings.Contains(err.Error(), "PublicReset:") {
 			shouldRetry = true
@@ -117,7 +118,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 			resp, err = t.roundTripTLS(req)
 		}
 
-		if err == nil || i == t.RetryTimes-1 {
+		if err == nil {
 			break
 		}
 	}
