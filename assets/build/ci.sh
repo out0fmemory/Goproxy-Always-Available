@@ -218,7 +218,17 @@ EOF
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
 
 	export GAE_RELEASE=$(git rev-list --count origin/server.gae)
-	git archive --format=zip --prefix="goproxy-r${GAE_RELEASE}/" origin/server.gae > "${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.zip"
+	git archive --format=tar --prefix="goproxy-r${GAE_RELEASE}/" origin/server.gae > "${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.tar"
+	pushd ${WORKING_DIR}/r${RELEASE}
+	mkdir goproxy-r${GAE_RELEASE}
+	for FILE in python27.exe python27.dll python27.zip
+	do
+		curl -L https://raw.githubusercontent.com/phuslu/pybuild/master/${FILE} >goproxy-r${GAE_RELEASE}/${FILE}
+	done
+	tar uvf goproxy-gae-r${GAE_RELEASE}.tar goproxy-r${GAE_RELEASE}/*
+	rm -rf goproxy-r${GAE_RELEASE}
+	xz goproxy-gae-r${GAE_RELEASE}.tar
+	popd
 
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
