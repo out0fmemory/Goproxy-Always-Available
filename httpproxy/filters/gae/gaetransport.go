@@ -31,7 +31,6 @@ func (b *QuicBody) OnError(err error) {
 	if te, ok := err.(interface {
 		Timeout() bool
 	}); ok && te.Timeout() {
-		glog.Warningf("%#v.OnError(%+v) called, Close %T", b, err, b.Transport)
 		b.Transport.Close()
 	}
 }

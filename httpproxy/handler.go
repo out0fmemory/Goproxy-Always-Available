@@ -146,6 +146,12 @@ func (h Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			} else {
 				glog.Warningf("IOCopy %#v return %#v %T(%v)", resp.Body, n, err, err)
 			}
+			if oe, ok := resp.Body.(interface {
+				OnError(err error)
+			}); ok {
+				glog.Warningf("%#v.OnError(%+v) called.", resp.Body, err)
+				oe.OnError(err)
+			}
 		}
 	}
 }
