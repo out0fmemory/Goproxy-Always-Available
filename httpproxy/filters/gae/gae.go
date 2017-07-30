@@ -382,8 +382,10 @@ func NewFilter(config *Config) (filters.Filter, error) {
 
 			select {
 			case err := <-c:
-				if ne, ok := err.(*net.OpError); ok && err != nil {
-					glog.V(2).Infof("GAE EnableDeadProbe probeQuic error: %v", ne)
+				if te, ok := err.(interface {
+					Timeout() bool
+				}); ok && te.Timeout() {
+					glog.V(2).Infof("GAE EnableDeadProbe probeQuic error: %v", te)
 					helpers.CloseConnections(tr.RoundTripper)
 				}
 			case <-time.After(3 * time.Second):
