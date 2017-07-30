@@ -116,7 +116,7 @@ def upload(dirname, appid):
 
 def input_appids():
     while True:
-        appids = [x.strip() for x in raw_input('APPID:').split('|')]
+        appids = [x.strip().lower() for x in raw_input('APPID:').split('|')]
         ok = True
         for appid in appids:
             if not re.match(r'^[0-9a-zA-Z\-|]+$', appid):
