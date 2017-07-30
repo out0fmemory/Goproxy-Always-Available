@@ -24,19 +24,15 @@ type Transport struct {
 
 type QuicBody struct {
 	quic.Stream
-	OnTimeoutError func()
+	Transport *h2quic.RoundTripper
 }
 
-func (b *QuicBody) Read(data []byte) (int, error) {
-	n, err := b.Stream.Read(data)
-	if err != nil && b.OnTimeoutError != nil {
-		if te, ok := err.(interface {
-			Timeout() bool
-		}); ok && te.Timeout() {
-			b.OnTimeoutError()
-		}
+func (b *QuicBody) OnError(err error) {
+	if te, ok := err.(interface {
+		Timeout() bool
+	}); ok && te.Timeout() {
+		b.Transport.Close()
 	}
-	return n, err
 }
 
 func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
@@ -68,8 +64,8 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 	if resp != nil && resp.Body != nil {
 		if stream, ok := resp.Body.(quic.Stream); ok {
 			resp.Body = &QuicBody{
-				Stream:         stream,
-				OnTimeoutError: func() { t1.Close() },
+				Stream:    stream,
+				Transport: t1,
 			}
 		}
 	}
