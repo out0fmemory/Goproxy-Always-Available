@@ -99,8 +99,14 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 			Timeout() bool
 		}); ok && te.Timeout() {
 			shouldRetry = true
-		} else if strings.Contains(err.Error(), "PublicReset:") {
-			shouldRetry = true
+		} else {
+			errmsg := err.Error()
+			switch {
+			case strings.Contains(errmsg, "PublicReset:"):
+				shouldRetry = true
+			case strings.Contains(errmsg, "TooManyOutstandingReceivedPackets:"):
+				shouldRetry = true
+			}
 		}
 	}
 
