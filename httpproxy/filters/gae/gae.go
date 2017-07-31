@@ -388,7 +388,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 					glog.V(2).Infof("GAE EnableDeadProbe probeQuic error: %v", te)
 					helpers.CloseConnections(tr.RoundTripper)
 				}
-			case <-time.After(3 * time.Second):
+			case <-time.After(2 * time.Second):
 				glog.V(2).Infof("GAE EnableDeadProbe probeQuic timed out. Close all quic connections")
 				helpers.CloseConnections(tr.RoundTripper)
 			}
@@ -398,10 +398,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		go func() {
 			time.Sleep(1 * time.Minute)
 			for {
-				time.Sleep(time.Duration(2+rand.Intn(4)) * time.Second)
 				if config.EnableQuic {
+					time.Sleep(time.Duration(2+rand.Intn(2)) * time.Second)
 					probeQuic()
 				} else {
+					time.Sleep(time.Duration(2+rand.Intn(4)) * time.Second)
 					probeTLS()
 				}
 			}
