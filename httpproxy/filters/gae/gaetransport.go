@@ -36,13 +36,6 @@ func (b *QuicBody) OnError(err error) {
 		shouldClose = true
 	}
 
-	if !shouldClose {
-		e := err.Error()
-		if strings.Contains(e, "TooManyOutstandingReceivedPackets:") {
-			shouldClose = true
-		}
-	}
-
 	if shouldClose {
 		b.Transport.Close()
 	}
@@ -65,8 +58,14 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 		}); ok && te.Timeout() {
 			t1.Close()
 			shouldRetry = true
-		} else if strings.Contains(err.Error(), "PublicReset:") {
-			shouldRetry = true
+		} else {
+			errmsg := err.Error()
+			switch {
+			case strings.Contains(errmsg, "PublicReset:"):
+				shouldRetry = true
+			case strings.Contains(errmsg, "TooManyOutstandingReceivedPackets:"):
+				shouldRetry = true
+			}
 		}
 	}
 
