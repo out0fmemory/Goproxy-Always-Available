@@ -28,9 +28,22 @@ type QuicBody struct {
 }
 
 func (b *QuicBody) OnError(err error) {
+	var shouldClose bool
+
 	if te, ok := err.(interface {
 		Timeout() bool
 	}); ok && te.Timeout() {
+		shouldClose = true
+	}
+
+	if !shouldClose {
+		e := err.Error()
+		if strings.Contains(e, "TooManyOutstandingReceivedPackets:") {
+			shouldClose = true
+		}
+	}
+
+	if shouldClose {
 		b.Transport.Close()
 	}
 }
