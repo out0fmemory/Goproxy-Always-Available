@@ -24,7 +24,8 @@ type Transport struct {
 
 type QuicBody struct {
 	quic.Stream
-	Transport *h2quic.RoundTripper
+	Transport   *h2quic.RoundTripper
+	MultiDialer *helpers.MultiDialer
 }
 
 func (b *QuicBody) OnError(err error) {
@@ -38,6 +39,10 @@ func (b *QuicBody) OnError(err error) {
 
 	if shouldClose {
 		b.Transport.Close()
+		ip, _, _ := net.SplitHostPort(b.RemoteAddr().String())
+		duration := 5 * time.Minute
+		glog.Warningf("GAE: QuicBody(%v) is timeout, add to blacklist for %v", ip, duration)
+		b.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 	}
 }
 
@@ -70,14 +75,21 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 	}
 
 	if shouldRetry {
+		if ne, ok := err.(*net.OpError); ok && ne != nil && ne.Addr != nil {
+			ip, _, _ := net.SplitHostPort(ne.Addr.String())
+			duration := 5 * time.Minute
+			glog.Warningf("GAE: QuicBody(%v) is timeout, add to blacklist for %v", ip, duration)
+			t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+		}
 		resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
 
 	if resp != nil && resp.Body != nil {
 		if stream, ok := resp.Body.(quic.Stream); ok {
 			resp.Body = &QuicBody{
-				Stream:    stream,
-				Transport: t1,
+				Stream:      stream,
+				Transport:   t1,
+				MultiDialer: t.MultiDialer,
 			}
 		}
 	}
