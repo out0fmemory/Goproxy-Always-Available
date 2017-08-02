@@ -188,6 +188,7 @@ GAE 代理配置。
 >作用：验证服务器的 SSL 证书。检查服务器的 SSL 证书是否是 Google 证书。   
 >[Google 证书 https://pki.google.com/GIAG2.crt](https://pki.google.com/GIAG2.crt)   
 >此项配合 "GoogleG2KeyID" 选项使用。   
+>这个参数还有一个功能就是作为 GAE UrlFetch 的参数，即决定服务端在下载时是否验证证书。(issues-1927)。   
 >
 >参数：   
 >
