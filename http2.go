@@ -176,6 +176,8 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Proto = "HTTP/1.1"
 	}
 
+	tr := h.Transport
+
 	if !isProxyRequest {
 		if h.Fallback == nil {
 			http.Error(rw, "403 Forbidden", http.StatusForbidden)
@@ -184,6 +186,10 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if h.Fallback.Scheme == "file" {
 			http.FileServer(http.Dir(h.Fallback.Path)).ServeHTTP(rw, req)
 			return
+		}
+		if h.Dial != nil {
+			// A proxied dialer, fallback should use a local dialer
+			tr = http.DefaultTransport.(*http.Transport)
 		}
 		req.URL.Scheme = h.Fallback.Scheme
 		req.URL.Scheme = h.Fallback.Scheme
@@ -203,7 +209,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	resp, err := h.Transport.RoundTrip(req)
+	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		msg := err.Error()
 		if strings.HasPrefix(msg, "Invaid DNS Record: ") {
