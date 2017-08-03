@@ -70,6 +70,8 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 				shouldRetry = true
 			case strings.Contains(errmsg, "TooManyOutstandingReceivedPackets:"):
 				shouldRetry = true
+			case strings.Contains(errmsg, "cannot read "):
+				shouldRetry = true
 			}
 		}
 	}
