@@ -106,6 +106,8 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 				shouldRetry = true
 			case strings.Contains(errmsg, "TooManyOutstandingReceivedPackets:"):
 				shouldRetry = true
+			case strings.Contains(errmsg, "cannot read "):
+				shouldRetry = true
 			}
 		}
 	}
