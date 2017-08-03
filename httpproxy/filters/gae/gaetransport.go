@@ -51,38 +51,14 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 
 	resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 
-	var shouldRetry bool
-	switch err {
-	case nil:
-		break
-	case h2quic.ErrNoCachedConn:
-		shouldRetry = true
-	default:
-		if te, ok := err.(interface {
-			Timeout() bool
-		}); ok && te.Timeout() {
-			t1.Close()
-			shouldRetry = true
-		} else {
-			errmsg := err.Error()
-			switch {
-			case strings.Contains(errmsg, "PublicReset:"):
-				shouldRetry = true
-			case strings.Contains(errmsg, "TooMany"):
-				shouldRetry = true
-			case strings.Contains(errmsg, "cannot read "):
-				shouldRetry = true
-			}
-		}
-	}
-
-	if shouldRetry {
+	if err != nil {
 		if ne, ok := err.(*net.OpError); ok && ne != nil && ne.Addr != nil {
 			ip, _, _ := net.SplitHostPort(ne.Addr.String())
 			duration := 5 * time.Minute
 			glog.Warningf("GAE: QuicBody(%v) is timeout, add to blacklist for %v", ip, duration)
 			t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 		}
+		t1.Close()
 		resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
 
