@@ -79,9 +79,7 @@
 			"TLS_RSA_WITH_3DES_EDE_CBC_SHA",
 		],
 		"ServerName": [
-			"assets-cdn.github.com",
 			"download.windowsupdate.com",
-			"github.com",
 			"www.apple.com",
 			"www.bing.com",
 			"www.microsoft.com",
