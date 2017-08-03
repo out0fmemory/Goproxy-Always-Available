@@ -176,7 +176,11 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Proto = "HTTP/1.1"
 	}
 
-	if !isProxyRequest && h.Fallback != nil {
+	if !isProxyRequest {
+		if h.Fallback == nil {
+			http.Error(rw, "403 Forbidden", http.StatusForbidden)
+			return
+		}
 		if h.Fallback.Scheme == "file" {
 			http.FileServer(http.Dir(h.Fallback.Path)).ServeHTTP(rw, req)
 			return
