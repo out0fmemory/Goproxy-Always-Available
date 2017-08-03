@@ -104,7 +104,7 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 			switch {
 			case strings.Contains(errmsg, "PublicReset:"):
 				shouldRetry = true
-			case strings.Contains(errmsg, "TooManyOutstandingReceivedPackets:"):
+			case strings.Contains(errmsg, "TooMany"):
 				shouldRetry = true
 			case strings.Contains(errmsg, "cannot read "):
 				shouldRetry = true
