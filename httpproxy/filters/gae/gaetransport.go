@@ -58,7 +58,6 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 			glog.Warningf("GAE: QuicBody(%v) is timeout, add to blacklist for %v", ip, duration)
 			t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
 		}
-		t1.Close()
 		resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
 

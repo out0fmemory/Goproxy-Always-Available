@@ -12,6 +12,7 @@ import (
 	"net/url"
 	"time"
 
+	"github.com/phuslu/glog"
 	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
 )
@@ -40,13 +41,16 @@ func QUIC(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (
 				RequestConnectionIDTruncation: true,
 				KeepAlive:                     true,
 			},
-			KeepAliveTimeout:      30 * time.Minute,
+			KeepAliveTimeout:      15 * time.Minute,
 			ResponseHeaderTimeout: 5 * time.Second,
 			DialAddr: func(address string, tlsConfig *tls.Config, cfg *quic.Config) (quic.Session, error) {
 				return quic.DialAddr(addr, tlsConfig, cfg)
 			},
 			GetClientKey: func(_ string) string {
 				return addr
+			},
+			CloseOnError: func(_ error) bool {
+				return true
 			},
 		},
 	}
@@ -87,7 +91,7 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 
 	resp, err := h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 	if err != nil {
-		h.transport.Close()
+		glog.Warningf("%T.RoundTripOpt(%#v) error: %+v", h.transport, req.URL.String(), err)
 		resp, err = h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
 
