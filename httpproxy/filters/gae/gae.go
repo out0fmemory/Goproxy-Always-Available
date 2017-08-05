@@ -288,7 +288,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			KeepAliveTimeout:      5 * time.Minute,
 			ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 			GetClientKey:          GetHostnameCacheKey,
-			CloseOnError:          func(_ error) bool { return true },
 		}
 	case config.DisableHTTP2 && config.ForceHTTP2:
 		glog.Fatalf("GAE: DisableHTTP2=%v and ForceHTTP2=%v is conflict!", config.DisableHTTP2, config.ForceHTTP2)

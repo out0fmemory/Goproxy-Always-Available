@@ -49,9 +49,6 @@ func QUIC(network, addr string, auth *Auth, forward Dialer, resolver Resolver) (
 			GetClientKey: func(_ string) string {
 				return addr
 			},
-			CloseOnError: func(_ error) bool {
-				return true
-			},
 		},
 	}
 	if auth != nil {
@@ -92,6 +89,7 @@ func (h *Quic) Dial(network, addr string) (net.Conn, error) {
 	resp, err := h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 	if err != nil {
 		glog.Warningf("%T.RoundTripOpt(%#v) error: %+v", h.transport, req.URL.String(), err)
+		h.transport.Close()
 		resp, err = h.transport.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
 

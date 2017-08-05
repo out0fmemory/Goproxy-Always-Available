@@ -52,14 +52,14 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 	resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 
 	if err != nil {
-		if t1.CloseOnError == nil {
-			t1.Close()
-		}
 		if ne, ok := err.(*net.OpError); ok && ne != nil && ne.Addr != nil {
 			ip, _, _ := net.SplitHostPort(ne.Addr.String())
 			duration := 5 * time.Minute
 			glog.Warningf("GAE: QuicBody(%v) is timeout, add to blacklist for %v", ip, duration)
 			t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
+			helpers.CloseConnectionByRemoteHost(t1, ip)
+		} else {
+			t1.Close()
 		}
 		resp, err = t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: false})
 	}
@@ -150,10 +150,7 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 				if duration > 0 && t.MultiDialer != nil {
 					glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
 					t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-
-					if !helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip) {
-						glog.Warningf("GAE: CloseConnectionByRemoteHost(%T, %#v) failed.", t.RoundTripper, ip)
-					}
+					helpers.CloseConnectionByRemoteHost(t.RoundTripper, ip)
 				}
 			}
 		}
@@ -221,11 +218,7 @@ func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 							duration := 8 * time.Hour
 							glog.Warningf("GAE: %s StatusCode is %d, not a gws/gvs ip, add to blacklist for %v", ip, resp.StatusCode, duration)
 							t.MultiDialer.IPBlackList.Set(ip, struct{}{}, time.Now().Add(duration))
-						}
-						if host, _, err := net.SplitHostPort(addr); err == nil {
-							if !helpers.CloseConnectionByRemoteHost(t.Transport.RoundTripper, host) {
-								glog.Warningf("GAE: CloseConnectionByRemoteAddr(%T, %#v) failed.", t.Transport.RoundTripper, addr)
-							}
+							helpers.CloseConnectionByRemoteHost(t.Transport.RoundTripper, ip)
 						}
 					}
 				}
