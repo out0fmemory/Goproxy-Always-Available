@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: VYjegRTyj0sqx1dM8mAxDQ
+! Checksum: SDvoDAVgoZi9a06Ugg+u9A
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Wed, 02 Aug 2017 00:55:01 -0400
+! Last Modified: Thu, 03 Aug 2017 23:28:09 -0400
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -45,6 +45,7 @@
 ||crossfire.co.kr
 ||d2pass.com
 ||darpa.mil
+||dawangidc.com
 ||deezer.com
 ||desipro.de
 ||dish.com
@@ -197,6 +198,7 @@ share.dmhy.org
 ||wheretowatch.com
 ||wingamestore.com
 ||wizcrafts.net
+||vod.wwe.com
 ||xfinity.com
 ||ytn.co.kr
 ||zattoo.com
@@ -1666,6 +1668,7 @@ creaders.net
 csdparty.com
 ||csdparty.com
 ||csuchen.de
+.csw.org.uk
 .ctao.org
 .ctfriend.net
 .ctitv.com.tw
@@ -1991,6 +1994,7 @@ emilylau.org.hk
 ||enewstree.com
 .enfal.de
 chinese.engadget.com
+||engagedaily.org
 englishforeveryone.org
 ||englishfromengland.co.uk
 englishpen.org
@@ -2280,11 +2284,10 @@ fqok.org
 |http://freakshare.com
 ||free4u.com.ar
 free-gate.org
+.free-hada-now.org
+free-proxy.cz
 .free.fr/adsl
-||allonlinux.free.fr
-||dimitrik.free.fr
 kineox.free.fr
-||puttycm.free.fr
 ||freealim.com
 whitebear.freebearblog.org
 ||freebrowser.org
@@ -2299,7 +2302,6 @@ whitebear.freebearblog.org
 .freefuckvids.com
 .freegao.com
 ||freegao.com
-.free-hada-now.org
 freeilhamtohti.org
 .freekwonpyong.org
 ||saveliuxiaobo.com
@@ -3278,6 +3280,7 @@ ifjc.org
 ||ihakka.net
 .ihao.org/dz5
 ||iicns.com
+.ikstar.com
 ||illusionfactory.com
 ||ilove80.be
 ||im.tv
@@ -5654,6 +5657,7 @@ twapperkeeper.com
 ||twapperkeeper.com
 ||twaud.io
 .twaud.io
+.twavi.com
 .twbbs.net.tw
 twbbs.org
 twbbs.tw
