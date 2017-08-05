@@ -52,6 +52,9 @@ func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 	resp, err := t1.RoundTripOpt(req, h2quic.RoundTripOpt{OnlyCachedConn: true})
 
 	if err != nil {
+		if t1.CloseOnError == nil {
+			t1.Close()
+		}
 		if ne, ok := err.(*net.OpError); ok && ne != nil && ne.Addr != nil {
 			ip, _, _ := net.SplitHostPort(ne.Addr.String())
 			duration := 5 * time.Minute
