@@ -229,6 +229,7 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 	}
 
 	hasECC := helpers.HasECCCiphers(hello.CipherSuites)
+	_, isH2 := cm.h2[hello.ServerName]
 
 	cacheKey := hello.ServerName
 	if !hasECC {
@@ -259,8 +260,24 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		config.ClientCAs = p
 	}
 
-	if _, ok := cm.h2[hello.ServerName]; ok {
+	if isH2 {
 		config.NextProtos = []string{"h2", "http/1.1"}
+	}
+
+	if !hasECC && !isH2 {
+		// config.MinVersion = tls.VersionSSL30
+		config.CipherSuites = []uint16{
+			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305,
+			tls.TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305,
+			tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+			tls.TLS_RSA_WITH_AES_128_GCM_SHA256,
+			tls.TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA,
+			tls.TLS_RSA_WITH_3DES_EDE_CBC_SHA,
+		}
 	}
 
 	cm.cache.Set(cacheKey, config, time.Now().Add(2*time.Hour))
