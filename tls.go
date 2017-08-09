@@ -19,8 +19,7 @@ import (
 )
 
 type CertManager struct {
-	RejectNilSni bool
-	Dial         func(network, addr string) (net.Conn, error)
+	Dial func(network, addr string) (net.Conn, error)
 
 	hosts  []string
 	certs  map[string]*tls.Certificate
@@ -218,14 +217,6 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		if addr, ok := cm.sni[hello.ServerName]; ok {
 			return cm.Forward(hello, addr, cm.snits[hello.ServerName])
 		}
-	}
-
-	if hello.ServerName == "" {
-		if cm.RejectNilSni {
-			hello.Conn.Close()
-			return nil, nil
-		}
-		hello.ServerName = cm.hosts[0]
 	}
 
 	hasECC := helpers.HasECCCiphers(hello.CipherSuites)

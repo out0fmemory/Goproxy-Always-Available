@@ -85,8 +85,7 @@ func main() {
 	}
 
 	cm := &CertManager{
-		RejectNilSni: config.Default.RejectNilSni,
-		Dial:         dialer.Dial,
+		Dial: dialer.Dial,
 	}
 	h := &Handler{
 		Handlers:    map[string]http.Handler{},
@@ -162,6 +161,11 @@ func main() {
 
 	for _, server := range config.TLS {
 		cm.AddTLSProxy(server.ServerName, server.Backend, server.Terminate)
+	}
+
+	if config.Default.RejectNilSni {
+		cm.Add("", "", "", EmptyServerNamePEM, "", "", false)
+		h.Default = http.NotFoundHandler()
 	}
 
 	srv := &http.Server{
