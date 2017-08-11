@@ -285,7 +285,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				KeepAlive:                     true,
 			},
 			DialAddr:              md.DialQuic,
-			KeepAliveTimeout:      5 * time.Minute,
+			KeepAliveTimeout:      2 * time.Minute,
 			ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 			GetClientKey:          GetHostnameCacheKey,
 		}
