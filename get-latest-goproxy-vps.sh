@@ -110,6 +110,7 @@ if [ ! -f goproxy-vps.user.toml ]; then
         cat <<EOF >goproxy-vps.toml
 [default]
 log_level = 2
+reject_nil_sni = true
 
 [[http2]]
 listen = ":443"
