@@ -107,7 +107,12 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 
 	_, isQuic := t.RoundTripper.(*h2quic.RoundTripper)
 
-	for i := 0; i < t.RetryTimes; i++ {
+	retry := t.RetryTimes
+	if req.Method != http.MethodGet && req.Header.Get("Content-Length") != "" {
+		retry = 1
+	}
+
+	for i := 0; i < retry; i++ {
 		if i > 0 {
 			glog.Warningf("GAE %T.RoundTrip(retry=%d) for %#v", t.RoundTripper, i, req.URL.String())
 		}
