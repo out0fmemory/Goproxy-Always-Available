@@ -370,28 +370,19 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				return
 			}
 
-			c := make(chan error)
+			req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
+			resp, err := tr.RoundTrip(req)
+			if resp != nil && resp.Body != nil {
+				resp.Body.Close()
+			}
 
-			go func(c chan<- error) {
-				req, _ := http.NewRequest(http.MethodGet, "https://clients3.google.com/generate_204", nil)
-				resp, err := tr.RoundTrip(req)
-				c <- err
-				if resp != nil && resp.Body != nil {
-					resp.Body.Close()
-				}
-			}(c)
-
-			select {
-			case err := <-c:
+			if err != nil {
 				if te, ok := err.(interface {
 					Timeout() bool
 				}); ok && te.Timeout() {
 					glog.V(2).Infof("GAE EnableDeadProbe probeQuic error: %v", te)
 					helpers.CloseConnections(tr.RoundTripper)
 				}
-			case <-time.After(2 * time.Second):
-				glog.V(2).Infof("GAE EnableDeadProbe probeQuic timed out. Close all quic connections")
-				helpers.CloseConnections(tr.RoundTripper)
 			}
 
 		}
