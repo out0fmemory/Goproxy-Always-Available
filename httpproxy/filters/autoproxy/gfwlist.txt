@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: 2RPD4vwbDqRwJxHeVEHwiQ
+! Checksum: bOnrPYubKXIbOK9ZWrH/7Q
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Thu, 10 Aug 2017 01:07:41 -0400
+! Last Modified: Sun, 13 Aug 2017 00:10:01 -0400
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -4658,6 +4658,7 @@ blog.qooza.hk/dafengqixi
 ||qtrac.eu
 .quannengshen.org
 |http://quannengshen.org
+quantumbooter.net
 ||quitccp.net
 .quitccp.net
 ||quitccp.org
