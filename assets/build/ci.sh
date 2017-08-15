@@ -155,7 +155,7 @@ function build_repo() {
 	fi
 
 	export RELEASE=$(git rev-list --count HEAD)
-	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/gop/commit/%h) %s")
+	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/goproxy/commit/%h) %s")
 	if [ -n "${TRAVIS_BUILD_ID}" ]; then
 		export RELEASE_DESCRIPTION=$(echo ${RELEASE_DESCRIPTION} | sed -E "s#^(r[0-9]+)#[\1](https://travis-ci.org/${GITHUB_USER}/${GITHUB_REPO}/builds/${TRAVIS_BUILD_ID})#g")
 	fi
@@ -288,7 +288,7 @@ function build_repo_ex() {
 	git reset --hard origin/server.vps
 	git clean -dfx .
 
-	git clone --branch master https://github.com/phuslu/gop $GOPATH/src/github.com/phuslu/goproxy
+	git clone --branch master https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
 	cat <<EOF |
