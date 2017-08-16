@@ -94,7 +94,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			port = "443"
 		}
 
-		glog.Infof("[%v 0x%04x %s] %s \"%s %s %s\" - -", req.TLS.ServerName, req.TLS.Version, username, req.RemoteAddr, req.Method, req.Host, req.Proto)
+		glog.Infof("[%v %s %s] %s \"%s %s %s\" - -", req.TLS.ServerName, helpers.TLSVersionName(req.TLS.Version), username, req.RemoteAddr, req.Method, req.Host, req.Proto)
 
 		dial := h.Dial
 		if dial == nil {
@@ -164,7 +164,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Body = nil
 	}
 
-	glog.Infof("[%v 0x%04x %s] %s \"%s %s %s\" - -", req.TLS.ServerName, req.TLS.Version, username, req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+	glog.Infof("[%v %s %s] %s \"%s %s %s\" - -", req.TLS.ServerName, helpers.TLSVersionName(req.TLS.Version), username, req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
 	if req.URL.Scheme == "" {
 		req.URL.Scheme = "http"
