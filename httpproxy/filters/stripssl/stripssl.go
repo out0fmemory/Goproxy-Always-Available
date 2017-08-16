@@ -87,15 +87,8 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		Sites:          helpers.NewHostMatcher(config.Sites),
 	}
 
-	switch config.TLSVersion {
-	case "TLSv1.3":
-		f.TLSMaxVersion = tls.VersionTLS13
-	case "TLSv1.2":
-		f.TLSMaxVersion = tls.VersionTLS12
-	case "TLSv1.1":
-		f.TLSMaxVersion = tls.VersionTLS11
-	case "TLSv1", "TLSv0":
-		f.TLSMaxVersion = tls.VersionTLS10
+	if v := helpers.TLSVersion(config.TLSVersion); v != 0 {
+		f.TLSMaxVersion = v
 	}
 
 	for _, port := range config.Ports {

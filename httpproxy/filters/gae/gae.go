@@ -136,16 +136,15 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			tls.TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
 		},
 	}
-	switch config.TLSConfig.Version {
-	case "TLSv13", "TLSv1.3":
-		googleTLSConfig.MinVersion = tls.VersionTLS13
-	default:
+	if v := helpers.TLSVersion(config.TLSConfig.Version); v != 0 {
+		googleTLSConfig.MinVersion = v
+	} else {
 		googleTLSConfig.MinVersion = tls.VersionTLS12
 	}
 	pickupCiphers := func(names []string) []uint16 {
 		ciphers := make([]uint16, 0)
 		for _, name := range names {
-			cipher := helpers.Cipher(name)
+			cipher := helpers.TLSCipher(name)
 			if cipher == 0 {
 				glog.Fatalf("GAE: cipher %#v is not supported.", name)
 			}
