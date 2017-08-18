@@ -33,6 +33,10 @@ const (
 	DefaultSSLVerify           = false
 )
 
+func IsGzip(b []byte) bool {
+	return bytes.HasPrefix(b, []byte{0x1f, 0x8b, 0x08, 0x00})
+}
+
 func IsBinary(b []byte) bool {
 	if len(b) > 32 {
 		b = b[:32]
@@ -49,6 +53,17 @@ func IsBinary(b []byte) bool {
 		}
 	}
 	return false
+}
+
+func IsTextContentType(contentType string) bool {
+	// text/* for html, plain text
+	// application/{json, javascript} for ajax
+	// application/x-www-form-urlencoded for some video api
+	return strings.HasPrefix(contentType, "text/") ||
+		strings.HasPrefix(contentType, "application/json") ||
+		strings.HasPrefix(contentType, "application/x-javascript") ||
+		strings.HasPrefix(contentType, "application/javascript") ||
+		strings.HasPrefix(contentType, "application/x-www-form-urlencoded")
 }
 
 func ReadRequest(r io.Reader) (req *http.Request, err error) {
@@ -176,7 +191,11 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	// req.Header.Del("X-Cloud-Trace-Context")
 	oAE := req.Header.Get("Accept-Encoding")
-	req.Header.Del("Accept-Encoding")
+	if strings.Contains(oAE, "gzip") {
+		req.Header.Set("Accept-Encoding", "gzip")
+	} else {
+		req.Header.Del("Accept-Encoding")
+	}
 
 	debugHeader := params.Get("X-UrlFetch-Debug")
 	debug := debugHeader != ""
@@ -304,48 +323,53 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
-	// urlfetch will decompress content, so try remove Content-Encoding
-	ce := resp.Header.Get("Content-Encoding")
-	ct := resp.Header.Get("Content-Type")
-	resp.Header.Del("Content-Encoding")
+	// dangerous
+	content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
+	contentIsText := IsTextContentType(resp.Header.Get("Content-Type"))
 
-	if (ce != "" ||
-		strings.HasPrefix(ct, "text/") ||
-		strings.HasPrefix(ct, "application/json") ||
-		strings.HasPrefix(ct, "application/x-javascript") ||
-		strings.HasPrefix(ct, "application/javascript") ||
-		strings.HasPrefix(ct, "application/x-www-form-urlencoded")) &&
-		resp.ContentLength > 1024 {
-		if v := reflect.ValueOf(resp.Body).Elem().FieldByName("content"); v.IsValid() {
-			var bb bytes.Buffer
-			var w io.WriteCloser
-			var ce1 string
+	if resp.Header.Get("Content-Encoding") == "br" {
+		// brotli sites (i.e. youtube), do nothing
+	} else if IsGzip(content) {
+		resp.Header.Set("Content-Encoding", "gzip")
+	} else if contentIsText {
+		if IsBinary(content) {
+			resp.Header.Set("Content-Encoding", "deflate")
+		} else {
+			resp.Header.Del("Content-Encoding")
+		}
+	} else {
+		resp.Header.Del("Content-Encoding")
+	}
 
-			switch {
-			case strings.Contains(oAE, "deflate"):
-				w, err = flate.NewWriter(&bb, flate.BestCompression)
-				ce1 = "deflate"
-			case strings.Contains(oAE, "gzip"):
-				w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
-				ce1 = "gzip"
-			}
+	if resp.Header.Get("Content-Encoding") == "" && contentIsText && len(content) > 1024 {
+		var bb bytes.Buffer
+		var w io.WriteCloser
+		var ce string
 
-			if err != nil {
-				handlerError(c, rw, err, http.StatusBadGateway)
-				return
-			}
+		switch {
+		case strings.Contains(oAE, "deflate"):
+			w, err = flate.NewWriter(&bb, flate.BestCompression)
+			ce = "deflate"
+		case strings.Contains(oAE, "gzip"):
+			w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
+			ce = "gzip"
+		}
 
-			if w != nil {
-				w.Write(v.Bytes())
-				w.Close()
+		if err != nil {
+			handlerError(c, rw, err, http.StatusBadGateway)
+			return
+		}
 
-				bbLen := int64(bb.Len())
-				if bbLen < resp.ContentLength {
-					resp.Body = ioutil.NopCloser(&bb)
-					resp.ContentLength = bbLen
-					resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
-					resp.Header.Set("Content-Encoding", ce1)
-				}
+		if w != nil {
+			w.Write(content)
+			w.Close()
+
+			bbLen := int64(bb.Len())
+			if bbLen < resp.ContentLength {
+				resp.Body = ioutil.NopCloser(&bb)
+				resp.ContentLength = bbLen
+				resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+				resp.Header.Set("Content-Encoding", ce)
 			}
 		}
 	}
