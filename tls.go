@@ -1,5 +1,3 @@
-// https://git.io/goproxy
-
 package main
 
 import (
