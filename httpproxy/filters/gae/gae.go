@@ -559,6 +559,7 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	if resp != nil && resp.Header != nil {
 		resp.Header.Del("Alt-Svc")
 		resp.Header.Del("Alternate-Protocol")
+		helpers.FixBrotliBody(resp)
 	}
 
 	glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
