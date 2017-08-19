@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dsnet/compress/brotli"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
 	"github.com/phuslu/quic-go/h2quic"
@@ -135,18 +134,4 @@ func IsStaticRequest(req *http.Request) bool {
 		}
 	}
 	return false
-}
-
-func FixBrotliBody(resp *http.Response) error {
-	if resp.Header.Get("Content-Encoding") == "br" && !strings.Contains(resp.Request.Header.Get("Accept-Encoding"), "br") {
-		r, err := brotli.NewReader(resp.Body, nil)
-		if err != nil {
-			return err
-		}
-		resp.Body = ReaderCloser{Reader: r, Closer: resp.Body}
-		resp.Header.Del("Content-Encoding")
-		resp.Header.Del("Content-Length")
-		resp.ContentLength = -1
-	}
-	return nil
 }
