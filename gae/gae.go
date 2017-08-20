@@ -33,23 +33,20 @@ const (
 	DefaultSSLVerify           = false
 )
 
-func IsGzip(b []byte) bool {
-	return bytes.HasPrefix(b, []byte{0x1f, 0x8b, 0x08, 0x00})
-}
-
 func IsBinary(b []byte) bool {
-	if len(b) > 32 {
-		b = b[:32]
-	}
-	if bytes.HasPrefix(b, []byte{0xef, 0xbb, 0xbf}) {
+	if len(b) > 3 && b[0] == 0xef && b[1] == 0xbb && b[2] == 0xbf {
+		// utf-8 text
 		return false
 	}
-	for _, c := range b {
-		if c == '\n' {
-			break
-		}
+	for i, c := range b {
 		if c > 0x7f {
 			return true
+		}
+		if c == '\n' && i > 4 {
+			break
+		}
+		if i > 32 {
+			break
 		}
 	}
 	return false
@@ -325,51 +322,43 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	// dangerous
 	content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
-	contentIsText := IsTextContentType(resp.Header.Get("Content-Type"))
 
-	if resp.Header.Get("Content-Encoding") == "br" {
-		// brotli sites (i.e. youtube), do nothing
-	} else if IsGzip(content) {
-		resp.Header.Set("Content-Encoding", "gzip")
-	} else if contentIsText {
-		if IsBinary(content) {
-			resp.Header.Set("Content-Encoding", "deflate")
-		} else {
-			resp.Header.Del("Content-Encoding")
-		}
-	} else {
-		resp.Header.Del("Content-Encoding")
-	}
-
-	if resp.Header.Get("Content-Encoding") == "" && contentIsText && len(content) > 1024 {
-		var bb bytes.Buffer
-		var w io.WriteCloser
-		var ce string
-
+	if resp.Header.Get("Content-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
 		switch {
-		case strings.Contains(oAE, "deflate"):
-			w, err = flate.NewWriter(&bb, flate.BestCompression)
-			ce = "deflate"
-		case strings.Contains(oAE, "gzip"):
-			w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
-			ce = "gzip"
-		}
+		case IsBinary(content):
+			// urlfetch will remove "Content-Encoding: deflate" when "Accept-Encoding" contains "gzip"
+			resp.Header.Set("Content-Encoding", "deflate")
+		case len(content) > 1024:
+			// we got plain text here, try compress it
+			var bb bytes.Buffer
+			var w io.WriteCloser
+			var ce string
 
-		if err != nil {
-			handlerError(c, rw, err, http.StatusBadGateway)
-			return
-		}
+			switch {
+			case strings.Contains(oAE, "deflate"):
+				w, err = flate.NewWriter(&bb, flate.BestCompression)
+				ce = "deflate"
+			case strings.Contains(oAE, "gzip"):
+				w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
+				ce = "gzip"
+			}
 
-		if w != nil {
-			w.Write(content)
-			w.Close()
+			if err != nil {
+				handlerError(c, rw, err, http.StatusBadGateway)
+				return
+			}
 
-			bbLen := int64(bb.Len())
-			if bbLen < resp.ContentLength {
-				resp.Body = ioutil.NopCloser(&bb)
-				resp.ContentLength = bbLen
-				resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
-				resp.Header.Set("Content-Encoding", ce)
+			if w != nil {
+				w.Write(content)
+				w.Close()
+
+				bbLen := int64(bb.Len())
+				if bbLen < resp.ContentLength {
+					resp.Body = ioutil.NopCloser(&bb)
+					resp.ContentLength = bbLen
+					resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+					resp.Header.Set("Content-Encoding", ce)
+				}
 			}
 		}
 	}
