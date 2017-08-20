@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	Version  = "1.0"
+	Version  = "r9999"
 	Password = ""
 
 	DefaultFetchMaxSize        = 1024 * 1024 * 4
