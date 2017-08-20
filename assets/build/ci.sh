@@ -141,7 +141,7 @@ function build_quicgo() {
 	popd
 }
 
-function build_repo() {
+function build_goproxy() {
 	pushd ${WORKING_DIR}
 
 	git clone https://github.com/${GITHUB_USER}/gop ${GITHUB_REPO}
@@ -217,19 +217,6 @@ EOF
 
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
 
-	export GAE_RELEASE=$(git rev-list --count origin/server.gae)
-	git archive --format=tar --prefix="goproxy-r${GAE_RELEASE}/" origin/server.gae > "${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.tar"
-	pushd ${WORKING_DIR}/r${RELEASE}
-	mkdir goproxy-r${GAE_RELEASE}
-	for FILE in python27.exe python27.dll python27.zip
-	do
-		curl -L https://raw.githubusercontent.com/phuslu/pybuild/master/${FILE} >goproxy-r${GAE_RELEASE}/${FILE}
-	done
-	tar uvf goproxy-gae-r${GAE_RELEASE}.tar goproxy-r${GAE_RELEASE}/*
-	rm -rf goproxy-r${GAE_RELEASE}
-	xz goproxy-gae-r${GAE_RELEASE}.tar
-	popd
-
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
@@ -280,7 +267,27 @@ EOF
 	popd
 }
 
-function build_repo_ex() {
+function build_goproxy_gae() {
+	pushd ${WORKING_DIR}/${GITHUB_REPO}
+
+	git checkout -f server.gae
+	git fetch origin server.gae
+	git reset --hard origin/server.gae
+	git clean -dfx .
+
+	for FILE in python27.exe python27.dll python27.zip
+	do
+		curl -LOJ https://raw.githubusercontent.com/phuslu/pybuild/master/${FILE}
+	done
+
+	export GAE_RELEASE=$(git rev-list --count HEAD)
+	sed -i "s/r9999/r${GAE_RELEASE}/" gae/gae.go
+	tar cvJpf ${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.tar.xz *
+
+	popd
+}
+
+function build_goproxy_vps() {
 	pushd ${WORKING_DIR}/${GITHUB_REPO}
 
 	git checkout -f server.vps
@@ -386,33 +393,6 @@ function release_sourceforge() {
 	popd
 }
 
-function release_github_pages() {
-	pushd ${WORKING_DIR}/
-
-	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
-	mkdir -p ${GITHUB_USER}.github.io/goproxy
-	cd ${GITHUB_USER}.github.io/goproxy
-
-	for FILE in \
-			goproxy_linux_amd64-r${RELEASE}.tar.xz \
-			goproxy_macos_app-r${RELEASE}.tar.bz2 \
-			goproxy_windows_amd64-r${RELEASE}.7z
-	do
-		SIZE=$(/bin/ls -l ${WORKING_DIR}/r${RELEASE}/${FILE} | awk '{print $5}')
-		cat <<EOF > ${FILE}.url
-[InternetShortcut]
-URL=https://github.com/phuslu/goproxy-ci/releases/download/r${RELEASE}/${FILE}
-SIZE=${SIZE}
-EOF
-	done
-
-	git add *
-	git commit -m "update goproxy" -s -a
-	git push origin master
-
-	popd
-}
-
 function clean() {
 	set +ex
 
@@ -433,11 +413,11 @@ build_glog
 build_http2
 build_bogo
 build_quicgo
-build_repo
+build_goproxy
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
-	build_repo_ex
+	build_goproxy_gae
+	build_goproxy_vps
 	release_github
 	release_sourceforge
-	#release_github_pages
 	clean
 fi
