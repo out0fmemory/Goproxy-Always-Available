@@ -18,6 +18,7 @@ type Config struct {
 		LogLevel            int
 		DaemonStderr        string
 		RejectNilSni        bool
+		PreferIpv4          bool
 		DnsTtl              int
 		IdleConnTimeout     int
 		MaxIdleConnsPerHost int

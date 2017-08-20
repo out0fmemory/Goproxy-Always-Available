@@ -49,7 +49,7 @@ func main() {
 		Dialer: &net.Dialer{
 			KeepAlive: 0,
 			Timeout:   16 * time.Second,
-			DualStack: true,
+			DualStack: !config.Default.PreferIpv4,
 		},
 		Resolver: &helpers.Resolver{
 			LRUCache:  lrucache.NewLRUCache(8 * 1024),
