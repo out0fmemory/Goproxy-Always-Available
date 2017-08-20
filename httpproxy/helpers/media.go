@@ -1,24 +1,28 @@
 package helpers
 
-import (
-	"bytes"
-)
-
 func IsBinary(b []byte) bool {
-	if len(b) > 64 {
-		b = b[:64]
-	}
-	if bytes.HasPrefix(b, []byte{0xef, 0xbb, 0xbf}) {
+	if len(b) > 3 && b[0] == 0xef && b[1] == 0xbb && b[2] == 0xbf {
+		// utf-8 text
 		return false
 	}
-	for _, c := range b {
+	for i, c := range b {
 		if c > 0x7f {
 			return true
+		}
+		if c == '\n' && i > 4 {
+			break
+		}
+		if i > 32 {
+			break
 		}
 	}
 	return false
 }
 
 func IsGzip(b []byte) bool {
-	return bytes.HasPrefix(b, []byte{0x1f, 0x8b, 0x08, 0x00, 0x00})
+	return len(b) > 4 &&
+		b[0] == 0x1f &&
+		b[1] == 0x8b &&
+		b[2] == 0x08 &&
+		b[3] == 0x00
 }
