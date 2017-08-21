@@ -20,6 +20,7 @@ func IsBinary(b []byte) bool {
 }
 
 func IsGzip(b []byte) bool {
+	// return *(*uint32)(unsafe.Pointer(&b[0])) == 0x00088b1f
 	return len(b) > 4 &&
 		b[0] == 0x1f &&
 		b[1] == 0x8b &&
