@@ -10,8 +10,10 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"mime"
 	"net/http"
 	"net/url"
+	"path/filepath"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -320,13 +322,15 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
-	// dangerous
-	content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
-
 	if resp.Header.Get("Content-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
+		content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
 		switch {
 		case IsBinary(content):
 			// urlfetch will remove "Content-Encoding: deflate" when "Accept-Encoding" contains "gzip"
+			ext := filepath.Ext(req.URL.Path)
+			if ext != "" && !IsTextContentType(mime.TypeByExtension(ext)) {
+				break
+			}
 			resp.Header.Set("Content-Encoding", "deflate")
 		case len(content) > 1024:
 			// we got plain text here, try compress it
