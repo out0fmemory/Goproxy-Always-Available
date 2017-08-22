@@ -16,6 +16,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -123,12 +124,12 @@ func ReadRequest(r io.Reader) (req *http.Request, err error) {
 
 func fmtError(c appengine.Context, err error) string {
 	return fmt.Sprintf(`{
-    "type": "appengine",
+    "type": "appengine(%s, %s/%s)",
     "host": "%s",
     "software": "%s",
     "error": "%s"
 }
-`, appengine.DefaultVersionHostname(c), appengine.ServerSoftware(), err.Error())
+`, runtime.Version(), runtime.GOOS, runtime.GOARCH, appengine.DefaultVersionHostname(c), appengine.ServerSoftware(), err.Error())
 }
 
 func handlerError(c appengine.Context, rw http.ResponseWriter, err error, code int) {
@@ -431,12 +432,12 @@ func root(rw http.ResponseWriter, r *http.Request) {
 		message = "please update this server"
 	}
 	fmt.Fprintf(rw, `{
-	"server": "goproxy %s"
+	"server": "goproxy %s (%s, %s/%s)"
 	"latest": "%s",
 	"deploy": "%s",
 	"message": "%s"
 }
-`, Version, latest, ctime, message)
+`, Version, runtime.Version(), runtime.GOOS, runtime.GOARCH, latest, ctime, message)
 }
 
 func init() {
