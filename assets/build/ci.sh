@@ -280,6 +280,8 @@ function build_goproxy_gae() {
 		curl -LOJ https://raw.githubusercontent.com/phuslu/pybuild/master/${FILE}
 	done
 
+	echo '@python27.exe uploader.py || pause' >uploader.bat
+
 	export GAE_RELEASE=$(git rev-list --count HEAD)
 	sed -i "s/r9999/r${GAE_RELEASE}/" gae/gae.go
 	tar cvJpf ${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.tar.xz *
