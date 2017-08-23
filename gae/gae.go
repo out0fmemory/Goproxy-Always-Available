@@ -6,6 +6,7 @@ import (
 	"compress/flate"
 	"compress/gzip"
 	"encoding/binary"
+	"encoding/base64"
 	"errors"
 	"fmt"
 	"io"
@@ -20,6 +21,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dsnet/compress/brotli"
 
 	"appengine"
 	"appengine/urlfetch"
@@ -64,6 +67,17 @@ func IsTextContentType(contentType string) bool {
 		strings.HasPrefix(contentType, "application/x-javascript") ||
 		strings.HasPrefix(contentType, "application/javascript") ||
 		strings.HasPrefix(contentType, "application/x-www-form-urlencoded")
+}
+
+func GetContent(c *[]byte, body io.ReadCloser) bool {
+	if *c == nil {
+		if v := reflect.ValueOf(body).Elem().FieldByName("content"); v.IsValid() {
+			*c = v.Bytes()
+		} else {
+			return false
+		}
+	}
+	return true
 }
 
 func ReadRequest(r io.Reader) (req *http.Request, err error) {
@@ -191,11 +205,6 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	// req.Header.Del("X-Cloud-Trace-Context")
 	oAE := req.Header.Get("Accept-Encoding")
-	if strings.Contains(oAE, "gzip") {
-		req.Header.Set("Accept-Encoding", "gzip")
-	} else {
-		req.Header.Del("Accept-Encoding")
-	}
 
 	debugHeader := params.Get("X-UrlFetch-Debug")
 	debug := debugHeader != ""
@@ -323,16 +332,53 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
-	if resp.Header.Get("Content-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
-		content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
+	oAEg := strings.Contains(oAE, "gzip")
+	oCE := resp.Header.Get("Content-Encoding")
+
+	var content []byte
+	autocc := false
+
+	// urlfetch will try to decompress the content when "Accept-Encoding" does not contain "gzip"
+	// delete "Content-Encoding" when content has decompressed with supported encoding
+	if !oAEg && (oCE == "gzip" || oCE == "deflate" || oCE == "br") {
+		resp.Header.Del("Content-Encoding")
+		oCE = ""
+	}
+
+	// decompress brotli content when client does not supported
+	if oCE == "br" && !strings.Contains(oAE, "br") {
+		if GetContent(&content, resp.Body) {
+			rb, err := brotli.NewReader(bytes.NewReader(content), nil)
+			if err != nil {
+				handlerError(c, rw, err, http.StatusBadGateway)
+				return
+			}
+
+			content, err = ioutil.ReadAll(rb)
+			if err != nil {
+				handlerError(c, rw, err, http.StatusBadGateway)
+				return
+			}
+
+			resp.Body = ioutil.NopCloser(bytes.NewReader(content))
+			resp.ContentLength = int64(len(content))
+			resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+			resp.Header.Del("Content-Encoding")
+			oCE = ""
+		}
+	}
+
+	if oCE == "" &&
+		IsTextContentType(resp.Header.Get("Content-Type")) &&
+		GetContent(&content, resp.Body) {
 		switch {
 		case IsBinary(content):
-			// urlfetch will remove "Content-Encoding: deflate" when "Accept-Encoding" contains "gzip"
 			ext := filepath.Ext(req.URL.Path)
-			if ext != "" && !IsTextContentType(mime.TypeByExtension(ext)) {
-				break
+			if ext == "" || IsTextContentType(mime.TypeByExtension(ext)) {
+				// ignore wrong "Content-Type"
+				// urlfetch will remove "Content-Encoding: deflate" when "Accept-Encoding" contains "gzip"
+				resp.Header.Set("Content-Encoding", "deflate")
 			}
-			resp.Header.Set("Content-Encoding", "deflate")
 		case len(content) > 1024:
 			// we got plain text here, try compress it
 			var bb bytes.Buffer
@@ -340,10 +386,16 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 			var ce string
 
 			switch {
+			case oAEg && r.Header.Get("User-Agent") == "Mozilla/5.0":
+				// let App Engine automatically compress it
+				resp.Header.Del("Content-Length")
+				resp.Header.Set("Content-Encoding", "gzip")
+				autocc = true
 			case strings.Contains(oAE, "deflate"):
 				w, err = flate.NewWriter(&bb, flate.BestCompression)
 				ce = "deflate"
-			case strings.Contains(oAE, "gzip"):
+			case oAEg:
+				// keep for old client compatibility
 				w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
 				ce = "gzip"
 			}
@@ -381,14 +433,20 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	io.WriteString(w, "\r\n")
 	w.Close()
 
-	b0 := []byte{0, 0}
-	binary.BigEndian.PutUint16(b0, uint16(b.Len()))
+	if autocc {
+		rw.Header().Set("Content-Type", "text/plain")
+		rw.Header().Set("X-UrlFetch-BHeaders", base64.StdEncoding.EncodeToString(b.Bytes()))
+		io.Copy(rw, resp.Body)
+	} else {
+		b0 := []byte{0, 0}
+		binary.BigEndian.PutUint16(b0, uint16(b.Len()))
 
-	rw.Header().Set("Content-Type", "image/gif")
-	rw.Header().Set("Content-Length", strconv.FormatInt(int64(len(b0)+b.Len())+resp.ContentLength, 10))
-	rw.WriteHeader(http.StatusOK)
-	rw.Write(b0)
-	io.Copy(rw, io.MultiReader(&b, resp.Body))
+		rw.Header().Set("Content-Type", "image/gif")
+		rw.Header().Set("Content-Length", strconv.FormatInt(int64(len(b0)+b.Len())+resp.ContentLength, 10))
+		rw.WriteHeader(http.StatusOK)
+		rw.Write(b0)
+		io.Copy(rw, io.MultiReader(&b, resp.Body))
+	}
 }
 
 func favicon(rw http.ResponseWriter, r *http.Request) {
