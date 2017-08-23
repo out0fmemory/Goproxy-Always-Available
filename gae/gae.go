@@ -94,9 +94,10 @@ func ReadRequest(r io.Reader) (req *http.Request, err error) {
 
 		req.Method = parts[0]
 		req.RequestURI = parts[1]
-		req.Proto = "HTTP/1.1"
-		req.ProtoMajor = 1
-		req.ProtoMinor = 1
+		// not needed
+		//req.Proto = "HTTP/1.1"
+		//req.ProtoMajor = 1
+		//req.ProtoMinor = 1
 
 		if req.URL, err = url.Parse(req.RequestURI); err != nil {
 			return
@@ -162,8 +163,8 @@ func handlerError(c appengine.Context, rw http.ResponseWriter, err error, code i
 	binary.BigEndian.PutUint16(b0, uint16(b.Len()))
 
 	rw.Header().Set("Content-Type", "image/gif")
-	rw.Header().Set("Content-Length", strconv.Itoa(len(b0)+b.Len()))
-	rw.WriteHeader(http.StatusOK)
+	//rw.Header().Set("Content-Length", strconv.Itoa(len(b0)+b.Len()))
+	//rw.WriteHeader(http.StatusOK)
 	rw.Write(b0)
 	rw.Write(b.Bytes())
 }
@@ -225,12 +226,14 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	deadline := DefaultDeadline
-	if s := params.Get("X-UrlFetch-Deadline"); s != "" {
-		if n, err := strconv.Atoi(s); err == nil {
-			deadline = time.Duration(n) * time.Second
-		}
-	}
+	//deadline := DefaultDeadline
+	//if s := params.Get("X-UrlFetch-Deadline"); s != "" {
+	//	if n, err := strconv.Atoi(s); err == nil {
+	//		deadline = time.Duration(n) * time.Second
+	//	}
+	//}
+	// Context default deadline
+	deadline := 5
 
 	overquotaDelay := DefaultOverquotaDelay
 	if s := params.Get("X-UrlFetch-OverquotaDelay"); s != "" {
@@ -264,7 +267,8 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	for i := 0; i < 2; i++ {
 		t := &urlfetch.Transport{
 			Context:                       c,
-			Deadline:                      deadline,
+			// useless now, set in Context
+			//Deadline:                      deadline,
 			AllowInvalidServerCertificate: !sslVerify,
 		}
 
@@ -442,8 +446,9 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		binary.BigEndian.PutUint16(b0, uint16(b.Len()))
 
 		rw.Header().Set("Content-Type", "image/gif")
-		rw.Header().Set("Content-Length", strconv.FormatInt(int64(len(b0)+b.Len())+resp.ContentLength, 10))
-		rw.WriteHeader(http.StatusOK)
+		// we need not set a "Content-Length" header, App Engine will reset it
+		//rw.Header().Set("Content-Length", strconv.FormatInt(int64(len(b0)+b.Len())+resp.ContentLength, 10))
+		//rw.WriteHeader(http.StatusOK)
 		rw.Write(b0)
 		io.Copy(rw, io.MultiReader(&b, resp.Body))
 	}
