@@ -34,6 +34,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 
 	var h2 bool = req.ProtoMajor == 2 && req.ProtoMinor == 0
+	var ver string = helpers.TLSVersionName(req.TLS.Version)
 	var isProxyRequest bool = !helpers.ContainsString(h.ServerNames, reqHostname) && h.ServerNames[0] != "*"
 
 	var paramsPreifx string = http.CanonicalHeaderKey("X-UrlFetch-")
@@ -92,7 +93,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 			port = "443"
 		}
 
-		glog.Infof("[%v %s %s] %s \"%s %s %s\" - -", req.TLS.ServerName, helpers.TLSVersionName(req.TLS.Version), username, req.RemoteAddr, req.Method, req.Host, req.Proto)
+		glog.Infof("[%v %s %s] %s \"%s %s %s\" - -", req.TLS.ServerName, ver, username, req.RemoteAddr, req.Method, req.Host, req.Proto)
 
 		dial := h.Dial
 		if dial == nil {
@@ -162,7 +163,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		req.Body = nil
 	}
 
-	glog.Infof("[%v %s %s] %s \"%s %s %s\" - -", req.TLS.ServerName, helpers.TLSVersionName(req.TLS.Version), username, req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
+	glog.Infof("[%v %s %s] %s \"%s %s %s\" - -", req.TLS.ServerName, ver, username, req.RemoteAddr, req.Method, req.URL.String(), req.Proto)
 
 	if req.URL.Scheme == "" {
 		req.URL.Scheme = "http"
@@ -223,7 +224,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		resp.Header.Del("Keep-Alive")
 	}
 
-	if !isProxyRequest && h.Fallback != nil {
+	if !isProxyRequest && h.Fallback != nil && ver[0] != 'Q' {
 		if resp.Header.Get("Alt-Svc") == "" {
 			resp.Header.Set("Alt-Svc", "quic=\":443\"; ma=2592000")
 		}
