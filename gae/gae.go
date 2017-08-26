@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"compress/flate"
-	"compress/gzip"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -298,6 +297,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
+	var chunked bool
 	if resp.Header.Get("Content-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
 		content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
 		switch {
@@ -307,62 +307,42 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 			if ext == "" || IsTextContentType(mime.TypeByExtension(ext)) {
 				resp.Header.Set("Content-Encoding", "deflate")
 			}
-		case len(content) > 1024:
-			// we got plain text here, try compress it
-			var bb bytes.Buffer
-			var w io.WriteCloser
-			var ce string
-
-			switch {
-			case strings.Contains(oAE, "deflate"):
-				w, err = flate.NewWriter(&bb, flate.BestCompression)
-				ce = "deflate"
-			case strings.Contains(oAE, "gzip"):
-				w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
-				ce = "gzip"
-			}
-
-			if err != nil {
-				handlerError(c, rw, err, http.StatusBadGateway)
-				return
-			}
-
-			if w != nil {
-				w.Write(content)
-				w.Close()
-
-				bbLen := int64(bb.Len())
-				if bbLen < resp.ContentLength {
-					resp.Body = ioutil.NopCloser(&bb)
-					resp.ContentLength = bbLen
-					resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
-					resp.Header.Set("Content-Encoding", ce)
-				}
-			}
+		default:
+			chunked = true
 		}
 	}
 
 	if debug {
-		c.Infof("Write Response=%#v\n", resp)
+		c.Infof("Write Response=%#v, chunked=%#v\n", resp, chunked)
 	}
 
 	c.Infof("%s \"%s %s %s\" %d %s", resp.Request.RemoteAddr, resp.Request.Method, resp.Request.URL.String(), resp.Request.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))
 
-	var b bytes.Buffer
-	w, _ := flate.NewWriter(&b, flate.BestCompression)
-	fmt.Fprintf(w, "HTTP/1.1 %s\r\n", resp.Status)
-	resp.Header.Write(w)
-	io.WriteString(w, "\r\n")
-	w.Close()
+	b := &bytes.Buffer{}
 
-	b0 := []byte{0, 0}
-	binary.BigEndian.PutUint16(b0, uint16(b.Len()))
+	if chunked {
+		fmt.Fprintf(b, "HTTP/1.1 %s\r\n", resp.Status)
+		resp.Header.Write(b)
+		io.WriteString(b, "\r\n")
 
-	rw.Header().Set("Content-Type", "image/gif")
-	rw.Header().Set("Content-Length", strconv.FormatInt(int64(len(b0)+b.Len())+resp.ContentLength, 10))
-	rw.WriteHeader(http.StatusOK)
-	rw.Write(b0)
-	io.Copy(rw, io.MultiReader(&b, resp.Body))
+		rw.Header().Set("Content-Type", "text/plain")
+	} else {
+		w, _ := flate.NewWriter(b, flate.BestCompression)
+		fmt.Fprintf(w, "HTTP/1.1 %s\r\n", resp.Status)
+		resp.Header.Write(w)
+		io.WriteString(w, "\r\n")
+		w.Close()
+
+		b0 := []byte{0, 0}
+		binary.BigEndian.PutUint16(b0, uint16(b.Len()))
+
+		rw.Header().Set("Content-Type", "image/gif")
+		rw.Header().Set("Content-Length", strconv.FormatInt(int64(len(b0)+b.Len())+resp.ContentLength, 10))
+		rw.WriteHeader(http.StatusOK)
+		rw.Write(b0)
+	}
+
+	io.Copy(rw, io.MultiReader(b, resp.Body))
 }
 
 func favicon(rw http.ResponseWriter, r *http.Request) {
