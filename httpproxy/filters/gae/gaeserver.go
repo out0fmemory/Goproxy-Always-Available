@@ -80,15 +80,20 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadlin
 		return nil, err
 	}
 
-	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
-	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
-	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", s.password)
+	options := ""
 	if deadline > 0 {
-		fmt.Fprintf(w, "X-Urlfetch-Deadline: %d\r\n", deadline/time.Second)
+		options = fmt.Sprintf("deadline=%d", deadline/time.Second)
+	}
+	if s.password != "" {
+		options += ",password=" + s.password
 	}
 	if s.sslVerify {
-		fmt.Fprintf(w, "X-Urlfetch-SSLVerify: 1\r\n")
+		options += ",sslverify"
 	}
+
+	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
+	fmt.Fprintf(w, "X-Urlfetch-Options: %s\r\n", options)
+	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
 	w.Close()
 
 	b0 := make([]byte, 2)
