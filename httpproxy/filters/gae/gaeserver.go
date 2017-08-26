@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"compress/flate"
+	"compress/gzip"
 	"encoding/binary"
 	"fmt"
 	"io"
@@ -15,6 +16,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+
+	"github.com/dsnet/compress/brotli"
 
 	"../../helpers"
 )
@@ -101,11 +104,10 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadlin
 		Method: http.MethodPost,
 		URL:    fetchserver,
 		Host:   fetchserver.Host,
-		Header: http.Header{},
-	}
-
-	if req1.URL.Scheme == "https" {
-		req1.Header.Set("User-Agent", "a")
+		Header: http.Header{
+			"Accept-Encoding": []string{"gzip,br"},
+			"User-Agent":      []string{"Mozilla/5.0"},
+		},
 	}
 
 	if req.ContentLength > 0 {
@@ -124,6 +126,14 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 		return resp, nil
 	}
 
+	if resp.Header.Get("Content-Encoding") == "" {
+		return s.DecodeResponse1(resp)
+	} else {
+		return s.DecodeResponse2(resp)
+	}
+}
+
+func (s *Servers) DecodeResponse1(resp *http.Response) (resp1 *http.Response, err error) {
 	var hdrLen uint16
 	if err = binary.Read(resp.Body, binary.BigEndian, &hdrLen); err != nil {
 		return
@@ -158,6 +168,31 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 	}
 
 	return
+}
+
+func (s *Servers) DecodeResponse2(resp *http.Response) (*http.Response, error) {
+	var err error
+	var r io.Reader
+
+	switch resp.Header.Get("Content-Encoding") {
+	case "br":
+		r, err = brotli.NewReader(resp.Body, nil)
+	case "gzip":
+		r, err = gzip.NewReader(resp.Body)
+	default:
+		r = resp.Body
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	resp1, err := http.ReadResponse(bufio.NewReader(r), resp.Request)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp1, nil
 }
 
 func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
