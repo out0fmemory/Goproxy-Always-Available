@@ -22,7 +22,7 @@ if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
 	echo "WARNING: \$SOURCEFORGE_PASSWORD is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc sha1sum timeout
+for CMD in curl awk git tar bzip2 xz 7za gcc sha1sum timeout grep
 do
 	if ! type -p ${CMD}; then
 		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
