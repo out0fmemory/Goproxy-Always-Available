@@ -142,7 +142,7 @@
 			"Enabled": false,
 			"URL": "socks5://127.0.0.1:1080",
 		},
-		"DisableCompression": false,
+		"DisableCompression": true,
 		"DisableKeepAlives": false,
 		"IdleConnTimeout": 5,
 		"MaxIdleConnsPerHost": 32,
