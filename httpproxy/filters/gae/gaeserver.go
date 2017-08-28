@@ -105,8 +105,7 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadlin
 		URL:    fetchserver,
 		Host:   fetchserver.Host,
 		Header: http.Header{
-			"Accept-Encoding": []string{"gzip,br"},
-			"User-Agent":      []string{"Mozilla/5.0"},
+			"User-Agent": []string{""},
 		},
 	}
 
