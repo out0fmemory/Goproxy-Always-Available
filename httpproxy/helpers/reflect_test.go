@@ -24,7 +24,11 @@ func TestReflectRemoteAddrFromResponseHTTP(t *testing.T) {
 
 func TestReflectRemoteAddrFromResponseHTTPS(t *testing.T) {
 	u := "https://www.bing.com"
-	resp, err := http.Get(u)
+	req, _ := http.NewRequest(http.MethodGet, u, nil)
+	tr := &http.Transport{
+		DisableCompression: true,
+	}
+	resp, err := tr.RoundTrip(req)
 	if err != nil {
 		t.Errorf("http.Get(%#v) error: %v", u, err)
 	}
