@@ -125,7 +125,7 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 		return resp, nil
 	}
 
-	if resp.Header.Get("Content-Encoding") == "" {
+	if resp.Header.Get("Content-Type") == "image/gif" {
 		return s.DecodeResponse1(resp)
 	} else {
 		return s.DecodeResponse2(resp)
