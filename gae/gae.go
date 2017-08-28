@@ -307,6 +307,22 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 			if ext == "" || IsTextContentType(mime.TypeByExtension(ext)) {
 				resp.Header.Set("Content-Encoding", "deflate")
 			}
+		case !strings.HasPrefix(r.Header.Get("User-Agent"), "Mozilla/5.0") && len(content) > 1024 && strings.Contains(oAE, "deflate"):
+			var bb bytes.Buffer
+			w, err := flate.NewWriter(&bb, flate.BestCompression)
+			if err != nil {
+				handlerError(c, rw, err, http.StatusBadGateway)
+				return
+			}
+			w.Write(content)
+			w.Close()
+			bbLen := int64(bb.Len())
+			if bbLen < resp.ContentLength {
+				resp.Body = ioutil.NopCloser(&bb)
+				resp.ContentLength = bbLen
+				resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+				resp.Header.Set("Content-Encoding", "deflate")
+			}
 		default:
 			chunked = true
 		}
