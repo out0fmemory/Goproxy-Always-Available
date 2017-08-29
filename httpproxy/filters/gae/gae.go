@@ -69,7 +69,6 @@ type Config struct {
 			Enabled bool
 			URL     string
 		}
-		DisableCompression    bool
 		DisableKeepAlives     bool
 		IdleConnTimeout       int
 		MaxIdleConnsPerHost   int
@@ -240,7 +239,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	t1 := &http.Transport{
 		DialTLS:               md.DialTLS,
 		DisableKeepAlives:     config.Transport.DisableKeepAlives,
-		DisableCompression:    config.Transport.DisableCompression,
+		DisableCompression:    true,
 		ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 		IdleConnTimeout:       time.Duration(config.Transport.IdleConnTimeout) * time.Second,
 		MaxIdleConnsPerHost:   config.Transport.MaxIdleConnsPerHost,
@@ -298,7 +297,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		tr.RoundTripper = &http2.Transport{
 			DialTLS:            md.DialTLS2,
 			TLSClientConfig:    md.GoogleTLSConfig,
-			DisableCompression: config.Transport.DisableCompression,
+			DisableCompression: true,
 		}
 	case !config.DisableHTTP2:
 		err := http2.ConfigureTransport(t1)
