@@ -118,19 +118,23 @@ func (t *Transport) RoundTrip(req *http.Request) (*http.Response, error) {
 	}
 
 	for i := 0; i < retry; i++ {
-		if i > 0 {
-			glog.Warningf("GAE %T.RoundTrip(retry=%d) for %#v", t.RoundTripper, i, req.URL.String())
-		}
-
 		if isQuic {
 			resp, err = t.roundTripQuic(req)
 		} else {
 			resp, err = t.roundTripTLS(req)
 		}
 
-		if err == nil {
-			break
+		if err != nil {
+			glog.Warningf("GAE %T.RoundTrip(%#v) error: %+v", t.RoundTripper, req.URL.String(), err)
+			continue
 		}
+
+		if resp != nil && resp.StatusCode == http.StatusBadRequest {
+			glog.Warningf("GAE %T.RoundTrip(%#v) get HTTP Error %d", t.RoundTripper, req.URL.String(), resp.StatusCode)
+			continue
+		}
+
+		break
 	}
 
 	if resp != nil && resp.StatusCode >= http.StatusBadRequest {
