@@ -308,7 +308,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 			}
 		case r.Header.Get("User-Agent") == "Mozilla/5.0":
 			chunked = true
-		case len(content) > 1024:
+		case len(content) > 512:
 			var bb bytes.Buffer
 			var w io.WriteCloser
 			var ce string
