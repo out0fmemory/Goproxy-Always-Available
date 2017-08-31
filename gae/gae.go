@@ -187,7 +187,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	oAE := req.Header.Get("Accept-Encoding")
-	if strings.Contains(oAE, "gzip") {
+	if _, ok := params["brotli"]; ok {
 		req.Header.Set("Accept-Encoding", "gzip")
 	} else {
 		req.Header.Del("Accept-Encoding")
@@ -291,17 +291,9 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	// rewise resp.Header
 	resp.Header.Del("Transfer-Encoding")
-	if strings.ToLower(resp.Header.Get("Vary")) == "accept-encoding" {
-		resp.Header.Del("Vary")
-	}
+	resp.Header.Del("Vary")
 	if resp.ContentLength > 0 {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
-	}
-
-	if resp.Header.Get("Content-Encoding") == "br" && req.Header.Get("Accept-Encoding") == "" {
-		// something wrong here(i.e. `Accept-Encoding: gbk, GB2313`), need fixup
-		// just delete `Content-Encoding`
-		resp.Header.Del("Content-Encoding")
 	}
 
 	var chunked bool
