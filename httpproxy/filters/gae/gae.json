@@ -69,6 +69,10 @@
 		"www.google.com/patents",
 		"youtube.googleapis.com",
 	],
+	"ForceBrotli": [
+		"www.google.com",
+		"www.youtube.com",
+	],
 	"TLSConfig": {
 		"Version": "TLSv1.2",
 		"ClientSessionCacheSize": 1024,

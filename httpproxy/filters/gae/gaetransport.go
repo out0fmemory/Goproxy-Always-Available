@@ -180,6 +180,7 @@ type GAETransport struct {
 	Transport   *Transport
 	MultiDialer *helpers.MultiDialer
 	Servers     *Servers
+	BrotliSites *helpers.HostMatcher
 	Deadline    time.Duration
 	RetryDelay  time.Duration
 	RetryTimes  int
@@ -187,11 +188,12 @@ type GAETransport struct {
 
 func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	deadline := t.Deadline
+	brotli := t.BrotliSites.Match(req.Host)
 	retryTimes := t.RetryTimes
 	retryDelay := t.RetryDelay
 	for i := 0; i < retryTimes; i++ {
 		server := t.Servers.PickFetchServer(req, i)
-		req1, err := t.Servers.EncodeRequest(req, server, deadline)
+		req1, err := t.Servers.EncodeRequest(req, server, deadline, brotli)
 		if err != nil {
 			return nil, fmt.Errorf("GAE EncodeRequest: %s", err.Error())
 		}

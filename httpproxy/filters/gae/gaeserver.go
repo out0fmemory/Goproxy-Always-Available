@@ -70,7 +70,7 @@ func (s *Servers) ToggleBadServer(fetchserver *url.URL) {
 	s.ToggleBadAppID(strings.TrimSuffix(fetchserver.Host, GAEDomain))
 }
 
-func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadline time.Duration) (*http.Request, error) {
+func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadline time.Duration, brotli bool) (*http.Request, error) {
 	var err error
 	var b bytes.Buffer
 
@@ -84,6 +84,9 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadlin
 	options := ""
 	if deadline > 0 {
 		options = fmt.Sprintf("deadline=%d", deadline/time.Second)
+	}
+	if brotli {
+		options += ",brotli"
 	}
 	if s.password != "" {
 		options += ",password=" + s.password

@@ -52,6 +52,7 @@ type Config struct {
 	}
 	GoogleG2PKP string
 	ForceGAE    []string
+	ForceBrotli []string
 	FakeOptions map[string][]string
 	DNSServers  []string
 	IPBlackList []string
@@ -86,6 +87,7 @@ type Filter struct {
 	ForceGAEStrings    []string
 	ForceGAESuffixs    []string
 	ForceGAEMatcher    *helpers.HostMatcher
+	ForceBrotliMatcher *helpers.HostMatcher
 	FakeOptionsMatcher *helpers.HostMatcher
 	SiteMatcher        *helpers.HostMatcher
 	DirectSiteMatcher  *helpers.HostMatcher
@@ -411,6 +413,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Deadline:    time.Duration(config.Transport.ResponseHeaderTimeout-2) * time.Second,
 			RetryDelay:  time.Duration(config.Transport.RetryDelay*1000) * time.Millisecond,
 			RetryTimes:  config.Transport.RetryTimes,
+			BrotliSites: helpers.NewHostMatcher(config.ForceBrotli),
 		},
 		Transport:          tr,
 		ForceHTTPSMatcher:  helpers.NewHostMatcher(forceHTTPSMatcherStrings),
