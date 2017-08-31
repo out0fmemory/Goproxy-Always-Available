@@ -298,6 +298,12 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
+	if resp.Header.Get("Content-Encoding") == "br" && req.Header.Get("Accept-Encoding") == "" {
+		// something wrong here(i.e. `Accept-Encoding: gbk, GB2313`), need fixup
+		// just delete `Content-Encoding`
+		resp.Header.Del("Content-Encoding")
+	}
+
 	var chunked bool
 	if resp.Header.Get("Content-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
 		content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
