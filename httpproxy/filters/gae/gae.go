@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/cloudflare/golibs/lrucache"
-	"github.com/dsnet/compress/brotli"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
 	quic "github.com/phuslu/quic-go"
@@ -562,16 +561,6 @@ func (f *Filter) RoundTrip(ctx context.Context, req *http.Request) (context.Cont
 	if resp != nil && resp.Header != nil {
 		resp.Header.Del("Alt-Svc")
 		resp.Header.Del("Alternate-Protocol")
-		if resp.Header.Get("Content-Encoding") == "br" && !strings.Contains(resp.Request.Header.Get("Accept-Encoding"), "br") {
-			r, err := brotli.NewReader(resp.Body, nil)
-			if err != nil {
-				return ctx, nil, err
-			}
-			resp.Body = helpers.ReaderCloser{Reader: r, Closer: resp.Body}
-			resp.Header.Del("Content-Encoding")
-			resp.Header.Del("Content-Length")
-			resp.ContentLength = -1
-		}
 	}
 
 	glog.V(2).Infof("%s \"GAE %s %s %s %s\" %d %s", req.RemoteAddr, prefix, req.Method, req.URL.String(), req.Proto, resp.StatusCode, resp.Header.Get("Content-Length"))

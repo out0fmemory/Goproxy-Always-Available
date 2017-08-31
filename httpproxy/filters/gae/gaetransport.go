@@ -188,7 +188,7 @@ type GAETransport struct {
 
 func (t *GAETransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	deadline := t.Deadline
-	brotli := t.BrotliSites.Match(req.Host)
+	brotli := t.BrotliSites.Match(req.Host) && strings.Contains(req.Header.Get("Accept-Encoding"), "br")
 	retryTimes := t.RetryTimes
 	retryDelay := t.RetryDelay
 	for i := 0; i < retryTimes; i++ {
