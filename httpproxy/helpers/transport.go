@@ -133,5 +133,5 @@ func IsStaticRequest(req *http.Request) bool {
 			return false
 		}
 	}
-	return false
+	return true
 }
