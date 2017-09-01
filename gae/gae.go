@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"bytes"
 	"compress/flate"
-	"compress/gzip"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -187,7 +186,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	oAE := req.Header.Get("Accept-Encoding")
-	if _, ok := params["brotli"]; ok {
+	if strings.Contains(oAE, "gzip") {
 		req.Header.Set("Accept-Encoding", "gzip")
 	} else {
 		req.Header.Del("Accept-Encoding")
@@ -291,13 +290,11 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 
 	// rewise resp.Header
 	resp.Header.Del("Transfer-Encoding")
-	resp.Header.Del("Vary")
+	if strings.ToLower(resp.Header.Get("Vary")) == "accept-encoding" {
+		resp.Header.Del("Vary")
+	}
 	if resp.ContentLength > 0 {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
-	}
-
-	if resp.Header.Get("Content-Encoding") == "br" && req.Header.Get("Accept-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
-		resp.Header.Del("Content-Encoding")
 	}
 
 	var chunked bool
@@ -310,39 +307,24 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 			if ext == "" || IsTextContentType(mime.TypeByExtension(ext)) {
 				resp.Header.Set("Content-Encoding", "deflate")
 			}
-		case r.Header.Get("User-Agent") == "Mozilla/5.0":
-			chunked = true
-		case len(content) > 512:
+		case r.Header.Get("User-Agent") == "" && len(content) > 512 && strings.Contains(oAE, "deflate"):
 			var bb bytes.Buffer
-			var w io.WriteCloser
-			var ce string
-
-			switch {
-			case strings.Contains(oAE, "deflate"):
-				w, err = flate.NewWriter(&bb, flate.BestCompression)
-				ce = "deflate"
-			case strings.Contains(oAE, "gzip"):
-				w, err = gzip.NewWriterLevel(&bb, gzip.BestCompression)
-				ce = "gzip"
-			}
-
+			w, err := flate.NewWriter(&bb, flate.BestCompression)
 			if err != nil {
 				handlerError(c, rw, err, http.StatusBadGateway)
 				return
 			}
-
-			if w != nil {
-				w.Write(content)
-				w.Close()
-
-				bbLen := int64(bb.Len())
-				if bbLen < resp.ContentLength {
-					resp.Body = ioutil.NopCloser(&bb)
-					resp.ContentLength = bbLen
-					resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
-					resp.Header.Set("Content-Encoding", ce)
-				}
+			w.Write(content)
+			w.Close()
+			bbLen := int64(bb.Len())
+			if bbLen < resp.ContentLength {
+				resp.Body = ioutil.NopCloser(&bb)
+				resp.ContentLength = bbLen
+				resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
+				resp.Header.Set("Content-Encoding", "deflate")
 			}
+		default:
+			chunked = true
 		}
 	}
 
