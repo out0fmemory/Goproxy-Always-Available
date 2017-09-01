@@ -296,7 +296,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
-	if resp.Header.Get("Content-Encoding") == "br" && req.Header.Get("Accept-Encoding") == "" {
+	if resp.Header.Get("Content-Encoding") == "br" && req.Header.Get("Accept-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
 		resp.Header.Del("Content-Encoding")
 	}
 
