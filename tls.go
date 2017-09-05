@@ -24,6 +24,7 @@ type CertManager struct {
 	certs  map[string]*tls.Certificate
 	cpools map[string]*x509.CertPool
 	h2     map[string]struct{}
+	tls12  map[string]struct{}
 	ecc    *autocert.Manager
 	rsa    *autocert.Manager
 	cache  lrucache.Cache
@@ -31,7 +32,7 @@ type CertManager struct {
 	snits  map[string]bool
 }
 
-func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, h2 bool) error {
+func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, cafile, capem string, h2 bool, tls12 bool) error {
 	var err error
 
 	if cm.ecc == nil {
@@ -57,6 +58,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 
 	if cm.h2 == nil {
 		cm.h2 = make(map[string]struct{})
+	}
+
+	if cm.tls12 == nil {
+		cm.tls12 = make(map[string]struct{})
 	}
 
 	if cm.cpools == nil {
@@ -106,6 +111,10 @@ func (cm *CertManager) Add(host string, certfile, keyfile string, pem string, ca
 
 	if h2 {
 		cm.h2[host] = struct{}{}
+	}
+
+	if tls12 {
+		cm.tls12[host] = struct{}{}
 	}
 
 	cm.hosts = append(cm.hosts, host)
@@ -259,6 +268,10 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 
 	if _, ok := cm.h2[hello.ServerName]; ok {
 		config.NextProtos = []string{"h2", "http/1.1"}
+	}
+
+	if _, ok := cm.tls12[hello.ServerName]; ok {
+		config.MinVersion = tls.VersionTLS12
 	}
 
 	cm.cache.Set(cacheKey, config, time.Now().Add(2*time.Hour))

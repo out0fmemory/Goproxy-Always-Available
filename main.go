@@ -148,7 +148,7 @@ func main() {
 		}
 
 		for i, servername := range server.ServerName {
-			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, !server.DisableHttp2)
+			cm.Add(servername, server.Certfile, server.Keyfile, server.PEM, server.ClientAuthFile, server.ClientAuthPem, !server.DisableHttp2, server.DisableLegacySsl)
 			h.ServerNames = append(h.ServerNames, servername)
 			h.Handlers[servername] = handler
 			if i == 0 || servername == "*" {

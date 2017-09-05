@@ -24,7 +24,8 @@ type Config struct {
 		MaxIdleConnsPerHost int
 	}
 	HTTP2 []struct {
-		DisableHttp2 bool
+		DisableHttp2     bool
+		DisableLegacySsl bool
 
 		Network string
 		Listen  string
