@@ -89,6 +89,9 @@ autostart() {
     elif command -v systemctl >/dev/null ; then
         systemctl enable ${EXECUTABLE}
     fi
+    if command -v crontab >/dev/null ; then
+        (crontab -l | grep -v 'goproxy.sh'; echo "*/1 * * * * pgrep 'goproxy$' >/dev/null || $(pwd)/goproxy.sh start") | crontab
+    fi
 }
 
 usage() {
