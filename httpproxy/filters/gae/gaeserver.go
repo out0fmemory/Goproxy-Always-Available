@@ -16,6 +16,8 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/phuslu/glog"
+
 	"../../helpers"
 )
 
@@ -138,6 +140,29 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 	resp1, err = http.ReadResponse(bufio.NewReader(flate.NewReader(bytes.NewReader(hdrBuf))), resp.Request)
 	if err != nil {
 		return
+	}
+
+	const cookieKey string = "Set-Cookie"
+	if cookies, ok := resp1.Header[cookieKey]; ok && len(cookies) == 1 {
+		parts := strings.Split(cookies[0], ", ")
+
+		parts1 := make([]string, 0)
+		for i := 0; i < len(parts); i++ {
+			c := parts[i]
+			if i == 0 || strings.Contains(strings.Split(c, ";")[0], "=") {
+				parts1 = append(parts1, c)
+			} else {
+				parts1[len(parts1)-1] = parts1[len(parts1)-1] + ", " + c
+			}
+		}
+
+		if len(parts1) > 1 {
+			glog.Warningf("FetchServer(%+v) is not a goproxy GAE server, please upgrade!", resp.Request.Host)
+			resp1.Header.Del(cookieKey)
+			for i := 0; i < len(parts1); i++ {
+				resp1.Header.Add(cookieKey, parts1[i])
+			}
+		}
 	}
 
 	if resp1.StatusCode >= http.StatusBadRequest {
