@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"crypto/tls"
+	"fmt"
 )
 
 func TLSVersion(name string) uint16 {
@@ -16,6 +17,8 @@ func TLSVersion(name string) uint16 {
 		return tls.VersionTLS10
 	case "SSL3", "SSLv3.0", "SSLv30":
 		return tls.VersionSSL30
+	case "Q039":
+		return 39
 	case "Q038":
 		return 38
 	case "Q037":
@@ -38,6 +41,8 @@ func TLSVersionName(value uint16) string {
 		return "TLSv11"
 	case tls.VersionTLS10:
 		return "TLSv1"
+	case 39:
+		return "Q039"
 	case 38:
 		return "Q038"
 	case 37:
@@ -47,5 +52,5 @@ func TLSVersionName(value uint16) string {
 	case 35:
 		return "Q035"
 	}
-	return ""
+	return fmt.Sprintf("0x%x", value)
 }
