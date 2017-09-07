@@ -90,6 +90,9 @@ autostart() {
     elif command -v systemctl >/dev/null ; then
         systemctl enable goproxy-vps
     fi
+    if command -v crontab >/dev/null ; then
+        (crontab -l | grep -v 'goproxy-vps.sh'; echo "*/1 * * * * pgrep goproxy-vps >/dev/null || $(pwd)/goproxy-vps.sh start") | crontab
+    fi
 }
 
 usage() {
