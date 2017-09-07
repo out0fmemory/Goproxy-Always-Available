@@ -235,6 +235,8 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		hello.ServerName = cm.hosts[0]
 	}
 
+	_, h2 := cm.h2[hello.ServerName]
+	_, tls12 := cm.tls12[hello.ServerName]
 	hasECC := helpers.HasECCCiphers(hello.CipherSuites)
 
 	cacheKey := hello.ServerName
@@ -246,7 +248,12 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		return v.(*tls.Config), nil
 	}
 
-	cert, err := cm.GetCertificate(hello)
+	GetCertificate := cm.GetCertificate
+	if tls12 {
+		GetCertificate = cm.ecc.GetCertificate
+	}
+
+	cert, err := GetCertificate(hello)
 	if err != nil {
 		return nil, err
 	}
@@ -266,11 +273,11 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		config.ClientCAs = p
 	}
 
-	if _, ok := cm.h2[hello.ServerName]; ok {
+	if h2 {
 		config.NextProtos = []string{"h2", "http/1.1"}
 	}
 
-	if _, ok := cm.tls12[hello.ServerName]; ok {
+	if tls12 {
 		config.MinVersion = tls.VersionTLS12
 	}
 
