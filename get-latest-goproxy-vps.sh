@@ -115,6 +115,7 @@ reject_nil_sni = true
 [[http2]]
 listen = ":443"
 server_name = ["${server_name}"]
+disable_legacy_ssl = true
 proxy_fallback = "http://127.0.0.1:80"
 EOF
 	if [ "${pam_auth}" = "y" ]; then
