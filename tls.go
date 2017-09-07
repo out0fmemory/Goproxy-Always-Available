@@ -279,6 +279,12 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 
 	if tls12 {
 		config.MinVersion = tls.VersionTLS12
+		config.CurvePreferences = []tls.CurveID{
+			tls.X25519,
+			tls.CurveP521,
+			tls.CurveP384,
+			tls.CurveP256,
+		}
 	}
 
 	cm.cache.Set(cacheKey, config, time.Now().Add(2*time.Hour))
