@@ -82,17 +82,10 @@ restart() {
 }
 
 autostart() {
-    ln -sf $(pwd)/goproxy-vps.sh /etc/init.d/goproxy-vps
-    if command -v update-rc.d >/dev/null ; then
-        update-rc.d goproxy-vps defaults
-    elif command -v chkconfig >/dev/null ; then
-        chkconfig goproxy-vps on
-    elif command -v systemctl >/dev/null ; then
-        systemctl enable goproxy-vps
+    if ! command -v crontab >/dev/null ; then
+        echo "ERROR: please install cron"
     fi
-    if command -v crontab >/dev/null ; then
-        (crontab -l | grep -v 'goproxy-vps.sh'; echo "*/1 * * * * pgrep goproxy-vps >/dev/null || $(pwd)/goproxy-vps.sh start") | crontab
-    fi
+    (crontab -l | grep -v 'goproxy-vps.sh'; echo "*/1 * * * * pgrep goproxy-vps >/dev/null || $(pwd)/goproxy-vps.sh start") | crontab
 }
 
 usage() {
