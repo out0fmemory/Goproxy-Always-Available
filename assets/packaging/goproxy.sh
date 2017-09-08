@@ -81,17 +81,10 @@ restart() {
 }
 
 autostart() {
-    ln -sf $(pwd)/${EXECUTABLE}.sh /etc/init.d/${EXECUTABLE}
-    if command -v update-rc.d >/dev/null ; then
-        update-rc.d ${EXECUTABLE} defaults
-    elif command -v chkconfig >/dev/null ; then
-        chkconfig ${EXECUTABLE} on
-    elif command -v systemctl >/dev/null ; then
-        systemctl enable ${EXECUTABLE}
+    if ! command -v crontab >/dev/null ; then
+        echo "ERROR: please install cron"
     fi
-    if command -v crontab >/dev/null ; then
-        (crontab -l | grep -v 'goproxy.sh'; echo "*/1 * * * * pgrep 'goproxy$' >/dev/null || $(pwd)/goproxy.sh start") | crontab
-    fi
+    (crontab -l | grep -v 'goproxy.sh'; echo "*/1 * * * * pgrep 'goproxy$' >/dev/null || $(pwd)/goproxy.sh start") | crontab
 }
 
 usage() {
