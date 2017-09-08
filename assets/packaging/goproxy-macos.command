@@ -170,7 +170,6 @@ class GoProxyHelpers(object):
 class GoProxyMacOS(NSObject):
 
     console_color = ColorSet[0]
-    max_line_count = 1000
 
     def applicationDidFinishLaunching_(self, notification):
         self.helper = GoProxyHelpers()
@@ -246,7 +245,6 @@ class GoProxyMacOS(NSObject):
         self.console_view.setVerticallyResizable_(True)
         self.console_view.setHorizontallyResizable_(True)
         self.console_view.setAutoresizingMask_(NSViewWidthSizable)
-        self.console_line_count = 0
 
         self.scroll_view.setDocumentView_(self.console_view)
         self.console_window.contentView().addSubview_(self.scroll_view)
@@ -319,11 +317,7 @@ class GoProxyMacOS(NSObject):
     def readProxyOutput(self):
         while(True):
             line = self.pipe_fd.readline()
-            if self.console_line_count > self.max_line_count:
-                self.console_view.setString_('')
-                self.console_line_count = 0
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
-            self.console_line_count += 1
 
     def updateproxystate_(self, notification):
         # Add checkmark to submenu
