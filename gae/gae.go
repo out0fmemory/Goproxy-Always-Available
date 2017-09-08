@@ -301,8 +301,13 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 		resp.Header.Set("Content-Length", strconv.FormatInt(resp.ContentLength, 10))
 	}
 
+	content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
+
+	if resp.Header.Get("Content-Encoding") == "br" && IsTextContentType(resp.Header.Get("Content-Type")) && !IsBinary(content) {
+		resp.Header.Del("Content-Encoding")
+	}
+
 	if resp.Header.Get("Content-Encoding") == "" && IsTextContentType(resp.Header.Get("Content-Type")) {
-		content := reflect.ValueOf(resp.Body).Elem().FieldByName("content").Bytes()
 		switch {
 		case IsBinary(content):
 			// urlfetch will remove "Content-Encoding: deflate" when "Accept-Encoding" contains "gzip"
