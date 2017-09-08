@@ -190,7 +190,7 @@ func handler(rw http.ResponseWriter, r *http.Request) {
 	}
 
 	oAE := req.Header.Get("Accept-Encoding")
-	if strings.Contains(oAE, "gzip") {
+	if strings.Contains(oAE, "gzip") && req.Header.Get("X-Requested-With") == "" {
 		req.Header.Set("Accept-Encoding", "gzip")
 	} else {
 		req.Header.Del("Accept-Encoding")
