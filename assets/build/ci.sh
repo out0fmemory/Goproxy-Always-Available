@@ -253,6 +253,8 @@ code = compile(text[text.index('\n'):], __file__, 'exec')
 exec code
 EOF
 	chmod +x GoProxy.app/Contents/MacOS/goproxy-macos
+	export GAE_MACOS_REVSION=$(cd ${WORKING_DIR}/${GITHUB_REPO} && git log --oneline -- assets/packaging/goproxy-macos.command | wc -l | xargs)
+	sed -i "s/r9999/r${GAE_MACOS_REVSION}/" GoProxy.app/Contents/MacOS/goproxy-macos.command
 	BZIP=-9 tar cvjpf goproxy_macos_app-r${RELEASE}.tar.bz2 GoProxy.app
 	rm -rf GoProxy.app
 
