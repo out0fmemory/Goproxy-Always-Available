@@ -10,6 +10,7 @@ if sys.version > '3.':
     sys.exit(sys.stderr.write('Please run uploader.py by python2\n'))
 
 os.chdir(os.path.abspath(os.path.dirname(__file__)))
+CACHE_DIR = 'cache'
 
 import re
 import socket
@@ -107,7 +108,9 @@ from google_appengine.google.appengine.tools import appcfg
 def upload(dirname, appid):
     assert isinstance(dirname, basestring) and isinstance(appid, basestring)
     oldname = dirname
-    dirname = 'cache/%s-%s' % (dirname, appid)
+    dirname = '%s/%s-%s' % (CACHE_DIR, dirname, appid)
+    if os.path.isdir(dirname):
+        shutil.rmtree(dirname)
     shutil.copytree(oldname, dirname)
     filename = os.path.join(dirname, 'app.yaml')
     with open(filename, 'rb') as fp:
@@ -120,6 +123,14 @@ def upload(dirname, appid):
     else:
         appcfg.main(['appcfg', 'rollback', '--noauth_local_webserver', dirname])
         appcfg.main(['appcfg', 'update', '--noauth_local_webserver', dirname])
+
+def retry_upload(max_retries, dirname, appid):
+    for _ in xrange(max_retries):
+        try:
+            upload(dirname, appid)
+            break
+        except (Exception, SystemExit) as e:
+            println(u'=====上传 APPID(%r) 失败，重试中...=====' % appid)
 
 def input_appids():
     while True:
@@ -146,13 +157,13 @@ def main():
 请输入您的appid, 多个appid请用|号隔开
 特别提醒：appid 请勿包含 ID/Email 等个人信息！
         '''.strip())
-    if not os.path.isdir('cache'):
-        os.mkdir('cache')
+    if not os.path.isdir(CACHE_DIR):
+        os.mkdir(CACHE_DIR)
     appids = input_appids()
-    upload('gae', appids[0])
+    retry_upload(4, 'gae', appids[0])
     pool = multiprocessing.pool.ThreadPool(processes=50)
-    pool.map(functools.partial(upload, 'gae'), appids[1:])
-    shutil.rmtree('cache')
+    pool.map(functools.partial(retry_upload, 4, 'gae'), appids[1:])
+    shutil.rmtree(CACHE_DIR)
     println(os.linesep + u'上传完毕，请检查 http://<appid>.appspot.com 的版本，谢谢。按回车键退出程序。')
     raw_input()
 
