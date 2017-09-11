@@ -14,8 +14,11 @@ os.chdir(os.path.abspath(os.path.dirname(__file__)))
 import re
 import socket
 import traceback
+import shutil
+import functools
 import ssl
 import mimetypes
+import multiprocessing.pool
 
 mimetypes._winreg = None
 
@@ -103,6 +106,9 @@ from google_appengine.google.appengine.tools import appcfg
 
 def upload(dirname, appid):
     assert isinstance(dirname, basestring) and isinstance(appid, basestring)
+    oldname = dirname
+    dirname = 'cache/%s-%s' % (dirname, appid)
+    shutil.copytree(oldname, dirname)
     filename = os.path.join(dirname, 'app.yaml')
     with open(filename, 'rb') as fp:
         content = fp.read()
@@ -140,9 +146,14 @@ def main():
 请输入您的appid, 多个appid请用|号隔开
 特别提醒：appid 请勿包含 ID/Email 等个人信息！
         '''.strip())
-    for appid in input_appids():
-        upload('gae', appid)
-    println(os.linesep + u'上传成功，请不要忘记编辑 gae.user.json 把你的appid填进去，谢谢。按回车键退出程序。')
+    if not os.path.isdir('cache'):
+        os.mkdir('cache')
+    appids = input_appids()
+    upload('gae', appids[0])
+    pool = multiprocessing.pool.ThreadPool(processes=50)
+    pool.map(functools.partial(upload, 'gae'), appids[1:])
+    shutil.rmtree('cache')
+    println(os.linesep + u'上传完毕，请检查 http://<appid>.appspot.com 的版本，谢谢。按回车键退出程序。')
     raw_input()
 
 
