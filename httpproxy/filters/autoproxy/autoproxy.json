@@ -24,6 +24,9 @@
 			"局域网": "direct",
 			"保留地址": "direct",
 		},
+                "IPRules": {
+			"243.185.187.39": "",
+                },
 	},
 	"IndexFiles": {
 		"Enabled": true,

@@ -36,6 +36,7 @@ type Config struct {
 		DNSServer       string
 		DNSCacheSize    int
 		Rules           map[string]string
+		IPRules         map[string]string
 	}
 	IndexFiles struct {
 		Enabled    bool
@@ -94,6 +95,7 @@ type Filter struct {
 	SiteFiltersRules     *helpers.HostMatcher
 	RegionFiltersEnabled bool
 	RegionFiltersRules   map[string]filters.RoundTripFilter
+	RegionFiltersIPRules map[string]filters.RoundTripFilter
 	RegionResolver       *helpers.Resolver
 	RegionLocator        *ip17mon.Locator
 	RegionFilterCache    lrucache.Cache
@@ -220,6 +222,25 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		}
 		f.RegionFiltersRules = fm
 
+		fm = make(map[string]filters.RoundTripFilter)
+		glog.Infof("config.RegionFilters.IPRules=%#v", config.RegionFilters.IPRules)
+		for ip, name := range config.RegionFilters.IPRules {
+			if name == "" {
+				fm[ip] = nil
+				continue
+			}
+			f, err := filters.GetFilter(name)
+			if err != nil {
+				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) for %#v error: %v", name, ip, err)
+			}
+			f1, ok := f.(filters.RoundTripFilter)
+			if !ok {
+				glog.Fatalf("AUTOPROXY: filters.GetFilter(%#v) return %T, not a RoundTripFilter", name, f)
+			}
+			fm[ip] = f1
+		}
+		f.RegionFiltersIPRules = fm
+
 		f.RegionFilterCache = lrucache.NewLRUCache(uint(f.Config.RegionFilters.DNSCacheSize))
 	}
 
@@ -291,6 +312,10 @@ func (f *Filter) Request(ctx context.Context, req *http.Request) (context.Contex
 					f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
 					filters.SetRoundTripFilter(ctx, f1)
 				}
+			} else if f1, ok := f.RegionFiltersIPRules[ip.String()]; ok {
+				glog.V(2).Infof("%s \"AUTOPROXY RegionFilters IPRules %s %s %s\" with %T", req.RemoteAddr, req.Method, req.URL.String(), req.Proto, f1)
+				f.RegionFilterCache.Set(host, f1, time.Now().Add(time.Hour))
+				filters.SetRoundTripFilter(ctx, f1)
 			} else if country, err := f.FindCountryByIP(ip.String()); err == nil {
 				if f1, ok := f.RegionFiltersRules[country]; ok {
 					glog.V(2).Infof("%s \"AUTOPROXY RegionFilters %s %s %s %s\" with %T", req.RemoteAddr, country, req.Method, req.URL.String(), req.Proto, f1)
