@@ -27,6 +27,7 @@ type MultiDialer struct {
 	SiteToAlias       *HostMatcher
 	GoogleTLSConfig   *tls.Config
 	GoogleG2PKP       []byte
+	GoogleG3PKP       []byte
 	IPBlackList       lrucache.Cache
 	HostMap           map[string][]string
 	TLSConnDuration   lrucache.Cache
@@ -145,9 +146,9 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 							cert := certs[1]
 							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, cert.Subject)
 							switch {
-							case d.GoogleG2PKP != nil:
+							case d.GoogleG2PKP != nil && d.GoogleG3PKP != nil:
 								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
-								if bytes.Equal(pkp[:], d.GoogleG2PKP) {
+								if bytes.Equal(pkp[:], d.GoogleG2PKP) || bytes.Equal(pkp[:], d.GoogleG3PKP) {
 									break
 								}
 								fallthrough

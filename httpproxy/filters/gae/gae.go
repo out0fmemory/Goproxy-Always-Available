@@ -51,6 +51,7 @@ type Config struct {
 		ServerName             []string
 	}
 	GoogleG2PKP string
+	GoogleG3PKP string
 	ForceGAE    []string
 	ForceBrotli []string
 	FakeOptions map[string][]string
@@ -114,6 +115,11 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	}
 
 	GoogleG2PKP, err := base64.StdEncoding.DecodeString(config.GoogleG2PKP)
+	if err != nil {
+		return nil, err
+	}
+
+	GoogleG3PKP, err := base64.StdEncoding.DecodeString(config.GoogleG3PKP)
 	if err != nil {
 		return nil, err
 	}
@@ -205,6 +211,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		HostMap:           hostmap,
 		GoogleTLSConfig:   googleTLSConfig,
 		GoogleG2PKP:       GoogleG2PKP,
+		GoogleG3PKP:       GoogleG3PKP,
 		TLSConnDuration:   lrucache.NewLRUCache(8192),
 		TLSConnError:      lrucache.NewLRUCache(8192),
 		TLSConnReadBuffer: config.Transport.Dialer.SocketReadBuffer,

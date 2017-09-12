@@ -98,6 +98,7 @@
 		],
 	},
 	"GoogleG2PKP": "7HIpactkIAq2Y49orFOOQKurWxmmSFZhBCoQYcRhJ3Y=",
+	"GoogleG3PKP": "f8NnEFZxQ4ExFOhSN7EiFWtiudZQVD2oY60uauV/n78=",
 	"FakeOptions": {
 		"*": [
 			"Access-Control-Allow-Credentials: true",
