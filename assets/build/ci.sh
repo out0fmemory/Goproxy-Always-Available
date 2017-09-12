@@ -174,17 +174,6 @@ function build_goproxy() {
 
 	go test -v ./httpproxy/helpers
 
-	if curl -m 3 https://pki.google.com >/dev/null ; then
-		GoogleG2PKP=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl base64)
-		sed -i -r "s/\"GoogleG2PKP\": \".+\"/\"GoogleG2PKP\": \"$GoogleG2PKP\"/g" httpproxy/filters/gae/gae.json
-		if git status -s | grep -q 'gae.json' ; then
-			git diff
-			git add httpproxy/filters/gae/gae.json
-			git commit -m "update GoogleG2PKP to $GoogleG2PKP"
-			grep -q 'machine github.com' ~/.netrc && git push -f origin master
-		fi
-	fi
-
 	pushd ./assets/taskbar
 	env GOARCH=amd64 ./make.bash
 	env GOARCH=386 ./make.bash
