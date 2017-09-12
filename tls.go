@@ -264,7 +264,6 @@ func (cm *CertManager) GetConfigForClient(hello *tls.ClientHelloInfo) (*tls.Conf
 		Certificates:             []tls.Certificate{*cert},
 		Max0RTTDataSize:          100 * 1024,
 		Accept0RTTData:           true,
-		AllowShortHeaders:        true,
 		PreferServerCipherSuites: true,
 	}
 
