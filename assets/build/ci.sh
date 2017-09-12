@@ -202,15 +202,12 @@ EOF
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
-	# test $(ls -1 ${WORKING_DIR}/r${RELEASE} | wc -l) -eq 15
 
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
 
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
-	# rename 's/_linux_arm-/_linux_armv6l-/' *
-	# rename 's/_linux_arm64/_linux_aarch64/' *
 
 	mkdir -p GoProxy.app/Contents/{MacOS,Resources}
 	tar xvpf goproxy_macos_amd64-r${RELEASE}.tar.bz2 -C GoProxy.app/Contents/MacOS/
