@@ -1,10 +1,9 @@
 package helpers
 
 import (
-	"bytes"
 	"context"
-	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"net"
 	"sort"
@@ -26,8 +25,7 @@ type MultiDialer struct {
 	TLSConfig         *tls.Config
 	SiteToAlias       *HostMatcher
 	GoogleTLSConfig   *tls.Config
-	GoogleG2PKP       []byte
-	GoogleG3PKP       []byte
+	GoogleValidator   func(*x509.Certificate) bool
 	IPBlackList       lrucache.Cache
 	HostMap           map[string][]string
 	TLSConnDuration   lrucache.Cache
@@ -140,17 +138,13 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
 							certs := tc.ConnectionState().PeerCertificates
-							if len(tc.ConnectionState().PeerCertificates) <= 1 {
+							if len(certs) <= 1 {
 								return nil, fmt.Errorf("Wrong certificate of %s: PeerCertificates=%#v", conn.RemoteAddr(), certs)
 							}
 							cert := certs[1]
 							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, cert.Subject)
 							switch {
-							case d.GoogleG2PKP != nil && d.GoogleG3PKP != nil:
-								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
-								if bytes.Equal(pkp[:], d.GoogleG2PKP) || bytes.Equal(pkp[:], d.GoogleG3PKP) {
-									break
-								}
+							case d.GoogleValidator != nil && !d.GoogleValidator(cert):
 								fallthrough
 							case !strings.HasPrefix(cert.Subject.CommonName, "Google "):
 								err := fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
@@ -318,7 +312,7 @@ func (d *MultiDialer) DialQuic(address string, tlsConfig *tls.Config, cfg *quic.
 					return nil, err
 				}
 				if d.SSLVerify && isGoogleAddr {
-					// TODO: verify google certificates
+					// TODO: fix quic-go
 				}
 				return sess, nil
 			}

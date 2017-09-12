@@ -1,8 +1,11 @@
 package gae
 
 import (
+	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"flag"
 	"math/rand"
@@ -114,14 +117,20 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		}
 	}
 
-	GoogleG2PKP, err := base64.StdEncoding.DecodeString(config.GoogleG2PKP)
+	g2pkp, err := base64.StdEncoding.DecodeString(config.GoogleG2PKP)
 	if err != nil {
 		return nil, err
 	}
 
-	GoogleG3PKP, err := base64.StdEncoding.DecodeString(config.GoogleG3PKP)
+	g3pkp, err := base64.StdEncoding.DecodeString(config.GoogleG3PKP)
 	if err != nil {
 		return nil, err
+	}
+
+	googleValidator := func(cert *x509.Certificate) bool {
+		pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
+		return bytes.Equal(pkp[:], g2pkp) ||
+			bytes.Equal(pkp[:], g3pkp)
 	}
 
 	googleTLSConfig := &tls.Config{
@@ -210,8 +219,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		IPBlackList:       lrucache.NewLRUCache(1024),
 		HostMap:           hostmap,
 		GoogleTLSConfig:   googleTLSConfig,
-		GoogleG2PKP:       GoogleG2PKP,
-		GoogleG3PKP:       GoogleG3PKP,
+		GoogleValidator:   googleValidator,
 		TLSConnDuration:   lrucache.NewLRUCache(8192),
 		TLSConnError:      lrucache.NewLRUCache(8192),
 		TLSConnReadBuffer: config.Transport.Dialer.SocketReadBuffer,
