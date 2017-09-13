@@ -223,7 +223,6 @@ func NewFilter(config *Config) (_ filters.Filter, err error) {
 		f.RegionFiltersRules = fm
 
 		fm = make(map[string]filters.RoundTripFilter)
-		glog.Infof("config.RegionFilters.IPRules=%#v", config.RegionFilters.IPRules)
 		for ip, name := range config.RegionFilters.IPRules {
 			if name == "" {
 				fm[ip] = nil
