@@ -36,6 +36,7 @@ import os
 import re
 import glob
 import base64
+import plistlib
 import ctypes
 import ctypes.util
 
@@ -102,9 +103,8 @@ class GoProxyHelpers(object):
     @property
     def network_location(self):
         if self.__network_location == '':
-            s = os.popen('system_profiler SPNetworkDataType').read()
-            addrs = re.findall(r'(?is)\s*([^\n]+):\s+Type:\s+(AirPort|Ethernet).+?Addresses:\s*(\S+).+?(?:\n\n|$)', s)
-            self.__network_location = next(n for n,t,a in addrs if re.match('^[0-9a-fA-F\.:]+$', a))
+            ps = plistlib.readPlistFromString(os.popen('system_profiler SPNetworkDataType -xml').read())
+            self.__network_location = next(x['_name'] for x in ps[0]['_items'] if x['IPv4'].get('Addresses'))
         return self.__network_location
 
     def get_current_proxy(self):
