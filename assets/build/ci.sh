@@ -234,9 +234,7 @@ EOF
 #!$(head -1 GoProxy.app/Contents/MacOS/goproxy-macos.command | tr -d '()' | awk '{print $1}')
 import os
 __file__ = os.path.join(os.path.dirname(__file__), 'goproxy-macos.command')
-text = open(__file__, 'rb').read()
-code = compile(text[text.index('\n'):], __file__, 'exec')
-exec code
+exec compile(open(__file__, 'rb').read().split('\n', 1)[1], __file__, 'exec')
 EOF
 	chmod +x GoProxy.app/Contents/MacOS/goproxy-macos
 	export GAE_MACOS_REVSION=$(cd ${WORKING_DIR}/${GITHUB_REPO} && git log --oneline -- assets/packaging/goproxy-macos.command | wc -l | xargs)
