@@ -84,7 +84,7 @@ autostart() {
     if ! command -v crontab >/dev/null ; then
         echo "ERROR: please install cron"
     fi
-    (crontab -l | grep -v 'goproxy.sh'; echo "*/1 * * * * pgrep 'goproxy$' >/dev/null || $(pwd)/goproxy.sh start") | crontab
+    (crontab -l | grep -v 'goproxy.sh'; echo "*/1 * * * * pgrep 'goproxy$' >/dev/null || $(pwd)/goproxy.sh start") | crontab -
 }
 
 usage() {
