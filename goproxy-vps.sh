@@ -85,7 +85,7 @@ autostart() {
     if ! command -v crontab >/dev/null ; then
         echo "ERROR: please install cron"
     fi
-    (crontab -l | grep -v 'goproxy-vps.sh'; echo "*/1 * * * * pgrep goproxy-vps >/dev/null || $(pwd)/goproxy-vps.sh start") | crontab
+    (crontab -l | grep -v 'goproxy-vps.sh'; echo "*/1 * * * * pgrep goproxy-vps >/dev/null || $(pwd)/goproxy-vps.sh start") | crontab -
 }
 
 usage() {
