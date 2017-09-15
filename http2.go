@@ -206,6 +206,7 @@ func (h *HTTP2Handler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		if req.TLS.Unique0RTTToken != nil {
 			req.Header.Set("CF-0RTT-Unique", hex.EncodeToString(req.TLS.Unique0RTTToken))
 		}
+		req.Header.Set("X-TLS-Version", helpers.TLSVersionName(req.TLS.Version))
 	}
 
 	resp, err := tr.RoundTrip(req)
