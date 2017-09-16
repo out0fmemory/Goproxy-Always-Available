@@ -93,7 +93,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 	if d.LogToStderr {
 		SetConsoleTextColorGreen()
 	}
-	glog.V(2).Infof("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	glog.V(2).Infof("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
 	if d.LogToStderr {
 		SetConsoleTextColorReset()
 	}
@@ -123,7 +123,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					default:
 						config = cfg
 					}
-					glog.V(3).Infof("DialTLS2(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
+					glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
 
 					switch {
 					case d.Resolver.ForceIPv6:
@@ -142,7 +142,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 								return nil, fmt.Errorf("Wrong certificate of %s: PeerCertificates=%#v", conn.RemoteAddr(), certs)
 							}
 							cert := certs[1]
-							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, cert.Subject)
+							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
 							switch {
 							case d.GoogleValidator != nil && !d.GoogleValidator(cert):
 								fallthrough
