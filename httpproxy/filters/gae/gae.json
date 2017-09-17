@@ -2,6 +2,8 @@
 	"AppIDs": [
 		"goagenta"
 	],
+	"CustomDomains": [
+	],
 	"Password": "",
 	"SSLVerify": false,
 	"DisableIPv6": false,
