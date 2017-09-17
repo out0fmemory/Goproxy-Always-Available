@@ -50,7 +50,7 @@ func (b *QuicBody) OnError(err error) {
 func (t *Transport) roundTripQuic(req *http.Request) (*http.Response, error) {
 	t1 := t.RoundTripper.(*h2quic.RoundTripper)
 
-	if !strings.HasSuffix(req.Host, GAEDomain) {
+	if !strings.HasSuffix(req.Host, ".appspot.com") {
 		req = req.WithContext(context.WithValue(req.Context(), "ResponseHeaderTimeout", 8*time.Second))
 	}
 

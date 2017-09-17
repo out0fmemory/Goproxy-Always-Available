@@ -425,12 +425,26 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	helpers.ShuffleStrings(config.AppIDs)
 	helpers.ShuffleStrings(config.CustomDomains)
 
+	urls := []url.URL{}
+	for _, s := range config.AppIDs {
+		urls = append(urls, url.URL{
+			Scheme: "https",
+			Host:   s + ".appspot.com",
+			Path:   "/_gh/"})
+	}
+	for _, s := range config.CustomDomains {
+		urls = append(urls, url.URL{
+			Scheme: "https",
+			Host:   s,
+			Path:   "/_gh/"})
+	}
+
 	f := &Filter{
 		Config: *config,
 		GAETransport: &GAETransport{
 			Transport:   tr,
 			MultiDialer: md,
-			Servers:     NewServers(config.AppIDs, config.Password, config.SSLVerify),
+			Servers:     NewServers(urls, config.Password, config.SSLVerify),
 			Deadline:    time.Duration(config.Transport.ResponseHeaderTimeout-2) * time.Second,
 			RetryDelay:  time.Duration(config.Transport.RetryDelay*1000) * time.Millisecond,
 			RetryTimes:  config.Transport.RetryTimes,
