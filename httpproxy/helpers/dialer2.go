@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"math/rand"
 	"net"
 	"sort"
 	"strings"
@@ -418,8 +419,12 @@ func (d *MultiDialer) pickupTLSHosts(hosts []string, n int) []string {
 	}
 
 	if len(goods) == 0 {
-		ShuffleStrings(unknowns)
-		ShuffleStrings(bads)
+		rand.Shuffle(len(unknowns), func(i int, j int) {
+			unknowns[i], unknowns[j] = unknowns[j], unknowns[i]
+		})
+		rand.Shuffle(len(bads), func(i int, j int) {
+			bads[i], bads[j] = bads[j], bads[i]
+		})
 	}
 
 	for _, hosts2 := range [][]string{unknowns, bads} {
@@ -444,7 +449,9 @@ func (r *MultiResolver) LookupHost(host string) ([]string, error) {
 	if alias0, ok := r.MultiDialer.SiteToAlias.Lookup(host); ok {
 		alias := alias0.(string)
 		if hosts, err := r.MultiDialer.LookupAlias(alias); err == nil && len(hosts) > 0 {
-			ShuffleStrings(hosts)
+			rand.Shuffle(len(hosts), func(i, j int) {
+				hosts[i], hosts[j] = hosts[j], hosts[i]
+			})
 			return hosts, nil
 		}
 	}

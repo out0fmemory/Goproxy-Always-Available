@@ -168,7 +168,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			}
 			ciphers = append(ciphers, cipher)
 		}
-		helpers.ShuffleUint16s(ciphers)
+		rand.Shuffle(len(ciphers), func(i int, j int) {
+			ciphers[i], ciphers[j] = ciphers[j], ciphers[i]
+		})
 		return ciphers
 	}
 	googleTLSConfig.CipherSuites = pickupCiphers(config.TLSConfig.Ciphers)
@@ -190,7 +192,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	hostmap := map[string][]string{}
 	for key, value := range config.HostMap {
 		hosts := helpers.UniqueStrings(value)
-		helpers.ShuffleStrings(hosts)
+		rand.Shuffle(len(hosts), func(i int, j int) {
+			hosts[i], hosts[j] = hosts[j], hosts[i]
+		})
 		hostmap[key] = hosts
 	}
 
@@ -422,9 +426,6 @@ func NewFilter(config *Config) (filters.Filter, error) {
 		glog.Fatalf("GAE AppIDs and CustomDomains is conflict!")
 	}
 
-	helpers.ShuffleStrings(config.AppIDs)
-	helpers.ShuffleStrings(config.CustomDomains)
-
 	urls := []url.URL{}
 	for _, s := range config.AppIDs {
 		urls = append(urls, url.URL{
@@ -438,6 +439,9 @@ func NewFilter(config *Config) (filters.Filter, error) {
 			Host:   s,
 			Path:   "/_gh/"})
 	}
+	rand.Shuffle(len(urls), func(i int, j int) {
+		urls[i], urls[j] = urls[j], urls[i]
+	})
 
 	f := &Filter{
 		Config: *config,
