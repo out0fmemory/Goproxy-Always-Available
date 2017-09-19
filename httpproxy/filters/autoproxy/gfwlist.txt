@@ -1,9 +1,9 @@
 [AutoProxy 0.2.9]
-! Checksum: DIyqnypjEYCRqKmjvIekCA
+! Checksum: gSkzCTUI4mNOuB3+LYO/aw
 ! Expires: 6h
 ! Title: GFWList4LL
 ! GFWList with EVERYTHING included
-! Last Modified: Tue, 12 Sep 2017 23:22:43 -0400
+! Last Modified: Mon, 18 Sep 2017 03:23:01 -0400
 !
 ! HomePage: https://github.com/gfwlist/gfwlist
 ! License: https://raw.githubusercontent.com/gfwlist/gfwlist/master/COPYING.txt
@@ -228,6 +228,8 @@ share.dmhy.org
 !---Amazon---
 !-||cdn-images.mailchimp.com
 |https://*.s3.amazonaws.com
+||agro.hk
+||pixiv.net
 
 !----------------Frauds & Scams-----------------
 china-mmm.jp.net
@@ -1276,6 +1278,8 @@ bipic.net
 .bitshare.com
 ||bitshare.com
 bitsnoop.com
+.bitvise.com
+||bitvise.com
 bizhat.com
 ||bl-doujinsouko.com
 .bjnewlife.org
