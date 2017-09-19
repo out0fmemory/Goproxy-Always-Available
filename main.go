@@ -116,9 +116,13 @@ GAE AppIDs         : %s`, strings.Join(config.AppIDs, "|"))
 					fmt.Fprintf(os.Stderr, `
 GAE Domains        : %s`, strings.Join(config.CustomDomains, "|"))
 				}
-				if config.EnableQuic {
+				switch {
+				case config.EnableQuic:
 					fmt.Fprintf(os.Stderr, `
-GAE Features       : quic`)
+GAE Mode           : Quic`)
+				default:
+					fmt.Fprintf(os.Stderr, `
+GAE Mode           : TLS`)
 				}
 			case "php":
 				urls := make([]string, 0)
