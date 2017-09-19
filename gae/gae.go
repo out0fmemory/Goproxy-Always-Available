@@ -425,6 +425,7 @@ func root(rw http.ResponseWriter, r *http.Request) {
 }
 
 func init() {
+	http.HandleFunc("/g", handler)
 	http.HandleFunc("/_gh/", handler)
 	http.HandleFunc("/favicon.ico", favicon)
 	http.HandleFunc("/robots.txt", robots)
