@@ -110,7 +110,7 @@ def upload(dirname, appid):
     oldname = dirname
     dirname = '%s/%s-%s' % (CACHE_DIR, dirname, appid)
     if os.path.isdir(dirname):
-        shutil.rmtree(dirname)
+        shutil.rmtree(dirname, ignore_errors=True)
     shutil.copytree(oldname, dirname)
     filename = os.path.join(dirname, 'app.yaml')
     with open(filename, 'rb') as fp:
@@ -163,7 +163,7 @@ def main():
     retry_upload(4, 'gae', appids[0])
     pool = multiprocessing.pool.ThreadPool(processes=50)
     pool.map(functools.partial(retry_upload, 4, 'gae'), appids[1:])
-    shutil.rmtree(CACHE_DIR)
+    shutil.rmtree(CACHE_DIR, ignore_errors=True)
     println(os.linesep + u'上传完毕，请检查 http://<appid>.appspot.com 的版本，谢谢。按回车键退出程序。')
     raw_input()
 
