@@ -170,8 +170,8 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 	}
 
 	if _, err := rootCA.ca.Verify(x509.VerifyOptions{}); err != nil {
-		switch runtime.GOOS {
-		case "windows":
+		switch runtime.GOOS + "/" + runtime.GOARCH {
+		case "windows/amd64", "windows/386":
 			glog.Warningf("Verify RootCA(%#v) error: %v, try import to system root", name, err)
 			if err = helpers.RemoveCAFromSystemRoot(rootCA.name); err != nil {
 				glog.Errorf("Remove Old RootCA(%#v) error: %v", name, err)
@@ -189,7 +189,7 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 					}
 				}
 			}
-		default:
+		case "darwin/amd64", "linux/amd64", "linux/386":
 			glog.Warningf("Verify RootCA(%#v) error: %v, please import %#v to system root", name, err, certFile)
 		}
 	}
