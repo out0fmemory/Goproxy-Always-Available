@@ -389,8 +389,8 @@ def precheck():
     has_user_json = glob.glob('*.user.json') != []
     if not has_user_json:
         alert = NSAlert.alloc().init()
-        alert.setMessageText_('Please configure your goproxy at first.')
-        alert.setInformativeText_('For example, add a new gae.user.json')
+        alert.setMessageText_('GoProxy Information:')
+        alert.setInformativeText_('Please configure your goproxy at first.\nFor example, add a new gae.user.json')
         alert.setAlertStyle_(NSWarningAlertStyle)
         alert.addButtonWithTitle_('OK')
         NSApp.activateIgnoringOtherApps_(True)
