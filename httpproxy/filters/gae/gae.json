@@ -141,7 +141,7 @@
 			"SocketReadBuffer": 0,
 			"DualStack": false,
 			"KeepAlive": 5,
-			"Level": 12,
+			"Level": 20,
 			"Timeout": 5,
 		},
 		"Proxy": {
