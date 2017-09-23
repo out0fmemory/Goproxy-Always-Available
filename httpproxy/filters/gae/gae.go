@@ -306,7 +306,7 @@ func NewFilter(config *Config) (filters.Filter, error) {
 				KeepAlive:                     true,
 			},
 			DialAddr:              md.DialQuic,
-			KeepAliveTimeout:      3 * time.Minute,
+			KeepAliveTimeout:      2 * time.Minute,
 			IdleConnTimeout:       time.Duration(config.Transport.IdleConnTimeout) * time.Second,
 			ResponseHeaderTimeout: time.Duration(config.Transport.ResponseHeaderTimeout) * time.Second,
 			GetClientKey:          GetHostnameCacheKey,
