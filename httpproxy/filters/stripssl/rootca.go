@@ -190,7 +190,7 @@ func NewRootCA(name string, vaildFor time.Duration, certDir string, portable boo
 				}
 			}
 		case "darwin/amd64", "linux/amd64", "linux/386":
-			glog.Warningf("Verify RootCA(%#v) error: %v, please import %#v to system root", name, err, certFile)
+			glog.Infof("Verify RootCA(%#v) error: %v, please import %#v to system root", name, err, certFile)
 		}
 	}
 
