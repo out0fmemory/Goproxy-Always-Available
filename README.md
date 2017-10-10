@@ -4,6 +4,6 @@
 * 讨论区 https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
 
 ## 文档
-* 简易教程 https://github.com/phuslu/goproxy/blob/wiki/SimpleGuide.md
-* 配置介绍 https://github.com/phuslu/goproxy/blob/wiki/ConfigIntroduce.md
-* 编译步骤 https://github.com/phuslu/goproxy/blob/wiki/HowToBuild.md
+* 简易教程 https://github.com/out0fmemory/Goproxy-Always-Available/blob/wiki/SimpleGuide.md
+* 配置介绍 https://github.com/out0fmemory/Goproxy-Always-Available/blob/wiki/ConfigIntroduce.md
+* 编译步骤 https://github.com/out0fmemory/Goproxy-Always-Available/blob/wiki/HowToBuild.md
