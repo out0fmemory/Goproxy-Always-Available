@@ -20,11 +20,12 @@ done
 ```
 - 编译 golang 工具链
 ```bash
-export GOROOT_BOOTSTRAP=~/workspace/goproxy/goroot_bootstrap
-export GOROOT=~/workspace/goproxy/go
-export GOPATH=~/workspace/goproxy/gopath
+export WORKSPACE=~/workspace/goproxy
+export GOROOT_BOOTSTRAP=${WORKSPACE}/goroot_bootstrap
+export GOROOT=${WORKSPACE}/go
+export GOPATH=${WORKSPACE}/gopath
 
-cd ~/workspace/goproxy/
+cd ${WORKSPACE}
 
 curl -k https://storage.googleapis.com/golang/go1.4.2.linux-amd64.tar.gz | tar xz
 mv go goroot_bootstrap
@@ -32,12 +33,12 @@ mv go goroot_bootstrap
 git clone --depth 1 https://github.com/phuslu/go
 (cd go/src && bash ./make.bash)
 
-export PATH=$PATH:~/workspace/goproxy/go/bin
+export PATH=$PATH:${WORKSPACE}/go/bin
 ```
 - 编译 goproxy
 ```bash
-git clone https://github.com/phuslu/goproxy
-cd goproxy
+git clone https://github.com/out0fmemory/Goproxy-Always-Available.git goproxy
+cd ${WORKSPACE}/goproxy
 git checkout master
 
 awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -v -u {}
