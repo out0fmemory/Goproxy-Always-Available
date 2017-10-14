@@ -3,6 +3,12 @@
 
 * 讨论区 https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
 
+## 使用 
+* 已经将此代码编译后发布release了，直接下载release对应系统以及架构的包即可
+
+## TODO
+* 集成goproxy可用的ip段
+
 ## 文档
 * 简易教程 https://github.com/out0fmemory/Goproxy-Always-Available/blob/wiki/SimpleGuide.md
 * 配置介绍 https://github.com/out0fmemory/Goproxy-Always-Available/blob/wiki/ConfigIntroduce.md
