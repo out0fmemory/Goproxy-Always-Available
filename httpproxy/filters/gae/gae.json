@@ -1,6 +1,8 @@
 {
 	"AppIDs": [
-		"goagenta"
+		"myvpnhehe1432",
+	],
+	"CustomDomains": [
 	],
 	"Password": "",
 	"SSLVerify": false,
@@ -8,21 +10,16 @@
 	"ForceIPv6": false,
 	"DisableHTTP2": true,
 	"ForceHTTP2": false,
-	"EnableQuic": false,
+	"EnableQuic": true,
 	"EnableDeadProbe": true,
 	"EnableRemoteDNS": false,
 	"HostMap" : {
 		"google_hk": [
-			"mail.google.com",
-			"mail.l.google.com",
-			"maps.l.google.com",
-			"scholar.google.com",
-			"scholar.google.com.hk",
-			"www.l.google.com",
+						"58.176.217.9",
+
 		],
 		"google_cn": [
-			"www.g.cn",
-			"www.google.cn"
+						"58.176.217.9",
 		]
 	},
 	"SiteToAlias": {
@@ -52,9 +49,12 @@
 		"*.gstatic.com": "google_hk",
 		"*.ytimg.com": "google_hk",
 		"upload.youtube.com": "google_hk",
-		// "*.youtube.com": "google_hk",
+		 "*.youtube.com": "google_hk",
+		 "*.qq.com": "google_hk",
+		 //"*.facebook.com": "google_hk",
 	},
 	"ForceGAE": [
+		// "*.drive.google.com",
 		"appengine.google.com",
 		"books.google.com",
 		"business.google.com",
@@ -68,6 +68,9 @@
 		"www.google.com/maps",
 		"www.google.com/patents",
 		"youtube.googleapis.com",
+		"youtube.com",
+	],
+	"ForceBrotli": [
 	],
 	"TLSConfig": {
 		"Version": "TLSv1.2",
@@ -95,6 +98,7 @@
 		],
 	},
 	"GoogleG2PKP": "7HIpactkIAq2Y49orFOOQKurWxmmSFZhBCoQYcRhJ3Y=",
+	"GoogleG3PKP": "f8NnEFZxQ4ExFOhSN7EiFWtiudZQVD2oY60uauV/n78=",
 	"FakeOptions": {
 		"*": [
 			"Access-Control-Allow-Credentials: true",
@@ -135,14 +139,13 @@
 			"SocketReadBuffer": 0,
 			"DualStack": false,
 			"KeepAlive": 5,
-			"Level": 8,
+			"Level": 20,
 			"Timeout": 5,
 		},
 		"Proxy": {
 			"Enabled": false,
 			"URL": "socks5://127.0.0.1:1080",
 		},
-		"DisableCompression": false,
 		"DisableKeepAlives": false,
 		"IdleConnTimeout": 5,
 		"MaxIdleConnsPerHost": 32,

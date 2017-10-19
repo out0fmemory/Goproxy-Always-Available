@@ -72,7 +72,9 @@ SOURCES="${REPO}/README.md \
         ${REPO}/httpproxy/filters/php/php.json \
         ${REPO}/httpproxy/filters/rewrite/rewrite.json \
         ${REPO}/httpproxy/filters/stripssl/stripssl.json \
-        ${REPO}/httpproxy/httpproxy.json"
+	${REPO}/httpproxy/httpproxy.json \
+	${REPO}/httpproxy/filters/gae/gscan.conf \
+        ${REPO}/httpproxy/filters/gae/iprange.conf"
 
 if [ "${GOOS}" = "windows" ]; then
     SOURCES="${SOURCES} \

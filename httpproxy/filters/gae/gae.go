@@ -15,6 +15,7 @@ import (
 	"github.com/cloudflare/golibs/lrucache"
 	"github.com/phuslu/glog"
 	"github.com/phuslu/net/http2"
+	gscan "github.com/out0fmemory/gscan_quic"
 	quic "github.com/phuslu/quic-go"
 	"github.com/phuslu/quic-go/h2quic"
 
@@ -171,8 +172,16 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	config.SiteToAlias = config.Site2Alias
 
 	hostmap := map[string][]string{}
+	ipbyte := gscan.Gscan(50, false)
+	ipstring := string(ipbyte[:])
+	ipstringtrim := strings.Replace(ipstring, "\n", "",-1)
+	ipstringtrim = strings.Replace(ipstringtrim, "\"", "",-1)
+	ipsarray := strings.Split(ipstringtrim, ",")
 	for key, value := range config.HostMap {
-		hosts := helpers.UniqueStrings(value)
+		mergehost := make([]string, len(ipsarray)+len(value))
+        	copy(mergehost, ipsarray)
+        	copy(mergehost[len(ipsarray):], value)
+		hosts := helpers.UniqueStrings(mergehost)
 		helpers.ShuffleStrings(hosts)
 		hostmap[key] = hosts
 	}
