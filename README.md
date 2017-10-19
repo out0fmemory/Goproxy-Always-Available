@@ -3,14 +3,18 @@
 
 * 讨论区 https://github.com/phuslu/goproxy/issues?q=sort:updated-desc+is:open
 
+# Important
+* 1632版本增加了自动扫描可用ip的逻辑，自此，开箱即用，enjoys！
+* 目前还没有做运行过程中的优化扫描，后续会做
+
+
 ## 使用 
 * 已经将此代码编译后发布release了，直接下载release对应系统以及架构的包即可
 ## 可用ip
 * 已经将目前非常时期可用的ip放在项目里，大家可以下载[![非常时期的可用ip--开启quic.txt](https://raw.githubusercontent.com/out0fmemory/Goproxy-Always-Available/master/%E9%9D%9E%E5%B8%B8%E6%97%B6%E6%9C%9F%E7%9A%84%E5%8F%AF%E7%94%A8ip--%E5%BC%80%E5%90%AFquic.txt)]使用
 * ip来源为之前GoAgent-Always-Available项目的gvs.txt和my.conf,工具使用gscan-quic
 
-## TODO
-* 集成goproxy可用的ip段
+
 
 ## 文档
 * 简易教程 https://github.com/out0fmemory/Goproxy-Always-Available/blob/wiki/SimpleGuide.md
