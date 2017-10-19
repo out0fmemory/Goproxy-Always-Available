@@ -22,7 +22,7 @@ if [ ${#SOURCEFORGE_PASSWORD} -eq 0 ]; then
 	echo "WARNING: \$SOURCEFORGE_PASSWORD is not set!"
 fi
 
-for CMD in curl awk git tar bzip2 xz 7za gcc sha1sum timeout
+for CMD in curl awk git tar bzip2 xz 7za gcc sha1sum timeout grep
 do
 	if ! type -p ${CMD}; then
 		echo -e "\e[1;31mtool ${CMD} is not installed, abort.\e[0m"
@@ -141,7 +141,7 @@ function build_quicgo() {
 	popd
 }
 
-function build_repo() {
+function build_goproxy() {
 	pushd ${WORKING_DIR}
 
 	git clone https://github.com/${GITHUB_USER}/gop ${GITHUB_REPO}
@@ -155,7 +155,7 @@ function build_repo() {
 	fi
 
 	export RELEASE=$(git rev-list --count HEAD)
-	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/gop/commit/%h) %s")
+	export RELEASE_DESCRIPTION=$(git log -1 --oneline --format="r${RELEASE}: [\`%h\`](https://github.com/${GITHUB_USER}/goproxy/commit/%h) %s")
 	if [ -n "${TRAVIS_BUILD_ID}" ]; then
 		export RELEASE_DESCRIPTION=$(echo ${RELEASE_DESCRIPTION} | sed -E "s#^(r[0-9]+)#[\1](https://travis-ci.org/${GITHUB_USER}/${GITHUB_REPO}/builds/${TRAVIS_BUILD_ID})#g")
 	fi
@@ -173,17 +173,6 @@ function build_repo() {
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
 	go test -v ./httpproxy/helpers
-
-	if curl -m 3 https://pki.google.com >/dev/null ; then
-		GoogleG2PKP=$(curl -s https://pki.google.com/GIAG2.crt | openssl x509 -pubkey | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl base64)
-		sed -i -r "s/\"GoogleG2PKP\": \".+\"/\"GoogleG2PKP\": \"$GoogleG2PKP\"/g" httpproxy/filters/gae/gae.json
-		if git status -s | grep -q 'gae.json' ; then
-			git diff
-			git add httpproxy/filters/gae/gae.json
-			git commit -m "update GoogleG2PKP to $GoogleG2PKP"
-			grep -q 'machine github.com' ~/.netrc && git push -f origin master
-		fi
-	fi
 
 	pushd ./assets/taskbar
 	env GOARCH=amd64 ./make.bash
@@ -213,28 +202,12 @@ EOF
 
 	mkdir -p ${WORKING_DIR}/r${RELEASE}
 	cp -r build/*/dist/* ${WORKING_DIR}/r${RELEASE}
-	# test $(ls -1 ${WORKING_DIR}/r${RELEASE} | wc -l) -eq 15
 
 	git archive --format=tar --prefix="goproxy-r${RELEASE}/" HEAD | xz > "${WORKING_DIR}/r${RELEASE}/source.tar.xz"
-
-	export GAE_RELEASE=$(git rev-list --count origin/server.gae)
-	git archive --format=tar --prefix="goproxy-r${GAE_RELEASE}/" origin/server.gae > "${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.tar"
-	pushd ${WORKING_DIR}/r${RELEASE}
-	mkdir goproxy-r${GAE_RELEASE}
-	for FILE in python27.exe python27.dll python27.zip
-	do
-		curl -L https://raw.githubusercontent.com/phuslu/pybuild/master/${FILE} >goproxy-r${GAE_RELEASE}/${FILE}
-	done
-	tar uvf goproxy-gae-r${GAE_RELEASE}.tar goproxy-r${GAE_RELEASE}/*
-	rm -rf goproxy-r${GAE_RELEASE}
-	xz goproxy-gae-r${GAE_RELEASE}.tar
-	popd
 
 	cd ${WORKING_DIR}/r${RELEASE}
 	rename 's/_darwin_(amd64|386)/_macos_\1/' *
 	rename 's/_darwin_(arm64|arm)/_ios_\1/' *
-	# rename 's/_linux_arm-/_linux_armv6l-/' *
-	# rename 's/_linux_arm64/_linux_aarch64/' *
 
 	mkdir -p GoProxy.app/Contents/{MacOS,Resources}
 	tar xvpf goproxy_macos_amd64-r${RELEASE}.tar.bz2 -C GoProxy.app/Contents/MacOS/
@@ -261,11 +234,11 @@ EOF
 #!$(head -1 GoProxy.app/Contents/MacOS/goproxy-macos.command | tr -d '()' | awk '{print $1}')
 import os
 __file__ = os.path.join(os.path.dirname(__file__), 'goproxy-macos.command')
-text = open(__file__, 'rb').read()
-code = compile(text[text.index('\n'):], __file__, 'exec')
-exec code
+exec compile(open(__file__, 'rb').read().split('\n', 1)[1], __file__, 'exec')
 EOF
 	chmod +x GoProxy.app/Contents/MacOS/goproxy-macos
+	export GAE_MACOS_REVSION=$(cd ${WORKING_DIR}/${GITHUB_REPO} && git log --oneline -- assets/packaging/goproxy-macos.command | wc -l | xargs)
+	sed -i "s/r9999/r${GAE_MACOS_REVSION}/" GoProxy.app/Contents/MacOS/goproxy-macos.command
 	BZIP=-9 tar cvjpf goproxy_macos_app-r${RELEASE}.tar.bz2 GoProxy.app
 	rm -rf GoProxy.app
 
@@ -280,7 +253,29 @@ EOF
 	popd
 }
 
-function build_repo_ex() {
+function build_goproxy_gae() {
+	pushd ${WORKING_DIR}/${GITHUB_REPO}
+
+	git checkout -f server.gae
+	git fetch origin server.gae
+	git reset --hard origin/server.gae
+	git clean -dfx .
+
+	for FILE in python27.exe python27.dll python27.zip
+	do
+		curl -LOJ https://raw.githubusercontent.com/phuslu/pybuild/master/${FILE}
+	done
+
+	echo -e '@echo off\n"%~dp0python27.exe" uploader.py || pause' >uploader.bat
+
+	export GAE_RELEASE=$(git rev-list --count HEAD)
+	sed -i "s/r9999/r${GAE_RELEASE}/" gae/gae.go
+	tar cvJpf ${WORKING_DIR}/r${RELEASE}/goproxy-gae-r${GAE_RELEASE}.tar.xz *
+
+	popd
+}
+
+function build_goproxy_vps() {
 	pushd ${WORKING_DIR}/${GITHUB_REPO}
 
 	git checkout -f server.vps
@@ -288,7 +283,7 @@ function build_repo_ex() {
 	git reset --hard origin/server.vps
 	git clean -dfx .
 
-	git clone --branch master https://github.com/phuslu/gop $GOPATH/src/github.com/phuslu/goproxy
+	git clone --branch master https://github.com/phuslu/goproxy $GOPATH/src/github.com/phuslu/goproxy
 	awk 'match($1, /"((github\.com|golang\.org|gopkg\.in)\/.+)"/) {if (!seen[$1]++) {gsub("\"", "", $1); print $1}}' $(find . -name "*.go") | xargs -n1 -i go get -u -v {}
 
 	cat <<EOF |
@@ -386,33 +381,6 @@ function release_sourceforge() {
 	popd
 }
 
-function release_github_pages() {
-	pushd ${WORKING_DIR}/
-
-	git clone https://${GITHUB_USER}@github.com/${GITHUB_USER}/${GITHUB_USER}.github.io
-	mkdir -p ${GITHUB_USER}.github.io/goproxy
-	cd ${GITHUB_USER}.github.io/goproxy
-
-	for FILE in \
-			goproxy_linux_amd64-r${RELEASE}.tar.xz \
-			goproxy_macos_app-r${RELEASE}.tar.bz2 \
-			goproxy_windows_amd64-r${RELEASE}.7z
-	do
-		SIZE=$(/bin/ls -l ${WORKING_DIR}/r${RELEASE}/${FILE} | awk '{print $5}')
-		cat <<EOF > ${FILE}.url
-[InternetShortcut]
-URL=https://github.com/phuslu/goproxy-ci/releases/download/r${RELEASE}/${FILE}
-SIZE=${SIZE}
-EOF
-	done
-
-	git add *
-	git commit -m "update goproxy" -s -a
-	git push origin master
-
-	popd
-}
-
 function clean() {
 	set +ex
 
@@ -433,11 +401,11 @@ build_glog
 build_http2
 build_bogo
 build_quicgo
-build_repo
+build_goproxy
 if [ "x${TRAVIS_EVENT_TYPE}" == "xpush" ]; then
-	build_repo_ex
+	build_goproxy_gae
+	build_goproxy_vps
 	release_github
 	release_sourceforge
-	#release_github_pages
 	clean
 fi

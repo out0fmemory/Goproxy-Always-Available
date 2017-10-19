@@ -108,11 +108,21 @@ Enabled Filters    : %v`,
 Pac Server         : http://%s/proxy.pac`, addr)
 			case "gae":
 				config := f.(*gae.Filter).Config
-				fmt.Fprintf(os.Stderr, `
-GAE AppIDs         : %s`, strings.Join(config.AppIDs, "|"))
-				if config.EnableQuic {
+				if len(config.AppIDs) > 0 {
 					fmt.Fprintf(os.Stderr, `
-GAE Features       : quic`)
+GAE AppIDs         : %s`, strings.Join(config.AppIDs, "|"))
+				}
+				if len(config.CustomDomains) > 0 {
+					fmt.Fprintf(os.Stderr, `
+GAE Domains        : %s`, strings.Join(config.CustomDomains, "|"))
+				}
+				switch {
+				case config.EnableQuic:
+					fmt.Fprintf(os.Stderr, `
+GAE Mode           : Quic`)
+				default:
+					fmt.Fprintf(os.Stderr, `
+GAE Mode           : TLS`)
 				}
 			case "php":
 				urls := make([]string, 0)
@@ -120,7 +130,7 @@ GAE Features       : quic`)
 					urls = append(urls, s.URL)
 				}
 				fmt.Fprintf(os.Stderr, `
-GAE AppIDs         : %s`, strings.Join(urls, "|"))
+PHP Servers         : %s`, strings.Join(urls, "|"))
 			}
 		}
 		go httpproxy.ServeProfile(config, "goproxy "+version)

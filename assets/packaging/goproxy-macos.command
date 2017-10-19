@@ -2,7 +2,7 @@
 #!/usr/bin/python2.7
 # coding:utf-8
 
-__version__ = '2.1'
+__version__ = 'r9999'
 
 GOPROXY_TITLE = "GoProxy macOS"
 GOPROXY_ICON_DATA = """\
@@ -36,6 +36,7 @@ import os
 import re
 import glob
 import base64
+import plistlib
 import ctypes
 import ctypes.util
 
@@ -102,9 +103,8 @@ class GoProxyHelpers(object):
     @property
     def network_location(self):
         if self.__network_location == '':
-            s = os.popen('system_profiler SPNetworkDataType').read()
-            addrs = re.findall(r'(?is)\s*([^\n]+):\s+Type:\s+(AirPort|Ethernet).+?Addresses:\s*(\S+).+?(?:\n\n|$)', s)
-            self.__network_location = next(n for n,t,a in addrs if re.match('^[0-9a-fA-F\.:]+$', a))
+            ps = plistlib.readPlistFromString(os.popen('system_profiler SPNetworkDataType -xml').read())
+            self.__network_location = next(x['_name'] for x in ps[0]['_items'] if x['IPv4'].get('Addresses'))
         return self.__network_location
 
     def get_current_proxy(self):
@@ -170,7 +170,6 @@ class GoProxyHelpers(object):
 class GoProxyMacOS(NSObject):
 
     console_color = ColorSet[0]
-    max_line_count = 1000
 
     def applicationDidFinishLaunching_(self, notification):
         self.helper = GoProxyHelpers()
@@ -246,7 +245,6 @@ class GoProxyMacOS(NSObject):
         self.console_view.setVerticallyResizable_(True)
         self.console_view.setHorizontallyResizable_(True)
         self.console_view.setAutoresizingMask_(NSViewWidthSizable)
-        self.console_line_count = 0
 
         self.scroll_view.setDocumentView_(self.console_view)
         self.console_window.contentView().addSubview_(self.scroll_view)
@@ -319,11 +317,7 @@ class GoProxyMacOS(NSObject):
     def readProxyOutput(self):
         while(True):
             line = self.pipe_fd.readline()
-            if self.console_line_count > self.max_line_count:
-                self.console_view.setString_('')
-                self.console_line_count = 0
             self.performSelectorOnMainThread_withObject_waitUntilDone_('refreshDisplay:', line, None)
-            self.console_line_count += 1
 
     def updateproxystate_(self, notification):
         # Add checkmark to submenu
@@ -395,8 +389,8 @@ def precheck():
     has_user_json = glob.glob('*.user.json') != []
     if not has_user_json:
         alert = NSAlert.alloc().init()
-        alert.setMessageText_('Please configure your goproxy at first.')
-        alert.setInformativeText_('For example, add a new gae.user.json')
+        alert.setMessageText_('GoProxy Information:')
+        alert.setInformativeText_('Please configure your goproxy at first.\nFor example, add a new gae.user.json')
         alert.setAlertStyle_(NSWarningAlertStyle)
         alert.addButtonWithTitle_('OK')
         NSApp.activateIgnoringOtherApps_(True)

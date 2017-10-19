@@ -3,7 +3,7 @@
 	"RootCA": {
 		"Name": "GoProxy",
 		"Dirname": "cache",
-		"Duration": 94608000,
+		"Duration": 31536000,
 		"Portable": true,
 	},
 	"Ports": [

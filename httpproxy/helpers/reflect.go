@@ -52,7 +52,7 @@ func ReflectRemoteAddrFromResponse(resp *http.Response) (string, error) {
 		default:
 			return "", fmt.Errorf("ReflectRemoteAddrFromResponse: unsupport %#v Type=%s", v, v.Type().String())
 		}
-	case "http2.transportResponseBody":
+	case "http.http2transportResponseBody", "http2.transportResponseBody":
 		v = v.FieldByName("cs").Elem()
 		v = v.FieldByName("cc").Elem()
 		v = v.FieldByName("tconn").Elem()

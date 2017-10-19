@@ -48,7 +48,9 @@ function convert() {
 		}
 		var matches = text1.value.match(regex)
 		if (matches != null) {
-			matches = matches.sort().filter(function(el,i,a){if(i==a.indexOf(el))return 1;return 0})
+			matches = matches.sort().filter(function(item,pos,self){
+				return !pos || item != self[pos-1]
+			})
 			text2.value = "\"" + matches.join("\",\n\"") + "\",";
 			enable_submit(true);
 			// text2.select();

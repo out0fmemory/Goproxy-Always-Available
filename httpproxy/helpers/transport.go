@@ -111,12 +111,12 @@ func IsStaticRequest(req *http.Request) bool {
 	case "bmp", "gif", "ico", "jpeg", "jpg", "png", "tif", "tiff",
 		"3gp", "3gpp", "avi", "f4v", "flv", "m4p", "mkv", "mp4",
 		"mp4v", "mpv4", "rmvb", ".webp", ".js", ".css":
-		return false
+		return true
 	case "":
 		name := path.Base(req.URL.Path)
 		if strings.Contains(name, "play") ||
 			strings.Contains(name, "video") {
-			return false
+			return true
 		}
 	default:
 		if req.Header.Get("Range") != "" ||
@@ -130,7 +130,7 @@ func IsStaticRequest(req *http.Request) bool {
 			strings.Contains(req.URL.Path, "static") ||
 			strings.Contains(req.URL.Path, "asset") ||
 			strings.Contains(req.URL.Path, "/cache/") {
-			return false
+			return true
 		}
 	}
 	return false

@@ -21,55 +21,47 @@ import (
 	"../../helpers"
 )
 
-const (
-	GAEScheme string = "https"
-	GAEDomain string = ".appspot.com"
-	GAEPath   string = "/_gh/"
-)
-
 type Servers struct {
-	perferAppid atomic.Value
-	muAppID     sync.RWMutex
-	appids1     []string
-	appids2     []string
-	password    string
-	sslVerify   bool
+	curURL    atomic.Value
+	muURL     sync.RWMutex
+	urls1     []url.URL
+	urls2     []url.URL
+	password  string
+	sslVerify bool
 }
 
-func NewServers(appids []string, password string, sslVerify bool) *Servers {
+func NewServers(urls []url.URL, password string, sslVerify bool) *Servers {
 	server := &Servers{
-		appids1:   appids,
-		appids2:   []string{},
+		urls1:     urls,
+		urls2:     []url.URL{},
 		password:  password,
 		sslVerify: sslVerify,
 	}
-	server.perferAppid.Store(server.appids1[0])
+	server.curURL.Store(server.urls1[0])
 	return server
 }
 
-func (s *Servers) ToggleBadAppID(appid string) {
-	s.muAppID.Lock()
-	defer s.muAppID.Unlock()
-	appids := make([]string, 0)
-	for _, id := range s.appids1 {
-		if id != appid {
-			appids = append(appids, id)
+func (s *Servers) ToggleBadServer(fetchserver url.URL) {
+	s.muURL.Lock()
+	defer s.muURL.Unlock()
+	urls := []url.URL{}
+	for _, u := range s.urls1 {
+		if u.Host != fetchserver.Host {
+			urls = append(urls, u)
 		}
 	}
-	s.appids1 = appids
-	s.appids2 = append(s.appids2, appid)
-	if len(s.appids1) == 0 {
-		s.appids1, s.appids2 = s.appids2, s.appids1
-		helpers.ShuffleStrings(s.appids1)
+	s.urls1 = urls
+	s.urls2 = append(s.urls2, fetchserver)
+	if len(s.urls1) == 0 {
+		s.urls1, s.urls2 = s.urls2, s.urls1
+		rand.Shuffle(len(s.urls1), func(i int, j int) {
+			s.urls1[i], s.urls1[j] = s.urls1[j], s.urls1[i]
+		})
 	}
-	s.perferAppid.Store(s.appids1[0])
+	s.curURL.Store(s.urls1[0])
 }
 
-func (s *Servers) ToggleBadServer(fetchserver *url.URL) {
-	s.ToggleBadAppID(strings.TrimSuffix(fetchserver.Host, GAEDomain))
-}
-
-func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadline time.Duration) (*http.Request, error) {
+func (s *Servers) EncodeRequest(req *http.Request, fetchserver url.URL, deadline time.Duration, brotli bool) (*http.Request, error) {
 	var err error
 	var b bytes.Buffer
 
@@ -80,15 +72,23 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadlin
 		return nil, err
 	}
 
-	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
-	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
-	fmt.Fprintf(w, "X-Urlfetch-Password: %s\r\n", s.password)
+	options := ""
 	if deadline > 0 {
-		fmt.Fprintf(w, "X-Urlfetch-Deadline: %d\r\n", deadline/time.Second)
+		options = fmt.Sprintf("deadline=%d", deadline/time.Second)
+	}
+	if brotli {
+		options += ",brotli"
+	}
+	if s.password != "" {
+		options += ",password=" + s.password
 	}
 	if s.sslVerify {
-		fmt.Fprintf(w, "X-Urlfetch-SSLVerify: 1\r\n")
+		options += ",sslverify"
 	}
+
+	fmt.Fprintf(w, "%s %s HTTP/1.1\r\n", req.Method, req.URL.String())
+	fmt.Fprintf(w, "X-Urlfetch-Options: %s\r\n", options)
+	req.Header.WriteSubset(w, helpers.ReqWriteExcludeHeader)
 	w.Close()
 
 	b0 := make([]byte, 2)
@@ -96,13 +96,11 @@ func (s *Servers) EncodeRequest(req *http.Request, fetchserver *url.URL, deadlin
 
 	req1 := &http.Request{
 		Method: http.MethodPost,
-		URL:    fetchserver,
+		URL:    &fetchserver,
 		Host:   fetchserver.Host,
-		Header: http.Header{},
-	}
-
-	if req1.URL.Scheme == "https" {
-		req1.Header.Set("User-Agent", "a")
+		Header: http.Header{
+			"User-Agent": []string{""},
+		},
 	}
 
 	if req.ContentLength > 0 {
@@ -180,7 +178,7 @@ func (s *Servers) DecodeResponse(resp *http.Response) (resp1 *http.Response, err
 	return
 }
 
-func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
+func (s *Servers) PickFetchServer(req *http.Request, base int) url.URL {
 	perfer := !helpers.IsStaticRequest(req)
 
 	if base > 0 {
@@ -192,18 +190,10 @@ func (s *Servers) PickFetchServer(req *http.Request, base int) *url.URL {
 	}
 
 	if perfer {
-		return toServer(s.perferAppid.Load().(string))
+		return s.curURL.Load().(url.URL)
 	} else {
-		s.muAppID.RLock()
-		defer s.muAppID.RUnlock()
-		return toServer(s.appids1[rand.Intn(len(s.appids1))])
-	}
-}
-
-func toServer(appid string) *url.URL {
-	return &url.URL{
-		Scheme: GAEScheme,
-		Host:   appid + GAEDomain,
-		Path:   GAEPath,
+		s.muURL.RLock()
+		defer s.muURL.RUnlock()
+		return s.urls1[rand.Intn(len(s.urls1))]
 	}
 }
