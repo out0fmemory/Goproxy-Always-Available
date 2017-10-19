@@ -4,13 +4,6 @@ import (
 	"math/rand"
 )
 
-func ShuffleStrings(slice []string) {
-	for i := range slice {
-		j := rand.Intn(i + 1)
-		slice[i], slice[j] = slice[j], slice[i]
-	}
-}
-
 func ShuffleStringsN(slice []string, n int) {
 	l := len(slice)
 

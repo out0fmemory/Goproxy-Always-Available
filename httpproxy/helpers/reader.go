@@ -81,3 +81,16 @@ func (rlr *rateLimitReader) Read(p []byte) (n int, err error) {
 func (rlr *rateLimitReader) Close() error {
 	return rlr.rc.Close()
 }
+
+type ReaderCloser struct {
+	Reader io.Reader
+	Closer io.ReadCloser
+}
+
+func (bc ReaderCloser) Read(buf []byte) (int, error) {
+	return bc.Reader.Read(buf)
+}
+
+func (bc ReaderCloser) Close() error {
+	return bc.Closer.Close()
+}

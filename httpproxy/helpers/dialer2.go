@@ -1,11 +1,11 @@
 package helpers
 
 import (
-	"bytes"
 	"context"
-	"crypto/sha256"
 	"crypto/tls"
+	"crypto/x509"
 	"fmt"
+	"math/rand"
 	"net"
 	"sort"
 	"strings"
@@ -26,7 +26,7 @@ type MultiDialer struct {
 	TLSConfig         *tls.Config
 	SiteToAlias       *HostMatcher
 	GoogleTLSConfig   *tls.Config
-	GoogleG2PKP       []byte
+	GoogleValidator   func(*x509.Certificate) bool
 	IPBlackList       lrucache.Cache
 	HostMap           map[string][]string
 	TLSConnDuration   lrucache.Cache
@@ -94,7 +94,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 	if d.LogToStderr {
 		SetConsoleTextColorGreen()
 	}
-	glog.V(2).Infof("MULTIDIALER DialTLS2(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
+	glog.V(2).Infof("MULTIDIALER DialTLS(%#v, %#v) with good_addrs=%d, bad_addrs=%d", network, address, d.TLSConnDuration.Len(), d.TLSConnError.Len())
 	if d.LogToStderr {
 		SetConsoleTextColorReset()
 	}
@@ -124,7 +124,7 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					default:
 						config = cfg
 					}
-					glog.V(3).Infof("DialTLS2(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
+					glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) alais=%#v set tls.Config=%#v", network, address, alias, config)
 
 					switch {
 					case d.Resolver.ForceIPv6:
@@ -139,17 +139,13 @@ func (d *MultiDialer) DialTLS2(network, address string, cfg *tls.Config) (net.Co
 					if d.SSLVerify && isGoogleAddr {
 						if tc, ok := conn.(*tls.Conn); ok {
 							certs := tc.ConnectionState().PeerCertificates
-							if len(tc.ConnectionState().PeerCertificates) <= 1 {
+							if len(certs) <= 1 {
 								return nil, fmt.Errorf("Wrong certificate of %s: PeerCertificates=%#v", conn.RemoteAddr(), certs)
 							}
 							cert := certs[1]
-							glog.V(3).Infof("MULTIDIALER DialTLS2(%#v, %#v) verify cert=%v", network, address, cert.Subject)
+							glog.V(3).Infof("MULTIDIALER DialTLS(%#v, %#v) verify cert=%v", network, address, cert.Subject)
 							switch {
-							case d.GoogleG2PKP != nil:
-								pkp := sha256.Sum256(cert.RawSubjectPublicKeyInfo)
-								if bytes.Equal(pkp[:], d.GoogleG2PKP) {
-									break
-								}
+							case d.GoogleValidator != nil && !d.GoogleValidator(cert):
 								fallthrough
 							case !strings.HasPrefix(cert.Subject.CommonName, "Google "):
 								err := fmt.Errorf("Wrong certificate of %s: Issuer=%v, SubjectKeyId=%#v", conn.RemoteAddr(), cert.Subject, cert.SubjectKeyId)
@@ -317,7 +313,7 @@ func (d *MultiDialer) DialQuic(address string, tlsConfig *tls.Config, cfg *quic.
 					return nil, err
 				}
 				if d.SSLVerify && isGoogleAddr {
-					// TODO: verify google certificates
+					// TODO: fix quic-go
 				}
 				return sess, nil
 			}
@@ -423,8 +419,12 @@ func (d *MultiDialer) pickupTLSHosts(hosts []string, n int) []string {
 	}
 
 	if len(goods) == 0 {
-		ShuffleStrings(unknowns)
-		ShuffleStrings(bads)
+		rand.Shuffle(len(unknowns), func(i int, j int) {
+			unknowns[i], unknowns[j] = unknowns[j], unknowns[i]
+		})
+		rand.Shuffle(len(bads), func(i int, j int) {
+			bads[i], bads[j] = bads[j], bads[i]
+		})
 	}
 
 	for _, hosts2 := range [][]string{unknowns, bads} {
@@ -449,7 +449,9 @@ func (r *MultiResolver) LookupHost(host string) ([]string, error) {
 	if alias0, ok := r.MultiDialer.SiteToAlias.Lookup(host); ok {
 		alias := alias0.(string)
 		if hosts, err := r.MultiDialer.LookupAlias(alias); err == nil && len(hosts) > 0 {
-			ShuffleStrings(hosts)
+			rand.Shuffle(len(hosts), func(i, j int) {
+				hosts[i], hosts[j] = hosts[j], hosts[i]
+			})
 			return hosts, nil
 		}
 	}
