@@ -1,12 +1,20 @@
 {
 	"AppIDs": [
-		"myvpnhehe1432",
+		"goproxy-gae-1",
+		"goproxy-gae-2",
+		"goproxy-gae-3",
+		"goproxy-gae-4",
+		"goproxy-gae-5",
+		"goproxy-gae-6",
+		"goproxy-gae-7",
+		"goproxy-gae-8",
+		"goproxy-gae-9",
 	],
+	"Password": "123456",
 	"CustomDomains": [
 	],
 	"CustomDomains": [
 	],
-	"Password": "",
 	"SSLVerify": false,
 	"DisableIPv6": false,
 	"ForceIPv6": false,
