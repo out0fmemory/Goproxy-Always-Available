@@ -37,6 +37,8 @@ type Config struct {
 	AppIDs          []string
 	CustomDomains   []string
 	Password        string
+	AutoScanIp	bool
+	AutoScanIpCnt	int
 	SSLVerify       bool
 	DisableIPv6     bool
 	ForceIPv6       bool
@@ -191,11 +193,15 @@ func NewFilter(config *Config) (filters.Filter, error) {
 	config.SiteToAlias = config.Site2Alias
 
 	hostmap := map[string][]string{}
-	ipbyte := gscan.Gscan(50, false)
-	ipstring := string(ipbyte[:])
-	ipstringtrim := strings.Replace(ipstring, "\n", "",-1)
-	ipstringtrim = strings.Replace(ipstringtrim, "\"", "",-1)
-	ipsarray := strings.Split(ipstringtrim, ",")
+	
+	ipsarray := []string{}
+	if config.AutoScanIp == true {
+		ipbyte := gscan.Gscan(config.AutoScanIpCnt, false)
+		ipstring := string(ipbyte[:])
+		ipstringtrim := strings.Replace(ipstring, "\n", "",-1)
+		ipstringtrim = strings.Replace(ipstringtrim, "\"", "",-1)
+		ipsarray = strings.Split(ipstringtrim, ",")
+	}
 	for key, value := range config.HostMap {
 		mergehost := make([]string, len(ipsarray)+len(value))
         	copy(mergehost, ipsarray)
