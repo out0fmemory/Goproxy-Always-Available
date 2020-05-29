@@ -1,3 +1,6 @@
+# 由于众所周知的原因，google App Engine 现在基本不可用了，此项目暂停维护---于2020年05月29日  
+
+
 ## GoProxy
 [![Release](https://img.shields.io/badge/%20git.io-goproxy-blue.svg?style=social)](https://github.com/phuslu/goproxy/releases) [![Github](https://img.shields.io/github/release/phuslu/goproxy-ci.svg?label=github)](https://github.com/phuslu/goproxy-ci/releases) [![SourceForge](http://goproxy.sourceforge.net/?badge)](https://sourceforge.net/projects/goproxy/files/) [![CI Status](https://img.shields.io/travis/phuslu/goproxy/master.svg)](https://travis-ci.org/phuslu/goproxy/builds) [![Google Translate](https://cloud.githubusercontent.com/assets/195836/18816427/627edf0c-837c-11e6-8bd8-3d685264f303.png)](https://translate.google.com/translate?hl=en&sl=zh-CN&tl=en&u=https%3A%2F%2Fgithub.com%2Fphuslu%2Fgoproxy)
 
